@@ -33,3 +33,6 @@ target
 # Coverage
 lcov.info
 *.profraw
+
+# mdBook build output
+book/html/
