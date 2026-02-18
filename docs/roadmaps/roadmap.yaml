@@ -261,11 +261,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Migrate existing aprender contracts to provable-contracts repo
-  status: inprogress
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-02-18T13:27:09Z
-  updated: 2026-02-18T13:55:49.028312084+00:00
+  updated: 2026-02-18T13:55:56.671711382+00:00
   spec: null
   acceptance_criteria:
   - Move quantized-dot-product-v1.yaml, tensor-layout-v1.yaml, layer-parity-v1.yaml, kernel-fusion-v1.yaml from aprender/contracts/ to provable-contracts/contracts/. Update aprender to consume from provable-contracts crate. Preserve git history via subtree or copy.
