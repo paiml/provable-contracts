@@ -415,11 +415,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Write silu-kernel-v1.yaml contract (Tier 2)
-  status: inprogress
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-02-18T16:40:16Z
-  updated: 2026-02-18T16:46:46.016447954+00:00
+  updated: 2026-02-18T16:46:48.475669401+00:00
   spec: null
   acceptance_criteria:
   - 'SiLU/Swish activation contract from Ramachandran et al. (2017), Elfwing et al. (2018). SiLU(x) = x * sigma(x). Obligations: SiLU(0)=0, global minimum bound, monotonicity for x>0, SIMD parity.'
