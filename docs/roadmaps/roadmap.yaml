@@ -83,11 +83,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Build CLI: provable-contracts validate/scaffold/verify commands'
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-02-18T13:26:07Z
-  updated: 2026-02-18T13:49:09.996790460+00:00
+  updated: 2026-02-18T13:49:17.118869484+00:00
   spec: null
   acceptance_criteria:
   - 'CLI binary with subcommands: (1) validate - check YAML contract against schema, (2) scaffold - generate Rust trait + test stubs + Kani harnesses, (3) verify - run cargo kani on generated harnesses, (4) status - show which obligations have Level 3 vs Level 4 coverage, (5) audit - trace paper→equation→contract→test→proof chain.'
