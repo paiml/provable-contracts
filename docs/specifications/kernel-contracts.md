@@ -247,7 +247,7 @@ Every kernel contract follows this structure:
 
 ## 5. Existing Kernel Contracts
 
-### 5.1 Core Transformer Kernels (7 contracts)
+### 5.1 Core Transformer Kernels (13 contracts)
 
 #### Softmax (`softmax-kernel-v1.yaml`)
 
@@ -338,6 +338,84 @@ Every kernel contract follows this structure:
 | Key invariant | Exact equivalence to standard attention (not approximate) |
 | Kernel phases | outer_loop → inner_loop → online_softmax → accumulate |
 
+#### SwiGLU (`swiglu-kernel-v1.yaml`)
+
+| Field | Value |
+|---|---|
+| Papers | Shazeer (2020), Ramachandran et al. (2017) |
+| Equations | SwiGLU, SiLU (2 equations) |
+| Obligations | 4 (1 invariant, 1 bound, 2 equivalence) |
+| Falsification | 6 tests (zero preservation, fused equiv, SiLU bound, SIMD, boundary, gate monotonicity) |
+| Kani | 3 harnesses (zero preservation, fused equivalence, SiLU bound) |
+| Key invariant | `SwiGLU(0, W, V, 0, 0) = 0` (zero preservation) |
+| SIMD tolerance | 8 ULP |
+| Kernel phases | linear_gate → linear_value → silu_activation → elementwise_multiply |
+
+#### GQA (`gqa-kernel-v1.yaml`)
+
+| Field | Value |
+|---|---|
+| Papers | Ainslie et al. (2023), Vaswani et al. (2017) |
+| Equation | `GQA(Q, K, V) = softmax(Q_g * K_h^T / sqrt(d_k)) * V_h` |
+| Obligations | 5 (2 invariant, 1 bound, 2 equivalence) |
+| Falsification | 6 tests (weight normalization, MHA degeneration, convex bound, head divisibility, SIMD, MQA boundary) |
+| Kani | 3 harnesses (weight normalization, MHA equivalence, convex bound) |
+| Key invariant | `GQA(kv_heads=num_heads) = MHA(Q, K, V)` (degeneration to standard MHA) |
+| SIMD tolerance | 8 ULP |
+| Kernel phases | kv_broadcast → qk_matmul → attention_softmax → weighted_sum |
+
+#### LayerNorm (`layernorm-kernel-v1.yaml`)
+
+| Field | Value |
+|---|---|
+| Papers | Ba et al. (2016), Ioffe & Szegedy (2015) |
+| Equations | LayerNorm, statistics (2 equations) |
+| Obligations | 6 (3 invariant, 1 bound, 1 equivalence, 1 idempotency) |
+| Falsification | 7 tests (centering, standardization, denominator, SIMD, idempotency, shift invariance, constant input) |
+| Kani | 3 harnesses (centering, standardization, denominator positive) |
+| Key invariant | `var(LN(x)) ≈ 1` when γ=1, β=0 (standardization) |
+| SIMD tolerance | 8 ULP |
+| Kernel phases | compute_mean → compute_variance → normalize → affine_transform |
+
+#### SiLU (`silu-kernel-v1.yaml`)
+
+| Field | Value |
+|---|---|
+| Papers | Ramachandran et al. (2017), Elfwing et al. (2018) |
+| Equations | SiLU, sigmoid (2 equations) |
+| Obligations | 5 (1 invariant, 2 bound, 1 monotonicity, 1 equivalence) |
+| Falsification | 6 tests (zero preservation, lower bound, positive monotonicity, SIMD, asymptotic linearity, large negative) |
+| Kani | 3 harnesses (zero, lower bound, positive monotonicity) |
+| Key invariant | `SiLU(0) = 0` and `SiLU(x) > -0.279` (zero preservation, global minimum) |
+| SIMD tolerance | 8 ULP |
+| Kernel phases | compute_sigmoid → multiply |
+
+#### Cross-Entropy (`cross-entropy-kernel-v1.yaml`)
+
+| Field | Value |
+|---|---|
+| Papers | Shannon (1948), Milakov & Gimelshein (2018) |
+| Equations | cross_entropy, log_softmax (2 equations) |
+| Obligations | 5 (1 invariant, 2 bound, 2 equivalence) |
+| Falsification | 6 tests (non-negativity, log-softmax bound, numerical stability, decomposition equiv, SIMD, perfect prediction) |
+| Kani | 3 harnesses (non-negative, log-softmax bound, finite output) |
+| Key invariant | `CE(targets, logits) >= 0` (non-negativity) |
+| SIMD tolerance | 8 ULP |
+| Kernel phases | find_max → log_sum_exp → log_softmax → nll |
+
+#### AdamW (`adamw-kernel-v1.yaml`)
+
+| Field | Value |
+|---|---|
+| Papers | Loshchilov & Hutter (2017), Kingma & Ba (2014) |
+| Equations | adam_moments, adam_variance, bias_correction, weight_update (4 equations) |
+| Obligations | 5 (2 invariant, 2 bound, 1 equivalence) |
+| Falsification | 6 tests (decoupled decay, moment non-negativity, bias correction, update finiteness, SIMD, zero gradient) |
+| Kani | 3 harnesses (decoupled, moment positive, finite update) |
+| Key invariant | Weight decay applied AFTER Adam update (decoupled) |
+| SIMD tolerance | 8 ULP |
+| Kernel phases | update_first_moment → update_second_moment → bias_correct → adam_step → weight_decay |
+
 ### 5.2 Aprender-Specific Contracts (3 contracts)
 
 #### Layer Parity (`contracts/aprender/layer-parity-v1.yaml`)
@@ -393,8 +471,108 @@ Maps each contract equation to the aprender function that implements it:
 | matmul-kernel-v1 | matmul | `autograd::Tensor::matmul` | Implemented |
 | matmul-kernel-v1 | quantized_dot | — | Not implemented |
 | flash-attention-v1 | flash_attention | — | Not implemented |
+| swiglu-kernel-v1 | swiglu | `models::qwen2::swiglu` | Partial |
+| swiglu-kernel-v1 | silu_gate | `nn::functional::silu` | Partial |
+| gqa-kernel-v1 | gqa | `nn::transformer::grouped_query_attention` | Partial |
+| gqa-kernel-v1 | kv_broadcast | `nn::transformer::kv_head_broadcast` | Partial |
+| layernorm-kernel-v1 | layernorm | `nn::LayerNorm::forward` | Implemented |
+| layernorm-kernel-v1 | statistics | `nn::LayerNorm::compute_stats` | Implemented |
+| silu-kernel-v1 | silu | — | Not implemented |
+| silu-kernel-v1 | sigmoid | — | Not implemented |
+| cross-entropy-kernel-v1 | cross_entropy | `nn::CrossEntropyLoss::forward` | Implemented |
+| cross-entropy-kernel-v1 | log_softmax | `nn::functional::log_softmax` | Implemented |
+| adamw-kernel-v1 | adam_moments | `nn::optim::AdamW::step` | Implemented |
+| adamw-kernel-v1 | bias_correction | `nn::optim::AdamW::step` | Implemented |
+| adamw-kernel-v1 | adam_variance | `nn::optim::AdamW::step` | Implemented |
+| adamw-kernel-v1 | weight_update | `nn::optim::AdamW::step` | Implemented |
 
-**Coverage:** 7/10 equations implemented, 5/10 fully bound.
+**Coverage:** 13/24 equations implemented, 9/24 fully bound.
+
+### 5.3 Tier 3 Kernels (7 contracts)
+
+#### SSM (`ssm-kernel-v1.yaml`)
+
+| Field | Value |
+|---|---|
+| Papers | Gu & Dao (2023), Gu et al. (2021) |
+| Equations | ssm_discretize, ssm_scan, selective_gate (3 equations) |
+| Obligations | 5 (2 invariant, 1 bound, 2 equivalence) |
+| Falsification | 6 tests (causality, softplus positivity, scan linearity, parallel-seq equiv, SIMD, zero input) |
+| Kani | 2 harnesses (causality, softplus positive) |
+| Key invariant | Causality: `y_t` depends only on `x_1..x_t` |
+| Kernel phases | selective_projection → discretize → parallel_scan → output_projection |
+
+#### Conv1d (`conv1d-kernel-v1.yaml`)
+
+| Field | Value |
+|---|---|
+| Papers | LeCun et al. (1998), Radford et al. (2023) |
+| Equation | `y[n] = Σ w[k] * x[n*stride + k - pad] + bias` |
+| Obligations | 5 (1 invariant, 1 linearity, 2 equivalence, 1 bound) |
+| Falsification | 6 tests (output shape, linearity, im2col equiv, SIMD, kernel=1, identity kernel) |
+| Kani | 2 harnesses (output shape, linearity) |
+| Key invariant | `L_out = floor((L + 2*pad - K) / stride) + 1` |
+| Kernel phases | im2col → gemm → add_bias |
+
+#### BatchNorm (`batchnorm-kernel-v1.yaml`)
+
+| Field | Value |
+|---|---|
+| Papers | Ioffe & Szegedy (2015) |
+| Equations | batchnorm_train, running_stats, batchnorm_eval (3 equations) |
+| Obligations | 5 (2 invariant, 1 bound, 2 equivalence) |
+| Falsification | 6 tests (standardization, denominator, running stats, eval mode, SIMD, batch=1) |
+| Kani | 2 harnesses (denominator positive, running variance nonneg) |
+| Key invariant | Eval mode uses running stats, not batch stats |
+| Kernel phases | compute_batch_stats → normalize → affine_transform → update_running_stats |
+
+#### K-Means (`kmeans-kernel-v1.yaml`)
+
+| Field | Value |
+|---|---|
+| Papers | Lloyd (1982), Arthur & Vassilvitskii (2007) |
+| Equations | assignment, update, objective (3 equations) |
+| Obligations | 5 (2 invariant, 1 bound, 1 monotonicity, 1 equivalence) |
+| Falsification | 6 tests (nearest assignment, monotone convergence, non-negativity, valid indices, SIMD, K=1) |
+| Kani | 2 harnesses (nearest centroid, objective nonneg) |
+| Key invariant | `J_{t+1} ≤ J_t` (monotone convergence) |
+| Kernel phases | initialize → assign → update → check_convergence |
+
+#### PageRank (`pagerank-kernel-v1.yaml`)
+
+| Field | Value |
+|---|---|
+| Papers | Brin & Page (1998) |
+| Equations | pagerank, power_iteration (2 equations) |
+| Obligations | 5 (2 invariant, 1 monotonicity, 1 bound, 1 equivalence) |
+| Falsification | 6 tests (probability distribution, convergence, non-negativity, SIMD, single node, uniform graph) |
+| Kani | 2 harnesses (distribution sums to 1, non-negativity) |
+| Key invariant | `sum(r) = 1` and `r_i ≥ 0` (valid probability distribution) |
+| Kernel phases | build_transition → initialize → iterate → check_convergence |
+
+#### L-BFGS (`lbfgs-kernel-v1.yaml`)
+
+| Field | Value |
+|---|---|
+| Papers | Nocedal (1980), Liu & Nocedal (1989) |
+| Equations | two_loop_recursion, secant_condition, line_search (3 equations) |
+| Obligations | 5 (2 invariant, 1 bound, 1 monotonicity, 1 equivalence) |
+| Falsification | 6 tests (descent direction, curvature condition, history bound, objective decrease, SIMD, first iteration) |
+| Kani | 2 harnesses (descent direction, history bound) |
+| Key invariant | `g^T * direction < 0` (descent direction guarantee) |
+| Kernel phases | two_loop_backward → initial_scaling → two_loop_forward → line_search |
+
+#### CMA-ES (`cma-es-kernel-v1.yaml`)
+
+| Field | Value |
+|---|---|
+| Papers | Hansen (2016), Hansen & Ostermeier (2001) |
+| Equations | sample, mean_update, covariance_update (3 equations) |
+| Obligations | 5 (2 invariant, 1 bound, 1 equivalence) |
+| Falsification | 6 tests (step size, covariance PD, weights, symmetry, SIMD, d=1) |
+| Kani | 2 harnesses (sigma positive, weights normalized) |
+| Key invariant | Covariance matrix `C` remains symmetric positive definite |
+| Kernel phases | sample_population → evaluate_sort → update_mean → update_paths → update_covariance → update_step_size |
 
 ---
 
@@ -512,48 +690,46 @@ These aprender functions have implementations but no provable contract.
 
 #### High Priority (Tier 1 — core transformer path)
 
+**Now contracted:** SiLU (`silu-kernel-v1.yaml`), SwiGLU (`swiglu-kernel-v1.yaml`),
+LayerNorm (`layernorm-kernel-v1.yaml`), GroupedQueryAttention (`gqa-kernel-v1.yaml`).
+
 | Function | Module | Paper | Why critical |
 |---|---|---|---|
-| `SiLU` / `Swish` | `nn::functional` | Ramachandran (2017) | Used in SwiGLU, every FFN |
-| `SwiGLU` | `models::qwen2` | Shazeer (2020) | Fused gate activation |
-| `LayerNorm` | `nn::LayerNorm` | Ba et al. (2016) | Used by GPT-2, BLOOM, Falcon |
-| `GroupedQueryAttention` | `nn::transformer` | Ainslie et al. (2023) | Qwen2/LLaMA inference |
 | `Embedding lookup` | `nn::Embedding` | — | Trivial but high-frequency |
 | `Linear` (forward) | `nn::Linear` | — | `y = Wx + b`, every projection |
 | `Conv1d` | `nn::Conv1d` | — | Whisper encoder |
 
 #### Medium Priority (Tier 2 — numerical correctness)
 
+**Now contracted:** AdamW (`adamw-kernel-v1.yaml`), CrossEntropyLoss (`cross-entropy-kernel-v1.yaml`).
+
 | Function | Module | Paper | Why important |
 |---|---|---|---|
-| `BatchNorm1d` | `nn::BatchNorm1d` | Ioffe & Szegedy (2015) | Running stats correctness |
-| `AdamW` | `nn::optim::AdamW` | Loshchilov & Hutter (2017) | Training convergence |
-| `CrossEntropyLoss` | `nn::CrossEntropyLoss` | — | Numerical stability (log-sum-exp) |
 | `Dropout` | `nn::Dropout` | Srivastava et al. (2014) | Correct scaling at eval time |
-| `PageRank` | `graph::pagerank` | Brin & Page (1998) | Convergence proof |
 | `im2col + GEMM` | `nn::Conv2d` | — | Convolution correctness |
 
 #### Lower Priority (Tier 3 — classical ML)
 
+**Now contracted:** K-Means (`kmeans-kernel-v1.yaml`), L-BFGS (`lbfgs-kernel-v1.yaml`),
+CMA-ES (`cma-es-kernel-v1.yaml`), BatchNorm (`batchnorm-kernel-v1.yaml`),
+PageRank (`pagerank-kernel-v1.yaml`), SSM (`ssm-kernel-v1.yaml`), Conv1d (`conv1d-kernel-v1.yaml`).
+
 | Function | Module | Paper | Notes |
 |---|---|---|---|
-| K-Means | `cluster::kmeans` | Lloyd (1982) | Convergence monotonicity |
-| L-BFGS | `optim::lbfgs` | Nocedal (1980) | Secant condition |
 | Cholesky solve | `linear_model` | — | Positive-definiteness check |
 | ARIMA | `time_series::arima` | Box & Jenkins (1976) | Stationarity |
 | Differential Evolution | `metaheuristics::de` | Storn & Price (1997) | Population bounds |
-| CMA-ES | `metaheuristics::cma_es` | Hansen (2016) | Covariance update |
 
 ### 8.2 Coverage by Architecture Class
 
 | Class | Architectures | Contracted | Gap |
 |---|---|---|---|
-| A (Qwen2) | softmax, rmsnorm, rope, matmul, attention | 5/7 | SwiGLU, GQA |
-| B (LLaMA) | same as A | 5/7 | SwiGLU, GQA |
-| C (BLOOM) | softmax, matmul, attention | 3/5 | LayerNorm, GELU (ALiBi trivial) |
-| D (GPT-2) | softmax, matmul, attention | 3/5 | LayerNorm, GELU |
-| E (Mamba) | matmul | 1/4 | SSM scan, selective gate, conv1d |
-| F (Whisper) | softmax, matmul, attention | 3/6 | Conv1d, Mel, encoder-decoder attn |
+| A (Qwen2) | softmax, rmsnorm, rope, matmul, attention, swiglu, gqa | 7/7 | — |
+| B (LLaMA) | same as A | 7/7 | — |
+| C (BLOOM) | softmax, matmul, attention, layernorm | 4/5 | GELU (ALiBi trivial) |
+| D (GPT-2) | softmax, matmul, attention, layernorm | 4/5 | GELU |
+| E (Mamba) | matmul, ssm, selective_gate | 3/4 | conv1d |
+| F (Whisper) | softmax, matmul, attention, conv1d | 4/6 | Mel, encoder-decoder attn |
 
 ### 8.3 apr-model-qa-playbook Gateway Coverage
 
@@ -578,7 +754,11 @@ output, the root cause is almost always a kernel bug:
 
 ## 9. Planned Contracts
 
-### 9.1 Immediate (close gap for Class A/B architectures)
+All planned contracts have been implemented. See Section 5.1 (Tier 1/2) and Section 5.3 (Tier 3) for details.
+
+### 9.1 Immediate (close gap for Class A/B architectures) — COMPLETED
+
+All three Tier 1 contracts implemented: `swiglu-kernel-v1.yaml`, `gqa-kernel-v1.yaml`, `layernorm-kernel-v1.yaml`.
 
 #### `swiglu-kernel-v1.yaml`
 
@@ -623,7 +803,9 @@ Obligations:
   - idempotency: LN(LN(x)) ≈ LN(x) when γ=1, β=0
 ```
 
-### 9.2 Near-term (Tier 2 compound kernels)
+### 9.2 Near-term (Tier 2 compound kernels) — COMPLETED
+
+All three Tier 2 contracts implemented: `silu-kernel-v1.yaml`, `cross-entropy-kernel-v1.yaml`, `adamw-kernel-v1.yaml`.
 
 #### `silu-kernel-v1.yaml`
 
@@ -664,17 +846,21 @@ Obligations:
   - monotonicity: loss decreases (on convex problems, in expectation)
 ```
 
-### 9.3 Future (Tier 3 — classical ML and special kernels)
+### 9.3 Future (Tier 3 — classical ML and special kernels) — COMPLETED
 
-| Contract | Paper | Priority |
+All seven Tier 3 contracts implemented: `ssm-kernel-v1.yaml`, `conv1d-kernel-v1.yaml`,
+`batchnorm-kernel-v1.yaml`, `kmeans-kernel-v1.yaml`, `pagerank-kernel-v1.yaml`,
+`lbfgs-kernel-v1.yaml`, `cma-es-kernel-v1.yaml`.
+
+| Contract | Paper | Status |
 |---|---|---|
-| `kmeans-kernel-v1.yaml` | Lloyd (1982) | Low |
-| `pagerank-kernel-v1.yaml` | Brin & Page (1998) | Low |
-| `lbfgs-kernel-v1.yaml` | Nocedal (1980) | Low |
-| `cma-es-kernel-v1.yaml` | Hansen (2016) | Low |
-| `ssm-kernel-v1.yaml` | Gu & Dao (2023) Mamba | Medium |
-| `conv1d-kernel-v1.yaml` | — (standard) | Medium |
-| `batchnorm-kernel-v1.yaml` | Ioffe & Szegedy (2015) | Low |
+| `kmeans-kernel-v1.yaml` | Lloyd (1982) | Implemented |
+| `pagerank-kernel-v1.yaml` | Brin & Page (1998) | Implemented |
+| `lbfgs-kernel-v1.yaml` | Nocedal (1980) | Implemented |
+| `cma-es-kernel-v1.yaml` | Hansen (2016) | Implemented |
+| `ssm-kernel-v1.yaml` | Gu & Dao (2023) Mamba | Implemented |
+| `conv1d-kernel-v1.yaml` | LeCun et al. (1998) | Implemented |
+| `batchnorm-kernel-v1.yaml` | Ioffe & Szegedy (2015) | Implemented |
 
 ---
 
