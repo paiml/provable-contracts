@@ -102,11 +102,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Write softmax-kernel-v1.yaml contract (Tier 1)
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-02-18T13:26:15Z
-  updated: 2026-02-18T13:52:22.562922671+00:00
+  updated: 2026-02-18T13:52:24.979955747+00:00
   spec: null
   acceptance_criteria:
   - 'First provable contract from paper. Source: Bridle 1990, Goodfellow et al. 2016. Extract equations, proof obligations (SM-INV-001 through SM-MON-001), SIMD dispatch table, falsification tests, and Kani harness definitions. Include MATH.md with full derivation.'
