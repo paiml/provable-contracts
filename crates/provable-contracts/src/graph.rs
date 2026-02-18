@@ -86,21 +86,27 @@ pub fn graph_nodes(graph: &DependencyGraph) -> Vec<GraphNode> {
         .collect()
 }
 
-/// Kahn's algorithm for topological sort.
+/// Kahn's algorithm for topological sort (build order: dependencies first).
 fn topological_sort(
     edges: &BTreeMap<String, Vec<String>>,
     nodes: &BTreeSet<String>,
 ) -> Vec<String> {
+    // Build reverse adjacency: for each dependency, track who depends on it
+    let mut reverse_edges: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
     let mut in_degree: BTreeMap<&str, usize> = BTreeMap::new();
     for node in nodes {
         in_degree.insert(node.as_str(), 0);
+        reverse_edges.entry(node.as_str()).or_default();
     }
-    for deps in edges.values() {
+    // in_degree[node] = number of things node depends on
+    for (node, deps) in edges {
+        *in_degree.entry(node.as_str()).or_default() = deps.len();
         for dep in deps {
-            *in_degree.entry(dep.as_str()).or_default() += 1;
+            reverse_edges.entry(dep.as_str()).or_default().push(node.as_str());
         }
     }
 
+    // Start with nodes that depend on nothing (foundations)
     let mut queue: VecDeque<String> = nodes
         .iter()
         .filter(|n| in_degree.get(n.as_str()) == Some(&0))
@@ -110,12 +116,13 @@ fn topological_sort(
     let mut result = Vec::new();
     while let Some(node) = queue.pop_front() {
         result.push(node.clone());
-        if let Some(deps) = edges.get(&node) {
-            for dep in deps {
-                if let Some(deg) = in_degree.get_mut(dep.as_str()) {
+        // For each node that depends on this one, decrement its in-degree
+        if let Some(dependents) = reverse_edges.get(node.as_str()) {
+            for &dependent in dependents {
+                if let Some(deg) = in_degree.get_mut(dependent) {
                     *deg = deg.saturating_sub(1);
                     if *deg == 0 {
-                        queue.push_back(dep.clone());
+                        queue.push_back(dependent.to_string());
                     }
                 }
             }
@@ -300,12 +307,8 @@ falsification_tests: []
         let graph = dependency_graph(&[("a".to_string(), &a), ("b".to_string(), &b)]);
         let a_pos = graph.topo_order.iter().position(|n| n == "a").unwrap();
         let b_pos = graph.topo_order.iter().position(|n| n == "b").unwrap();
-        // In topological order: nodes with no incoming edges come first.
-        // "a" depends on "b", so "a" should come before "b" in our topo.
-        // Wait — in Kahn's algorithm with reversed semantics:
-        // "a" -> "b" means "a" depends on "b", edge from "a" to "b"
-        // In-degree of "b" is 1, in-degree of "a" is 0.
-        // So "a" gets processed first, then "b".
-        assert!(a_pos < b_pos);
+        // Build order: dependencies come before dependents.
+        // "a" depends on "b", so "b" (foundation) should come before "a".
+        assert!(b_pos < a_pos);
     }
 }
