@@ -25,11 +25,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Implement YAML contract schema parser and validator
-  status: inprogress
+  status: completed
   priority: critical
   assigned_to: null
   created: 2026-02-18T13:25:47Z
-  updated: 2026-02-18T13:47:39.283221445+00:00
+  updated: 2026-02-18T13:48:17.029341555+00:00
   spec: null
   acceptance_criteria:
   - Parse contract YAML files (metadata, equations, proof_obligations, kernel_structure, simd_dispatch, enforcement, falsification_tests, kani_harnesses, qa_gate). Validate required fields, cross-references, and consistency. Expose as provable_contracts::schema module.
