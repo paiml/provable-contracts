@@ -1182,3 +1182,51 @@ bindings:
     signature: "fn softmax(x: &Tensor, dim: i32) -> Tensor"
     status: implemented
     notes: "Max-subtraction trick implemented in softmax"
+
+  - contract: qwen35-e2e-verification-v1.yaml
+    equation: model_parameter_count
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — parameter sum formula tested with Qwen3.5 constants"
+
+  - contract: qwen35-e2e-verification-v1.yaml
+    equation: flops_per_token
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — 2P approximation tested via proptest"
+
+  - contract: qwen35-e2e-verification-v1.yaml
+    equation: memory_breakdown
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — memory components additive and ordered"
+
+  - contract: qwen35-e2e-verification-v1.yaml
+    equation: throughput_model
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — roofline min(bw, compute) tested via proptest"
+
+  - contract: qwen35-e2e-verification-v1.yaml
+    equation: verification_ladder
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Meta-contract — coverage fraction tested via pv coverage"
+
+  - contract: qwen35-e2e-verification-v1.yaml
+    equation: contract_composition
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — compositional shape preservation tested"
