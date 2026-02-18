@@ -300,11 +300,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Implement probar property test generator from YAML contracts
-  status: planned
+  status: inprogress
   priority: medium
   assigned_to: null
   created: 2026-02-18T13:27:24Z
-  updated: 2026-02-18T13:27:24Z
+  updated: 2026-02-18T14:11:22.787388165+00:00
   spec: null
   acceptance_criteria:
   - 'Generate probar property-based tests from proof_obligations section of YAML contracts. Map obligation types to test patterns: invariant→property, equivalence→comparison, bound→range_check, monotonicity→ordered_pair, linearity→metamorphic.'
