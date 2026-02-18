@@ -1,0 +1,114 @@
+metadata:
+  version: "1.0.0"
+  created: "2026-02-18"
+  author: "PAIML Engineering"
+  description: "SVD LoRA extraction and merge strategy algebra"
+  references:
+    - "Hu et al. (2021) LoRA: Low-Rank Adaptation"
+    - "Eckart-Young-Mirsky theorem (1936)"
+    - "Yadav et al. (2023) TIES-Merging"
+    - "Yu et al. (2023) DARE: Language Models are Super Mario"
+    - "Qwen3.5 Fine-Tune Spec Phase 2"
+
+equations:
+  task_vector:
+    formula: "delta = W_fine - W_base"
+    domain: "W_fine, W_base ∈ ℝ^{m×n}"
+    codomain: "delta ∈ ℝ^{m×n}"
+    invariants:
+      - "Additive: W_base + delta == W_fine (roundtrip)"
+  eckart_young:
+    formula: "||delta - delta_r||_F <= sigma_{r+1}"
+    domain: "delta_r = U_r @ diag(sigma_1..r) @ V_r^T, rank-r truncated SVD"
+    codomain: "||error||_F ∈ [0, sigma_{r+1}]"
+    invariants:
+      - "Error bounded by (r+1)-th singular value"
+      - "Rank-r approximation is optimal in Frobenius norm"
+  lora_shape:
+    formula: "A ∈ ℝ^{m×r}, B ∈ ℝ^{r×n}, A @ B ∈ ℝ^{m×n}"
+    domain: "r << min(m, n)"
+    invariants:
+      - "A @ B has same shape as original weight"
+      - "Storage: r*(m+n) << m*n for small r"
+  dare_unbiased:
+    formula: "E[DARE(delta, p)] = delta"
+    domain: "p ∈ (0, 1), dropout probability"
+    codomain: "Expected value preserves delta"
+    invariants:
+      - "After drop with probability p, rescale by 1/(1-p)"
+      - "Unbiased estimator of delta"
+  shape_preservation:
+    formula: "shape(merged[t]) == shape(base[t]) for all tensors t"
+    domain: "Any merge strategy"
+    invariants:
+      - "Merge never changes tensor shapes"
+
+proof_obligations:
+  - type: invariant
+    property: "Task vector roundtrip"
+    formal: "base + (fine - base) == fine within ULP"
+    applies_to: all
+  - type: bound
+    property: "Eckart-Young bound"
+    formal: "||M - M_r||_F <= sigma_{r+1}"
+    applies_to: all
+  - type: invariant
+    property: "LoRA shape compatibility"
+    formal: "A=[m,r], B=[r,n] => A@B=[m,n]"
+    applies_to: all
+  - type: invariant
+    property: "DARE unbiasedness"
+    formal: "E[DARE(delta, p)] = delta"
+    applies_to: all
+  - type: invariant
+    property: "Shape preservation"
+    formal: "merged shape == base shape"
+    applies_to: all
+  - type: equivalence
+    property: "SIMD LoRA equivalence"
+    tolerance: 0.0
+    applies_to: simd
+
+falsification_tests:
+  - id: FALSIFY-LA-001
+    rule: "Task vector roundtrip"
+    prediction: "base + delta == fine_tune for random matrices"
+    test: "proptest with random float matrices"
+    if_fails: "Floating-point non-associativity in large matrices"
+  - id: FALSIFY-LA-002
+    rule: "Eckart-Young"
+    prediction: "Truncation error <= next singular value"
+    test: "proptest with small random matrices, compute SVD"
+    if_fails: "SVD implementation error"
+  - id: FALSIFY-LA-003
+    rule: "Shape compatibility"
+    prediction: "LoRA decomposition preserves output shape"
+    test: "proptest with random dimensions"
+    if_fails: "Dimension mismatch in matmul"
+  - id: FALSIFY-LA-004
+    rule: "DARE unbiased"
+    prediction: "Mean of 1000 DARE samples ≈ delta"
+    test: "proptest with statistical tolerance"
+    if_fails: "Rescaling factor wrong"
+
+kani_harnesses:
+  - id: KANI-LA-001
+    obligation: LA-INV-001
+    property: "Shape compatibility for bounded dimensions"
+    bound: 4
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_lora_shape
+
+qa_gate:
+  id: F-LA-001
+  name: "LoRA Algebra Contract"
+  description: "SVD extraction and merge strategy quality gate"
+  checks:
+    - "task_vector_roundtrip"
+    - "eckart_young_bound"
+    - "shape_compatibility"
+    - "dare_unbiased"
+    - "shape_preservation"
+  pass_criteria: "All 5 falsification tests pass + 1 SIMD ignored"
+  falsification: "Use rank > min(m,n) to break SVD truncation"

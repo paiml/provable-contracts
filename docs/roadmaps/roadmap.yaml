@@ -679,3 +679,35 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-038
+  github_issue: null
+  item_type: task
+  title: Extend schema enums to support all contract variants (bounded_int, ordering, converter)
+  status: inprogress
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T20:14:50Z
+  updated: 2026-02-18T20:14:55.931609301+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-039
+  github_issue: null
+  item_type: task
+  title: Add binding entries for newly-parseable contracts
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-18T20:14:52Z
+  updated: 2026-02-18T20:14:52Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null

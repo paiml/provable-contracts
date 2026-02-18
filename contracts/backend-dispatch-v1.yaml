@@ -1,0 +1,92 @@
+metadata:
+  version: "1.0.0"
+  created: "2026-02-18"
+  author: "PAIML Engineering"
+  description: "Backend dispatch thresholds, garbage oracle, and BPE roundtrip"
+  references:
+    - "Qwen2.5-Coder Showcase Spec — backend dispatch"
+    - "Qwen3 Performance Parity Spec — QK norm score bound"
+
+equations:
+  gpu_threshold:
+    formula: "dispatch(n) = GPU if n >= 100_000 else CPU"
+    domain: "n = tensor element count"
+    invariants:
+      - "Threshold is monotonic: GPU-eligible implies all larger tensors GPU-eligible"
+  simd_only_threshold:
+    formula: "dispatch(n) = SIMD_only if n < 1_000 else SIMD+threading"
+    domain: "n = tensor element count"
+    invariants:
+      - "Small tensors avoid threading overhead"
+  garbage_oracle:
+    formula: "is_garbage(text) = repetition_ratio > 0.3 OR unique_chars < 10"
+    domain: "text ∈ String"
+    invariants:
+      - "Highly repetitive text is garbage"
+      - "Very low character diversity is garbage"
+  qk_norm_score_bound:
+    formula: "|pre_softmax_score| <= sqrt(head_dim)"
+    domain: "After QK normalization"
+    invariants:
+      - "Bounded by sqrt of head dimension"
+      - "Prevents attention score explosion"
+
+proof_obligations:
+  - type: monotonicity
+    property: "GPU threshold monotonic"
+    formal: "n1 >= threshold AND n2 > n1 => n2 >= threshold"
+    applies_to: all
+  - type: invariant
+    property: "Garbage oracle detects repetition"
+    formal: "repetition_ratio > 0.3 => is_garbage"
+    applies_to: all
+  - type: bound
+    property: "QK norm score bound"
+    formal: "|score| <= sqrt(d_k) after L2 normalization"
+    applies_to: all
+  - type: equivalence
+    property: "BPE roundtrip"
+    formal: "decode(encode(text)) == text for representable strings"
+    applies_to: all
+  - type: equivalence
+    property: "SIMD dispatch equivalence"
+    tolerance: 0.0
+    applies_to: simd
+
+falsification_tests:
+  - id: FALSIFY-BD-001
+    rule: "GPU threshold"
+    prediction: "Threshold is monotonic step function"
+    test: "proptest with random element counts"
+    if_fails: "Non-monotonic dispatch decision"
+  - id: FALSIFY-BD-002
+    rule: "Garbage oracle"
+    prediction: "Repeated characters flagged as garbage"
+    test: "proptest with repetitive vs diverse strings"
+    if_fails: "Oracle misses degenerate text"
+  - id: FALSIFY-BD-003
+    rule: "QK norm bound"
+    prediction: "Dot product of unit vectors bounded by sqrt(d)"
+    test: "proptest with random unit vectors"
+    if_fails: "L2 normalization not applied"
+
+kani_harnesses:
+  - id: KANI-BD-001
+    obligation: BD-MON-001
+    property: "Dispatch monotonicity for bounded counts"
+    bound: 4
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_dispatch_monotonic
+
+qa_gate:
+  id: F-BD-001
+  name: "Backend Dispatch Contract"
+  description: "Dispatch threshold and oracle quality gate"
+  checks:
+    - "gpu_threshold_monotonic"
+    - "garbage_oracle"
+    - "qk_norm_bound"
+    - "bpe_roundtrip"
+  pass_criteria: "3 pass + 1 SIMD ignored + 1 BPE ignored (requires API)"
+  falsification: "Pass element count just below threshold to test boundary"

@@ -10,12 +10,13 @@ Available as:
 - **Library** (`provable-contracts`): Contract parsing, validation, scaffold
   generation, Kani harness codegen, probar test generation
 - **CLI** (`provable-contracts-cli`): `pv validate`, `pv scaffold`,
-  `pv verify`, `pv status`, `pv audit`
+  `pv verify`, `pv status`, `pv audit`, `pv diff`, `pv coverage`,
+  `pv generate`, `pv graph`
 
 Primary consumer: [aprender](https://github.com/paiml/aprender) ML library
 and the broader PAIML Sovereign AI stack.
 
-**Tracking:** All work tracked via `pmat work` (PMAT-001 through PMAT-017).
+**Tracking:** All work tracked via `pmat work` (PMAT-001 through PMAT-037).
 
 ---
 
@@ -113,6 +114,25 @@ pub fn generate_probar_tests(contract: &Contract) -> TokenStream;
 
 // provable_contracts::audit — Trace paper→code chain
 pub fn audit_contract(contract: &Contract, src: &Path) -> AuditReport;
+
+// provable_contracts::diff — Contract drift detection (PMAT-034)
+pub fn diff_contracts(old: &Contract, new: &Contract) -> ContractDiff;
+
+// provable_contracts::coverage — Cross-contract obligation report (PMAT-035)
+pub fn coverage_report(
+    contracts: &[(String, Contract)],
+    binding: Option<&BindingRegistry>,
+) -> CoverageReport;
+
+// provable_contracts::generate — End-to-end codegen to disk (PMAT-036)
+pub fn generate_all(
+    contract: &Contract,
+    output_dir: &Path,
+    binding: Option<&BindingRegistry>,
+) -> Result<GeneratedFiles, io::Error>;
+
+// provable_contracts::graph — Contract dependency graph (PMAT-037)
+pub fn dependency_graph(contracts: &[(String, Contract)]) -> DependencyGraph;
 ```
 
 ### CLI Commands (pv binary)
@@ -142,6 +162,26 @@ pv status contracts/
 pv audit contracts/softmax-kernel-v1.yaml --src ../aprender/src/
     Trace full chain: paper → equation → contract → trait → test → proof.
     Report gaps (equation without test, test without Kani harness, etc).
+
+pv diff contracts/softmax-kernel-v1.yaml contracts/softmax-kernel-v2.yaml
+    Compare two contract versions. Report added/removed equations,
+    obligations, falsification tests. Suggest semver bump type
+    (major/minor/patch) per Section 11.3 versioning rules.
+
+pv coverage contracts/ --binding contracts/aprender/binding.yaml
+    Cross-contract obligation matrix. Shows per-architecture-class
+    coverage, binding status, and gap analysis. Single-command
+    replacement for running pv audit on each contract individually.
+
+pv generate contracts/softmax-kernel-v1.yaml --output-dir src/generated/
+    Write all codegen artifacts to disk: trait.rs, contract_tests.rs,
+    kani_proofs.rs, probar_tests.rs. Supports --binding flag for
+    wired probar output. Replaces manual stdout piping.
+
+pv graph contracts/
+    Render contract dependency DAG. Shows which contracts depend on
+    others (e.g., SwiGLU → SiLU, CrossEntropy → Softmax). Reports
+    impact analysis: changing a contract shows all affected dependents.
 ```
 
 ---
@@ -555,6 +595,9 @@ metadata:
   references:                         # REQUIRED: Paper citations
     - "Author et al. (YYYY). Title. arXiv:XXXX.XXXXX"
     - "..."
+  depends_on:                          # OPTIONAL: Contract dependencies (PMAT-037)
+    - "silu-kernel-v1"                 # Contracts this contract composes
+    - "softmax-kernel-v1"
 
 # REQUIRED: Mathematical equations
 equations:

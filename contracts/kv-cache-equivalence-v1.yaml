@@ -1,0 +1,95 @@
+metadata:
+  version: "1.0.0"
+  created: "2026-02-18"
+  author: "PAIML Engineering"
+  description: "KV cache equivalence, two-phase generation, and fused kernel correctness"
+  references:
+    - "Qwen2.5-Coder Showcase Spec §14"
+    - "Dao et al. (2022) FlashAttention"
+
+equations:
+  prefill_incremental:
+    formula: "|forward_with_cache(t_n) - forward_all([t_0..t_n])[n]| < epsilon"
+    domain: "Token sequence"
+    invariants:
+      - "Cached forward equals full forward for last token"
+  page_shape:
+    formula: "page_elements = block_size * n_kv * d_k"
+    domain: "PagedAttention configuration"
+    invariants:
+      - "Page elements product of config values"
+  batched_serial_equivalence:
+    formula: "|batched_prefill(tokens) - serial_prefill(tokens)| < epsilon"
+    domain: "Prefill phase"
+    invariants:
+      - "Batched and serial prefill produce same result"
+  fused_kernel:
+    formula: "|fused_q4k_matvec(W, x) - matmul(dequant(W), x)| < epsilon"
+    domain: "Quantized weight W, float input x"
+    invariants:
+      - "Fused equals decomposed within tolerance"
+      - "Epsilon depends on quantization (Q4K: 1e-3, F16: 1e-5)"
+
+proof_obligations:
+  - type: equivalence
+    property: "Prefill/incremental equivalence"
+    formal: "|cached - full| < 1e-5"
+    tolerance: 1e-5
+    applies_to: all
+  - type: invariant
+    property: "Page shape formula"
+    formal: "page_elements = block_size * n_kv * d_k"
+    applies_to: all
+  - type: equivalence
+    property: "Batched/serial equivalence"
+    formal: "|batched - serial| < 1e-5"
+    tolerance: 1e-5
+    applies_to: all
+  - type: equivalence
+    property: "Fused kernel equivalence"
+    formal: "|fused - decomposed| < 1e-3"
+    tolerance: 1e-3
+    applies_to: all
+
+falsification_tests:
+  - id: FALSIFY-KCE-001
+    rule: "Prefill/incremental"
+    prediction: "Cached matches full within tolerance"
+    test: "Requires realizar API — currently ignored"
+    if_fails: "KV cache state corruption"
+  - id: FALSIFY-KCE-002
+    rule: "Page shape"
+    prediction: "Formula matches actual page allocation"
+    test: "Pure math — proptest with random configs"
+    if_fails: "PagedAttention config error"
+  - id: FALSIFY-KCE-003
+    rule: "Batched/serial"
+    prediction: "Both prefill modes agree"
+    test: "Requires realizar API — currently ignored"
+    if_fails: "Batching introduces numerical drift"
+  - id: FALSIFY-KCE-004
+    rule: "Fused kernel"
+    prediction: "Fused matches decomposed within quant tolerance"
+    test: "Requires trueno API — currently ignored"
+    if_fails: "Fused kernel computation error"
+
+kani_harnesses:
+  - id: KANI-KCE-001
+    obligation: KCE-INV-001
+    property: "Page shape positive for bounded configs"
+    bound: 4
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_page_shape
+
+qa_gate:
+  id: F-KCE-001
+  name: "KV Cache Equivalence Contract"
+  description: "Cache and kernel equivalence quality gate"
+  checks:
+    - "prefill_incremental"
+    - "page_shape"
+    - "batched_serial"
+    - "fused_kernel"
+  pass_criteria: "1 wired (page_shape) + 3 ignored (require API)"
+  falsification: "Corrupt one KV cache entry to break equivalence"

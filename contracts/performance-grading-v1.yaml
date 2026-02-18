@@ -1,0 +1,90 @@
+metadata:
+  version: "1.0.0"
+  created: "2026-02-18"
+  author: "PAIML Engineering"
+  description: "Performance grading systems for model evaluation"
+  references:
+    - "Qwen2.5-Coder Showcase Spec §11.6 — Ollama parity grade"
+    - "Qwen2.5-Coder Showcase Spec §11.7 — performance efficiency grade"
+
+equations:
+  ollama_parity:
+    formula: "ratio = apr_tps / ollama_tps; grade = classify(ratio)"
+    domain: "ratio ∈ [0, ∞)"
+    codomain: "grade ∈ {F, D, C, B, A, A+}"
+    invariants:
+      - "Grade boundaries: F(<0.5), D[0.5,0.75), C[0.75,1.0), B[1.0,1.5), A[1.5,2.0), A+(>=2.0)"
+      - "Monotonic: higher ratio => same or better grade"
+      - "Boundaries are exhaustive and non-overlapping"
+  efficiency_grade:
+    formula: "eff = actual_tps / roofline_ceiling; grade = classify(eff)"
+    domain: "eff ∈ [0, 1]"
+    codomain: "grade ∈ {F, D, C, B, A}"
+    invariants:
+      - "Grade boundaries: F(<10%), D[10%,20%), C[20%,40%), B[40%,50%), A(>=50%)"
+      - "Monotonic: higher efficiency => same or better grade"
+  concrete_instance:
+    formula: "Qwen3-8B Q4K: bw_ceiling = 33GB/s / 4.19GB ≈ 7.9 tok/s"
+    domain: "DDR4 desktop, specific model"
+    invariants:
+      - "Concrete value within 10% of theoretical"
+
+proof_obligations:
+  - type: invariant
+    property: "Ollama grade exhaustive"
+    formal: "For all ratio >= 0, exactly one grade bucket matches"
+    applies_to: all
+  - type: monotonicity
+    property: "Ollama grade monotonic"
+    formal: "r1 > r2 => grade(r1) >= grade(r2)"
+    applies_to: all
+  - type: monotonicity
+    property: "Efficiency grade monotonic"
+    formal: "e1 > e2 => grade(e1) >= grade(e2)"
+    applies_to: all
+  - type: bound
+    property: "Concrete ceiling bound"
+    formal: "DDR4 33 GB/s, 4.19 GB model => ceiling ∈ [7.0, 9.0]"
+    applies_to: all
+  - type: equivalence
+    property: "SIMD grading equivalence"
+    tolerance: 0.0
+    applies_to: simd
+
+falsification_tests:
+  - id: FALSIFY-PG-001
+    rule: "Exhaustive grading"
+    prediction: "No ratio falls between grade boundaries"
+    test: "proptest with random ratios in [0, 10]"
+    if_fails: "Gap or overlap in grade boundaries"
+  - id: FALSIFY-PG-002
+    rule: "Monotonicity"
+    prediction: "Increasing ratio never decreases grade"
+    test: "proptest with random ratio pairs"
+    if_fails: "Grade boundaries not monotonically ordered"
+  - id: FALSIFY-PG-003
+    rule: "Concrete ceiling"
+    prediction: "Calculation matches expected range"
+    test: "Deterministic test with DDR4 values"
+    if_fails: "Arithmetic error in ceiling formula"
+
+kani_harnesses:
+  - id: KANI-PG-001
+    obligation: PG-INV-001
+    property: "Grade exhaustive for bounded ratios"
+    bound: 4
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_grade_exhaustive
+
+qa_gate:
+  id: F-PG-001
+  name: "Performance Grading Contract"
+  description: "Grading system quality gate"
+  checks:
+    - "ollama_exhaustive"
+    - "ollama_monotonic"
+    - "efficiency_monotonic"
+    - "concrete_bound"
+  pass_criteria: "All 4 falsification tests pass + 1 SIMD ignored"
+  falsification: "Insert gap between C and B boundaries"
