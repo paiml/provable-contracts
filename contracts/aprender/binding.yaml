@@ -900,3 +900,189 @@ bindings:
     signature: ~
     status: not_implemented
     notes: "Requires trueno fused kernel API — ignored"
+
+  # --- Qwen 3.5 extended contracts ---
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: window_mask
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — window mask algebra tested via proptest"
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: causal_window_mask
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — causal constraint tested via proptest"
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: effective_context
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — min(i+1, W) formula tested"
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: attention_sparsity
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — sparsity asymptote verified"
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: multi_layer_receptive_field
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — receptive field linear growth tested"
+
+  - contract: rope-extrapolation-v1.yaml
+    equation: base_frequency
+    module_path: "aprender::nn::RotaryPositionEmbedding"
+    function: "RotaryPositionEmbedding::new"
+    signature: "fn new(dim: usize, max_seq_len: usize, base: f32) -> Self"
+    status: implemented
+    notes: "Base frequency computed in constructor"
+
+  - contract: rope-extrapolation-v1.yaml
+    equation: ntk_scaled_base
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "NTK-aware scaling not yet implemented in aprender RoPE"
+
+  - contract: rope-extrapolation-v1.yaml
+    equation: linear_interpolation
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "Position interpolation not yet implemented"
+
+  - contract: rope-extrapolation-v1.yaml
+    equation: yarn_ramp
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "YaRN interpolation not yet implemented"
+
+  - contract: rope-extrapolation-v1.yaml
+    equation: yarn_mixed_frequency
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "YaRN mixed-frequency scaling not yet implemented"
+
+  - contract: rope-extrapolation-v1.yaml
+    equation: rotation_matrix
+    module_path: "aprender::nn::RotaryPositionEmbedding"
+    function: "RotaryPositionEmbedding::apply"
+    signature: "fn apply(&self, x: &Tensor, position_ids: &[usize]) -> Tensor"
+    status: implemented
+    notes: "Rotation applied per-head; orthogonality is intrinsic to cos/sin construction"
+
+  - contract: embedding-algebra-v1.yaml
+    equation: embedding_lookup
+    module_path: "aprender::nn::Embedding"
+    function: "Embedding::forward"
+    signature: "fn forward(&self, input: &[usize]) -> Tensor"
+    status: implemented
+    notes: "Standard embedding lookup by token ID"
+
+  - contract: embedding-algebra-v1.yaml
+    equation: unembedding_projection
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Uses matmul with transposed embedding weight (lm_head)"
+
+  - contract: embedding-algebra-v1.yaml
+    equation: tied_weights
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Weight tying configured in Qwen2 model builder"
+
+  - contract: embedding-algebra-v1.yaml
+    equation: vocabulary_bounds
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — bounds checked at tokenization layer"
+
+  - contract: embedding-algebra-v1.yaml
+    equation: embedding_norm
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Non-degeneracy tested via proptest on random embeddings"
+
+  - contract: embedding-algebra-v1.yaml
+    equation: logit_temperature
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — temperature scaling tested inline"
+
+  - contract: inference-pipeline-v1.yaml
+    equation: prefill_phase
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "Requires realizar inference API"
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "Requires realizar inference API"
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — residual arithmetic tested via proptest"
+
+  - contract: inference-pipeline-v1.yaml
+    equation: layer_composition
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — pre-norm + residual composition tested"
+
+  - contract: inference-pipeline-v1.yaml
+    equation: hybrid_layer_schedule
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — partition exhaustiveness tested via proptest"
+
+  - contract: inference-pipeline-v1.yaml
+    equation: kv_cache_growth
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — linear growth in t tested via proptest"
