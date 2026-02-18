@@ -4,6 +4,15 @@ members = [
     "crates/provable-contracts",
     "crates/provable-contracts-cli",
 ]
+exclude = [
+    "target",
+    "*.profraw",
+    "*.profdata",
+    ".pmat",
+    ".vscode",
+    ".idea",
+    "proptest-regressions",
+]
 
 [workspace.package]
 version = "0.1.0"

@@ -7,8 +7,8 @@ fn validate_contract_file(path: &str) {
     let path = Path::new(path);
     assert!(path.exists(), "Contract file not found: {}", path.display());
 
-    let contract = parse_contract(path)
-        .unwrap_or_else(|e| panic!("Failed to parse {}: {e}", path.display()));
+    let contract =
+        parse_contract(path).unwrap_or_else(|e| panic!("Failed to parse {}: {e}", path.display()));
 
     let violations = validate_contract(&contract);
     let errors: Vec<_> = violations

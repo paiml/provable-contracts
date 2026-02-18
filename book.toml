@@ -1,0 +1,12 @@
+[book]
+title = "provable-contracts"
+authors = ["PAIML Engineering"]
+language = "en"
+src = "book/src"
+
+[build]
+build-dir = "book/html"
+
+[output.html]
+default-theme = "navy"
+git-repository-url = "https://github.com/paiml/provable-contracts"

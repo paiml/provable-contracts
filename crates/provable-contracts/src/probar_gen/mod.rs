@@ -21,14 +21,12 @@ mod wired;
 
 use crate::schema::{Contract, ObligationType, ProofObligation};
 
-pub use wired::generate_wired_probar_tests;
 use patterns::{
-    generate_associativity_body, generate_bound_body,
-    generate_conservation_body, generate_equivalence_body,
-    generate_idempotency_body, generate_invariant_body,
-    generate_linearity_body, generate_monotonicity_body,
-    generate_symmetry_body,
+    generate_associativity_body, generate_bound_body, generate_conservation_body,
+    generate_equivalence_body, generate_idempotency_body, generate_invariant_body,
+    generate_linearity_body, generate_monotonicity_body, generate_symmetry_body,
 };
+pub use wired::generate_wired_probar_tests;
 
 /// Generate probar property-based tests from a contract.
 ///
@@ -36,12 +34,8 @@ use patterns::{
 /// 1. Obligation-derived property tests (from `proof_obligations`)
 /// 2. Falsification test stubs (from `falsification_tests`)
 pub fn generate_probar_tests(contract: &Contract) -> String {
-    if contract.proof_obligations.is_empty()
-        && contract.falsification_tests.is_empty()
-    {
-        return String::from(
-            "// No probar tests defined in this contract.\n",
-        );
+    if contract.proof_obligations.is_empty() && contract.falsification_tests.is_empty() {
+        return String::from("// No probar tests defined in this contract.\n");
     }
 
     let mut out = String::new();
@@ -55,18 +49,14 @@ pub fn generate_probar_tests(contract: &Contract) -> String {
             "    // === Property tests derived from proof \
              obligations ===\n\n",
         );
-        for (i, ob) in
-            contract.proof_obligations.iter().enumerate()
-        {
+        for (i, ob) in contract.proof_obligations.iter().enumerate() {
             generate_obligation_test(&mut out, ob, i);
         }
     }
 
     // Section 2: Falsification test stubs
     if !contract.falsification_tests.is_empty() {
-        out.push_str(
-            "    // === Falsification test stubs ===\n\n",
-        );
+        out.push_str("    // === Falsification test stubs ===\n\n");
         for test in &contract.falsification_tests {
             generate_falsification_stub(&mut out, test);
         }
@@ -76,19 +66,14 @@ pub fn generate_probar_tests(contract: &Contract) -> String {
     out
 }
 
-fn generate_obligation_test(
-    out: &mut String,
-    ob: &ProofObligation,
-    index: usize,
-) {
+fn generate_obligation_test(out: &mut String, ob: &ProofObligation, index: usize) {
     let fn_name = obligation_fn_name(ob, index);
     let pattern = obligation_pattern(ob.obligation_type);
 
     // Doc comment
     out.push_str(&format!(
         "    /// Obligation: {} ({})\n",
-        ob.property,
-        ob.obligation_type
+        ob.property, ob.obligation_type
     ));
     if let Some(ref formal) = ob.formal {
         out.push_str(&format!("    /// Formal: {formal}\n"));
@@ -151,64 +136,30 @@ fn obligation_fn_name(ob: &ProofObligation, index: usize) -> String {
 
 fn obligation_pattern(ot: ObligationType) -> &'static str {
     match ot {
-        ObligationType::Invariant => {
-            "∀x ∈ Domain: P(f(x)) — property holds for all inputs"
-        }
-        ObligationType::Equivalence => {
-            "∀x: |f(x) - g(x)| < ε — two implementations agree"
-        }
-        ObligationType::Bound => {
-            "∀x: a ≤ f(x)_i ≤ b — output range bounded"
-        }
-        ObligationType::Monotonicity => {
-            "x_i > x_j → f(x)_i > f(x)_j — order preserved"
-        }
-        ObligationType::Idempotency => {
-            "f(f(x)) = f(x) — applying twice gives same result"
-        }
-        ObligationType::Linearity => {
-            "f(αx) = α·f(x) — homogeneous scaling"
-        }
-        ObligationType::Symmetry => {
-            "f(permute(x)) related to f(x) — permutation property"
-        }
-        ObligationType::Associativity => {
-            "(a ⊕ b) ⊕ c = a ⊕ (b ⊕ c) — grouping invariant"
-        }
-        ObligationType::Conservation => {
-            "Q(before) = Q(after) — conserved quantity"
-        }
+        ObligationType::Invariant => "∀x ∈ Domain: P(f(x)) — property holds for all inputs",
+        ObligationType::Equivalence => "∀x: |f(x) - g(x)| < ε — two implementations agree",
+        ObligationType::Bound => "∀x: a ≤ f(x)_i ≤ b — output range bounded",
+        ObligationType::Monotonicity => "x_i > x_j → f(x)_i > f(x)_j — order preserved",
+        ObligationType::Idempotency => "f(f(x)) = f(x) — applying twice gives same result",
+        ObligationType::Linearity => "f(αx) = α·f(x) — homogeneous scaling",
+        ObligationType::Symmetry => "f(permute(x)) related to f(x) — permutation property",
+        ObligationType::Associativity => "(a ⊕ b) ⊕ c = a ⊕ (b ⊕ c) — grouping invariant",
+        ObligationType::Conservation => "Q(before) = Q(after) — conserved quantity",
     }
 }
 
-fn generate_falsification_stub(
-    out: &mut String,
-    test: &crate::schema::FalsificationTest,
-) {
+fn generate_falsification_stub(out: &mut String, test: &crate::schema::FalsificationTest) {
     // Doc comment
-    out.push_str(&format!(
-        "    /// {}: {}\n",
-        test.id, test.rule
-    ));
-    out.push_str(&format!(
-        "    /// Prediction: {}\n",
-        test.prediction
-    ));
-    out.push_str(&format!(
-        "    /// If fails: {}\n",
-        test.if_fails
-    ));
+    out.push_str(&format!("    /// {}: {}\n", test.id, test.rule));
+    out.push_str(&format!("    /// Prediction: {}\n", test.prediction));
+    out.push_str(&format!("    /// If fails: {}\n", test.if_fails));
 
     let fn_name = test.id.to_lowercase().replace('-', "_");
 
-    out.push_str(&format!(
-        "    #[test]\n    fn prop_{fn_name}() {{\n"
-    ));
+    out.push_str(&format!("    #[test]\n    fn prop_{fn_name}() {{\n"));
 
     if let Some(ref method) = test.test {
-        out.push_str(&format!(
-            "        // Method: {method}\n"
-        ));
+        out.push_str(&format!("        // Method: {method}\n"));
     }
 
     out.push_str(&format!(
@@ -403,9 +354,7 @@ falsification_tests:
         let contract = parse_contract_str(yaml).unwrap();
         let code = generate_probar_tests(&contract);
         // Both sections present
-        assert!(code.contains(
-            "Property tests derived from proof obligations"
-        ));
+        assert!(code.contains("Property tests derived from proof obligations"));
         assert!(code.contains("Falsification test stubs"));
         assert_eq!(code.matches("#[test]").count(), 2);
     }

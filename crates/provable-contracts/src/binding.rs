@@ -149,15 +149,27 @@ bindings:
     fn impl_status_display() {
         assert_eq!(ImplStatus::Implemented.to_string(), "implemented");
         assert_eq!(ImplStatus::Partial.to_string(), "partial");
-        assert_eq!(
-            ImplStatus::NotImplemented.to_string(),
-            "not_implemented"
-        );
+        assert_eq!(ImplStatus::NotImplemented.to_string(), "not_implemented");
     }
 
     #[test]
     fn parse_invalid_binding_yaml() {
         let result = parse_binding_str("not: [valid: {{");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn parse_binding_from_file() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../contracts/aprender/binding.yaml");
+        let reg = parse_binding(&path).unwrap();
+        assert_eq!(reg.target_crate, "aprender");
+        assert!(!reg.bindings.is_empty());
+    }
+
+    #[test]
+    fn parse_binding_nonexistent_file() {
+        let result = parse_binding(std::path::Path::new("/nonexistent/binding.yaml"));
         assert!(result.is_err());
     }
 }

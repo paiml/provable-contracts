@@ -85,7 +85,7 @@ fusion_decisions:
         - "ElementwiseMulKernel (trueno-gpu/src/kernels/elementwise/activations.rs)"
     call_site: "realizar/src/cuda/executor/layers/indexed.rs:1411"
     saves_per_layer: 1  # 1 fewer kernel launch, 1 fewer intermediate buffer read/write
-    saves_per_token_28L: 28  # 28 layers × 1 launch
+    saves_per_seq_28L: 28  # 28 layers × 1 launch
     memory_saved_bytes: 75776  # intermediate_dim × 4 bytes (18944 × 4 for 7B)
     benchmark:
       model: "qwen2.5-coder-7b-instruct-q4_k_m"
@@ -125,7 +125,7 @@ fusion_decisions:
         - "FusedSwigluKernel"
     call_site: "NOT WIRED — see PAR-077"
     saves_per_layer: 3  # 4 kernels → 1
-    saves_per_token_28L: 84  # 28 layers × 3 launches
+    saves_per_seq_28L: 84  # 28 layers × 3 launches
     blocking_reason: |
       PAR-077: Measured 3x SLOWER than unfused path.
       Root cause: Input vector is 6KB (hidden_dim=3584 × 4B), weights are 15MB per projection.

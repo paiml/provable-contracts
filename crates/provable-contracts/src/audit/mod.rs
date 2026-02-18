@@ -63,18 +63,13 @@ pub fn audit_contract(contract: &Contract) -> AuditReport {
                      reference",
                     harness.id
                 ),
-                location: Some(format!(
-                    "kani_harnesses.{}.obligation",
-                    harness.id
-                )),
+                location: Some(format!("kani_harnesses.{}.obligation", harness.id)),
             });
         }
     }
 
     // Check: contract has proof obligations if it has equations
-    if !contract.equations.is_empty()
-        && contract.proof_obligations.is_empty()
-    {
+    if !contract.equations.is_empty() && contract.proof_obligations.is_empty() {
         violations.push(Violation {
             severity: Severity::Warning,
             rule: "AUDIT-003".to_string(),
@@ -141,9 +136,10 @@ pub fn audit_binding(
         total_obligations += contract.proof_obligations.len();
 
         for eq_name in contract.equations.keys() {
-            let matching = binding.bindings.iter().find(|b| {
-                b.contract == contract_file && b.equation == *eq_name
-            });
+            let matching = binding
+                .bindings
+                .iter()
+                .find(|b| b.contract == contract_file && b.equation == *eq_name);
 
             match matching {
                 Some(b) => {
@@ -153,8 +149,7 @@ pub fn audit_binding(
                             implemented += 1;
                             // All obligations for this equation
                             // are considered covered.
-                            covered_obligations +=
-                                obligations_for_equation(contract);
+                            covered_obligations += obligations_for_equation(contract);
                         }
                         ImplStatus::Partial => {
                             partial += 1;
@@ -166,9 +161,7 @@ pub fn audit_binding(
                                      {contract_file} is partially \
                                      implemented"
                                 ),
-                                location: Some(format!(
-                                    "bindings.{eq_name}"
-                                )),
+                                location: Some(format!("bindings.{eq_name}")),
                             });
                         }
                         ImplStatus::NotImplemented => {
@@ -181,9 +174,7 @@ pub fn audit_binding(
                                      {contract_file} has no \
                                      implementation"
                                 ),
-                                location: Some(format!(
-                                    "bindings.{eq_name}"
-                                )),
+                                location: Some(format!("bindings.{eq_name}")),
                             });
                         }
                     }
@@ -196,9 +187,7 @@ pub fn audit_binding(
                             "Equation '{eq_name}' in {contract_file} \
                              has no binding entry"
                         ),
-                        location: Some(format!(
-                            "{contract_file}.equations.{eq_name}"
-                        )),
+                        location: Some(format!("{contract_file}.equations.{eq_name}")),
                     });
                 }
             }
@@ -226,10 +215,7 @@ fn obligations_for_equation(contract: &Contract) -> usize {
     contract
         .proof_obligations
         .iter()
-        .filter(|o| {
-            o.applies_to
-                != Some(crate::schema::AppliesTo::Simd)
-        })
+        .filter(|o| o.applies_to != Some(crate::schema::AppliesTo::Simd))
         .count()
 }
 
@@ -255,10 +241,7 @@ falsification_tests: []
         assert_eq!(report.equations, 1);
         assert_eq!(report.falsification_tests, 0);
         // Should warn about no falsification tests
-        assert!(report
-            .violations
-            .iter()
-            .any(|v| v.rule == "AUDIT-001"));
+        assert!(report.violations.iter().any(|v| v.rule == "AUDIT-001"));
     }
 
     #[test]
@@ -296,10 +279,7 @@ kani_harnesses:
             .iter()
             .filter(|v| v.severity == Severity::Error)
             .collect();
-        assert!(
-            errors.is_empty(),
-            "Expected no errors, got: {errors:?}"
-        );
+        assert!(errors.is_empty(), "Expected no errors, got: {errors:?}");
     }
 
     #[test]
@@ -332,15 +312,16 @@ bindings:
         )
         .unwrap();
 
-        let report =
-            audit_binding(&[("test.yaml", &contract)], &binding);
+        let report = audit_binding(&[("test.yaml", &contract)], &binding);
         assert_eq!(report.total_equations, 1);
         assert_eq!(report.bound_equations, 1);
         assert_eq!(report.implemented, 1);
-        assert!(report
-            .violations
-            .iter()
-            .all(|v| v.severity != Severity::Error));
+        assert!(
+            report
+                .violations
+                .iter()
+                .all(|v| v.severity != Severity::Error)
+        );
     }
 
     #[test]
@@ -372,14 +353,10 @@ bindings:
         )
         .unwrap();
 
-        let report =
-            audit_binding(&[("test.yaml", &contract)], &binding);
+        let report = audit_binding(&[("test.yaml", &contract)], &binding);
         assert_eq!(report.total_equations, 2);
         assert_eq!(report.bound_equations, 1);
-        assert!(report
-            .violations
-            .iter()
-            .any(|v| v.rule == "BIND-001"));
+        assert!(report.violations.iter().any(|v| v.rule == "BIND-001"));
     }
 
     #[test]
@@ -407,13 +384,9 @@ bindings:
         )
         .unwrap();
 
-        let report =
-            audit_binding(&[("test.yaml", &contract)], &binding);
+        let report = audit_binding(&[("test.yaml", &contract)], &binding);
         assert_eq!(report.not_implemented, 1);
-        assert!(report
-            .violations
-            .iter()
-            .any(|v| v.rule == "BIND-003"));
+        assert!(report.violations.iter().any(|v| v.rule == "BIND-003"));
     }
 
     #[test]
@@ -434,9 +407,113 @@ falsification_tests:
 "#;
         let contract = parse_contract_str(yaml).unwrap();
         let report = audit_contract(&contract);
-        assert!(report
-            .violations
-            .iter()
-            .any(|v| v.rule == "AUDIT-003"));
+        assert!(report.violations.iter().any(|v| v.rule == "AUDIT-003"));
+    }
+
+    #[test]
+    fn audit_empty_harness_obligation() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Empty harness obl"
+  references: ["Paper"]
+equations:
+  f:
+    formula: "f(x) = x"
+proof_obligations:
+  - type: invariant
+    property: "output finite"
+kani_harnesses:
+  - id: KANI-001
+    obligation: ""
+falsification_tests:
+  - id: FALSIFY-001
+    rule: "test"
+    prediction: "works"
+    if_fails: "broken"
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let report = audit_contract(&contract);
+        assert!(report.violations.iter().any(|v| v.rule == "AUDIT-002"));
+    }
+
+    #[test]
+    fn binding_audit_partial_status() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Partial"
+  references: ["Paper"]
+equations:
+  f:
+    formula: "f(x) = x"
+proof_obligations:
+  - type: invariant
+    property: "output finite"
+falsification_tests: []
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let binding = crate::binding::parse_binding_str(
+            r#"
+version: "1.0.0"
+target_crate: test
+bindings:
+  - contract: test.yaml
+    equation: f
+    module_path: "test::f"
+    function: f
+    status: partial
+"#,
+        )
+        .unwrap();
+
+        let report = audit_binding(&[("test.yaml", &contract)], &binding);
+        assert_eq!(report.partial, 1);
+        assert!(report.violations.iter().any(|v| v.rule == "BIND-002"));
+    }
+
+    #[test]
+    fn binding_audit_multiple_contracts() {
+        let yaml1 = r#"
+metadata:
+  version: "1.0.0"
+  description: "Contract 1"
+  references: ["Paper"]
+equations:
+  f:
+    formula: "f(x) = x"
+falsification_tests: []
+"#;
+        let yaml2 = r#"
+metadata:
+  version: "1.0.0"
+  description: "Contract 2"
+  references: ["Paper"]
+equations:
+  g:
+    formula: "g(x) = x^2"
+falsification_tests: []
+"#;
+        let c1 = parse_contract_str(yaml1).unwrap();
+        let c2 = parse_contract_str(yaml2).unwrap();
+        let binding = crate::binding::parse_binding_str(
+            r#"
+version: "1.0.0"
+target_crate: test
+bindings:
+  - contract: a.yaml
+    equation: f
+    module_path: "test::f"
+    function: f
+    status: implemented
+"#,
+        )
+        .unwrap();
+
+        let report = audit_binding(&[("a.yaml", &c1), ("b.yaml", &c2)], &binding);
+        assert_eq!(report.total_equations, 2);
+        assert_eq!(report.bound_equations, 1);
+        // g in b.yaml has no binding
+        assert!(report.violations.iter().any(|v| v.rule == "BIND-001"));
     }
 }

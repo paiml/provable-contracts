@@ -47,8 +47,7 @@ fn validate_equations(contract: &Contract, violations: &mut Vec<Violation>) {
         violations.push(Violation {
             severity: Severity::Error,
             rule: "SCHEMA-003".to_string(),
-            message: "equations must contain at least one equation"
-                .to_string(),
+            message: "equations must contain at least one equation".to_string(),
             location: Some("equations".to_string()),
         });
     }
@@ -65,54 +64,39 @@ fn validate_equations(contract: &Contract, violations: &mut Vec<Violation>) {
     }
 }
 
-fn validate_proof_obligations(
-    contract: &Contract,
-    violations: &mut Vec<Violation>,
-) {
+fn validate_proof_obligations(contract: &Contract, violations: &mut Vec<Violation>) {
     let mut seen_ids = HashSet::new();
     for (i, ob) in contract.proof_obligations.iter().enumerate() {
         if ob.property.is_empty() {
             violations.push(Violation {
                 severity: Severity::Error,
                 rule: "SCHEMA-005".to_string(),
-                message: format!(
-                    "proof_obligations[{i}].property must not be empty"
-                ),
+                message: format!("proof_obligations[{i}].property must not be empty"),
                 location: Some(format!("proof_obligations[{i}].property")),
             });
         }
-        if let Some(ref formal) = ob.formal
-            && !seen_ids.insert(formal.clone())
-        {
-            violations.push(Violation {
-                severity: Severity::Warning,
-                rule: "SCHEMA-006".to_string(),
-                message: format!(
-                    "Duplicate formal predicate: {formal}"
-                ),
-                location: Some(format!("proof_obligations[{i}].formal")),
-            });
+        if let Some(ref formal) = ob.formal {
+            if !seen_ids.insert(formal.clone()) {
+                violations.push(Violation {
+                    severity: Severity::Warning,
+                    rule: "SCHEMA-006".to_string(),
+                    message: format!("Duplicate formal predicate: {formal}"),
+                    location: Some(format!("proof_obligations[{i}].formal")),
+                });
+            }
         }
     }
 }
 
-fn validate_falsification_tests(
-    contract: &Contract,
-    violations: &mut Vec<Violation>,
-) {
+fn validate_falsification_tests(contract: &Contract, violations: &mut Vec<Violation>) {
     let mut ids = HashSet::new();
     for test in &contract.falsification_tests {
         if !ids.insert(&test.id) {
             violations.push(Violation {
                 severity: Severity::Error,
                 rule: "SCHEMA-007".to_string(),
-                message: format!(
-                    "Duplicate falsification test ID: {}",
-                    test.id
-                ),
-                location: Some(format!(
-                    "falsification_tests.{}", test.id
-                )),
+                message: format!("Duplicate falsification test ID: {}", test.id),
+                location: Some(format!("falsification_tests.{}", test.id)),
             });
         }
         if test.prediction.is_empty() {
@@ -124,9 +108,7 @@ fn validate_falsification_tests(
                      every test must make a falsifiable prediction",
                     test.id
                 ),
-                location: Some(format!(
-                    "falsification_tests.{}.prediction", test.id
-                )),
+                location: Some(format!("falsification_tests.{}.prediction", test.id)),
             });
         }
         if test.if_fails.is_empty() {
@@ -138,30 +120,21 @@ fn validate_falsification_tests(
                      should describe root cause diagnosis",
                     test.id
                 ),
-                location: Some(format!(
-                    "falsification_tests.{}.if_fails", test.id
-                )),
+                location: Some(format!("falsification_tests.{}.if_fails", test.id)),
             });
         }
     }
 }
 
-fn validate_kani_harnesses(
-    contract: &Contract,
-    violations: &mut Vec<Violation>,
-) {
+fn validate_kani_harnesses(contract: &Contract, violations: &mut Vec<Violation>) {
     let mut ids = HashSet::new();
     for harness in &contract.kani_harnesses {
         if !ids.insert(&harness.id) {
             violations.push(Violation {
                 severity: Severity::Error,
                 rule: "SCHEMA-010".to_string(),
-                message: format!(
-                    "Duplicate Kani harness ID: {}", harness.id
-                ),
-                location: Some(format!(
-                    "kani_harnesses.{}", harness.id
-                )),
+                message: format!("Duplicate Kani harness ID: {}", harness.id),
+                location: Some(format!("kani_harnesses.{}", harness.id)),
             });
         }
         if harness.obligation.is_empty() {
@@ -173,9 +146,7 @@ fn validate_kani_harnesses(
                      every harness must reference a proof obligation",
                     harness.id
                 ),
-                location: Some(format!(
-                    "kani_harnesses.{}.obligation", harness.id
-                )),
+                location: Some(format!("kani_harnesses.{}.obligation", harness.id)),
             });
         }
         if harness.bound.is_none() {
@@ -187,9 +158,7 @@ fn validate_kani_harnesses(
                      Kani requires an unwind bound",
                     harness.id
                 ),
-                location: Some(format!(
-                    "kani_harnesses.{}.bound", harness.id
-                )),
+                location: Some(format!("kani_harnesses.{}.bound", harness.id)),
             });
         }
     }
@@ -262,9 +231,7 @@ falsification_tests: []
 "#;
         let contract = parse_contract_str(yaml).unwrap();
         let violations = validate_contract(&contract);
-        assert!(violations
-            .iter()
-            .any(|v| v.rule == "SCHEMA-001"));
+        assert!(violations.iter().any(|v| v.rule == "SCHEMA-001"));
     }
 
     #[test]
@@ -282,9 +249,7 @@ falsification_tests: []
 "#;
         let contract = parse_contract_str(yaml).unwrap();
         let violations = validate_contract(&contract);
-        assert!(violations
-            .iter()
-            .any(|v| v.rule == "SCHEMA-004"));
+        assert!(violations.iter().any(|v| v.rule == "SCHEMA-004"));
     }
 
     #[test]
@@ -310,9 +275,7 @@ falsification_tests:
 "#;
         let contract = parse_contract_str(yaml).unwrap();
         let violations = validate_contract(&contract);
-        assert!(violations
-            .iter()
-            .any(|v| v.rule == "SCHEMA-007"));
+        assert!(violations.iter().any(|v| v.rule == "SCHEMA-007"));
     }
 
     #[test]
@@ -333,9 +296,7 @@ falsification_tests: []
 "#;
         let contract = parse_contract_str(yaml).unwrap();
         let violations = validate_contract(&contract);
-        assert!(violations
-            .iter()
-            .any(|v| v.rule == "SCHEMA-012"));
+        assert!(violations.iter().any(|v| v.rule == "SCHEMA-012"));
     }
 
     #[test]
@@ -351,8 +312,179 @@ falsification_tests: []
 "#;
         let contract = parse_contract_str(yaml).unwrap();
         let violations = validate_contract(&contract);
-        assert!(violations
-            .iter()
-            .any(|v| v.rule == "SCHEMA-003"));
+        assert!(violations.iter().any(|v| v.rule == "SCHEMA-003"));
+    }
+
+    #[test]
+    fn empty_version_is_error() {
+        let yaml = r#"
+metadata:
+  version: ""
+  description: "Empty version"
+  references:
+    - "Paper"
+equations:
+  f:
+    formula: "f(x) = x"
+falsification_tests: []
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let violations = validate_contract(&contract);
+        assert!(violations.iter().any(|v| v.rule == "SCHEMA-002"));
+    }
+
+    #[test]
+    fn empty_property_is_error() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Empty prop"
+  references:
+    - "Paper"
+equations:
+  f:
+    formula: "f(x) = x"
+proof_obligations:
+  - type: invariant
+    property: ""
+falsification_tests: []
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let violations = validate_contract(&contract);
+        assert!(violations.iter().any(|v| v.rule == "SCHEMA-005"));
+    }
+
+    #[test]
+    fn duplicate_formal_is_warning() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Dup formal"
+  references:
+    - "Paper"
+equations:
+  f:
+    formula: "f(x) = x"
+proof_obligations:
+  - type: invariant
+    property: "prop1"
+    formal: "same_formal"
+  - type: bound
+    property: "prop2"
+    formal: "same_formal"
+falsification_tests: []
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let violations = validate_contract(&contract);
+        assert!(violations.iter().any(|v| v.rule == "SCHEMA-006"));
+    }
+
+    #[test]
+    fn empty_prediction_is_error() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Empty pred"
+  references:
+    - "Paper"
+equations:
+  f:
+    formula: "f(x) = x"
+falsification_tests:
+  - id: FALSIFY-001
+    rule: "test"
+    prediction: ""
+    if_fails: "broken"
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let violations = validate_contract(&contract);
+        assert!(violations.iter().any(|v| v.rule == "SCHEMA-008"));
+    }
+
+    #[test]
+    fn empty_if_fails_is_warning() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Empty if_fails"
+  references:
+    - "Paper"
+equations:
+  f:
+    formula: "f(x) = x"
+falsification_tests:
+  - id: FALSIFY-001
+    rule: "test"
+    prediction: "works"
+    if_fails: ""
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let violations = validate_contract(&contract);
+        assert!(violations.iter().any(|v| v.rule == "SCHEMA-009"));
+    }
+
+    #[test]
+    fn duplicate_kani_id_is_error() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Dup kani"
+  references:
+    - "Paper"
+equations:
+  f:
+    formula: "f(x) = x"
+kani_harnesses:
+  - id: KANI-001
+    obligation: OBL-001
+    bound: 8
+  - id: KANI-001
+    obligation: OBL-002
+    bound: 16
+falsification_tests: []
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let violations = validate_contract(&contract);
+        assert!(violations.iter().any(|v| v.rule == "SCHEMA-010"));
+    }
+
+    #[test]
+    fn empty_kani_obligation_is_error() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Empty kani obl"
+  references:
+    - "Paper"
+equations:
+  f:
+    formula: "f(x) = x"
+kani_harnesses:
+  - id: KANI-001
+    obligation: ""
+    bound: 8
+falsification_tests: []
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let violations = validate_contract(&contract);
+        assert!(violations.iter().any(|v| v.rule == "SCHEMA-011"));
+    }
+
+    #[test]
+    fn no_qa_gate_is_warning() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "No qa gate"
+  references:
+    - "Paper"
+equations:
+  f:
+    formula: "f(x) = x"
+falsification_tests: []
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let violations = validate_contract(&contract);
+        assert!(violations.iter().any(|v| v.rule == "SCHEMA-013"));
     }
 }
