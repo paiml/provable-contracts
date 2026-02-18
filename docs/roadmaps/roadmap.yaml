@@ -63,11 +63,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Implement Kani harness generator from YAML contracts
-  status: planned
+  status: inprogress
   priority: high
   assigned_to: null
   created: 2026-02-18T13:26:00Z
-  updated: 2026-02-18T13:26:00Z
+  updated: 2026-02-18T13:48:52.836055641+00:00
   spec: null
   acceptance_criteria:
   - 'Generate #[kani::proof] harnesses from kani_harnesses section of YAML contracts. Handle three strategies: exhaustive (integer), stub_float (transcendentals), compositional (stub_verified). Generate appropriate kani::any(), kani::assume(), kani::unwind attributes.'
