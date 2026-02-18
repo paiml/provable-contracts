@@ -618,4 +618,112 @@ falsification_tests:
             .expect("failed to run pv");
         assert!(output.status.success());
     }
+
+    #[test]
+    fn pv_diff_identical() {
+        let output = Command::new(pv_bin())
+            .arg("diff")
+            .arg(contract_path("softmax-kernel-v1.yaml"))
+            .arg(contract_path("softmax-kernel-v1.yaml"))
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains("identical"));
+    }
+
+    #[test]
+    fn pv_diff_different() {
+        let output = Command::new(pv_bin())
+            .arg("diff")
+            .arg(contract_path("softmax-kernel-v1.yaml"))
+            .arg(contract_path("rmsnorm-kernel-v1.yaml"))
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains("major"));
+    }
+
+    #[test]
+    fn pv_coverage_contracts() {
+        let output = Command::new(pv_bin())
+            .arg("coverage")
+            .arg(
+                Path::new(env!("CARGO_MANIFEST_DIR"))
+                    .join("../../contracts"),
+            )
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains("Obligation Coverage Report"));
+        assert!(stdout.contains("softmax-kernel-v1"));
+    }
+
+    #[test]
+    fn pv_coverage_with_binding() {
+        let output = Command::new(pv_bin())
+            .arg("coverage")
+            .arg(
+                Path::new(env!("CARGO_MANIFEST_DIR"))
+                    .join("../../contracts"),
+            )
+            .arg("--binding")
+            .arg(binding_path())
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains("Binding implemented"));
+    }
+
+    #[test]
+    fn pv_generate_softmax() {
+        let dir = tempfile::tempdir().unwrap();
+        let output = Command::new(pv_bin())
+            .arg("generate")
+            .arg(contract_path("softmax-kernel-v1.yaml"))
+            .arg("--output")
+            .arg(dir.path())
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains("Generated"));
+        assert!(stdout.contains("scaffold"));
+    }
+
+    #[test]
+    fn pv_generate_with_binding() {
+        let dir = tempfile::tempdir().unwrap();
+        let output = Command::new(pv_bin())
+            .arg("generate")
+            .arg(contract_path("softmax-kernel-v1.yaml"))
+            .arg("--output")
+            .arg(dir.path())
+            .arg("--binding")
+            .arg(binding_path())
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains("wired-probar"));
+    }
+
+    #[test]
+    fn pv_graph_contracts() {
+        let output = Command::new(pv_bin())
+            .arg("graph")
+            .arg(
+                Path::new(env!("CARGO_MANIFEST_DIR"))
+                    .join("../../contracts"),
+            )
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains("Contract Dependency Graph"));
+        assert!(stdout.contains("Topological order"));
+    }
 }
