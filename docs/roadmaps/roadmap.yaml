@@ -122,11 +122,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Write rmsnorm-kernel-v1.yaml contract (Tier 1)
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-02-18T13:26:22Z
-  updated: 2026-02-18T13:52:27.023288627+00:00
+  updated: 2026-02-18T13:52:29.214637943+00:00
   spec: null
   acceptance_criteria:
   - 'Source: Zhang & Sennrich 2019 (arXiv:1910.10683). Extract RMSNorm equation, proof obligations (RMS-INV-001, RMS-EQV-001), kernel phases (sum_of_squares, rms, normalize, scale), SIMD dispatch, Kani harnesses. Include MATH.md.'
