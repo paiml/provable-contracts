@@ -6,6 +6,9 @@ metadata:
   references:
     - "Shazeer (2020) GLU Variants Improve Transformer"
     - "Ramachandran et al. (2017) Searching for Activation Functions"
+  depends_on:
+    - "silu-kernel-v1"
+    - "matmul-kernel-v1"
 
 equations:
   swiglu:

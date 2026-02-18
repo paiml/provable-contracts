@@ -1,4 +1,8 @@
 pub mod audit;
+pub mod coverage;
+pub mod diff;
+pub mod generate;
+pub mod graph;
 pub mod kani;
 pub mod probar;
 pub mod scaffold;

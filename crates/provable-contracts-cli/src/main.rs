@@ -54,6 +54,39 @@ enum Commands {
         #[arg(long)]
         binding: Option<PathBuf>,
     },
+    /// Diff two contract versions and suggest semver bump
+    Diff {
+        /// Path to the old contract YAML file
+        old: PathBuf,
+        /// Path to the new contract YAML file
+        new: PathBuf,
+    },
+    /// Show cross-contract obligation coverage report
+    Coverage {
+        /// Directory containing contract YAML files
+        #[arg(default_value = "contracts")]
+        contract_dir: PathBuf,
+        /// Path to binding registry YAML (adds binding coverage)
+        #[arg(long)]
+        binding: Option<PathBuf>,
+    },
+    /// Generate all artifacts (scaffold, kani, probar) to disk
+    Generate {
+        /// Path to the contract YAML file
+        contract: PathBuf,
+        /// Output directory for generated files
+        #[arg(short, long, default_value = "generated")]
+        output: PathBuf,
+        /// Path to binding registry YAML (generates wired tests)
+        #[arg(long)]
+        binding: Option<PathBuf>,
+    },
+    /// Show contract dependency graph
+    Graph {
+        /// Directory containing contract YAML files
+        #[arg(default_value = "contracts")]
+        contract_dir: PathBuf,
+    },
 }
 
 fn main() {
@@ -70,6 +103,17 @@ fn main() {
         Commands::Audit { contract, binding } => {
             commands::audit::run(&contract, binding.as_deref())
         }
+        Commands::Diff { old, new } => commands::diff::run(&old, &new),
+        Commands::Coverage {
+            contract_dir,
+            binding,
+        } => commands::coverage::run(&contract_dir, binding.as_deref()),
+        Commands::Generate {
+            contract,
+            output,
+            binding,
+        } => commands::generate::run(&contract, &output, binding.as_deref()),
+        Commands::Graph { contract_dir } => commands::graph::run(&contract_dir),
     };
 
     if let Err(e) = result {
