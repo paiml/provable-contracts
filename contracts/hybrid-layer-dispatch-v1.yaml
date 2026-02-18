@@ -6,6 +6,8 @@ metadata:
   references:
     - "Qwen3.5 Fine-Tune Spec — hybrid architecture"
     - "Yang et al. (2024) Gated Linear Attention"
+  depends_on:
+    - "model-config-algebra-v1"
 
 equations:
   hybrid_dispatch:
