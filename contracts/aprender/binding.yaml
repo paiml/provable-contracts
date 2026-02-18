@@ -196,3 +196,149 @@ bindings:
     signature: "fn step(&mut self, params: &mut [Tensor], grads: &[Tensor])"
     status: implemented
     notes: "Decoupled weight decay applied after Adam update in step()"
+
+  # --- Tier 3 contracts (not yet implemented in aprender) ---
+
+  - contract: ssm-kernel-v1.yaml
+    equation: ssm_discretize
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "SSM/Mamba not yet implemented in aprender"
+
+  - contract: ssm-kernel-v1.yaml
+    equation: ssm_scan
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "SSM/Mamba not yet implemented in aprender"
+
+  - contract: ssm-kernel-v1.yaml
+    equation: selective_gate
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "SSM/Mamba not yet implemented in aprender"
+
+  - contract: conv1d-kernel-v1.yaml
+    equation: conv1d
+    module_path: "aprender::nn::Conv1d"
+    function: "Conv1d::forward"
+    signature: "fn forward(&self, input: &Tensor) -> Tensor"
+    status: implemented
+    notes: "Standard 1D convolution; used in Whisper encoder"
+
+  - contract: batchnorm-kernel-v1.yaml
+    equation: batchnorm_train
+    module_path: "aprender::nn::BatchNorm1d"
+    function: "BatchNorm1d::forward"
+    signature: "fn forward(&mut self, input: &Tensor) -> Tensor"
+    status: implemented
+    notes: "Training mode with batch statistics"
+
+  - contract: batchnorm-kernel-v1.yaml
+    equation: running_stats
+    module_path: "aprender::nn::BatchNorm1d"
+    function: "BatchNorm1d::forward"
+    signature: "fn forward(&mut self, input: &Tensor) -> Tensor"
+    status: implemented
+    notes: "Running stats updated during forward() in training mode"
+
+  - contract: batchnorm-kernel-v1.yaml
+    equation: batchnorm_eval
+    module_path: "aprender::nn::BatchNorm1d"
+    function: "BatchNorm1d::forward"
+    signature: "fn forward(&mut self, input: &Tensor) -> Tensor"
+    status: implemented
+    notes: "Eval mode uses running stats; controlled by .eval() flag"
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: assignment
+    module_path: "aprender::cluster::KMeans"
+    function: "KMeans::predict"
+    signature: "fn predict(&self, x: &Tensor) -> Vec<usize>"
+    status: implemented
+    notes: "Nearest centroid assignment"
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: update
+    module_path: "aprender::cluster::KMeans"
+    function: "KMeans::fit"
+    signature: "fn fit(&mut self, x: &Tensor)"
+    status: implemented
+    notes: "Centroid update inside fit() loop"
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: objective
+    module_path: "aprender::cluster::KMeans"
+    function: "KMeans::inertia"
+    signature: "fn inertia(&self) -> f64"
+    status: implemented
+    notes: "Sum of squared distances to centroids"
+
+  - contract: pagerank-kernel-v1.yaml
+    equation: pagerank
+    module_path: "aprender::graph::pagerank"
+    function: pagerank
+    signature: "fn pagerank(adj: &Tensor, damping: f64, max_iter: usize, tol: f64) -> Tensor"
+    status: implemented
+    notes: "Power iteration PageRank"
+
+  - contract: pagerank-kernel-v1.yaml
+    equation: power_iteration
+    module_path: "aprender::graph::pagerank"
+    function: pagerank
+    signature: "fn pagerank(adj: &Tensor, damping: f64, max_iter: usize, tol: f64) -> Tensor"
+    status: implemented
+    notes: "Iteration loop inside pagerank()"
+
+  - contract: lbfgs-kernel-v1.yaml
+    equation: two_loop_recursion
+    module_path: "aprender::optim::LBFGS"
+    function: "LBFGS::step"
+    signature: "fn step(&mut self, params: &mut [Tensor], grad_fn: impl Fn() -> Vec<Tensor>)"
+    status: implemented
+    notes: "Two-loop recursion inside step()"
+
+  - contract: lbfgs-kernel-v1.yaml
+    equation: secant_condition
+    module_path: "aprender::optim::LBFGS"
+    function: "LBFGS::step"
+    signature: "fn step(&mut self, params: &mut [Tensor], grad_fn: impl Fn() -> Vec<Tensor>)"
+    status: implemented
+    notes: "Secant pairs stored and curvature checked"
+
+  - contract: lbfgs-kernel-v1.yaml
+    equation: line_search
+    module_path: "aprender::optim::LBFGS"
+    function: "LBFGS::step"
+    signature: "fn step(&mut self, params: &mut [Tensor], grad_fn: impl Fn() -> Vec<Tensor>)"
+    status: implemented
+    notes: "Strong Wolfe line search inside step()"
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    module_path: "aprender::metaheuristics::CmaEs"
+    function: "CmaEs::ask"
+    signature: "fn ask(&mut self) -> Vec<Vec<f64>>"
+    status: implemented
+    notes: "Sample population from N(m, sigma^2*C)"
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: mean_update
+    module_path: "aprender::metaheuristics::CmaEs"
+    function: "CmaEs::tell"
+    signature: "fn tell(&mut self, solutions: &[(Vec<f64>, f64)])"
+    status: implemented
+    notes: "Weighted recombination of best mu solutions"
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: covariance_update
+    module_path: "aprender::metaheuristics::CmaEs"
+    function: "CmaEs::tell"
+    signature: "fn tell(&mut self, solutions: &[(Vec<f64>, f64)])"
+    status: implemented
+    notes: "Rank-one and rank-mu covariance update"
