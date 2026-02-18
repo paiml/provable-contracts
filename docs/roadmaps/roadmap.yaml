@@ -242,11 +242,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Achieve full pmat comply compliance
-  status: planned
+  status: inprogress
   priority: high
   assigned_to: null
   created: 2026-02-18T13:27:00Z
-  updated: 2026-02-18T13:27:00Z
+  updated: 2026-02-18T13:53:05.668590521+00:00
   spec: null
   acceptance_criteria:
   - 'Fix all pmat comply warnings: add .pmat-metrics.toml, configure CI (.github/workflows/), enable O(1) hooks, add CLAUDE.md with pmat query instructions, fix markdown line lengths (CB-904).'

@@ -3,6 +3,7 @@ name = "provable-contracts-cli"
 description = "CLI for provable-contracts — validate, scaffold, verify, status, audit"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
@@ -16,5 +17,5 @@ provable-contracts = { workspace = true }
 clap = { workspace = true }
 serde_yaml = { workspace = true }
 
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
+[lints]
+workspace = true
