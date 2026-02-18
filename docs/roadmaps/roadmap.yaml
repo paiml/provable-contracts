@@ -351,3 +351,123 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-019
+  github_issue: null
+  item_type: task
+  title: Write swiglu-kernel-v1.yaml contract (Tier 1)
+  status: inprogress
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T16:40:10Z
+  updated: 2026-02-18T16:40:27.713662838+00:00
+  spec: null
+  acceptance_criteria:
+  - 'SwiGLU kernel contract from Shazeer (2020). SwiGLU(x,W,V,b,c) = SiLU(xW+b) ⊙ (xV+c). Obligations: zero-input invariant, fused-unfused equivalence, magnitude bound, SIMD parity.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - contract
+  - kernel
+  - tier1
+  notes: null
+- id: PMAT-020
+  github_issue: null
+  item_type: task
+  title: Write gqa-kernel-v1.yaml contract (Tier 1)
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T16:40:12Z
+  updated: 2026-02-18T16:40:12Z
+  spec: null
+  acceptance_criteria:
+  - 'Grouped Query Attention contract from Ainslie et al. (2023). KV head broadcasting with num_kv_heads < num_heads. Obligations: weight normalization, GQA=MHA equivalence when kv_heads=num_heads, output convexity, SIMD parity.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - contract
+  - kernel
+  - tier1
+  notes: null
+- id: PMAT-021
+  github_issue: null
+  item_type: task
+  title: Write layernorm-kernel-v1.yaml contract (Tier 1)
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T16:40:15Z
+  updated: 2026-02-18T16:40:15Z
+  spec: null
+  acceptance_criteria:
+  - 'Layer Normalization contract from Ba et al. (2016). LN(x)_i = gamma_i * (x_i - mu) / sqrt(sigma^2 + eps) + beta_i. Obligations: centering, standardization, denominator positive, SIMD parity, idempotency.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - contract
+  - kernel
+  - tier1
+  notes: null
+- id: PMAT-022
+  github_issue: null
+  item_type: task
+  title: Write silu-kernel-v1.yaml contract (Tier 2)
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-18T16:40:16Z
+  updated: 2026-02-18T16:40:16Z
+  spec: null
+  acceptance_criteria:
+  - 'SiLU/Swish activation contract from Ramachandran et al. (2017), Elfwing et al. (2018). SiLU(x) = x * sigma(x). Obligations: SiLU(0)=0, global minimum bound, monotonicity for x>0, SIMD parity.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - contract
+  - kernel
+  - tier2
+  notes: null
+- id: PMAT-023
+  github_issue: null
+  item_type: task
+  title: Write cross-entropy-kernel-v1.yaml contract (Tier 2)
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-18T16:40:19Z
+  updated: 2026-02-18T16:40:19Z
+  spec: null
+  acceptance_criteria:
+  - 'Cross-entropy loss contract. CE(p,q) = -sum(p_i * log(q_i)). Implemented as log-sum-exp for stability. Obligations: non-negativity, entropy identity, finite outputs, LogSoftmax+NLL equivalence.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - contract
+  - kernel
+  - tier2
+  notes: null
+- id: PMAT-024
+  github_issue: null
+  item_type: task
+  title: Write adamw-kernel-v1.yaml contract (Tier 2)
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-18T16:40:21Z
+  updated: 2026-02-18T16:40:21Z
+  spec: null
+  acceptance_criteria:
+  - 'AdamW optimizer contract from Loshchilov & Hutter (2017). Decoupled weight decay applied AFTER Adam update. Obligations: decoupled application, bias-corrected moments finite, monotone loss decrease on convex.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - contract
+  - kernel
+  - tier2
+  notes: null
