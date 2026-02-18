@@ -6,6 +6,7 @@ metadata:
   references:
     - "Holtzman et al. (2019) The Curious Case of Neural Text Degeneration"
     - "Qwen2.5-Coder Showcase Spec §14.5"
+  depends_on: ["softmax-kernel-v1"]
 
 equations:
   greedy:
