@@ -6,6 +6,8 @@ metadata:
   references:
     - "Qwen3.5 Fine-Tune Spec — model configuration"
     - "Su et al. (2021) RoFormer — Rotary Position Embedding"
+  depends_on:
+    - "model-config-algebra-v1"
 
 equations:
   q_projection_shape:

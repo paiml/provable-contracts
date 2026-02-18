@@ -194,6 +194,8 @@ silu ← swiglu ─────────────────↑
 matmul ← gqa             conv1d ← gated-delta-net ──────↑
 rope ← rope-extrapolation       hybrid-dispatch ────────↑
                           embedding-algebra ← inference-pipeline
+model-config-algebra ← qwen35-shapes ──────────────────↑
+                     ← kv-cache-sizing ─────────────────↑
 ```
 
 ## The Six-Phase Pipeline

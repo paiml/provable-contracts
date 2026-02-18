@@ -1,35 +1,73 @@
 # Kernel Contract Registry
 
+48 kernel contracts ship in `contracts/`, organized by tier.
+
 ## Naming Convention
 
 ```
 <operation>-kernel-v<version>.yaml
 ```
 
-Examples:
-- `softmax-kernel-v1.yaml`
-- `rmsnorm-kernel-v1.yaml`
-- `attention-kernel-v1.yaml`
-- `rope-kernel-v1.yaml`
-- `matmul-kernel-v1.yaml`
+Model architecture and verification contracts omit the `-kernel` suffix:
+
+```
+<concept>-v<version>.yaml
+```
 
 ## Contract ID Convention
 
 Falsification test IDs follow: `FALSIFY-<PREFIX>-NNN`
 
-| Contract | Prefix |
-|----------|--------|
-| Softmax | SM |
-| RMSNorm | RMS |
-| Attention | ATTN |
-| FlashAttention | FATTN |
-| RoPE | ROPE |
-| MatMul (GEMM/GEMV) | MM |
-| SwiGLU/GeGLU | ACT |
-| Quantized Dot Product | QDOT |
-| Tensor Layout | LAYOUT |
-| Layer Parity | PARITY |
-| Kernel Fusion | FUSION |
+| Contract | Prefix | Equations | Obligations |
+|----------|--------|-----------|-------------|
+| softmax-kernel | SM | 4 | 5 |
+| rmsnorm-kernel | RN | 3 | 4 |
+| rope-kernel | RP | 3 | 4 |
+| activation-kernel | ACT | 4 | 5 |
+| attention-kernel | ATT | 3 | 4 |
+| matmul-kernel | MM | 3 | 4 |
+| flash-attention | FA | 4 | 5 |
+| swiglu-kernel | SG | 3 | 4 |
+| gqa-kernel | GQ | 3 | 5 |
+| layernorm-kernel | LN | 3 | 4 |
+| silu-kernel | SI | 3 | 4 |
+| cross-entropy-kernel | CE | 3 | 5 |
+| adamw-kernel | AW | 3 | 5 |
+| ssm-kernel | SSM | 4 | 5 |
+| conv1d-kernel | CV | 3 | 4 |
+| batchnorm-kernel | BN | 3 | 4 |
+| kmeans-kernel | KM | 3 | 4 |
+| pagerank-kernel | PR | 3 | 4 |
+| lbfgs-kernel | LB | 3 | 4 |
+| cma-es-kernel | CMA | 3 | 5 |
+| model-config-algebra | MCA | 4 | 5 |
+| qk-norm | QKN | 3 | 5 |
+| tensor-shape-flow | TSF | 3 | 4 |
+| roofline-model | RM | 3 | 4 |
+| gated-delta-net | GDN | 4 | 5 |
+| format-parity | FP | 3 | 4 |
+| shannon-entropy | SE | 3 | 4 |
+| f16-conversion | F16 | 3 | 4 |
+| kernel-launch-budget | KL | 3 | 4 |
+| tensor-inventory | TI | 3 | 4 |
+| performance-grading | PG | 3 | 4 |
+| q4k-q6k-superblock | QS | 4 | 5 |
+| sampling-algorithms | SA | 4 | 5 |
+| validated-tensor | VT | 3 | 4 |
+| hybrid-layer-dispatch | HL | 3 | 4 |
+| qwen35-shapes | Q35 | 4 | 5 |
+| kv-cache-sizing | KV | 3 | 5 |
+| kv-cache-equivalence | KCE | 3 | 4 |
+| backend-dispatch | BD | 3 | 4 |
+| lora-algebra | LA | 4 | 5 |
+| quantization-ordering | QO | 3 | 4 |
+| sliding-window-attention | SWA | 5 | 7 |
+| rope-extrapolation | REXT | 6 | 8 |
+| embedding-algebra | EMB | 6 | 7 |
+| inference-pipeline | INF | 6 | 7 |
+| qwen35-hybrid-forward | QHF | 6 | 7 |
+| attention-scaling | ASCL | 6 | 7 |
+| qwen35-e2e-verification | QE2E | 6 | 7 |
 
 ## QA Gate ID Convention
 
@@ -37,116 +75,146 @@ Falsification test IDs follow: `FALSIFY-<PREFIX>-NNN`
 
 ---
 
-## Existing Contracts (aprender)
+## Tier 1 — Core Kernels (7 contracts)
 
-These four contracts already exist in `aprender/contracts/` and serve as the
-reference implementation of this specification:
+Foundation operations with no contract dependencies.
 
-### quantized-dot-product-v1.yaml
+| Contract | Description | Key Equation |
+|----------|-------------|--------------|
+| softmax-kernel-v1 | Log-sum-exp safe softmax | `s_i = exp(x_i - max) / Σ exp(x_j - max)` |
+| rmsnorm-kernel-v1 | Root mean square normalization | `RMSNorm(x) = x / RMS(x) * γ` |
+| rope-kernel-v1 | Rotary position embedding | `RoPE(x, m) = x * cos(mθ) + rotate(x) * sin(mθ)` |
+| activation-kernel-v1 | GeLU / ReLU / SiLU activations | `GeLU(x) = x * Φ(x)` |
+| attention-kernel-v1 | Scaled dot-product attention | `Attn(Q,K,V) = softmax(QK^T/√d_k)V` |
+| matmul-kernel-v1 | GEMM / GEMV | `C_{ij} = Σ_k A_{ik} B_{kj}` |
+| flash-attention-v1 | Tiled attention with online softmax | `FlashAttn = tiled_softmax(QK^T/√d_k) V` |
 
-**Papers:** GPTQ (Frantar 2022, arXiv:2210.17323), LLM.int8() (Dettmers 2022),
-GGML K-quant (ggerganov), Wulf & McKee 1995 (Memory Wall).
+## Tier 2 — Compound Kernels (6 contracts)
 
-**Key equation:**
-```
-dot(W, x) = Σ_superblock [
-  SCALE:  d_W * d_x * Σ_j(s_j * Σ_i(q_W_i * q_x_i))
-  OFFSET: dmin_W * d_x * Σ_j(m_j * Σ_i(q_x_i))        ← bsums
-]
-```
+Compose Tier 1 operations.
 
-**Key insight:** The offset term depends ONLY on activations (not weights),
-so bsums can be precomputed once and reused across all weight rows.
+| Contract | Description | Dependencies |
+|----------|-------------|--------------|
+| swiglu-kernel-v1 | SwiGLU gated MLP | silu, matmul |
+| gqa-kernel-v1 | Grouped-query attention | softmax, matmul |
+| layernorm-kernel-v1 | Layer normalization | — |
+| silu-kernel-v1 | SiLU / Swish activation | — |
+| cross-entropy-kernel-v1 | Cross-entropy loss | softmax |
+| adamw-kernel-v1 | AdamW optimizer | — |
 
-**Falsification tests:** 5 (FALSIFY-QDOT-001 through 005).
-**Format registry:** Q4_K, Q5_K, Q6_K, Q4_0, Q8_0 with full byte layouts.
-**SIMD dispatch:** Exhaustive per format x ISA (scalar, AVX2, AVX-512 VNNI).
+## Tier 3 — Extended Algorithms (7 contracts)
 
-### tensor-layout-v1.yaml
+Research and classical algorithms.
 
-**Theoretical basis:** Poka-Yoke (Shingo 1986), Popperian Falsificationism
-(Popper 1959), Type-Driven Development (Brady 2017), Parse Don't Validate
-(King 2019).
+| Contract | Description | Dependencies |
+|----------|-------------|--------------|
+| ssm-kernel-v1 | Mamba state-space model | — |
+| conv1d-kernel-v1 | Causal 1D convolution | — |
+| batchnorm-kernel-v1 | Batch normalization | — |
+| kmeans-kernel-v1 | K-means clustering | — |
+| pagerank-kernel-v1 | PageRank iteration | — |
+| lbfgs-kernel-v1 | L-BFGS optimization | — |
+| cma-es-kernel-v1 | CMA-ES evolution strategy | — |
 
-**Key principle:** `ValidatedTensor` newtypes make it IMPOSSIBLE (at compile
-time) to use unvalidated data. Private inner fields + validated constructors.
+## Model Architecture (21 contracts)
 
-**Falsification tests:** 8 (FALSIFY-001 through 008).
-**Root cause:** PMAT-234 (SafeTensors 94.5% zeros passed structural checks).
+Structural and configuration contracts for model inference.
 
-### layer-parity-v1.yaml
+| Contract | Description | Dependencies |
+|----------|-------------|--------------|
+| model-config-algebra-v1 | Config parameter algebra | — |
+| qk-norm-v1 | Query-key normalization | rmsnorm |
+| tensor-shape-flow-v1 | Tensor shape propagation | — |
+| roofline-model-v1 | Compute/memory roofline | — |
+| gated-delta-net-v1 | Gated Delta Network | conv1d |
+| format-parity-v1 | Format equivalence checks | — |
+| shannon-entropy-v1 | Shannon entropy metrics | — |
+| f16-conversion-v1 | FP16 conversion algebra | — |
+| kernel-launch-budget-v1 | GPU kernel launch budgets | — |
+| tensor-inventory-v1 | Tensor inventory tracking | — |
+| performance-grading-v1 | Performance tier grading | — |
+| q4k-q6k-superblock-v1 | Q4K/Q6K superblock layout | — |
+| sampling-algorithms-v1 | Top-p, top-k, temperature | softmax |
+| validated-tensor-v1 | Validated tensor newtypes | — |
+| hybrid-layer-dispatch-v1 | Attention/GDN layer routing | — |
+| qwen35-shapes-v1 | Qwen3.5-9B concrete shapes | model-config-algebra |
+| kv-cache-sizing-v1 | KV cache memory sizing | model-config-algebra |
+| kv-cache-equivalence-v1 | KV cache format equivalence | — |
+| backend-dispatch-v1 | CPU/GPU backend dispatch | — |
+| lora-algebra-v1 | LoRA adapter algebra | — |
+| quantization-ordering-v1 | Quantization format ordering | — |
 
-**Problem:** 4 independent forward pass implementations (CPU SIMD, GPU
-workspace, GPU graphed, GPU async) with no structural guarantee of equivalence.
+## Qwen 3.5 Verification (7 contracts)
 
-**Key specification:** 14-step transformer layer forward pass with per-step
-tolerance bounds.
+End-to-end verification of the Qwen 3.5 hybrid architecture.
 
-**Enforcement:** `apr parity model.gguf` tool with cosine similarity >= 0.999,
-KL divergence < 0.01, sigma >= 3.0, Cpk >= 1.33.
-
-**Falsification tests:** 4 (PARITY-001 through 004).
-**Root cause:** PMAT-232 (7B GPU garbage output).
-
-### kernel-fusion-v1.yaml
-
-**Theoretical basis:** Toyota Production System / Poka-Yoke (Shingo 1986),
-Roofline Model (Williams et al. 2009), CUDA Graph Replay.
-
-**Key principle:** Every fusion decision is documented with status (ACTIVE,
-BLOCKED, PLANNED, REJECTED) and measurable benchmarks. No undocumented fusion.
-
-**Root cause:** PAR-077 (fused kernel existed but was never wired in; when
-tried, it was 3x slower due to shared memory overhead).
+| Contract | Description | Dependencies |
+|----------|-------------|--------------|
+| sliding-window-attention-v1 | Bounded-context window mask | softmax, attention |
+| rope-extrapolation-v1 | NTK/YaRN context extension | rope |
+| embedding-algebra-v1 | Token embed/unembed algebra | — |
+| inference-pipeline-v1 | Prefill/decode pipeline | softmax, attention, GDN, embedding, rmsnorm |
+| qwen35-hybrid-forward-v1 | Hybrid attention/GDN forward | attention, GDN, rmsnorm, swiglu, qk-norm, dispatch |
+| attention-scaling-v1 | 1/√d_k scaling + QK-norm | softmax, qk-norm |
+| qwen35-e2e-verification-v1 | Full model verification | 8 sub-contracts (capstone) |
 
 ---
 
-## Planned Contracts
+## Qwen 3.5 Verification DAG
 
-Target kernels for aprender, ordered by dependency:
-
-### Tier 1: Foundation Kernels (no dependencies)
-
-| Contract | Paper | Key Equations |
-|----------|-------|---------------|
-| `softmax-kernel-v1.yaml` | Bridle 1990; Goodfellow 2016 | `s(x)_i = exp(x_i - max(x)) / S exp(x_j - max(x))` |
-| `rmsnorm-kernel-v1.yaml` | Zhang & Sennrich 2019 | `RMSNorm(x) = x / RMS(x) * g, RMS = sqrt(mean(x^2) + e)` |
-| `rope-kernel-v1.yaml` | Su et al. 2021 (arXiv:2104.09864) | `RoPE(x, m) = x * cos(mt) + rotate(x) * sin(mt)` |
-| `activation-kernel-v1.yaml` | Shazeer 2020; Ramachandran 2017 | `SwiGLU(x,W,V,b,c) = Swish(xW+b) * (xV+c)` |
-
-### Tier 2: Composite Kernels (depend on Tier 1)
-
-| Contract | Paper | Key Equations |
-|----------|-------|---------------|
-| `attention-kernel-v1.yaml` | Vaswani et al. 2017 (arXiv:1706.03762) | `Attn(Q,K,V) = softmax(QK^T/sqrt(d_k))V` |
-| `matmul-kernel-v1.yaml` | Standard linear algebra | `C = AB, C_{ij} = S_k A_{ik}B_{kj}` |
-| `flash-attention-v1.yaml` | Dao et al. 2022 | Tiled attention with online softmax (Milakov 2018) |
-
-### Tier 3: System Kernels (depend on Tier 1 + 2)
-
-| Contract | Paper | Key Equations |
-|----------|-------|---------------|
-| `kv-cache-kernel-v1.yaml` | Pope et al. 2022 (arXiv:2210.09461) | Paged KV cache with block tables |
-| `sampling-kernel-v1.yaml` | Holtzman et al. 2019 (arXiv:1904.09751) | Top-p (nucleus), top-k, temperature scaling |
-
-### Dependency Graph
+The end-to-end verification contract composes all Qwen 3.5 kernel contracts
+into a complete model proof. The dependency graph:
 
 ```
-softmax ─────────────────┐
-                         ├── attention ─── flash-attention
-rope ────────────────────┤
-                         ├── kv-cache
-matmul ──────────────────┘
-                              │
-rmsnorm ─────────────────────┤
-                              │
-activation (SwiGLU) ─────────┤
-                              │
-quantized-dot-product ───────┤    (already exists)
-                              │
-tensor-layout ───────────────┤    (already exists)
-                              │
-layer-parity ────────────────┤    (already exists)
-                              │
-kernel-fusion ───────────────┘    (already exists)
+softmax ← attention ← sliding-window-attention
+       ← cross-entropy        ↑
+       ← sampling       qk-norm ← attention-scaling
+       ← gqa                   ↑
+                        rmsnorm ← qwen35-hybrid-forward ← e2e
+silu ← swiglu ─────────────────↑
+matmul ← gqa             conv1d ← gated-delta-net ──────↑
+rope ← rope-extrapolation       hybrid-dispatch ────────↑
+                          embedding-algebra ← inference-pipeline
+model-config-algebra ← qwen35-shapes ──────────────────↑
+                     ← kv-cache-sizing ─────────────────↑
 ```
+
+### Full Dependency Tree
+
+```
+qwen35-e2e-verification-v1
+├── qwen35-hybrid-forward-v1
+│   ├── attention-kernel-v1 → softmax-kernel-v1
+│   ├── gated-delta-net-v1 → conv1d-kernel-v1
+│   ├── rmsnorm-kernel-v1
+│   ├── swiglu-kernel-v1 → silu-kernel-v1 + matmul-kernel-v1
+│   ├── qk-norm-v1 → rmsnorm-kernel-v1
+│   └── hybrid-layer-dispatch-v1
+├── qwen35-shapes-v1 → model-config-algebra-v1
+├── inference-pipeline-v1
+│   ├── softmax-kernel-v1
+│   ├── attention-kernel-v1
+│   ├── gated-delta-net-v1
+│   ├── embedding-algebra-v1
+│   └── rmsnorm-kernel-v1
+├── embedding-algebra-v1
+├── sliding-window-attention-v1
+│   ├── softmax-kernel-v1
+│   └── attention-kernel-v1
+├── rope-extrapolation-v1 → rope-kernel-v1
+├── attention-scaling-v1
+│   ├── softmax-kernel-v1
+│   └── qk-norm-v1
+└── kv-cache-sizing-v1 → model-config-algebra-v1
+```
+
+## Totals
+
+| Metric | Count |
+|--------|-------|
+| Contracts | 48 |
+| Equations | 166 |
+| Proof Obligations | 260 |
+| Falsification Tests | 228 |
+| Kani Harnesses | 78 |
+| Binding Entries | 166 |
