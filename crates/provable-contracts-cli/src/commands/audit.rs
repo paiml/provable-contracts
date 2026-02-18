@@ -1,18 +1,27 @@
 use std::path::Path;
 
-use provable_contracts::audit::audit_contract;
+use provable_contracts::audit::{audit_binding, audit_contract};
+use provable_contracts::binding::parse_binding;
 use provable_contracts::error::Severity;
 use provable_contracts::schema::parse_contract;
 
-pub fn run(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+pub fn run(
+    path: &Path,
+    binding_path: Option<&Path>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let contract = parse_contract(path)?;
+
+    // Standard traceability audit
     let report = audit_contract(&contract);
 
     println!("Traceability Audit");
     println!("==================");
     println!("Equations:          {}", report.equations);
     println!("Proof obligations:  {}", report.obligations);
-    println!("Falsification tests: {}", report.falsification_tests);
+    println!(
+        "Falsification tests: {}",
+        report.falsification_tests
+    );
     println!("Kani harnesses:     {}", report.kani_harnesses);
     println!();
 
@@ -22,17 +31,86 @@ pub fn run(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
         for v in &report.violations {
             println!("{v}");
         }
-        let errors = report
+    }
+
+    let errors = report
+        .violations
+        .iter()
+        .filter(|v| v.severity == Severity::Error)
+        .count();
+
+    // Binding audit (if --binding provided)
+    if let Some(bp) = binding_path {
+        let binding = parse_binding(bp)?;
+
+        let contract_file = path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("unknown");
+
+        let binding_report = audit_binding(
+            &[(contract_file, &contract)],
+            &binding,
+        );
+
+        println!();
+        println!("Binding Audit");
+        println!("=============");
+        println!(
+            "Total equations:    {}",
+            binding_report.total_equations
+        );
+        println!(
+            "Bound equations:    {}",
+            binding_report.bound_equations
+        );
+        println!(
+            "Implemented:        {}",
+            binding_report.implemented
+        );
+        println!(
+            "Partial:            {}",
+            binding_report.partial
+        );
+        println!(
+            "Not implemented:    {}",
+            binding_report.not_implemented
+        );
+        println!(
+            "Obligations total:  {}",
+            binding_report.total_obligations
+        );
+        println!(
+            "Obligations covered: {}",
+            binding_report.covered_obligations
+        );
+        println!();
+
+        if binding_report.violations.is_empty() {
+            println!("No binding gaps found.");
+        } else {
+            for v in &binding_report.violations {
+                println!("{v}");
+            }
+        }
+
+        let binding_errors = binding_report
             .violations
             .iter()
             .filter(|v| v.severity == Severity::Error)
             .count();
-        if errors > 0 {
+
+        if errors + binding_errors > 0 {
             return Err(format!(
-                "Audit found {errors} error(s)"
+                "Audit found {} error(s)",
+                errors + binding_errors
             )
             .into());
         }
+    } else if errors > 0 {
+        return Err(
+            format!("Audit found {errors} error(s)").into()
+        );
     }
 
     Ok(())

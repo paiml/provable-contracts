@@ -1,0 +1,92 @@
+# Binding Registry: provable-contracts <-> aprender
+#
+# Maps each kernel contract equation to the aprender function
+# that implements it. Used by `pv audit --binding` and
+# `pv probar --binding` to generate wired property tests.
+#
+# Status values:
+#   implemented   — function exists and matches contract semantics
+#   partial       — function exists but does not cover all obligations
+#   not_implemented — no public function available
+
+version: "1.0.0"
+target_crate: aprender
+
+bindings:
+  - contract: softmax-kernel-v1.yaml
+    equation: softmax
+    module_path: "aprender::nn::functional::softmax"
+    function: softmax
+    signature: "fn softmax(x: &Tensor, dim: i32) -> Tensor"
+    status: implemented
+    notes: "2D tensors only; dim parameter currently unused"
+
+  - contract: rmsnorm-kernel-v1.yaml
+    equation: rmsnorm
+    module_path: "aprender::nn::RMSNorm"
+    function: "RMSNorm::forward"
+    signature: "fn forward(&self, input: &Tensor) -> Tensor"
+    status: implemented
+    notes: "Struct-based; requires RMSNorm::new(shape) then .forward()"
+
+  - contract: rope-kernel-v1.yaml
+    equation: rope
+    module_path: "aprender::nn::RotaryPositionEmbedding"
+    function: "RotaryPositionEmbedding::apply"
+    signature: "fn apply(&self, x: &Tensor, position_ids: &[usize]) -> Tensor"
+    status: implemented
+    notes: "4D tensor [batch, seq, heads, head_dim]; head_dim must be even"
+
+  - contract: attention-kernel-v1.yaml
+    equation: attention
+    module_path: "aprender::nn::transformer"
+    function: scaled_dot_product_attention
+    signature: "fn scaled_dot_product_attention(query: &Tensor, key: &Tensor, value: &Tensor, attn_mask: Option<&Tensor>, dropout_p: f32, training: bool) -> (Tensor, Tensor)"
+    status: partial
+    notes: "Function is module-private (not pub); accessible only through MultiHeadAttention"
+
+  - contract: activation-kernel-v1.yaml
+    equation: gelu
+    module_path: "aprender::nn::functional::gelu"
+    function: gelu
+    signature: "fn gelu(x: &Tensor) -> Tensor"
+    status: implemented
+
+  - contract: activation-kernel-v1.yaml
+    equation: relu
+    module_path: "aprender::nn::functional::relu"
+    function: relu
+    signature: "fn relu(x: &Tensor) -> Tensor"
+    status: implemented
+
+  - contract: activation-kernel-v1.yaml
+    equation: silu
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "Only exists as private fn in models::qwen2; needs public nn::functional::silu"
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    module_path: "aprender::autograd::Tensor"
+    function: "Tensor::matmul"
+    signature: "fn matmul(&self, other: &Tensor) -> Tensor"
+    status: implemented
+    notes: "2D only; delegates to trueno SIMD"
+
+  - contract: matmul-kernel-v1.yaml
+    equation: quantized_dot
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "Quantized dot product not yet implemented in aprender"
+
+  - contract: flash-attention-v1.yaml
+    equation: flash_attention
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "Flash attention not yet implemented"

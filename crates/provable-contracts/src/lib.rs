@@ -13,10 +13,12 @@
 //! - [`kani`] — Generate `#[kani::proof]` harnesses from contracts
 //! - [`probar`] — Generate probar property-based tests from contracts
 //! - [`audit`] — Trace paper→equation→contract→test→proof chain
+//! - [`binding`] — Map contract equations to implementation functions
 
 pub mod schema;
 pub mod scaffold;
 pub mod kani_gen;
 pub mod probar_gen;
 pub mod audit;
+pub mod binding;
 pub mod error;

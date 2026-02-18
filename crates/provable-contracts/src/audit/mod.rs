@@ -4,6 +4,7 @@
 //! proof obligation → falsification test → Kani harness.
 //! Detects orphaned obligations and untested equations.
 
+use crate::binding::{BindingRegistry, ImplStatus};
 use crate::error::{Severity, Violation};
 use crate::schema::Contract;
 
@@ -96,6 +97,142 @@ pub fn audit_contract(contract: &Contract) -> AuditReport {
     }
 }
 
+/// Binding audit result — cross-references contracts with implementations.
+#[derive(Debug, Clone)]
+pub struct BindingAuditReport {
+    /// Total equations across all contracts.
+    pub total_equations: usize,
+    /// Equations with a binding entry.
+    pub bound_equations: usize,
+    /// Bindings with status = implemented.
+    pub implemented: usize,
+    /// Bindings with status = partial.
+    pub partial: usize,
+    /// Bindings with status = `not_implemented`.
+    pub not_implemented: usize,
+    /// Total proof obligations across matched contracts.
+    pub total_obligations: usize,
+    /// Obligations covered by implemented bindings.
+    pub covered_obligations: usize,
+    /// Violations found during binding audit.
+    pub violations: Vec<Violation>,
+}
+
+/// Audit the binding registry against a set of contracts.
+///
+/// For each contract, checks whether its equations have a
+/// corresponding binding entry and reports coverage gaps.
+pub fn audit_binding(
+    contracts: &[(&str, &Contract)],
+    binding: &BindingRegistry,
+) -> BindingAuditReport {
+    let mut violations = Vec::new();
+    let mut total_equations = 0usize;
+    let mut bound_equations = 0usize;
+    let mut implemented = 0usize;
+    let mut partial = 0usize;
+    let mut not_implemented = 0usize;
+    let mut total_obligations = 0usize;
+    let mut covered_obligations = 0usize;
+
+    for &(contract_file, contract) in contracts {
+        let eq_count = contract.equations.len();
+        total_equations += eq_count;
+        total_obligations += contract.proof_obligations.len();
+
+        for eq_name in contract.equations.keys() {
+            let matching = binding.bindings.iter().find(|b| {
+                b.contract == contract_file && b.equation == *eq_name
+            });
+
+            match matching {
+                Some(b) => {
+                    bound_equations += 1;
+                    match b.status {
+                        ImplStatus::Implemented => {
+                            implemented += 1;
+                            // All obligations for this equation
+                            // are considered covered.
+                            covered_obligations +=
+                                obligations_for_equation(contract);
+                        }
+                        ImplStatus::Partial => {
+                            partial += 1;
+                            violations.push(Violation {
+                                severity: Severity::Warning,
+                                rule: "BIND-002".to_string(),
+                                message: format!(
+                                    "Equation '{eq_name}' in \
+                                     {contract_file} is partially \
+                                     implemented"
+                                ),
+                                location: Some(format!(
+                                    "bindings.{eq_name}"
+                                )),
+                            });
+                        }
+                        ImplStatus::NotImplemented => {
+                            not_implemented += 1;
+                            violations.push(Violation {
+                                severity: Severity::Warning,
+                                rule: "BIND-003".to_string(),
+                                message: format!(
+                                    "Equation '{eq_name}' in \
+                                     {contract_file} has no \
+                                     implementation"
+                                ),
+                                location: Some(format!(
+                                    "bindings.{eq_name}"
+                                )),
+                            });
+                        }
+                    }
+                }
+                None => {
+                    violations.push(Violation {
+                        severity: Severity::Error,
+                        rule: "BIND-001".to_string(),
+                        message: format!(
+                            "Equation '{eq_name}' in {contract_file} \
+                             has no binding entry"
+                        ),
+                        location: Some(format!(
+                            "{contract_file}.equations.{eq_name}"
+                        )),
+                    });
+                }
+            }
+        }
+    }
+
+    BindingAuditReport {
+        total_equations,
+        bound_equations,
+        implemented,
+        partial,
+        not_implemented,
+        total_obligations,
+        covered_obligations,
+        violations,
+    }
+}
+
+/// Count obligations that are not SIMD-specific for a contract.
+///
+/// When an equation is implemented, we consider all non-SIMD
+/// obligations as covered (SIMD equivalence requires a separate
+/// SIMD implementation which is trueno's domain).
+fn obligations_for_equation(contract: &Contract) -> usize {
+    contract
+        .proof_obligations
+        .iter()
+        .filter(|o| {
+            o.applies_to
+                != Some(crate::schema::AppliesTo::Simd)
+        })
+        .count()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -163,6 +300,120 @@ kani_harnesses:
             errors.is_empty(),
             "Expected no errors, got: {errors:?}"
         );
+    }
+
+    #[test]
+    fn binding_audit_all_implemented() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Test"
+  references: ["Paper"]
+equations:
+  f:
+    formula: "f(x) = x"
+proof_obligations:
+  - type: invariant
+    property: "output finite"
+falsification_tests: []
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let binding = crate::binding::parse_binding_str(
+            r#"
+version: "1.0.0"
+target_crate: test
+bindings:
+  - contract: test.yaml
+    equation: f
+    module_path: "test::f"
+    function: f
+    status: implemented
+"#,
+        )
+        .unwrap();
+
+        let report =
+            audit_binding(&[("test.yaml", &contract)], &binding);
+        assert_eq!(report.total_equations, 1);
+        assert_eq!(report.bound_equations, 1);
+        assert_eq!(report.implemented, 1);
+        assert!(report
+            .violations
+            .iter()
+            .all(|v| v.severity != Severity::Error));
+    }
+
+    #[test]
+    fn binding_audit_missing_equation() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Test"
+  references: ["Paper"]
+equations:
+  f:
+    formula: "f(x) = x"
+  g:
+    formula: "g(x) = x^2"
+falsification_tests: []
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let binding = crate::binding::parse_binding_str(
+            r#"
+version: "1.0.0"
+target_crate: test
+bindings:
+  - contract: test.yaml
+    equation: f
+    module_path: "test::f"
+    function: f
+    status: implemented
+"#,
+        )
+        .unwrap();
+
+        let report =
+            audit_binding(&[("test.yaml", &contract)], &binding);
+        assert_eq!(report.total_equations, 2);
+        assert_eq!(report.bound_equations, 1);
+        assert!(report
+            .violations
+            .iter()
+            .any(|v| v.rule == "BIND-001"));
+    }
+
+    #[test]
+    fn binding_audit_not_implemented() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Test"
+  references: ["Paper"]
+equations:
+  f:
+    formula: "f(x) = x"
+falsification_tests: []
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let binding = crate::binding::parse_binding_str(
+            r#"
+version: "1.0.0"
+target_crate: test
+bindings:
+  - contract: test.yaml
+    equation: f
+    status: not_implemented
+"#,
+        )
+        .unwrap();
+
+        let report =
+            audit_binding(&[("test.yaml", &contract)], &binding);
+        assert_eq!(report.not_implemented, 1);
+        assert!(report
+            .violations
+            .iter()
+            .any(|v| v.rule == "BIND-003"));
     }
 
     #[test]
