@@ -435,11 +435,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Write cross-entropy-kernel-v1.yaml contract (Tier 2)
-  status: planned
+  status: inprogress
   priority: medium
   assigned_to: null
   created: 2026-02-18T16:40:19Z
-  updated: 2026-02-18T16:40:19Z
+  updated: 2026-02-18T16:46:55.922952378+00:00
   spec: null
   acceptance_criteria:
   - 'Cross-entropy loss contract. CE(p,q) = -sum(p_i * log(q_i)). Implemented as log-sum-exp for stability. Obligations: non-negativity, entropy identity, finite outputs, LogSoftmax+NLL equivalence.'
