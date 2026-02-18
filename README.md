@@ -150,7 +150,7 @@ pv graph contracts/
 
 ## Contract Registry
 
-41 kernel contracts ship in `contracts/`, organized by tier:
+48 kernel contracts ship in `contracts/`, organized by tier:
 
 **Tier 1 -- Core Kernels** (7 contracts):
 softmax, rmsnorm, rope, activation (GeLU/ReLU/SiLU), attention,
@@ -171,8 +171,30 @@ hybrid-layer-dispatch, qwen35-shapes, kv-cache-sizing,
 kv-cache-equivalence, backend-dispatch, lora-algebra,
 quantization-ordering.
 
-**Totals**: 125 equations, 210 proof obligations, 186 falsification
-tests, 64 Kani harnesses, 84 binding entries.
+**Qwen 3.5 Verification** (7 contracts):
+sliding-window-attention, rope-extrapolation (NTK/YaRN),
+embedding-algebra, inference-pipeline, qwen35-hybrid-forward,
+attention-scaling, qwen35-e2e-verification.
+
+**Totals**: 166 equations, 260 proof obligations, 228 falsification
+tests, 78 Kani harnesses, 166 binding entries.
+
+### Qwen 3.5 Verification DAG
+
+The Qwen 3.5 end-to-end verification contract composes 8 sub-contracts
+into a complete model proof. The dependency graph:
+
+```
+softmax ← attention ← sliding-window-attention
+       ← cross-entropy        ↑
+       ← sampling       qk-norm ← attention-scaling
+       ← gqa                   ↑
+                        rmsnorm ← qwen35-hybrid-forward ← e2e
+silu ← swiglu ─────────────────↑
+matmul ← gqa             conv1d ← gated-delta-net ──────↑
+rope ← rope-extrapolation       hybrid-dispatch ────────↑
+                          embedding-algebra ← inference-pipeline
+```
 
 ## The Six-Phase Pipeline
 
