@@ -222,11 +222,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Write flash-attention-v1.yaml contract (Tier 2)
-  status: planned
+  status: inprogress
   priority: low
   assigned_to: null
   created: 2026-02-18T13:26:53Z
-  updated: 2026-02-18T13:26:53Z
+  updated: 2026-02-18T13:52:50.552916473+00:00
   spec: null
   acceptance_criteria:
   - 'Source: Dao et al. 2022 (arXiv:2205.14135). Tiled attention with online softmax. Depends on attention-kernel-v1. Extract tiling equations, proof obligations (online softmax equivalence, memory bounds), Kani harnesses for tile correctness.'
