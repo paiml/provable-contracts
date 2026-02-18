@@ -119,6 +119,18 @@ pv audit contracts/softmax-kernel-v1.yaml
 # Audit with binding coverage
 pv audit contracts/softmax-kernel-v1.yaml \
     --binding contracts/aprender/binding.yaml
+
+# Compare two contract versions
+pv diff contracts/softmax-kernel-v1.yaml contracts/softmax-kernel-v2.yaml
+
+# Cross-contract obligation coverage
+pv coverage contracts/ --binding contracts/aprender/binding.yaml
+
+# End-to-end codegen (scaffold + kani + probar)
+pv generate contracts/softmax-kernel-v1.yaml -o generated/
+
+# Dependency graph with topological order
+pv graph contracts/
 ```
 
 ## CLI Reference
@@ -131,20 +143,36 @@ pv audit contracts/softmax-kernel-v1.yaml \
 | `probar`   | Generate property-based tests from obligations       |
 | `status`   | Display contract summary (equations, obligations)    |
 | `audit`    | Run traceability audit with optional binding check   |
+| `diff`     | Compare two contract versions, suggest semver bump   |
+| `coverage` | Cross-contract obligation coverage report            |
+| `generate` | End-to-end codegen (scaffold + kani + probar)        |
+| `graph`    | Dependency DAG with cycle detection + topo order     |
 
 ## Contract Registry
 
-Seven kernel contracts ship in `contracts/`:
+41 kernel contracts ship in `contracts/`, organized by tier:
 
-| Contract | Paper | Key Property |
-|----------|-------|-------------|
-| `softmax-kernel-v1.yaml` | Bridle 1990 | Output sums to 1 |
-| `rmsnorm-kernel-v1.yaml` | Zhang & Sennrich 2019 | Scale invariance |
-| `rope-kernel-v1.yaml` | Su et al. 2021 | Rotary position encoding |
-| `activation-kernel-v1.yaml` | Shazeer 2020 | SwiGLU gating |
-| `attention-kernel-v1.yaml` | Vaswani et al. 2017 | Scaled dot-product |
-| `matmul-kernel-v1.yaml` | Standard linear algebra | Associativity |
-| `flash-attention-v1.yaml` | Dao et al. 2022 | Tiled online softmax |
+**Tier 1 -- Core Kernels** (7 contracts):
+softmax, rmsnorm, rope, activation (GeLU/ReLU/SiLU), attention,
+matmul, flash-attention.
+
+**Tier 2 -- Compound Kernels** (6 contracts):
+swiglu, gqa, layernorm, silu, cross-entropy, adamw.
+
+**Tier 3 -- Extended Algorithms** (7 contracts):
+ssm (Mamba), conv1d, batchnorm, kmeans, pagerank, lbfgs, cma-es.
+
+**Model Architecture** (21 contracts):
+model-config-algebra, qk-norm, tensor-shape-flow, roofline-model,
+gated-delta-net, format-parity, shannon-entropy, f16-conversion,
+kernel-launch-budget, tensor-inventory, performance-grading,
+q4k-q6k-superblock, sampling-algorithms, validated-tensor,
+hybrid-layer-dispatch, qwen35-shapes, kv-cache-sizing,
+kv-cache-equivalence, backend-dispatch, lora-algebra,
+quantization-ordering.
+
+**Totals**: 125 equations, 210 proof obligations, 186 falsification
+tests, 64 Kani harnesses, 84 binding entries.
 
 ## The Six-Phase Pipeline
 
