@@ -6,6 +6,7 @@ metadata:
   references:
     - "Dao et al. (2022) FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness"
     - "Dao (2023) FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning"
+  depends_on: ["softmax-kernel-v1"]
 
 equations:
   flash_attention:

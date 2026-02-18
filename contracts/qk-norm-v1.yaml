@@ -7,6 +7,7 @@ metadata:
     - "Henry et al. (2020) Query-Key Normalization for Transformers"
     - "Qwen3 Technical Report — QK normalization for training stability"
     - "Zhang & Sennrich (2019) Root Mean Square Layer Normalization"
+  depends_on: ["rmsnorm-kernel-v1"]
 
 equations:
   qk_rmsnorm:

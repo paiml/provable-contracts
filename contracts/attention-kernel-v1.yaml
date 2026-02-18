@@ -5,6 +5,7 @@ metadata:
   description: "Scaled dot-product attention kernel"
   references:
     - "Vaswani et al. (2017) Attention Is All You Need"
+  depends_on: ["softmax-kernel-v1"]
 
 equations:
   attention:
