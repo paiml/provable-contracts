@@ -14,6 +14,7 @@
 - [Phase 6: Verify](./phase-6-verify.md)
 - [Proof Obligation Taxonomy](./proof-obligation-taxonomy.md)
 - [Kernel Contract Registry](./kernel-contract-registry.md)
+- [Qwen 3.5 Verification](./qwen35-verification.md)
 - [Integration with PAIML Stack](./integration.md)
 - [Contract Lifecycle](./contract-lifecycle.md)
 - [Examples](./examples.md)
