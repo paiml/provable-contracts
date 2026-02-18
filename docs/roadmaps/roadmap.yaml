@@ -603,11 +603,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Update kernel-contracts.md spec: reflect completed Tier 1/2/3 contracts, update gap analysis'
-  status: inprogress
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-02-18T16:48:36Z
-  updated: 2026-02-18T17:02:30.078926462+00:00
+  updated: 2026-02-18T17:02:32.348992155+00:00
   spec: null
   acceptance_criteria: []
   phases: []
