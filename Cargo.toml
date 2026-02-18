@@ -1,0 +1,20 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/provable-contracts",
+    "crates/provable-contracts-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["PAIML Engineering"]
+license = "MIT"
+repository = "https://github.com/paiml/provable-contracts"
+
+[workspace.dependencies]
+provable-contracts = { path = "crates/provable-contracts" }
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+thiserror = "2"
+clap = { version = "4", features = ["derive"] }
