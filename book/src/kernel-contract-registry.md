@@ -217,4 +217,4 @@ qwen35-e2e-verification-v1
 | Proof Obligations | 260 |
 | Falsification Tests | 228 |
 | Kani Harnesses | 78 |
-| Binding Entries | 166 |
+| Binding Entries | 174 |

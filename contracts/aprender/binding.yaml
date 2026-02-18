@@ -1230,3 +1230,191 @@ bindings:
     signature: ~
     status: implemented
     notes: "Pure math — compositional shape preservation tested"
+
+  # --- Core kernel bindings (Tier 1/2) ---
+
+  - contract: attention-kernel-v1.yaml
+    equation: attention
+    module_path: "aprender::nn::functional::attention"
+    function: attention
+    signature: "fn attention(q: &Tensor, k: &Tensor, v: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "Planned — scaled dot-product attention"
+
+  - contract: flash-attention-v1.yaml
+    equation: flash_attention
+    module_path: "aprender::nn::functional::flash_attention"
+    function: flash_attention
+    signature: "fn flash_attention(q: &Tensor, k: &Tensor, v: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "Planned — IO-aware tiled attention"
+
+  - contract: gated-delta-net-v1.yaml
+    equation: decay
+    module_path: "aprender::nn::GatedDeltaNet"
+    function: "GatedDeltaNet::decay"
+    signature: "fn decay(&self, input: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "Planned — exponential decay gate"
+
+  - contract: gated-delta-net-v1.yaml
+    equation: read
+    module_path: "aprender::nn::GatedDeltaNet"
+    function: "GatedDeltaNet::read"
+    signature: "fn read(&self, state: &Tensor, q: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "Planned — state read via query"
+
+  - contract: gated-delta-net-v1.yaml
+    equation: delta
+    module_path: "aprender::nn::GatedDeltaNet"
+    function: "GatedDeltaNet::delta"
+    signature: "fn delta(&self, v: &Tensor, read: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "Planned — delta rule update"
+
+  - contract: gated-delta-net-v1.yaml
+    equation: write
+    module_path: "aprender::nn::GatedDeltaNet"
+    function: "GatedDeltaNet::write"
+    signature: "fn write(&self, state: &Tensor, k: &Tensor, delta: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "Planned — state write via key-delta outer product"
+
+  - contract: gated-delta-net-v1.yaml
+    equation: output
+    module_path: "aprender::nn::GatedDeltaNet"
+    function: "GatedDeltaNet::forward"
+    signature: "fn forward(&self, input: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "Planned — composed GDN forward pass"
+
+  - contract: gqa-kernel-v1.yaml
+    equation: gqa
+    module_path: "aprender::nn::functional::gqa"
+    function: gqa
+    signature: "fn gqa(q: &Tensor, k: &Tensor, v: &Tensor, n_groups: usize) -> Tensor"
+    status: not_implemented
+    notes: "Planned — grouped-query attention with head broadcasting"
+
+  - contract: silu-kernel-v1.yaml
+    equation: silu
+    module_path: "aprender::nn::functional::silu"
+    function: silu
+    signature: "fn silu(x: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "Planned — SiLU/Swish activation"
+
+  - contract: silu-kernel-v1.yaml
+    equation: sigmoid
+    module_path: "aprender::nn::functional::sigmoid"
+    function: sigmoid
+    signature: "fn sigmoid(x: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "Planned — sigmoid activation (used by SiLU)"
+
+  - contract: ssm-kernel-v1.yaml
+    equation: ssm_discretize
+    module_path: "aprender::nn::SSM"
+    function: "SSM::discretize"
+    signature: "fn discretize(&self, delta: &Tensor) -> (Tensor, Tensor)"
+    status: not_implemented
+    notes: "Planned — zero-order hold discretization"
+
+  - contract: ssm-kernel-v1.yaml
+    equation: ssm_scan
+    module_path: "aprender::nn::SSM"
+    function: "SSM::scan"
+    signature: "fn scan(&self, x: &Tensor, delta: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "Planned — parallel associative scan"
+
+  - contract: ssm-kernel-v1.yaml
+    equation: selective_gate
+    module_path: "aprender::nn::SSM"
+    function: "SSM::selective_gate"
+    signature: "fn selective_gate(&self, x: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "Planned — input-dependent selection mechanism"
+
+  - contract: swiglu-kernel-v1.yaml
+    equation: swiglu
+    module_path: "aprender::nn::functional::swiglu"
+    function: swiglu
+    signature: "fn swiglu(x: &Tensor, gate: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "Planned — SwiGLU gated MLP"
+
+  - contract: swiglu-kernel-v1.yaml
+    equation: silu
+    module_path: "aprender::nn::functional::silu"
+    function: silu
+    signature: "fn silu(x: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "Shared with silu-kernel-v1; SiLU component of SwiGLU"
+
+  # --- Qwen 3.5 binding gap fills ---
+
+  - contract: rope-extrapolation-v1.yaml
+    equation: ntk_scaled_base
+    module_path: "aprender::nn::RoPE"
+    function: "RoPE::ntk_scaled_base"
+    signature: "fn ntk_scaled_base(base: f64, dim: usize, scale: f64) -> f64"
+    status: not_implemented
+    notes: "NTK-aware base frequency scaling for context extension"
+
+  - contract: rope-extrapolation-v1.yaml
+    equation: linear_interpolation
+    module_path: "aprender::nn::RoPE"
+    function: "RoPE::linear_interpolation"
+    signature: "fn linear_interpolation(freqs: &Tensor, scale: f64) -> Tensor"
+    status: not_implemented
+    notes: "Linear position interpolation for context extension"
+
+  - contract: rope-extrapolation-v1.yaml
+    equation: yarn_ramp
+    module_path: "aprender::nn::RoPE"
+    function: "RoPE::yarn_ramp"
+    signature: "fn yarn_ramp(dim: usize, low: f64, high: f64) -> Tensor"
+    status: not_implemented
+    notes: "YaRN ramp function for frequency mixing"
+
+  - contract: rope-extrapolation-v1.yaml
+    equation: yarn_mixed_frequency
+    module_path: "aprender::nn::RoPE"
+    function: "RoPE::yarn_mixed"
+    signature: "fn yarn_mixed(freqs: &Tensor, ramp: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "YaRN mixed frequency interpolation"
+
+  - contract: qwen35-hybrid-forward-v1.yaml
+    equation: gdn_sublayer
+    module_path: "aprender::model::qwen35::GDNBlock"
+    function: "GDNBlock::forward"
+    signature: "fn forward(&self, x: &Tensor) -> Tensor"
+    status: not_implemented
+    notes: "GDN sublayer: x + gdn(conv1d(rmsnorm(x)))"
+
+  - contract: inference-pipeline-v1.yaml
+    equation: prefill_phase
+    module_path: "aprender::model::qwen35::Pipeline"
+    function: "Pipeline::prefill"
+    signature: "fn prefill(&mut self, tokens: &[u32]) -> Tensor"
+    status: not_implemented
+    notes: "Parallel prefill: embed → L×block → norm → logits"
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    module_path: "aprender::model::qwen35::Pipeline"
+    function: "Pipeline::decode_step"
+    signature: "fn decode_step(&mut self, token: u32) -> Tensor"
+    status: not_implemented
+    notes: "Autoregressive decode: single token through cached pipeline"
+
+  - contract: qwen35-shapes-v1.yaml
+    equation: o_projection_transpose
+    module_path: "aprender::model::qwen35::Config"
+    function: "Config::o_projection_shape"
+    signature: "fn o_projection_shape(&self) -> [usize; 2]"
+    status: not_implemented
+    notes: "Output projection: [hidden, n_h * d_k] = [4096, 4096]"

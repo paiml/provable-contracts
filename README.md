@@ -177,7 +177,7 @@ embedding-algebra, inference-pipeline, qwen35-hybrid-forward,
 attention-scaling, qwen35-e2e-verification.
 
 **Totals**: 166 equations, 260 proof obligations, 228 falsification
-tests, 78 Kani harnesses, 166 binding entries.
+tests, 78 Kani harnesses, 174 binding entries.
 
 ### Qwen 3.5 Verification DAG
 
