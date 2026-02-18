@@ -142,11 +142,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Write rope-kernel-v1.yaml contract (Tier 1)
-  status: inprogress
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-02-18T13:26:28Z
-  updated: 2026-02-18T13:52:31.365750642+00:00
+  updated: 2026-02-18T13:52:33.679091700+00:00
   spec: null
   acceptance_criteria:
   - 'Source: Su et al. 2021 (arXiv:2104.09864). Extract RoPE equation, proof obligations (rotation structure, periodicity, position encoding), SIMD dispatch, Kani harnesses for rotation correctness.'
