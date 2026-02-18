@@ -6,6 +6,9 @@ metadata:
   references:
     - "Ainslie et al. (2023) GQA: Training Generalized MQT Models"
     - "Vaswani et al. (2017) Attention Is All You Need"
+  depends_on:
+    - "softmax-kernel-v1"
+    - "matmul-kernel-v1"
 
 equations:
   gqa:

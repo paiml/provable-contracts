@@ -6,6 +6,8 @@ metadata:
   references:
     - "Shannon (1948) A Mathematical Theory of Communication"
     - "Milakov & Gimelshein (2018) Online normalizer calculation for softmax"
+  depends_on:
+    - "softmax-kernel-v1"
 
 equations:
   cross_entropy:

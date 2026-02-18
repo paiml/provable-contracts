@@ -36,6 +36,10 @@ pub struct Metadata {
     pub description: String,
     #[serde(default)]
     pub references: Vec<String>,
+    /// Contract dependencies — other contracts this one composes.
+    /// Values are contract stems (e.g. "silu-kernel-v1").
+    #[serde(default)]
+    pub depends_on: Vec<String>,
 }
 
 /// A mathematical equation extracted from a paper (Phase 1 output).
