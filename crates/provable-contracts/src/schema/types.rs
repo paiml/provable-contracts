@@ -84,6 +84,7 @@ pub enum ObligationType {
     Symmetry,
     Associativity,
     Conservation,
+    Ordering,
 }
 
 impl std::fmt::Display for ObligationType {
@@ -98,6 +99,7 @@ impl std::fmt::Display for ObligationType {
             Self::Symmetry => "symmetry",
             Self::Associativity => "associativity",
             Self::Conservation => "conservation",
+            Self::Ordering => "ordering",
         };
         write!(f, "{s}")
     }
@@ -109,6 +111,7 @@ pub enum AppliesTo {
     All,
     Scalar,
     Simd,
+    Converter,
 }
 
 /// Kernel phase decomposition.
@@ -176,6 +179,7 @@ pub enum KaniStrategy {
     Exhaustive,
     StubFloat,
     Compositional,
+    BoundedInt,
 }
 
 impl std::fmt::Display for KaniStrategy {
@@ -184,6 +188,7 @@ impl std::fmt::Display for KaniStrategy {
             Self::Exhaustive => "exhaustive",
             Self::StubFloat => "stub_float",
             Self::Compositional => "compositional",
+            Self::BoundedInt => "bounded_int",
         };
         write!(f, "{s}")
     }
@@ -219,6 +224,7 @@ mod tests {
         assert_eq!(ObligationType::Symmetry.to_string(), "symmetry");
         assert_eq!(ObligationType::Associativity.to_string(), "associativity");
         assert_eq!(ObligationType::Conservation.to_string(), "conservation");
+        assert_eq!(ObligationType::Ordering.to_string(), "ordering");
     }
 
     #[test]
@@ -226,5 +232,6 @@ mod tests {
         assert_eq!(KaniStrategy::Exhaustive.to_string(), "exhaustive");
         assert_eq!(KaniStrategy::StubFloat.to_string(), "stub_float");
         assert_eq!(KaniStrategy::Compositional.to_string(), "compositional");
+        assert_eq!(KaniStrategy::BoundedInt.to_string(), "bounded_int");
     }
 }

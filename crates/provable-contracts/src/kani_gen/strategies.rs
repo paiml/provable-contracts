@@ -130,6 +130,38 @@ pub(super) fn generate_compositional_body(out: &mut String, harness: &KaniHarnes
     out.push_str("        unimplemented!(\"Wire up kernel under test\")\n");
 }
 
+pub(super) fn generate_bounded_int_body(out: &mut String, harness: &KaniHarness) {
+    let bound = harness.bound.unwrap_or(16);
+    out.push_str(
+        "        // Strategy: bounded_int — integer-only \
+         verification within bounded range.\n",
+    );
+    out.push_str(
+        "        // No floating-point — all inputs are \
+         bounded integers or indices.\n\n",
+    );
+
+    out.push_str("        let n: usize = kani::any();\n");
+    out.push_str(&format!(
+        "        kani::assume(n >= 1 && n <= {bound});\n\n"
+    ));
+
+    out.push_str(
+        "        let input: Vec<i64> = (0..n)\
+         .map(|_| kani::any()).collect();\n",
+    );
+    out.push_str(&format!(
+        "        kani::assume(input.iter()\
+         .all(|&x| x >= -{bound} as i64 && x <= {bound} as i64));\n\n"
+    ));
+
+    if let Some(ref property) = harness.property {
+        out.push_str(&format!("        // Verify: {property}\n"));
+    }
+    out.push_str(&format!("        // Obligation: {}\n", harness.obligation));
+    out.push_str("        unimplemented!(\"Wire up kernel under test\")\n");
+}
+
 pub(super) fn generate_default_body(out: &mut String, harness: &KaniHarness) {
     let bound = harness.bound.unwrap_or(16);
     out.push_str(

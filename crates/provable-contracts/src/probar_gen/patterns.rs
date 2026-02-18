@@ -181,6 +181,22 @@ pub(super) fn generate_associativity_body(out: &mut String, ob: &ProofObligation
     ));
 }
 
+pub(super) fn generate_ordering_body(out: &mut String, ob: &ProofObligation) {
+    out.push_str(
+        "        // Pattern: ordering — elements maintain \
+         a defined order relation.\n",
+    );
+    out.push_str("        for _ in 0..1000 {\n");
+    out.push_str("            // let items = generate_random_items();\n");
+    out.push_str("            // let result = transform(&items);\n");
+    out.push_str("            // assert!(is_ordered(&result));\n");
+    out.push_str("        }\n");
+    out.push_str(&format!(
+        "        unimplemented!(\"Wire up: {}\")\n",
+        ob.property
+    ));
+}
+
 pub(super) fn generate_conservation_body(out: &mut String, ob: &ProofObligation) {
     let tol = tolerance_str(ob);
     out.push_str(
