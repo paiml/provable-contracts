@@ -455,11 +455,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Write adamw-kernel-v1.yaml contract (Tier 2)
-  status: planned
+  status: inprogress
   priority: medium
   assigned_to: null
   created: 2026-02-18T16:40:21Z
-  updated: 2026-02-18T16:40:21Z
+  updated: 2026-02-18T16:47:05.856910693+00:00
   spec: null
   acceptance_criteria:
   - 'AdamW optimizer contract from Loshchilov & Hutter (2017). Decoupled weight decay applied AFTER Adam update. Obligations: decoupled application, bias-corrected moments finite, monotone loss decrease on convex.'
