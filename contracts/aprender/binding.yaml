@@ -342,3 +342,561 @@ bindings:
     signature: "fn tell(&mut self, solutions: &[(Vec<f64>, f64)])"
     status: implemented
     notes: "Rank-one and rank-mu covariance update"
+
+  # --- Model-architecture contracts (Qwen showcase + Qwen3 specs) ---
+
+  - contract: model-config-algebra-v1.yaml
+    equation: divisibility
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — config constraints tested via proptest strategies (no API needed)"
+
+  - contract: model-config-algebra-v1.yaml
+    equation: bounds
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Dimension bounds verified algebraically"
+
+  - contract: model-config-algebra-v1.yaml
+    equation: cross_constraint
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Float parameter constraints (rope_theta, eps)"
+
+  - contract: qk-norm-v1.yaml
+    equation: qk_rmsnorm
+    module_path: "aprender::nn::RMSNorm"
+    function: "RMSNorm::forward"
+    signature: "fn forward(&self, input: &Tensor) -> Tensor"
+    status: implemented
+    notes: "Per-head QK normalization uses RMSNorm; tested via RMSNorm::without_affine"
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: qkv_projection
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — shape arithmetic tested via proptest (no matmul needed)"
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: gqa_grouping
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "GQA grouping divisibility checked algebraically"
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: swiglu_shape
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "SwiGLU dimension chain verified algebraically"
+
+  - contract: roofline-model-v1.yaml
+    equation: bandwidth_ceiling
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — roofline algebra tested inline (no aprender API needed)"
+
+  - contract: roofline-model-v1.yaml
+    equation: throughput_bound
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Throughput bounded by min(bw_ceiling, compute_ceiling)"
+
+  - contract: gated-delta-net-v1.yaml
+    equation: decay
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "Gated Delta Net not yet implemented in aprender (Qwen3.5)"
+
+  - contract: gated-delta-net-v1.yaml
+    equation: write
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "State update recurrence not implemented"
+
+  - contract: gated-delta-net-v1.yaml
+    equation: output
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "Output gating not implemented"
+
+  - contract: format-parity-v1.yaml
+    equation: transpose_involution
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — swap(swap(shape)) == shape tested via proptest"
+
+  - contract: format-parity-v1.yaml
+    equation: element_count
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Element count preservation tested algebraically"
+
+  - contract: format-parity-v1.yaml
+    equation: identity_1d
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "1D tensor identity mapping tested via proptest"
+
+  # --- Batch 2 contracts (GH-288/290/291/292/293/295/298) ---
+
+  - contract: shannon-entropy-v1.yaml
+    equation: entropy
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — Shannon entropy tested inline (no aprender API needed)"
+
+  - contract: shannon-entropy-v1.yaml
+    equation: uniform_entropy
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Uniform entropy monotonicity tested via proptest"
+
+  - contract: f16-conversion-v1.yaml
+    equation: f16_to_f32_bias
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — IEEE 754 bias trick tested inline"
+
+  - contract: f16-conversion-v1.yaml
+    equation: roundtrip
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "f16→f32→f16 roundtrip tested for normal bit patterns"
+
+  - contract: kernel-launch-budget-v1.yaml
+    equation: per_token_launches
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — kernel count formula tested via proptest"
+
+  - contract: kernel-launch-budget-v1.yaml
+    equation: per_layer_decomposition
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Static decomposition sum verified (2+5+1+1+1+2=12)"
+
+  - contract: kernel-launch-budget-v1.yaml
+    equation: bsum_budget
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Launch count monotonicity tested via proptest"
+
+  - contract: tensor-inventory-v1.yaml
+    equation: tensor_count
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — tensor count formula tested with random configs"
+
+  - contract: tensor-inventory-v1.yaml
+    equation: architecture_delta
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Delta between architectures proportional to L"
+
+  - contract: tensor-inventory-v1.yaml
+    equation: parameter_decomposition
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Tied embeddings reduce count by exactly 1"
+
+  - contract: tensor-inventory-v1.yaml
+    equation: quantization_bytes
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Quantization size ordering: Q4K < Q6K < Q8 < F16 < F32"
+
+  - contract: performance-grading-v1.yaml
+    equation: ollama_parity
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — grade boundaries exhaustive and monotonic"
+
+  - contract: performance-grading-v1.yaml
+    equation: efficiency_grade
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Efficiency grade monotonic via proptest"
+
+  - contract: performance-grading-v1.yaml
+    equation: concrete_instance
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "DDR4 33 GB/s, 4.19 GB model => ~7.9 tok/s verified"
+
+  - contract: lora-algebra-v1.yaml
+    equation: task_vector
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — task vector roundtrip tested via proptest"
+
+  - contract: lora-algebra-v1.yaml
+    equation: eckart_young
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Rank-1 matrix SVD recovery tested (simplified Eckart-Young)"
+
+  - contract: lora-algebra-v1.yaml
+    equation: lora_shape
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "A[m,r] @ B[r,n] = [m,n] shape compatibility verified"
+
+  - contract: lora-algebra-v1.yaml
+    equation: dare_unbiased
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "DARE unbiasedness: (1-p) * 1/(1-p) * delta = delta"
+
+  - contract: lora-algebra-v1.yaml
+    equation: shape_preservation
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Merge preserves base tensor shapes"
+
+  - contract: quantization-ordering-v1.yaml
+    equation: size_ordering
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — strict size ordering tested via proptest"
+
+  - contract: quantization-ordering-v1.yaml
+    equation: bytes_per_param
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Concrete Qwen3.5 9B sizes within 20% of expected"
+
+  - contract: quantization-ordering-v1.yaml
+    equation: alpha_scaling
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "LoRA alpha/rank scaling verified (16/64=0.25)"
+
+  - contract: quantization-ordering-v1.yaml
+    equation: dropout_expectation
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "DARE dropout rescale expectation = 1.0"
+
+  # --- Batch 3 contracts (GH-286/287/289/294/296/297/299/300) ---
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q4k_superblock
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — Q4K 144 bytes = 2+2+12+128 for 256 elements"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q6k_superblock
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — Q6K 210 bytes = 128+64+16+2 for 256 elements"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: total_bytes
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Monotonic total bytes for quantized weight matrix"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: dequantization
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Dequant produces finite values, offset vanishing tested"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: bsum
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "bsum depends only on quantized values, not scales"
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: greedy
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — greedy == argmax tested via proptest"
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: top_k
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "At most K nonzero probabilities after filtering"
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: top_p
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Cumulative probability >= p for retained tokens"
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: temperature
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "T=1 identity: softmax(l/1) == softmax(l)"
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Density > 0.055 for valid embeddings, rejects sparse"
+
+  - contract: validated-tensor-v1.yaml
+    equation: nan_inf_rejection
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "NaN and Inf injection detected"
+
+  - contract: validated-tensor-v1.yaml
+    equation: l2_norm_nondegeneracy
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Zero rows detected, non-zero rows pass"
+
+  - contract: hybrid-layer-dispatch-v1.yaml
+    equation: hybrid_dispatch
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — exhaustive partition of layer types"
+
+  - contract: hybrid-layer-dispatch-v1.yaml
+    equation: linear_associativity
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Scalar multiplication associativity as proxy for matrix associativity"
+
+  - contract: hybrid-layer-dispatch-v1.yaml
+    equation: linear_shapes
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Head grouping exact and residual shape preserved"
+
+  - contract: hybrid-layer-dispatch-v1.yaml
+    equation: conv1d_causal
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Causal conv1d output length == input length"
+
+  - contract: qwen35-shapes-v1.yaml
+    equation: q_projection_shape
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Qwen3.5-9B: 16 * 256 = 4096 (square Q projection)"
+
+  - contract: qwen35-shapes-v1.yaml
+    equation: kv_projection_shape
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Qwen3.5-9B: 4 * 256 = 1024, GQA ratio = 4"
+
+  - contract: qwen35-shapes-v1.yaml
+    equation: swiglu_ratio
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "12288 / 4096 = 3.0"
+
+  - contract: qwen35-shapes-v1.yaml
+    equation: rope_frequency
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "RoPE frequencies strictly decreasing, freq_0 = 1.0"
+
+  - contract: kv-cache-sizing-v1.yaml
+    equation: per_token_per_layer
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "kv_bytes = 2 * n_kv * d_k * bpe"
+
+  - contract: kv-cache-sizing-v1.yaml
+    equation: total_kv_memory
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Monotonic in sequence length and layer count"
+
+  - contract: kv-cache-sizing-v1.yaml
+    equation: hybrid_accounting
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Only attention layers contribute to KV cache"
+
+  - contract: kv-cache-sizing-v1.yaml
+    equation: bias_absence
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "W @ zeros = zeros when no bias"
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Dispatch monotonic: larger tensors get higher dispatch level"
+
+  - contract: backend-dispatch-v1.yaml
+    equation: garbage_oracle
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Repetitive text detected, diverse text passes"
+
+  - contract: backend-dispatch-v1.yaml
+    equation: qk_norm_score_bound
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Dot product of unit vectors bounded by sqrt(d)"
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: prefill_incremental
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "Requires realizar inference API — ignored"
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: page_shape
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "page_elements = block_size * n_kv * d_k"
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: batched_serial_equivalence
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "Requires realizar inference API — ignored"
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: fused_kernel
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "Requires trueno fused kernel API — ignored"

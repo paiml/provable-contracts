@@ -1,0 +1,96 @@
+metadata:
+  version: "1.0.0"
+  created: "2026-02-18"
+  author: "PAIML Engineering"
+  description: "Quantization size ordering and LoRA alpha scaling"
+  references:
+    - "Dettmers et al. (2023) QLoRA: Efficient Finetuning of Quantized LLMs"
+    - "GGML quantization format documentation"
+    - "Qwen3.5 Fine-Tune Spec Phase 3"
+
+equations:
+  size_ordering:
+    formula: "size(Q4K) < size(Q6K) < size(Q8_0) < size(F16) < size(F32)"
+    domain: "Same parameter count, different quantization"
+    invariants:
+      - "Strict ordering for any non-zero parameter count"
+      - "Ratios approximately: 1 : 1.5 : 2 : 4 : 8"
+  bytes_per_param:
+    formula: "Q4K≈0.5625, Q6K≈0.8125, Q8_0≈1.0625, F16=2.0, F32=4.0 bytes/param"
+    domain: "Standard GGML quantization schemes"
+    invariants:
+      - "Q4K: 18 bytes per 32-element block (scales + quants)"
+      - "Q6K: 26 bytes per 32-element block"
+      - "Q8_0: 34 bytes per 32-element block"
+  alpha_scaling:
+    formula: "lora_output = (alpha / rank) * (A @ B @ x)"
+    domain: "alpha ∈ ℝ⁺, rank ∈ ℤ⁺"
+    invariants:
+      - "Scale factor = alpha / rank"
+      - "Standard: alpha=16, rank=64 => scale=0.25"
+  dropout_expectation:
+    formula: "E[mask_i] = 1 - p"
+    domain: "p ∈ [0, 1), Bernoulli mask"
+    invariants:
+      - "Mean of mask converges to 1-p"
+      - "Inference: p=0 (no dropout)"
+
+proof_obligations:
+  - type: monotonicity
+    property: "Size ordering strict"
+    formal: "Q4K < Q6K < Q8_0 < F16 < F32 bytes for same param count"
+    applies_to: all
+  - type: invariant
+    property: "Alpha scaling correctness"
+    formal: "output scaled by exactly alpha/rank"
+    applies_to: all
+  - type: invariant
+    property: "Dropout expectation"
+    formal: "E[mask] = 1 - p within statistical tolerance"
+    applies_to: all
+  - type: bound
+    property: "Concrete Qwen3.5 sizes"
+    formal: "9B params: Q4K~5GB, Q6K~7GB, Q8~9GB, F16~18GB (within 20%)"
+    applies_to: all
+  - type: equivalence
+    property: "SIMD quantization equivalence"
+    tolerance: 0.0
+    applies_to: simd
+
+falsification_tests:
+  - id: FALSIFY-QO-001
+    rule: "Size ordering"
+    prediction: "Bytes strictly increase Q4K < Q6K < Q8 < F16 < F32"
+    test: "proptest with random param counts"
+    if_fails: "Block size formula wrong"
+  - id: FALSIFY-QO-002
+    rule: "Alpha scaling"
+    prediction: "alpha/rank matches expected ratio"
+    test: "proptest with random alpha and rank"
+    if_fails: "Scaling formula error"
+  - id: FALSIFY-QO-003
+    rule: "Concrete sizes"
+    prediction: "9B param model sizes within 20% of expected"
+    test: "Deterministic test with Qwen3.5 parameters"
+    if_fails: "Block size constants wrong"
+
+kani_harnesses:
+  - id: KANI-QO-001
+    obligation: QO-MON-001
+    property: "Size ordering for bounded params"
+    bound: 4
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_size_ordering
+
+qa_gate:
+  id: F-QO-001
+  name: "Quantization Ordering Contract"
+  description: "Quantization size and LoRA scaling quality gate"
+  checks:
+    - "size_ordering"
+    - "alpha_scaling"
+    - "dropout_expectation"
+    - "concrete_sizes"
+  pass_criteria: "All 4 falsification tests pass + 1 SIMD ignored"
+  falsification: "Swap Q6K and Q8_0 block sizes to break ordering"

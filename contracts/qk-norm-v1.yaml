@@ -1,0 +1,86 @@
+metadata:
+  version: "1.0.0"
+  created: "2026-02-18"
+  author: "PAIML Engineering"
+  description: "QK normalization — per-head RMSNorm applied to Q and K before attention"
+  references:
+    - "Henry et al. (2020) Query-Key Normalization for Transformers"
+    - "Qwen3 Technical Report — QK normalization for training stability"
+    - "Zhang & Sennrich (2019) Root Mean Square Layer Normalization"
+
+equations:
+  qk_rmsnorm:
+    formula: "Q_norm = RMSNorm(Q) = Q / sqrt(mean(Q²) + ε) * weight"
+    domain: "Q ∈ ℝ^{head_dim}, weight ∈ ℝ^{head_dim}, ε > 0"
+    codomain: "Q_norm ∈ ℝ^{head_dim}"
+    invariants:
+      - "RMS(output / weight) ≈ 1.0 when weight = 1"
+      - "|output_i| <= |weight_i| * sqrt(d_k) / sqrt(ε) (bounded amplitude)"
+      - "RMSNorm(0) = 0 (zero-stability)"
+
+proof_obligations:
+  - type: invariant
+    property: "Unit RMS after normalization"
+    formal: "RMS(RMSNorm(x, 1)) ≈ 1.0"
+    tolerance: 0.1
+    applies_to: all
+  - type: bound
+    property: "Output amplitude bounded"
+    formal: "|output_i| <= |weight_i| * sqrt(d_k / ε)"
+    applies_to: all
+  - type: invariant
+    property: "Idempotent with unit weight"
+    formal: "RMSNorm(RMSNorm(x, 1), 1) ≈ RMSNorm(x, 1)"
+    tolerance: 1.0e-3
+    applies_to: all
+  - type: invariant
+    property: "Zero-input stability"
+    formal: "RMSNorm(0, w) = 0"
+    applies_to: all
+  - type: equivalence
+    property: "SIMD matches scalar within ULP"
+    tolerance: 8.0
+    applies_to: simd
+
+falsification_tests:
+  - id: FALSIFY-QKN-001
+    rule: "Unit RMS"
+    prediction: "RMS of normalized output ≈ 1.0 with unit weight"
+    test: "proptest with random vectors, RMSNorm without affine"
+    if_fails: "Normalization denominator incorrect"
+  - id: FALSIFY-QKN-002
+    rule: "Bounded amplitude"
+    prediction: "Output bounded by weight * sqrt(d_k/eps)"
+    test: "proptest verifying element-wise bounds"
+    if_fails: "Missing eps guard in denominator"
+  - id: FALSIFY-QKN-003
+    rule: "Idempotent"
+    prediction: "Double-applying RMSNorm ≈ single application"
+    test: "proptest comparing single vs double application"
+    if_fails: "Normalization not convergent"
+  - id: FALSIFY-QKN-004
+    rule: "Zero-stability"
+    prediction: "RMSNorm(0) = 0"
+    test: "direct assertion on zero input"
+    if_fails: "Division by zero not handled by eps"
+
+kani_harnesses:
+  - id: KANI-QKN-001
+    obligation: QKN-INV-001
+    property: "RMSNorm output finite for small vectors"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_qk_norm_finite
+
+qa_gate:
+  id: F-QKN-001
+  name: "QK Normalization Contract"
+  description: "Per-head QK RMSNorm quality gate"
+  checks:
+    - "unit_rms"
+    - "bounded_amplitude"
+    - "idempotent"
+    - "zero_stability"
+  pass_criteria: "All 4 falsification tests pass + 1 SIMD ignored"
+  falsification: "Set eps=0 to trigger division by zero"
