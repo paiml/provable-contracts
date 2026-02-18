@@ -280,11 +280,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Add Kani verification backend integration tests
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-02-18T13:27:17Z
-  updated: 2026-02-18T14:03:51.845768259+00:00
+  updated: 2026-02-18T14:11:01.275446799+00:00
   spec: null
   acceptance_criteria:
   - 'Install kani-verifier in CI. Write integration tests that run cargo kani on sample contracts. Verify concrete playback generates reproducible test cases. Test all three strategies: exhaustive, stub_float, compositional.'
