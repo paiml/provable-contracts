@@ -395,11 +395,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Write layernorm-kernel-v1.yaml contract (Tier 1)
-  status: planned
+  status: inprogress
   priority: high
   assigned_to: null
   created: 2026-02-18T16:40:15Z
-  updated: 2026-02-18T16:40:15Z
+  updated: 2026-02-18T16:46:31.224647365+00:00
   spec: null
   acceptance_criteria:
   - 'Layer Normalization contract from Ba et al. (2016). LN(x)_i = gamma_i * (x_i - mu) / sqrt(sigma^2 + eps) + beta_i. Obligations: centering, standardization, denominator positive, SIMD parity, idempotency.'
