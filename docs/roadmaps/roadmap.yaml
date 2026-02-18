@@ -523,11 +523,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Write batchnorm-kernel-v1.yaml contract (Tier 3)
-  status: inprogress
+  status: completed
   priority: low
   assigned_to: null
   created: 2026-02-18T16:48:31Z
-  updated: 2026-02-18T17:02:07.603004384+00:00
+  updated: 2026-02-18T17:02:09.881966463+00:00
   spec: null
   acceptance_criteria: []
   phases: []
