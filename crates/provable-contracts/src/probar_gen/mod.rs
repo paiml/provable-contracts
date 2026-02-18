@@ -17,8 +17,11 @@
 //! | conservation | `Q(before) == Q(after)` |
 
 mod patterns;
+mod wired;
 
 use crate::schema::{Contract, ObligationType, ProofObligation};
+
+pub use wired::generate_wired_probar_tests;
 use patterns::{
     generate_associativity_body, generate_bound_body,
     generate_conservation_body, generate_equivalence_body,

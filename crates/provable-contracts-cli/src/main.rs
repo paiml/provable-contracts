@@ -37,6 +37,9 @@ enum Commands {
     Probar {
         /// Path to the contract YAML file
         contract: PathBuf,
+        /// Path to binding registry YAML (generates wired tests)
+        #[arg(long)]
+        binding: Option<PathBuf>,
     },
     /// Show contract status (equations, obligations, coverage)
     Status {
@@ -47,6 +50,9 @@ enum Commands {
     Audit {
         /// Path to the contract YAML file
         contract: PathBuf,
+        /// Path to binding registry YAML (adds binding audit)
+        #[arg(long)]
+        binding: Option<PathBuf>,
     },
 }
 
@@ -63,14 +69,20 @@ fn main() {
         Commands::Kani { contract } => {
             commands::kani::run(&contract)
         }
-        Commands::Probar { contract } => {
-            commands::probar::run(&contract)
+        Commands::Probar { contract, binding } => {
+            commands::probar::run(
+                &contract,
+                binding.as_deref(),
+            )
         }
         Commands::Status { contract } => {
             commands::status::run(&contract)
         }
-        Commands::Audit { contract } => {
-            commands::audit::run(&contract)
+        Commands::Audit { contract, binding } => {
+            commands::audit::run(
+                &contract,
+                binding.as_deref(),
+            )
         }
     };
 
