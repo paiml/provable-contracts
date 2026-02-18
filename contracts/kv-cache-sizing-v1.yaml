@@ -6,6 +6,8 @@ metadata:
   references:
     - "Qwen3 Performance Parity Spec — KV cache analysis"
     - "Qwen3.5 Fine-Tune Spec — hybrid layer accounting"
+  depends_on:
+    - "model-config-algebra-v1"
 
 equations:
   per_token_per_layer:
