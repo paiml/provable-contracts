@@ -491,11 +491,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Write ssm-kernel-v1.yaml contract (Tier 3, Mamba)
-  status: inprogress
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-02-18T16:48:28Z
-  updated: 2026-02-18T17:01:49.489293254+00:00
+  updated: 2026-02-18T17:01:51.914686880+00:00
   spec: null
   acceptance_criteria: []
   phases: []
