@@ -90,3 +90,109 @@ bindings:
     signature: ~
     status: not_implemented
     notes: "Flash attention not yet implemented"
+
+  # --- New contracts (Tier 1/2) ---
+
+  - contract: swiglu-kernel-v1.yaml
+    equation: swiglu
+    module_path: "aprender::models::qwen2"
+    function: swiglu_fused
+    signature: "fn swiglu_fused(gate: &Tensor, up: &Tensor) -> Tensor"
+    status: partial
+    notes: "Private fn in models::qwen2; fuses SiLU(gate) * up but not the linear projections"
+
+  - contract: swiglu-kernel-v1.yaml
+    equation: silu
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "SiLU standalone is private in qwen2; see also silu-kernel-v1"
+
+  - contract: gqa-kernel-v1.yaml
+    equation: gqa
+    module_path: "aprender::nn::transformer"
+    function: "MultiHeadAttention::forward"
+    signature: "fn forward(&self, query: &Tensor, key: &Tensor, value: &Tensor, mask: Option<&Tensor>) -> Tensor"
+    status: partial
+    notes: "GQA logic embedded in MultiHeadAttention when num_kv_heads < num_heads; not separately testable"
+
+  - contract: layernorm-kernel-v1.yaml
+    equation: layernorm
+    module_path: "aprender::nn::LayerNorm"
+    function: "LayerNorm::forward"
+    signature: "fn forward(&self, input: &Tensor) -> Tensor"
+    status: implemented
+    notes: "Standard LayerNorm with gamma/beta affine parameters"
+
+  - contract: layernorm-kernel-v1.yaml
+    equation: statistics
+    module_path: "aprender::nn::LayerNorm"
+    function: "LayerNorm::forward"
+    signature: "fn forward(&self, input: &Tensor) -> Tensor"
+    status: implemented
+    notes: "Mean and variance computed internally within forward()"
+
+  - contract: silu-kernel-v1.yaml
+    equation: silu
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "SiLU only exists as private fn in models::qwen2; needs public nn::functional::silu"
+
+  - contract: silu-kernel-v1.yaml
+    equation: sigmoid
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "Sigmoid not exposed as public function"
+
+  - contract: cross-entropy-kernel-v1.yaml
+    equation: cross_entropy
+    module_path: "aprender::nn::CrossEntropyLoss"
+    function: "CrossEntropyLoss::forward"
+    signature: "fn forward(&self, input: &Tensor, target: &Tensor) -> Tensor"
+    status: implemented
+    notes: "Uses log-sum-exp internally; supports class weights"
+
+  - contract: cross-entropy-kernel-v1.yaml
+    equation: log_softmax
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "LogSoftmax not exposed as standalone function; internal to CrossEntropyLoss"
+
+  - contract: adamw-kernel-v1.yaml
+    equation: adam_moments
+    module_path: "aprender::nn::optim::AdamW"
+    function: "AdamW::step"
+    signature: "fn step(&mut self, params: &mut [Tensor], grads: &[Tensor])"
+    status: implemented
+    notes: "Moment updates computed inside step(); not separately testable"
+
+  - contract: adamw-kernel-v1.yaml
+    equation: adam_variance
+    module_path: "aprender::nn::optim::AdamW"
+    function: "AdamW::step"
+    signature: "fn step(&mut self, params: &mut [Tensor], grads: &[Tensor])"
+    status: implemented
+    notes: "Second moment update inside step()"
+
+  - contract: adamw-kernel-v1.yaml
+    equation: bias_correction
+    module_path: "aprender::nn::optim::AdamW"
+    function: "AdamW::step"
+    signature: "fn step(&mut self, params: &mut [Tensor], grads: &[Tensor])"
+    status: implemented
+    notes: "Bias correction applied inside step()"
+
+  - contract: adamw-kernel-v1.yaml
+    equation: weight_update
+    module_path: "aprender::nn::optim::AdamW"
+    function: "AdamW::step"
+    signature: "fn step(&mut self, params: &mut [Tensor], grads: &[Tensor])"
+    status: implemented
+    notes: "Decoupled weight decay applied after Adam update in step()"
