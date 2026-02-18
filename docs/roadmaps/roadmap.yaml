@@ -182,11 +182,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Write attention-kernel-v1.yaml contract (Tier 2)
-  status: planned
+  status: inprogress
   priority: medium
   assigned_to: null
   created: 2026-02-18T13:26:40Z
-  updated: 2026-02-18T13:26:40Z
+  updated: 2026-02-18T13:52:40.424864952+00:00
   spec: null
   acceptance_criteria:
   - 'Source: Vaswani et al. 2017 (arXiv:1706.03762). Depends on softmax-kernel-v1 and matmul-kernel-v1. Extract attention equation, proof obligations (weight normalization, V-linearity, shape correctness), compositional Kani proofs via stub_verified.'
