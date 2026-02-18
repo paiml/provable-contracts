@@ -168,7 +168,8 @@ fn generate_wired_obligation_test(
         ObligationType::Linearity
         | ObligationType::Symmetry
         | ObligationType::Associativity
-        | ObligationType::Conservation => {
+        | ObligationType::Conservation
+        | ObligationType::Ordering => {
             generate_wired_generic(out, ob);
         }
     }

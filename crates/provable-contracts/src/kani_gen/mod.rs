@@ -9,8 +9,8 @@ mod strategies;
 
 use crate::schema::{Contract, KaniHarness, KaniStrategy};
 use strategies::{
-    generate_compositional_body, generate_default_body, generate_exhaustive_body,
-    generate_stub_float_body,
+    generate_bounded_int_body, generate_compositional_body, generate_default_body,
+    generate_exhaustive_body, generate_stub_float_body,
 };
 
 /// Generate Kani proof harness source code from a contract.
@@ -82,6 +82,9 @@ fn generate_single_harness(out: &mut String, harness: &KaniHarness) {
         }
         Some(KaniStrategy::Compositional) => {
             generate_compositional_body(out, harness);
+        }
+        Some(KaniStrategy::BoundedInt) => {
+            generate_bounded_int_body(out, harness);
         }
         None => {
             generate_default_body(out, harness);
@@ -297,5 +300,32 @@ falsification_tests: []
 
         // Each has kani::proof
         assert_eq!(code.matches("#[kani::proof]").count(), 3);
+    }
+
+    #[test]
+    fn generate_bounded_int_harness() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "BoundedInt"
+  references: ["Paper"]
+equations:
+  f:
+    formula: "f(x) = x"
+kani_harnesses:
+  - id: KANI-006
+    obligation: ORD-001
+    property: "Shape ordering preserved"
+    bound: 8
+    strategy: bounded_int
+    harness: verify_ordering
+falsification_tests: []
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let code = generate_kani_harnesses(&contract);
+        assert!(code.contains("fn verify_ordering()"));
+        assert!(code.contains("bounded_int"));
+        assert!(code.contains("Vec<i64>"));
+        assert!(code.contains("#[kani::unwind(9)]"));
     }
 }

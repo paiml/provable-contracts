@@ -24,7 +24,8 @@ use crate::schema::{Contract, ObligationType, ProofObligation};
 use patterns::{
     generate_associativity_body, generate_bound_body, generate_conservation_body,
     generate_equivalence_body, generate_idempotency_body, generate_invariant_body,
-    generate_linearity_body, generate_monotonicity_body, generate_symmetry_body,
+    generate_linearity_body, generate_monotonicity_body, generate_ordering_body,
+    generate_symmetry_body,
 };
 pub use wired::generate_wired_probar_tests;
 
@@ -115,6 +116,9 @@ fn generate_obligation_test(out: &mut String, ob: &ProofObligation, index: usize
         ObligationType::Conservation => {
             generate_conservation_body(out, ob);
         }
+        ObligationType::Ordering => {
+            generate_ordering_body(out, ob);
+        }
     }
 
     out.push_str("    }\n\n");
@@ -145,6 +149,7 @@ fn obligation_pattern(ot: ObligationType) -> &'static str {
         ObligationType::Symmetry => "f(permute(x)) related to f(x) — permutation property",
         ObligationType::Associativity => "(a ⊕ b) ⊕ c = a ⊕ (b ⊕ c) — grouping invariant",
         ObligationType::Conservation => "Q(before) = Q(after) — conserved quantity",
+        ObligationType::Ordering => "a ≤ b → f(a) ≤ f(b) — order relation maintained",
     }
 }
 
@@ -315,6 +320,8 @@ proof_obligations:
     property: "associativity test"
   - type: conservation
     property: "conservation test"
+  - type: ordering
+    property: "ordering test"
 falsification_tests: []
 "#;
         let contract = parse_contract_str(yaml).unwrap();
@@ -328,8 +335,9 @@ falsification_tests: []
         assert!(code.contains("symmetry"));
         assert!(code.contains("associativity"));
         assert!(code.contains("conservation"));
-        // 9 test functions
-        assert_eq!(code.matches("#[test]").count(), 9);
+        assert!(code.contains("ordering"));
+        // 10 test functions
+        assert_eq!(code.matches("#[test]").count(), 10);
     }
 
     #[test]
