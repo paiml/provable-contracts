@@ -6,6 +6,8 @@ metadata:
   references:
     - "Qwen2.5-Coder Showcase Spec §14"
     - "Dao et al. (2022) FlashAttention"
+  depends_on:
+    - "kv-cache-sizing-v1"
 
 equations:
   prefill_incremental:
