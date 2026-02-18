@@ -615,3 +615,67 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-034
+  github_issue: null
+  item_type: task
+  title: Implement pv diff — contract drift detection
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T17:53:17Z
+  updated: 2026-02-18T18:15:00Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-035
+  github_issue: null
+  item_type: task
+  title: Implement pv coverage — cross-contract obligation coverage report
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T17:53:19Z
+  updated: 2026-02-18T18:15:00Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-036
+  github_issue: null
+  item_type: task
+  title: Implement pv generate — end-to-end codegen to disk
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T17:53:20Z
+  updated: 2026-02-18T18:15:00Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-037
+  github_issue: null
+  item_type: task
+  title: Implement contract composition with depends_on and pv graph
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T17:53:21Z
+  updated: 2026-02-18T18:15:00Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
