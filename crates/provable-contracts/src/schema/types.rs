@@ -199,3 +199,28 @@ pub struct QaGate {
     #[serde(default)]
     pub falsification: Option<String>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn obligation_type_display() {
+        assert_eq!(ObligationType::Invariant.to_string(), "invariant");
+        assert_eq!(ObligationType::Equivalence.to_string(), "equivalence");
+        assert_eq!(ObligationType::Bound.to_string(), "bound");
+        assert_eq!(ObligationType::Monotonicity.to_string(), "monotonicity");
+        assert_eq!(ObligationType::Idempotency.to_string(), "idempotency");
+        assert_eq!(ObligationType::Linearity.to_string(), "linearity");
+        assert_eq!(ObligationType::Symmetry.to_string(), "symmetry");
+        assert_eq!(ObligationType::Associativity.to_string(), "associativity");
+        assert_eq!(ObligationType::Conservation.to_string(), "conservation");
+    }
+
+    #[test]
+    fn kani_strategy_display() {
+        assert_eq!(KaniStrategy::Exhaustive.to_string(), "exhaustive");
+        assert_eq!(KaniStrategy::StubFloat.to_string(), "stub_float");
+        assert_eq!(KaniStrategy::Compositional.to_string(), "compositional");
+    }
+}
