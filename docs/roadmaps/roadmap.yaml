@@ -355,11 +355,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Write swiglu-kernel-v1.yaml contract (Tier 1)
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-02-18T16:40:10Z
-  updated: 2026-02-18T16:40:27.713662838+00:00
+  updated: 2026-02-18T16:45:50.973552327+00:00
   spec: null
   acceptance_criteria:
   - 'SwiGLU kernel contract from Shazeer (2020). SwiGLU(x,W,V,b,c) = SiLU(xW+b) ⊙ (xV+c). Obligations: zero-input invariant, fused-unfused equivalence, magnitude bound, SIMD parity.'
