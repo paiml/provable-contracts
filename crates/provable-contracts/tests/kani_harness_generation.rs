@@ -9,8 +9,39 @@ use std::path::Path;
 use provable_contracts::kani_gen::generate_kani_harnesses;
 use provable_contracts::schema::parse_contract;
 
-fn load_and_generate(path: &str) -> String {
-    let path = Path::new(path);
+fn contracts_dir() -> std::path::PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../contracts")
+        .canonicalize()
+        .expect("contracts directory must exist")
+}
+
+fn all_contract_paths() -> Vec<std::path::PathBuf> {
+    let dir = contracts_dir();
+    let mut paths: Vec<_> = std::fs::read_dir(&dir)
+        .unwrap_or_else(|e| panic!("Cannot read {}: {e}", dir.display()))
+        .filter_map(|entry| {
+            let entry = entry.ok()?;
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) == Some("yaml")
+                && !path
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .starts_with('.')
+            {
+                Some(path)
+            } else {
+                None
+            }
+        })
+        .collect();
+    paths.sort();
+    paths
+}
+
+fn load_and_generate(path: &Path) -> String {
     let contract =
         parse_contract(path).unwrap_or_else(|e| panic!("Failed to parse {}: {e}", path.display()));
     generate_kani_harnesses(&contract)
@@ -20,7 +51,7 @@ fn load_and_generate(path: &str) -> String {
 
 #[test]
 fn softmax_generates_cfg_kani_module() {
-    let code = load_and_generate("../../contracts/softmax-kernel-v1.yaml");
+    let code = load_and_generate(&contracts_dir().join("softmax-kernel-v1.yaml"));
     assert!(code.starts_with("#[cfg(kani)]"));
     assert!(code.contains("mod verification"));
     assert!(code.contains("use super::*;"));
@@ -28,7 +59,7 @@ fn softmax_generates_cfg_kani_module() {
 
 #[test]
 fn softmax_generates_all_harnesses() {
-    let code = load_and_generate("../../contracts/softmax-kernel-v1.yaml");
+    let code = load_and_generate(&contracts_dir().join("softmax-kernel-v1.yaml"));
     assert!(code.contains("fn verify_softmax_normalization()"));
     assert!(code.contains("fn verify_softmax_positivity()"));
     assert!(code.contains("fn verify_softmax_bounded()"));
@@ -36,19 +67,15 @@ fn softmax_generates_all_harnesses() {
 
 #[test]
 fn softmax_harnesses_have_kani_attributes() {
-    let code = load_and_generate("../../contracts/softmax-kernel-v1.yaml");
-    // Each harness should have #[kani::proof]
+    let code = load_and_generate(&contracts_dir().join("softmax-kernel-v1.yaml"));
     assert_eq!(code.matches("#[kani::proof]").count(), 3);
-    // All softmax harnesses have bound=8 → unwind(9)
     assert_eq!(code.matches("#[kani::unwind(9)]").count(), 3);
-    // First harness has solver=cadical
     assert!(code.contains("#[kani::solver(cadical)]"));
 }
 
 #[test]
 fn softmax_harnesses_use_stub_float_strategy() {
-    let code = load_and_generate("../../contracts/softmax-kernel-v1.yaml");
-    // stub_float strategy should produce f32 symbolic inputs
+    let code = load_and_generate(&contracts_dir().join("softmax-kernel-v1.yaml"));
     assert!(code.contains("Vec<f32>"));
     assert!(code.contains("is_finite()"));
     assert!(code.contains("stub_float"));
@@ -56,7 +83,7 @@ fn softmax_harnesses_use_stub_float_strategy() {
 
 #[test]
 fn softmax_harnesses_have_doc_comments() {
-    let code = load_and_generate("../../contracts/softmax-kernel-v1.yaml");
+    let code = load_and_generate(&contracts_dir().join("softmax-kernel-v1.yaml"));
     assert!(code.contains("/// KANI-SM-001: Softmax sums to 1.0"));
     assert!(code.contains("/// Obligation: SM-INV-001"));
     assert!(code.contains("/// Strategy: stub_float"));
@@ -67,7 +94,7 @@ fn softmax_harnesses_have_doc_comments() {
 
 #[test]
 fn rmsnorm_generates_harnesses() {
-    let code = load_and_generate("../../contracts/rmsnorm-kernel-v1.yaml");
+    let code = load_and_generate(&contracts_dir().join("rmsnorm-kernel-v1.yaml"));
     assert!(code.starts_with("#[cfg(kani)]"));
     assert!(code.contains("#[kani::proof]"));
 }
@@ -76,9 +103,8 @@ fn rmsnorm_generates_harnesses() {
 
 #[test]
 fn matmul_generates_exhaustive_harnesses() {
-    let code = load_and_generate("../../contracts/matmul-kernel-v1.yaml");
+    let code = load_and_generate(&contracts_dir().join("matmul-kernel-v1.yaml"));
     assert!(code.contains("#[kani::proof]"));
-    // Exhaustive strategy uses i32 symbolic inputs
     assert!(code.contains("Vec<i32>"));
     assert!(code.contains("exhaustive"));
 }
@@ -87,7 +113,7 @@ fn matmul_generates_exhaustive_harnesses() {
 
 #[test]
 fn attention_generates_stub_float_harnesses() {
-    let code = load_and_generate("../../contracts/attention-kernel-v1.yaml");
+    let code = load_and_generate(&contracts_dir().join("attention-kernel-v1.yaml"));
     assert!(code.contains("#[kani::proof]"));
     assert!(code.contains("stub_float"));
 }
@@ -96,7 +122,7 @@ fn attention_generates_stub_float_harnesses() {
 
 #[test]
 fn flash_attention_generates_harnesses() {
-    let code = load_and_generate("../../contracts/flash-attention-v1.yaml");
+    let code = load_and_generate(&contracts_dir().join("flash-attention-v1.yaml"));
     assert!(code.contains("#[kani::proof]"));
     assert!(code.contains("mod verification"));
 }
@@ -105,7 +131,7 @@ fn flash_attention_generates_harnesses() {
 
 #[test]
 fn activation_generates_exhaustive_harnesses() {
-    let code = load_and_generate("../../contracts/activation-kernel-v1.yaml");
+    let code = load_and_generate(&contracts_dir().join("activation-kernel-v1.yaml"));
     assert!(code.contains("#[kani::proof]"));
     assert!(code.contains("exhaustive"));
     assert!(code.contains("Vec<i32>"));
@@ -115,7 +141,7 @@ fn activation_generates_exhaustive_harnesses() {
 
 #[test]
 fn rope_generates_exhaustive_harnesses() {
-    let code = load_and_generate("../../contracts/rope-kernel-v1.yaml");
+    let code = load_and_generate(&contracts_dir().join("rope-kernel-v1.yaml"));
     assert!(code.contains("#[kani::proof]"));
 }
 
@@ -123,55 +149,49 @@ fn rope_generates_exhaustive_harnesses() {
 
 #[test]
 fn all_contracts_generate_valid_kani_output() {
-    let contracts = [
-        "../../contracts/softmax-kernel-v1.yaml",
-        "../../contracts/rmsnorm-kernel-v1.yaml",
-        "../../contracts/rope-kernel-v1.yaml",
-        "../../contracts/activation-kernel-v1.yaml",
-        "../../contracts/attention-kernel-v1.yaml",
-        "../../contracts/matmul-kernel-v1.yaml",
-        "../../contracts/flash-attention-v1.yaml",
-    ];
-
-    for path in &contracts {
+    let paths = all_contract_paths();
+    assert!(
+        paths.len() >= 41,
+        "Expected at least 41 contracts, found {}",
+        paths.len()
+    );
+    for path in &paths {
         let code = load_and_generate(path);
-        // Every contract with harnesses should produce a cfg(kani) module
+        let name = path.file_name().unwrap().to_str().unwrap();
         assert!(
             code.starts_with("#[cfg(kani)]"),
-            "{path} should generate cfg(kani) module"
+            "{name} should generate cfg(kani) module"
         );
-        // Every harness must have kani::proof attribute
         assert!(
             code.contains("#[kani::proof]"),
-            "{path} should contain kani::proof"
+            "{name} should contain kani::proof"
         );
-        // Every harness uses symbolic input (kani::any)
         assert!(
             code.contains("kani::any()"),
-            "{path} should use symbolic inputs"
+            "{name} should use symbolic inputs"
         );
-        // Module should close properly
         assert!(
             code.ends_with("}\n"),
-            "{path} should end with closing brace"
+            "{name} should end with closing brace"
         );
     }
 }
 
 #[test]
 fn harness_count_matches_contract_definitions() {
+    let dir = contracts_dir();
     let contracts_and_counts = [
-        ("../../contracts/softmax-kernel-v1.yaml", 3),
-        ("../../contracts/matmul-kernel-v1.yaml", 1),
-        ("../../contracts/activation-kernel-v1.yaml", 2),
+        ("softmax-kernel-v1.yaml", 3),
+        ("matmul-kernel-v1.yaml", 1),
+        ("activation-kernel-v1.yaml", 2),
     ];
 
-    for (path, expected_count) in &contracts_and_counts {
-        let code = load_and_generate(path);
+    for (name, expected_count) in &contracts_and_counts {
+        let code = load_and_generate(&dir.join(name));
         let actual = code.matches("#[kani::proof]").count();
         assert_eq!(
             actual, *expected_count,
-            "{path}: expected {expected_count} harnesses, found {actual}"
+            "{name}: expected {expected_count} harnesses, found {actual}"
         );
     }
 }
@@ -180,8 +200,6 @@ fn harness_count_matches_contract_definitions() {
 
 #[test]
 fn generated_harness_contains_unimplemented_marker() {
-    // All generated harnesses should contain unimplemented! marker
-    // since they need manual wiring to actual kernel code
-    let code = load_and_generate("../../contracts/softmax-kernel-v1.yaml");
+    let code = load_and_generate(&contracts_dir().join("softmax-kernel-v1.yaml"));
     assert!(code.contains("unimplemented!"));
 }
