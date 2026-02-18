@@ -375,11 +375,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Write gqa-kernel-v1.yaml contract (Tier 1)
-  status: planned
+  status: inprogress
   priority: high
   assigned_to: null
   created: 2026-02-18T16:40:12Z
-  updated: 2026-02-18T16:40:12Z
+  updated: 2026-02-18T16:45:56.195132586+00:00
   spec: null
   acceptance_criteria:
   - 'Grouped Query Attention contract from Ainslie et al. (2023). KV head broadcasting with num_kv_heads < num_heads. Obligations: weight normalization, GQA=MHA equivalence when kv_heads=num_heads, output convexity, SIMD parity.'
