@@ -60,29 +60,15 @@ fn main() {
     let cli = Cli::parse();
 
     let result = match cli.command {
-        Commands::Validate { contract } => {
-            commands::validate::run(&contract)
-        }
-        Commands::Scaffold { contract } => {
-            commands::scaffold::run(&contract)
-        }
-        Commands::Kani { contract } => {
-            commands::kani::run(&contract)
-        }
+        Commands::Validate { contract } => commands::validate::run(&contract),
+        Commands::Scaffold { contract } => commands::scaffold::run(&contract),
+        Commands::Kani { contract } => commands::kani::run(&contract),
         Commands::Probar { contract, binding } => {
-            commands::probar::run(
-                &contract,
-                binding.as_deref(),
-            )
+            commands::probar::run(&contract, binding.as_deref())
         }
-        Commands::Status { contract } => {
-            commands::status::run(&contract)
-        }
+        Commands::Status { contract } => commands::status::run(&contract),
         Commands::Audit { contract, binding } => {
-            commands::audit::run(
-                &contract,
-                binding.as_deref(),
-            )
+            commands::audit::run(&contract, binding.as_deref())
         }
     };
 

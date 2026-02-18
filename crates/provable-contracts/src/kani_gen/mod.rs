@@ -9,8 +9,8 @@ mod strategies;
 
 use crate::schema::{Contract, KaniHarness, KaniStrategy};
 use strategies::{
-    generate_compositional_body, generate_default_body,
-    generate_exhaustive_body, generate_stub_float_body,
+    generate_compositional_body, generate_default_body, generate_exhaustive_body,
+    generate_stub_float_body,
 };
 
 /// Generate Kani proof harness source code from a contract.
@@ -24,9 +24,7 @@ use strategies::{
 /// - Strategy-specific body with symbolic inputs and assertions
 pub fn generate_kani_harnesses(contract: &Contract) -> String {
     if contract.kani_harnesses.is_empty() {
-        return String::from(
-            "// No Kani harnesses defined in this contract.\n",
-        );
+        return String::from("// No Kani harnesses defined in this contract.\n");
     }
 
     let mut out = String::new();
@@ -43,41 +41,25 @@ pub fn generate_kani_harnesses(contract: &Contract) -> String {
 }
 
 fn generate_single_harness(out: &mut String, harness: &KaniHarness) {
-    let property_desc = harness
-        .property
-        .as_deref()
-        .unwrap_or(&harness.obligation);
+    let property_desc = harness.property.as_deref().unwrap_or(&harness.obligation);
 
     // Doc comments
-    out.push_str(&format!(
-        "    /// {}: {}\n",
-        harness.id, property_desc
-    ));
-    out.push_str(&format!(
-        "    /// Obligation: {}\n",
-        harness.obligation
-    ));
+    out.push_str(&format!("    /// {}: {}\n", harness.id, property_desc));
+    out.push_str(&format!("    /// Obligation: {}\n", harness.obligation));
     if let Some(strategy) = harness.strategy {
         out.push_str(&format!("    /// Strategy: {strategy}\n"));
     }
     if let Some(bound) = harness.bound {
-        out.push_str(&format!(
-            "    /// Bound: {bound} elements\n"
-        ));
+        out.push_str(&format!("    /// Bound: {bound} elements\n"));
     }
 
     // Attributes
     out.push_str("    #[kani::proof]\n");
     if let Some(bound) = harness.bound {
-        out.push_str(&format!(
-            "    #[kani::unwind({})]\n",
-            bound + 1
-        ));
+        out.push_str(&format!("    #[kani::unwind({})]\n", bound + 1));
     }
     if let Some(ref solver) = harness.solver {
-        out.push_str(&format!(
-            "    #[kani::solver({solver})]\n"
-        ));
+        out.push_str(&format!("    #[kani::solver({solver})]\n"));
     }
 
     // Function name
@@ -314,9 +296,6 @@ falsification_tests: []
         assert!(code.contains("mod verification"));
 
         // Each has kani::proof
-        assert_eq!(
-            code.matches("#[kani::proof]").count(),
-            3
-        );
+        assert_eq!(code.matches("#[kani::proof]").count(), 3);
     }
 }

@@ -20,20 +20,12 @@ pub fn run(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
         println!("{v}");
     }
 
-    println!(
-        "\n{} error(s), {} warning(s)",
-        errors.len(),
-        warnings.len()
-    );
+    println!("\n{} error(s), {} warning(s)", errors.len(), warnings.len());
 
     if errors.is_empty() {
         println!("Contract is valid.");
         Ok(())
     } else {
-        Err(format!(
-            "Contract has {} validation error(s)",
-            errors.len()
-        )
-        .into())
+        Err(format!("Contract has {} validation error(s)", errors.len()).into())
     }
 }

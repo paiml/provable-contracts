@@ -64,21 +64,10 @@ pub fn generate_contract_tests(contract: &Contract) -> String {
 
     for test in &contract.falsification_tests {
         out.push_str(&format!("    /// {}: {}\n", test.id, test.rule));
-        out.push_str(&format!(
-            "    /// Prediction: {}\n",
-            test.prediction
-        ));
-        out.push_str(&format!(
-            "    /// If fails: {}\n",
-            test.if_fails
-        ));
-        let fn_name = test
-            .id
-            .to_lowercase()
-            .replace('-', "_");
-        out.push_str(&format!(
-            "    #[test]\n    fn {fn_name}() {{\n"
-        ));
+        out.push_str(&format!("    /// Prediction: {}\n", test.prediction));
+        out.push_str(&format!("    /// If fails: {}\n", test.if_fails));
+        let fn_name = test.id.to_lowercase().replace('-', "_");
+        out.push_str(&format!("    #[test]\n    fn {fn_name}() {{\n"));
         out.push_str(&format!(
             "        todo!(\"Implementation not yet written — \
                      {} MUST fail\")\n",

@@ -11,8 +11,8 @@ use provable_contracts::schema::parse_contract;
 
 fn load_and_generate(path: &str) -> String {
     let path = Path::new(path);
-    let contract = parse_contract(path)
-        .unwrap_or_else(|e| panic!("Failed to parse {}: {e}", path.display()));
+    let contract =
+        parse_contract(path).unwrap_or_else(|e| panic!("Failed to parse {}: {e}", path.display()));
     generate_kani_harnesses(&contract)
 }
 
@@ -151,7 +151,10 @@ fn all_contracts_generate_valid_kani_output() {
             "{path} should use symbolic inputs"
         );
         // Module should close properly
-        assert!(code.ends_with("}\n"), "{path} should end with closing brace");
+        assert!(
+            code.ends_with("}\n"),
+            "{path} should end with closing brace"
+        );
     }
 }
 

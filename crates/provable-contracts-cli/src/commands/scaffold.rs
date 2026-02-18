@@ -1,8 +1,6 @@
 use std::path::Path;
 
-use provable_contracts::scaffold::{
-    generate_contract_tests, generate_trait,
-};
+use provable_contracts::scaffold::{generate_contract_tests, generate_trait};
 use provable_contracts::schema::parse_contract;
 
 pub fn run(path: &Path) -> Result<(), Box<dyn std::error::Error>> {

@@ -5,10 +5,7 @@ use provable_contracts::binding::parse_binding;
 use provable_contracts::error::Severity;
 use provable_contracts::schema::parse_contract;
 
-pub fn run(
-    path: &Path,
-    binding_path: Option<&Path>,
-) -> Result<(), Box<dyn std::error::Error>> {
+pub fn run(path: &Path, binding_path: Option<&Path>) -> Result<(), Box<dyn std::error::Error>> {
     let contract = parse_contract(path)?;
 
     // Standard traceability audit
@@ -18,10 +15,7 @@ pub fn run(
     println!("==================");
     println!("Equations:          {}", report.equations);
     println!("Proof obligations:  {}", report.obligations);
-    println!(
-        "Falsification tests: {}",
-        report.falsification_tests
-    );
+    println!("Falsification tests: {}", report.falsification_tests);
     println!("Kani harnesses:     {}", report.kani_harnesses);
     println!();
 
@@ -48,38 +42,17 @@ pub fn run(
             .and_then(|n| n.to_str())
             .unwrap_or("unknown");
 
-        let binding_report = audit_binding(
-            &[(contract_file, &contract)],
-            &binding,
-        );
+        let binding_report = audit_binding(&[(contract_file, &contract)], &binding);
 
         println!();
         println!("Binding Audit");
         println!("=============");
-        println!(
-            "Total equations:    {}",
-            binding_report.total_equations
-        );
-        println!(
-            "Bound equations:    {}",
-            binding_report.bound_equations
-        );
-        println!(
-            "Implemented:        {}",
-            binding_report.implemented
-        );
-        println!(
-            "Partial:            {}",
-            binding_report.partial
-        );
-        println!(
-            "Not implemented:    {}",
-            binding_report.not_implemented
-        );
-        println!(
-            "Obligations total:  {}",
-            binding_report.total_obligations
-        );
+        println!("Total equations:    {}", binding_report.total_equations);
+        println!("Bound equations:    {}", binding_report.bound_equations);
+        println!("Implemented:        {}", binding_report.implemented);
+        println!("Partial:            {}", binding_report.partial);
+        println!("Not implemented:    {}", binding_report.not_implemented);
+        println!("Obligations total:  {}", binding_report.total_obligations);
         println!(
             "Obligations covered: {}",
             binding_report.covered_obligations
@@ -101,16 +74,10 @@ pub fn run(
             .count();
 
         if errors + binding_errors > 0 {
-            return Err(format!(
-                "Audit found {} error(s)",
-                errors + binding_errors
-            )
-            .into());
+            return Err(format!("Audit found {} error(s)", errors + binding_errors).into());
         }
     } else if errors > 0 {
-        return Err(
-            format!("Audit found {errors} error(s)").into()
-        );
+        return Err(format!("Audit found {errors} error(s)").into());
     }
 
     Ok(())

@@ -10,8 +10,8 @@ use provable_contracts::schema::parse_contract;
 
 fn load_and_generate(path: &str) -> String {
     let path = Path::new(path);
-    let contract = parse_contract(path)
-        .unwrap_or_else(|e| panic!("Failed to parse {}: {e}", path.display()));
+    let contract =
+        parse_contract(path).unwrap_or_else(|e| panic!("Failed to parse {}: {e}", path.display()));
     generate_probar_tests(&contract)
 }
 

@@ -2,21 +2,14 @@
 
 use crate::schema::KaniHarness;
 
-pub(super) fn generate_exhaustive_body(
-    out: &mut String,
-    harness: &KaniHarness,
-) {
+pub(super) fn generate_exhaustive_body(out: &mut String, harness: &KaniHarness) {
     let bound = harness.bound.unwrap_or(16);
-    out.push_str(
-        "        // Strategy: exhaustive — exact verification\n",
-    );
+    out.push_str("        // Strategy: exhaustive — exact verification\n");
     out.push_str(
         "        // Integer/structural arithmetic verified \
          without approximation.\n",
     );
-    out.push_str(&format!(
-        "        // Bound: {bound} elements\n\n"
-    ));
+    out.push_str(&format!("        // Bound: {bound} elements\n\n"));
 
     // Generate symbolic input pattern
     out.push_str("        let n: usize = kani::any();\n");
@@ -24,9 +17,7 @@ pub(super) fn generate_exhaustive_body(
         "        kani::assume(n >= 1 && n <= {bound});\n\n"
     ));
 
-    out.push_str(
-        "        // Symbolic inputs — Kani explores ALL possible values\n",
-    );
+    out.push_str("        // Symbolic inputs — Kani explores ALL possible values\n");
     out.push_str(
         "        let input: Vec<i32> = (0..n)\
          .map(|_| kani::any()).collect();\n\n",
@@ -34,30 +25,18 @@ pub(super) fn generate_exhaustive_body(
 
     // Generate assertion based on property
     if let Some(ref property) = harness.property {
-        out.push_str(&format!(
-            "        // Verify: {property}\n"
-        ));
+        out.push_str(&format!("        // Verify: {property}\n"));
     }
-    out.push_str(&format!(
-        "        // Obligation: {}\n",
-        harness.obligation
-    ));
+    out.push_str(&format!("        // Obligation: {}\n", harness.obligation));
     out.push_str(
         "        // TODO: Replace with kernel-specific \
          verification logic\n",
     );
-    out.push_str(
-        "        //   Example: assert_eq!(precomputed, online);\n",
-    );
-    out.push_str(
-        "        unimplemented!(\"Wire up kernel under test\")\n",
-    );
+    out.push_str("        //   Example: assert_eq!(precomputed, online);\n");
+    out.push_str("        unimplemented!(\"Wire up kernel under test\")\n");
 }
 
-pub(super) fn generate_stub_float_body(
-    out: &mut String,
-    harness: &KaniHarness,
-) {
+pub(super) fn generate_stub_float_body(out: &mut String, harness: &KaniHarness) {
     let bound = harness.bound.unwrap_or(16);
     out.push_str(
         "        // Strategy: stub_float — stub transcendentals, \
@@ -91,47 +70,24 @@ pub(super) fn generate_stub_float_body(
          .all(|x| x.is_finite()));\n\n",
     );
 
-    out.push_str(
-        "        let mut output = vec![0.0f32; n];\n",
-    );
+    out.push_str("        let mut output = vec![0.0f32; n];\n");
 
     // Generate postconditions from property
     if let Some(ref property) = harness.property {
-        out.push_str(&format!(
-            "\n        // Post-condition: {property}\n"
-        ));
+        out.push_str(&format!("\n        // Post-condition: {property}\n"));
     }
 
-    out.push_str(
-        "        // TODO: Call kernel under test:\n",
-    );
-    out.push_str(
-        "        //   kernel_fn(&input, &mut output);\n",
-    );
-    out.push_str(
-        "        //\n",
-    );
-    out.push_str(
-        "        // Then assert postconditions, e.g.:\n",
-    );
-    out.push_str(
-        "        //   let sum: f32 = output.iter().sum();\n",
-    );
-    out.push_str(
-        "        //   assert!((sum - 1.0).abs() < 1e-5);\n",
-    );
-    out.push_str(
-        "        //   assert!(output.iter().all(|&x| x > 0.0));\n",
-    );
-    out.push_str(
-        "        unimplemented!(\"Wire up kernel under test\")\n",
-    );
+    out.push_str("        // TODO: Call kernel under test:\n");
+    out.push_str("        //   kernel_fn(&input, &mut output);\n");
+    out.push_str("        //\n");
+    out.push_str("        // Then assert postconditions, e.g.:\n");
+    out.push_str("        //   let sum: f32 = output.iter().sum();\n");
+    out.push_str("        //   assert!((sum - 1.0).abs() < 1e-5);\n");
+    out.push_str("        //   assert!(output.iter().all(|&x| x > 0.0));\n");
+    out.push_str("        unimplemented!(\"Wire up kernel under test\")\n");
 }
 
-pub(super) fn generate_compositional_body(
-    out: &mut String,
-    harness: &KaniHarness,
-) {
+pub(super) fn generate_compositional_body(out: &mut String, harness: &KaniHarness) {
     out.push_str(
         "        // Strategy: compositional — \
          use #[kani::stub_verified] for sub-kernels.\n",
@@ -161,9 +117,7 @@ pub(super) fn generate_compositional_body(
     );
 
     if let Some(ref property) = harness.property {
-        out.push_str(&format!(
-            "        // Verify: {property}\n"
-        ));
+        out.push_str(&format!("        // Verify: {property}\n"));
     }
     out.push_str(
         "        // TODO: Add #[kani::stub_verified(sub_fn)] \
@@ -173,15 +127,10 @@ pub(super) fn generate_compositional_body(
         "        //   then call composed kernel and assert \
          end-to-end properties.\n",
     );
-    out.push_str(
-        "        unimplemented!(\"Wire up kernel under test\")\n",
-    );
+    out.push_str("        unimplemented!(\"Wire up kernel under test\")\n");
 }
 
-pub(super) fn generate_default_body(
-    out: &mut String,
-    harness: &KaniHarness,
-) {
+pub(super) fn generate_default_body(out: &mut String, harness: &KaniHarness) {
     let bound = harness.bound.unwrap_or(16);
     out.push_str(
         "        // No strategy specified — using default \
@@ -203,15 +152,8 @@ pub(super) fn generate_default_body(
     );
 
     if let Some(ref property) = harness.property {
-        out.push_str(&format!(
-            "        // Verify: {property}\n"
-        ));
+        out.push_str(&format!("        // Verify: {property}\n"));
     }
-    out.push_str(&format!(
-        "        // Obligation: {}\n",
-        harness.obligation
-    ));
-    out.push_str(
-        "        unimplemented!(\"Wire up kernel under test\")\n",
-    );
+    out.push_str(&format!("        // Obligation: {}\n", harness.obligation));
+    out.push_str("        unimplemented!(\"Wire up kernel under test\")\n");
 }

@@ -28,9 +28,9 @@ and the broader PAIML Sovereign AI stack.
 5. [Contract Schema](#5-contract-schema)
 6. [Phase 1: Extract — Paper to Canonical Math](#6-phase-1-extract--paper-to-canonical-math)
 7. [Phase 2: Specify — Math to YAML Contract](#7-phase-2-specify--math-to-yaml-contract)
-8. [Phase 3: Scaffold — Contract to Rust Trait + Failing Tests](#8-phase-3-scaffold--contract-to-rust-trait--failing-tests)
+8. [Phase 3: Scaffold — Contract to Rust Trait + Tests](#8-phase-3-scaffold--contract-to-rust-trait--failing-tests)
 9. [Phase 4: Implement — Scalar Reference then SIMD](#9-phase-4-implement--scalar-reference-then-simd)
-10. [Phase 5: Falsify — Property Testing via probar + certeza](#10-phase-5-falsify--property-testing-via-probar--certeza)
+10. [Phase 5: Falsify — Property Testing via probar](#10-phase-5-falsify--property-testing-via-probar--certeza)
 11. [Phase 6: Verify — Bounded Proof via Kani](#11-phase-6-verify--bounded-proof-via-kani)
 12. [Proof Obligation Taxonomy](#12-proof-obligation-taxonomy)
 13. [Kernel Contract Registry](#13-kernel-contract-registry)
@@ -1298,7 +1298,7 @@ kani_harnesses:
 
 | Property | Kani | Alternative | Why |
 |----------|------|-------------|-----|
-| Numerical accuracy of `exp()` | Over-approximated | probar proptest (Level 3) | Kani returns any positive float for exp |
+| Numerical accuracy of `exp()` | Over-approx | probar proptest (L3) | Kani returns any positive float for exp |
 | Numerical accuracy of `sqrt()` | Over-approximated | probar proptest (Level 3) | Same issue |
 | Unbounded vector lengths | Bounded to N | probar proptest (Level 3) | Kani requires finite unwind |
 | Concurrent dispatch | Not supported | Manual review + integration tests | Kani is single-threaded |
@@ -1564,10 +1564,10 @@ Target kernels for aprender, ordered by dependency:
 
 | Contract | Paper | Key Equations |
 |----------|-------|---------------|
-| `softmax-kernel-v1.yaml` | Bridle 1990; Goodfellow et al. 2016 Ch.6.2.2 | `σ(x)_i = exp(x_i - max(x)) / Σ exp(x_j - max(x))` |
-| `rmsnorm-kernel-v1.yaml` | Zhang & Sennrich 2019 (arXiv:1910.10683) | `RMSNorm(x) = x / RMS(x) * γ, RMS(x) = √(mean(x²) + ε)` |
+| `softmax-kernel-v1.yaml` | Bridle 1990; Goodfellow 2016 | `σ(x)_i = exp(x_i - max(x)) / Σ exp(x_j - max(x))` |
+| `rmsnorm-kernel-v1.yaml` | Zhang & Sennrich 2019 | `RMSNorm(x) = x / RMS(x) * γ, RMS = √(mean(x²) + ε)` |
 | `rope-kernel-v1.yaml` | Su et al. 2021 (arXiv:2104.09864) | `RoPE(x, m) = x ⊙ cos(mθ) + rotate(x) ⊙ sin(mθ)` |
-| `activation-kernel-v1.yaml` | Shazeer 2020 (arXiv:2002.05202); Ramachandran et al. 2017 | `SwiGLU(x, W, V, b, c) = Swish(xW + b) ⊙ (xV + c)` |
+| `activation-kernel-v1.yaml` | Shazeer 2020; Ramachandran 2017 | `SwiGLU(x,W,V,b,c) = Swish(xW+b) ⊙ (xV+c)` |
 
 ### Tier 2: Composite Kernels (depend on Tier 1)
 
@@ -1575,7 +1575,7 @@ Target kernels for aprender, ordered by dependency:
 |----------|-------|---------------|
 | `attention-kernel-v1.yaml` | Vaswani et al. 2017 (arXiv:1706.03762) | `Attn(Q,K,V) = softmax(QK^T/√d_k)V` |
 | `matmul-kernel-v1.yaml` | Standard linear algebra | `C = AB, C_{ij} = Σ_k A_{ik}B_{kj}` |
-| `flash-attention-v1.yaml` | Dao et al. 2022 (arXiv:2205.14135) | Tiled attention with online softmax (Milakov & Gimelshein 2018) |
+| `flash-attention-v1.yaml` | Dao et al. 2022 | Tiled attention with online softmax (Milakov 2018) |
 
 ### Tier 3: System Kernels (depend on Tier 1 + 2)
 
@@ -1971,7 +1971,8 @@ mod verification {
 3. Meyer, B. (1988). *Object-Oriented Software Construction*. Prentice Hall.
 4. Brady, E. (2017). *Type-Driven Development with Idris*. Manning Publications.
 5. King, A. (2019). "Parse, Don't Validate." https://lexi-lambda.github.io/blog/2019/11/05/parse-don-t-validate/
-6. Williams, S., Waterman, A., Patterson, D. (2009). "Roofline: An Insightful Visual Performance Model." Communications of the ACM, 52(4), 65-76.
+6. Williams, S., Waterman, A., Patterson, D. (2009).
+   "Roofline: An Insightful Visual Performance Model." CACM, 52(4).
 7. Wulf, W. & McKee, S. (1995). "Hitting the Memory Wall: Implications of the Obvious." ACM SIGARCH, 23(1).
 
 ### ML Kernel Papers (Target Contracts)
@@ -1981,7 +1982,8 @@ mod verification {
 10. Su, J. et al. (2021). "RoFormer: Enhanced Transformer with Rotary Position Embedding." arXiv:2104.09864.
 11. Shazeer, N. (2020). "GLU Variants Improve Transformer." arXiv:2002.05202.
 12. Dao, T. et al. (2022). "FlashAttention: Fast and Memory-Efficient Exact Attention." arXiv:2205.14135.
-13. Dao, T. (2023). "FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning." arXiv:2307.08691.
+13. Dao, T. (2023). "FlashAttention-2: Faster Attention with Better Parallelism."
+    arXiv:2307.08691.
 14. Pope, R. et al. (2022). "Efficiently Scaling Transformer Inference." arXiv:2210.09461.
 15. Frantar, E. et al. (2022). "GPTQ: Accurate Post-Training Quantization." arXiv:2210.17323.
 16. Dettmers, T. et al. (2022). "LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale." NeurIPS 2022.
@@ -1993,9 +1995,12 @@ mod verification {
 
 20. Kani Contributors (2022-2025). "Kani Rust Verifier." https://github.com/model-checking/kani
 21. VanHattum, A. et al. (2022). "Verifying Dynamic Trait Objects in Rust." ICSE-SEIP 2022.
-22. Chong, N. et al. (2021). "Code-Level Model Checking in the Software Development Workflow." ICSE-SEIP 2021. (CBMC foundations)
-23. AWS Security (2023). "Using Kani to Validate Security Boundaries in AWS Firecracker." https://model-checking.github.io/kani-verifier-blog/2023/08/31/
-24. AWS (2023). "How s2n-quic Uses Kani to Inspire Confidence." https://model-checking.github.io/kani-verifier-blog/2023/05/30/
+22. Chong, N. et al. (2021). "Code-Level Model Checking in the Software
+    Development Workflow." ICSE-SEIP 2021. (CBMC foundations)
+23. AWS Security (2023). "Using Kani to Validate Security Boundaries
+    in AWS Firecracker." model-checking.github.io/kani-verifier-blog/
+24. AWS (2023). "How s2n-quic Uses Kani to Inspire Confidence."
+    model-checking.github.io/kani-verifier-blog/
 25. Rust Standard Library Verification (2025). "Verifying the Rust Standard Library." arXiv:2510.01072.
 
 ### PAIML Stack Components

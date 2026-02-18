@@ -15,10 +15,10 @@
 //! - [`audit`] — Trace paper→equation→contract→test→proof chain
 //! - [`binding`] — Map contract equations to implementation functions
 
-pub mod schema;
-pub mod scaffold;
-pub mod kani_gen;
-pub mod probar_gen;
 pub mod audit;
 pub mod binding;
 pub mod error;
+pub mod kani_gen;
+pub mod probar_gen;
+pub mod scaffold;
+pub mod schema;
