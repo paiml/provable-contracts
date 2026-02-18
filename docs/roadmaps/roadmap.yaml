@@ -44,11 +44,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Implement Rust trait scaffold generator from YAML contracts
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-02-18T13:25:53Z
-  updated: 2026-02-18T13:48:24.669072300+00:00
+  updated: 2026-02-18T13:48:38.240883980+00:00
   spec: null
   acceptance_criteria:
   - Given a parsed YAML contract, generate Rust trait definition with proof obligations as doc-comments, failing test stubs (contract_tests.rs), and Kani harness stubs (kani_proofs.rs). Phase 3 of the pipeline.
