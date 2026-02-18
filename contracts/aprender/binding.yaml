@@ -1086,3 +1086,99 @@ bindings:
     signature: ~
     status: implemented
     notes: "Pure math — linear growth in t tested via proptest"
+
+  - contract: qwen35-hybrid-forward-v1.yaml
+    equation: attention_sublayer
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — shape preservation and residual tested via proptest"
+
+  - contract: qwen35-hybrid-forward-v1.yaml
+    equation: gdn_sublayer
+    module_path: ~
+    function: ~
+    signature: ~
+    status: not_implemented
+    notes: "GDN layer not yet integrated in aprender forward pass"
+
+  - contract: qwen35-hybrid-forward-v1.yaml
+    equation: ffn_sublayer
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — SwiGLU shape round-trip tested"
+
+  - contract: qwen35-hybrid-forward-v1.yaml
+    equation: hybrid_block
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — exclusive OR layer type tested via proptest"
+
+  - contract: qwen35-hybrid-forward-v1.yaml
+    equation: activation_magnitude
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — RMSNorm bounding tested via proptest"
+
+  - contract: qwen35-hybrid-forward-v1.yaml
+    equation: gradient_flow
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — residual identity Jacobian verified"
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    module_path: "aprender::nn::transformer"
+    function: scaled_dot_product_attention
+    signature: "fn scaled_dot_product_attention(query: &Tensor, key: &Tensor, value: &Tensor, attn_mask: Option<&Tensor>, dropout_p: f32, training: bool) -> (Tensor, Tensor)"
+    status: partial
+    notes: "Function is module-private; 1/sqrt(d_k) scaling applied internally"
+
+  - contract: attention-scaling-v1.yaml
+    equation: variance_preservation
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — variance ≈ 1 for scaled dot product tested via proptest"
+
+  - contract: attention-scaling-v1.yaml
+    equation: softmax_saturation
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — entropy reduction with magnitude tested"
+
+  - contract: attention-scaling-v1.yaml
+    equation: score_bound_with_qknorm
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — Cauchy-Schwarz bound on unit-norm vectors"
+
+  - contract: attention-scaling-v1.yaml
+    equation: attention_entropy
+    module_path: ~
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Pure math — entropy bounds [0, log(m)] tested via proptest"
+
+  - contract: attention-scaling-v1.yaml
+    equation: numerical_stability
+    module_path: "aprender::nn::functional::softmax"
+    function: softmax
+    signature: "fn softmax(x: &Tensor, dim: i32) -> Tensor"
+    status: implemented
+    notes: "Max-subtraction trick implemented in softmax"
