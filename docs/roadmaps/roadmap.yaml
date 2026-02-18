@@ -6,11 +6,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Initialize Rust crate with lib + CLI binary targets
-  status: inprogress
+  status: completed
   priority: critical
   assigned_to: null
   created: 2026-02-18T13:25:40Z
-  updated: 2026-02-18T13:34:19.166038135+00:00
+  updated: 2026-02-18T13:47:29.900954047+00:00
   spec: null
   acceptance_criteria:
   - Set up Cargo.toml with both library and binary targets. Library exposes contract parsing, validation, and Kani harness generation. CLI provides contract validation, scaffold generation, and compliance checking.
