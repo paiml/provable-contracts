@@ -1,0 +1,337 @@
+roadmap_version: '1.0'
+github_enabled: true
+github_repo: paiml/provable-contracts
+roadmap:
+- id: PMAT-001
+  github_issue: null
+  item_type: task
+  title: Initialize Rust crate with lib + CLI binary targets
+  status: planned
+  priority: critical
+  assigned_to: null
+  created: 2026-02-18T13:25:40Z
+  updated: 2026-02-18T13:25:40Z
+  spec: null
+  acceptance_criteria:
+  - Set up Cargo.toml with both library and binary targets. Library exposes contract parsing, validation, and Kani harness generation. CLI provides contract validation, scaffold generation, and compliance checking.
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - infrastructure
+  - rust
+  notes: null
+- id: PMAT-002
+  github_issue: null
+  item_type: task
+  title: Implement YAML contract schema parser and validator
+  status: planned
+  priority: critical
+  assigned_to: null
+  created: 2026-02-18T13:25:47Z
+  updated: 2026-02-18T13:25:47Z
+  spec: null
+  acceptance_criteria:
+  - Parse contract YAML files (metadata, equations, proof_obligations, kernel_structure, simd_dispatch, enforcement, falsification_tests, kani_harnesses, qa_gate). Validate required fields, cross-references, and consistency. Expose as provable_contracts::schema module.
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - library
+  - parser
+  notes: null
+- id: PMAT-003
+  github_issue: null
+  item_type: task
+  title: Implement Rust trait scaffold generator from YAML contracts
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T13:25:53Z
+  updated: 2026-02-18T13:25:53Z
+  spec: null
+  acceptance_criteria:
+  - Given a parsed YAML contract, generate Rust trait definition with proof obligations as doc-comments, failing test stubs (contract_tests.rs), and Kani harness stubs (kani_proofs.rs). Phase 3 of the pipeline.
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - library
+  - codegen
+  notes: null
+- id: PMAT-004
+  github_issue: null
+  item_type: task
+  title: Implement Kani harness generator from YAML contracts
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T13:26:00Z
+  updated: 2026-02-18T13:26:00Z
+  spec: null
+  acceptance_criteria:
+  - 'Generate #[kani::proof] harnesses from kani_harnesses section of YAML contracts. Handle three strategies: exhaustive (integer), stub_float (transcendentals), compositional (stub_verified). Generate appropriate kani::any(), kani::assume(), kani::unwind attributes.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - library
+  - kani
+  - verification
+  notes: null
+- id: PMAT-005
+  github_issue: null
+  item_type: task
+  title: 'Build CLI: provable-contracts validate/scaffold/verify commands'
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T13:26:07Z
+  updated: 2026-02-18T13:26:07Z
+  spec: null
+  acceptance_criteria:
+  - 'CLI binary with subcommands: (1) validate - check YAML contract against schema, (2) scaffold - generate Rust trait + test stubs + Kani harnesses, (3) verify - run cargo kani on generated harnesses, (4) status - show which obligations have Level 3 vs Level 4 coverage, (5) audit - trace paper→equation→contract→test→proof chain.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - cli
+  - ux
+  notes: null
+- id: PMAT-006
+  github_issue: null
+  item_type: task
+  title: Write softmax-kernel-v1.yaml contract (Tier 1)
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T13:26:15Z
+  updated: 2026-02-18T13:26:15Z
+  spec: null
+  acceptance_criteria:
+  - 'First provable contract from paper. Source: Bridle 1990, Goodfellow et al. 2016. Extract equations, proof obligations (SM-INV-001 through SM-MON-001), SIMD dispatch table, falsification tests, and Kani harness definitions. Include MATH.md with full derivation.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - contract
+  - kernel
+  - tier1
+  notes: null
+- id: PMAT-007
+  github_issue: null
+  item_type: task
+  title: Write rmsnorm-kernel-v1.yaml contract (Tier 1)
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T13:26:22Z
+  updated: 2026-02-18T13:26:22Z
+  spec: null
+  acceptance_criteria:
+  - 'Source: Zhang & Sennrich 2019 (arXiv:1910.10683). Extract RMSNorm equation, proof obligations (RMS-INV-001, RMS-EQV-001), kernel phases (sum_of_squares, rms, normalize, scale), SIMD dispatch, Kani harnesses. Include MATH.md.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - contract
+  - kernel
+  - tier1
+  notes: null
+- id: PMAT-008
+  github_issue: null
+  item_type: task
+  title: Write rope-kernel-v1.yaml contract (Tier 1)
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-18T13:26:28Z
+  updated: 2026-02-18T13:26:28Z
+  spec: null
+  acceptance_criteria:
+  - 'Source: Su et al. 2021 (arXiv:2104.09864). Extract RoPE equation, proof obligations (rotation structure, periodicity, position encoding), SIMD dispatch, Kani harnesses for rotation correctness.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - contract
+  - kernel
+  - tier1
+  notes: null
+- id: PMAT-009
+  github_issue: null
+  item_type: task
+  title: Write activation-kernel-v1.yaml contract (Tier 1 - SwiGLU/GeGLU)
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-18T13:26:34Z
+  updated: 2026-02-18T13:26:34Z
+  spec: null
+  acceptance_criteria:
+  - 'Source: Shazeer 2020 (arXiv:2002.05202). Extract SwiGLU equation, proof obligations (gate structure, activation bounds), SIMD dispatch, Kani harnesses.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - contract
+  - kernel
+  - tier1
+  notes: null
+- id: PMAT-010
+  github_issue: null
+  item_type: task
+  title: Write attention-kernel-v1.yaml contract (Tier 2)
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-18T13:26:40Z
+  updated: 2026-02-18T13:26:40Z
+  spec: null
+  acceptance_criteria:
+  - 'Source: Vaswani et al. 2017 (arXiv:1706.03762). Depends on softmax-kernel-v1 and matmul-kernel-v1. Extract attention equation, proof obligations (weight normalization, V-linearity, shape correctness), compositional Kani proofs via stub_verified.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - contract
+  - kernel
+  - tier2
+  notes: null
+- id: PMAT-011
+  github_issue: null
+  item_type: task
+  title: Write matmul-kernel-v1.yaml contract (Tier 2)
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-18T13:26:46Z
+  updated: 2026-02-18T13:26:46Z
+  spec: null
+  acceptance_criteria:
+  - Standard linear algebra GEMM/GEMV. Extract matrix multiply equations, proof obligations (associativity structural, shape propagation, accumulation bounds), SIMD dispatch, Kani harnesses for index bounds and shape correctness.
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - contract
+  - kernel
+  - tier2
+  notes: null
+- id: PMAT-012
+  github_issue: null
+  item_type: task
+  title: Write flash-attention-v1.yaml contract (Tier 2)
+  status: planned
+  priority: low
+  assigned_to: null
+  created: 2026-02-18T13:26:53Z
+  updated: 2026-02-18T13:26:53Z
+  spec: null
+  acceptance_criteria:
+  - 'Source: Dao et al. 2022 (arXiv:2205.14135). Tiled attention with online softmax. Depends on attention-kernel-v1. Extract tiling equations, proof obligations (online softmax equivalence, memory bounds), Kani harnesses for tile correctness.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - contract
+  - kernel
+  - tier2
+  notes: null
+- id: PMAT-013
+  github_issue: null
+  item_type: task
+  title: Achieve full pmat comply compliance
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T13:27:00Z
+  updated: 2026-02-18T13:27:00Z
+  spec: null
+  acceptance_criteria:
+  - 'Fix all pmat comply warnings: add .pmat-metrics.toml, configure CI (.github/workflows/), enable O(1) hooks, add CLAUDE.md with pmat query instructions, fix markdown line lengths (CB-904).'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - quality
+  - compliance
+  notes: null
+- id: PMAT-014
+  github_issue: null
+  item_type: task
+  title: Migrate existing aprender contracts to provable-contracts repo
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-18T13:27:09Z
+  updated: 2026-02-18T13:27:09Z
+  spec: null
+  acceptance_criteria:
+  - Move quantized-dot-product-v1.yaml, tensor-layout-v1.yaml, layer-parity-v1.yaml, kernel-fusion-v1.yaml from aprender/contracts/ to provable-contracts/contracts/. Update aprender to consume from provable-contracts crate. Preserve git history via subtree or copy.
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - migration
+  - contracts
+  notes: null
+- id: PMAT-015
+  github_issue: null
+  item_type: task
+  title: Add Kani verification backend integration tests
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-18T13:27:17Z
+  updated: 2026-02-18T13:27:17Z
+  spec: null
+  acceptance_criteria:
+  - 'Install kani-verifier in CI. Write integration tests that run cargo kani on sample contracts. Verify concrete playback generates reproducible test cases. Test all three strategies: exhaustive, stub_float, compositional.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - testing
+  - kani
+  - verification
+  notes: null
+- id: PMAT-016
+  github_issue: null
+  item_type: task
+  title: Implement probar property test generator from YAML contracts
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-18T13:27:24Z
+  updated: 2026-02-18T13:27:24Z
+  spec: null
+  acceptance_criteria:
+  - 'Generate probar property-based tests from proof_obligations section of YAML contracts. Map obligation types to test patterns: invariant→property, equivalence→comparison, bound→range_check, monotonicity→ordered_pair, linearity→metamorphic.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - library
+  - testing
+  - probar
+  notes: null
+- id: PMAT-017
+  github_issue: null
+  item_type: task
+  title: Publish provable-contracts to crates.io
+  status: planned
+  priority: low
+  assigned_to: null
+  created: 2026-02-18T13:27:31Z
+  updated: 2026-02-18T13:27:31Z
+  spec: null
+  acceptance_criteria:
+  - Prepare for crates.io publication. Add proper metadata (description, license, repository, keywords, categories). Ensure lib.rs has public API docs. Version 0.1.0 with lib + CLI.
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - release
+  - crates-io
+  notes: null
