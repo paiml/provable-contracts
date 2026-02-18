@@ -202,11 +202,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Write matmul-kernel-v1.yaml contract (Tier 2)
-  status: inprogress
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-02-18T13:26:46Z
-  updated: 2026-02-18T13:52:45.513494279+00:00
+  updated: 2026-02-18T13:52:48.488635374+00:00
   spec: null
   acceptance_criteria:
   - Standard linear algebra GEMM/GEMV. Extract matrix multiply equations, proof obligations (associativity structural, shape propagation, accumulation bounds), SIMD dispatch, Kani harnesses for index bounds and shape correctness.
