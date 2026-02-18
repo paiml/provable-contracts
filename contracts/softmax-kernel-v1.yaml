@@ -1,0 +1,142 @@
+metadata:
+  version: "1.0.0"
+  created: "2026-02-18"
+  author: "PAIML Engineering"
+  description: "Softmax kernel — numerically stable exponential normalization"
+  references:
+    - "Bridle (1990) Training Stochastic Model Recognition Algorithms as Networks"
+    - "Milakov & Gimelshein (2018) Online normalizer calculation for softmax"
+
+equations:
+  softmax:
+    formula: "σ(x)_i = exp(x_i - max(x)) / Σ_j exp(x_j - max(x))"
+    domain: "x ∈ ℝ^n, n ≥ 1"
+    codomain: "σ(x) ∈ (0,1)^n"
+    invariants:
+      - "Σ σ(x)_i = 1.0 (normalization)"
+      - "σ(x)_i > 0 for all i (strict positivity)"
+      - "argmax(σ(x)) = argmax(x) (order preservation)"
+
+proof_obligations:
+  - type: invariant
+    property: "Output sums to 1"
+    formal: "|Σ σ(x)_i - 1.0| < ε"
+    tolerance: 1.0e-6
+    applies_to: all
+  - type: invariant
+    property: "All outputs strictly positive"
+    formal: "σ(x)_i > 0 for all i"
+    applies_to: all
+  - type: bound
+    property: "Each output bounded in (0,1)"
+    formal: "0 < σ(x)_i < 1 for all i"
+    applies_to: all
+  - type: monotonicity
+    property: "Order preservation"
+    formal: "x_i > x_j ⟹ σ(x)_i > σ(x)_j"
+    applies_to: all
+  - type: equivalence
+    property: "SIMD matches scalar within ULP"
+    tolerance: 8.0
+    applies_to: simd
+  - type: invariant
+    property: "Translation invariance"
+    formal: "σ(x + c·1) = σ(x) for any scalar c"
+    applies_to: all
+
+kernel_structure:
+  phases:
+    - name: find_max
+      description: "Compute max(x) for numerical stability"
+      invariant: "max >= x_i for all i"
+    - name: exp_subtract
+      description: "Compute exp(x_i - max) for each element"
+      invariant: "result_i ∈ (0, 1] for all i"
+    - name: sum_exp
+      description: "Compute Σ exp(x_i - max)"
+      invariant: "sum > 0"
+    - name: normalize
+      description: "Divide each exp by sum"
+      invariant: "output_i = exp_i / sum"
+
+simd_dispatch:
+  softmax:
+    scalar: softmax_scalar
+    avx2: softmax_avx2
+
+enforcement:
+  normalization:
+    description: "Output must sum to 1.0"
+    check: "contract_tests::FALSIFY-SM-001"
+    severity: "ERROR"
+  positivity:
+    description: "All outputs must be positive"
+    check: "contract_tests::FALSIFY-SM-002"
+    severity: "ERROR"
+
+falsification_tests:
+  - id: FALSIFY-SM-001
+    rule: "Normalization"
+    prediction: "sum(softmax(x)) ≈ 1.0 for random x ∈ [-1000, 1000]^n"
+    test: "proptest with 10000 random vectors, dim 1..128"
+    if_fails: "Missing or incorrect max-subtraction trick"
+  - id: FALSIFY-SM-002
+    rule: "Positivity"
+    prediction: "softmax(x)_i > 0 for all i"
+    test: "proptest with extreme values near f32::MIN/MAX"
+    if_fails: "exp underflow not handled"
+  - id: FALSIFY-SM-003
+    rule: "Order preservation"
+    prediction: "argmax(softmax(x)) = argmax(x)"
+    test: "proptest with distinct-element vectors"
+    if_fails: "Numerical instability in subtraction"
+  - id: FALSIFY-SM-004
+    rule: "SIMD equivalence"
+    prediction: "|softmax_avx2(x) - softmax_scalar(x)| < 8 ULP"
+    test: "proptest comparing scalar vs SIMD output"
+    if_fails: "SIMD reduction order differs from scalar"
+  - id: FALSIFY-SM-005
+    rule: "Boundary - single element"
+    prediction: "softmax([x]) = [1.0] for any x"
+    test: "proptest with single-element vectors"
+    if_fails: "Edge case in loop bounds"
+  - id: FALSIFY-SM-006
+    rule: "Boundary - identical elements"
+    prediction: "softmax([c,c,...,c]) = [1/n, 1/n, ..., 1/n]"
+    test: "proptest with constant vectors"
+    if_fails: "Rounding error accumulation"
+
+kani_harnesses:
+  - id: KANI-SM-001
+    obligation: SM-INV-001
+    property: "Softmax sums to 1.0 for small vectors"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_softmax_normalization
+  - id: KANI-SM-002
+    obligation: SM-INV-002
+    property: "All outputs positive for small vectors"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_softmax_positivity
+  - id: KANI-SM-003
+    obligation: SM-BND-001
+    property: "Outputs bounded in (0,1)"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_softmax_bounded
+
+qa_gate:
+  id: F-SM-001
+  name: "Softmax Contract"
+  description: "Numerically stable softmax kernel quality gate"
+  checks:
+    - "normalization"
+    - "positivity"
+    - "order_preservation"
+    - "simd_equivalence"
+  pass_criteria: "All 6 falsification tests pass + Kani harnesses verify"
+  falsification: "Introduce off-by-one in max reduction loop"
