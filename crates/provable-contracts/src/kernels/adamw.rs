@@ -154,7 +154,6 @@ pub unsafe fn adamw_step_avx2(
 
 include!("adamw_ptx.rs");
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
