@@ -877,3 +877,156 @@ roadmap:
   - phase7
   - lean4
   notes: null
+- id: PMAT-049
+  github_issue: null
+  item_type: task
+  title: GELU kernel contract (GH-1)
+  status: inprogress
+  priority: high
+  assigned_to: null
+  created: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T14:38:01.870564836+00:00
+  spec: null
+  acceptance_criteria:
+  - Create gelu-kernel-v1.yaml with proof obligations, falsification tests, Kani harnesses
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-050
+  github_issue: null
+  item_type: task
+  title: ALiBi positional encoding kernel (GH-2)
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T14:37:55Z
+  spec: null
+  acceptance_criteria:
+  - Create alibi-kernel-v1.yaml + alibi.rs for Falcon/BLOOM
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-051
+  github_issue: null
+  item_type: task
+  title: Absolute position embeddings kernel (GH-3)
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T14:37:55Z
+  spec: null
+  acceptance_criteria:
+  - Create absolute-position-v1.yaml + absolute_position.rs for GPT-2/Phi
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-052
+  github_issue: null
+  item_type: task
+  title: Embedding lookup kernel (GH-4)
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T14:37:55Z
+  spec: null
+  acceptance_criteria:
+  - Create embedding-lookup-v1.yaml + embedding.rs for all architectures
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-053
+  github_issue: null
+  item_type: task
+  title: Linear projection kernel (GH-5)
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T14:37:55Z
+  spec: null
+  acceptance_criteria:
+  - Create linear-projection-v1.yaml + linear.rs for all architectures
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-054
+  github_issue: null
+  item_type: task
+  title: Sampling algorithms kernel (GH-6)
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T14:37:55Z
+  spec: null
+  acceptance_criteria:
+  - Implement sampling.rs for existing sampling-algorithms-v1.yaml
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-055
+  github_issue: null
+  item_type: task
+  title: Tied embeddings + bias-add kernels (GH-7)
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T14:37:55Z
+  spec: null
+  acceptance_criteria:
+  - Create tied-embeddings-v1.yaml + bias-add-v1.yaml + implementations
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-056
+  github_issue: null
+  item_type: task
+  title: Dropout kernel (GH-8)
+  status: planned
+  priority: low
+  assigned_to: null
+  created: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T14:37:55Z
+  spec: null
+  acceptance_criteria:
+  - Create dropout-v1.yaml + dropout.rs
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-057
+  github_issue: null
+  item_type: task
+  title: F16 conversion kernel (GH-9)
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T14:37:55Z
+  spec: null
+  acceptance_criteria:
+  - Implement f16_convert.rs for existing f16-conversion-v1.yaml
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
