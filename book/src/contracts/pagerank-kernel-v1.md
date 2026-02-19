@@ -54,7 +54,8 @@ $$
 
 ## Kernel Phases
 
-1. **build_transition**: Normalize adjacency matrix to column-stochastic M — *Each column sums to 1 (or handled as dangling)*
+1. **build_transition**: Normalize adjacency matrix to column-stochastic M
+   — *Each column sums to 1 (or handled as dangling)*
 2. **initialize**: Set r_0 = uniform distribution — *sum(r_0) = 1*
 3. **iterate**: r_{t+1} = d * M * r_t + (1-d)/N — *sum(r_{t+1}) = 1*
 4. **check_convergence**: Check ||r_{t+1} - r_t||_1 < eps — *L1 norm decreases monotonically*

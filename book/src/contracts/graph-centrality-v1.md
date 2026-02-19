@@ -150,7 +150,9 @@ $$
 
 Graph centrality correctness quality gate
 
-**Checks:** degree_bounded, betweenness_non_negative, eigenvector_non_negative, complete_graph_symmetry, star_graph_degree, harmonic_bounded
+**Checks:** degree_bounded, betweenness_non_negative,
+eigenvector_non_negative, complete_graph_symmetry,
+star_graph_degree, harmonic_bounded
 
 **Pass criteria:** All 8 falsification tests pass
 

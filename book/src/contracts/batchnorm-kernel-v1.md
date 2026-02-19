@@ -71,7 +71,8 @@ $$
 1. **compute_batch_stats**: Compute per-channel mean and variance across batch — *sigma^2 >= 0*
 2. **normalize**: Subtract mean, divide by sqrt(var + eps) — *denominator > 0*
 3. **affine_transform**: Apply gamma * normalized + beta — *Output dimension preserved*
-4. **update_running_stats**: EMA update of running mean and variance (training only) — *Running variance stays non-negative*
+4. **update_running_stats**: EMA update of running mean and variance
+   (training only) — *Running variance stays non-negative*
 
 ## SIMD Dispatch
 

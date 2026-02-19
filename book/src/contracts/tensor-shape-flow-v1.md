@@ -69,7 +69,8 @@ $$
 gate[d_ff, h] × up[d_ff, h] \to SiLU(gate·x) * (up·x) \to down[h, d_ff] \to [h]
 $$
 
-**Domain:** $x \in \mathbb{R}^h, gate \in \mathbb{R}^{d_ff×h}, up \in \mathbb{R}^{d_ff×h}, down \in \mathbb{R}^{h×d_ff}$
+**Domain:** $x \in \mathbb{R}^h, gate \in \mathbb{R}^{d_ff×h},
+up \in \mathbb{R}^{d_ff×h}, down \in \mathbb{R}^{h×d_ff}$
 
 **Invariants:**
 

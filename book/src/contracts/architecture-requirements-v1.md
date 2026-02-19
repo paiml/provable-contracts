@@ -41,7 +41,8 @@ $$
 ### role_mapping
 
 $$
-map(role) = field_name in IndexedLayerWeights; \forall role \in required(arch): map(role).ptr \neq 0 ∧ map(role).len > 0
+map(role) = field\_name \in IndexedLayerWeights;
+\forall role \in required(arch): map(role).ptr \neq 0 ∧ map(role).len > 0
 
 $$
 
@@ -58,7 +59,10 @@ $$
 ### weight_completeness
 
 $$
-required(arch) = base_roles ∪ (qk_norm_roles if has_qk_norm) ∪ (bias_roles if has_bias); complete(model, arch) = \forall role \in required(arch): role.ptr \neq 0 ∧ role.len > 0
+required(arch) = base\_roles ∪ (qk\_norm\_roles\ if\ has\_qk\_norm)
+  ∪ (bias\_roles\ if\ has\_bias);
+complete(model, arch) = \forall role \in required(arch):
+  role.ptr \neq 0 ∧ role.len > 0
 
 $$
 
@@ -140,7 +144,9 @@ $$
 
 Per-architecture tensor weight role completeness quality gate
 
-**Checks:** yaml_rust_parity, base_roles_universal, constraint_matrix_coverage, role_count_invariants, weight_completeness, alias_consistency, monotonicity
+**Checks:** yaml_rust_parity, base_roles_universal,
+constraint_matrix_coverage, role_count_invariants,
+weight_completeness, alias_consistency, monotonicity
 
 **Pass criteria:** All 12 falsification tests pass + 3 Kani harnesses verify
 

@@ -53,7 +53,8 @@ $$
 
 ## Kernel Phases
 
-1. **kv_broadcast**: Broadcast KV heads to match query head groups — *Each KV head serves exactly num_heads/num_kv_heads query heads*
+1. **kv_broadcast**: Broadcast KV heads to match query head groups
+   — *Each KV head serves exactly num_heads/num_kv_heads query heads*
 2. **qk_matmul**: Compute Q * K^T / sqrt(d_k) per head — *Score matrix is n x s per head*
 3. **attention_softmax**: Apply softmax to scores per query position — *Weights sum to 1 per row*
 4. **weighted_sum**: Compute weighted sum of V rows — *Output is convex combination of V*
