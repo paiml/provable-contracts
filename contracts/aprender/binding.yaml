@@ -433,24 +433,24 @@ bindings:
     module_path: "realizar::gpu::scheduler::linear_attn"
     function: "gated_delta_net_decay"
     signature: "fn gated_delta_net_decay(a_log: &[f32], dt: &[f32]) -> Vec<f32>"
-    status: partial
-    notes: "Exponential decay scaffolded in linear_attn; decay = exp(-softplus(A_log) * dt)"
+    status: implemented
+    notes: "Decay in gated_delta_rule_step(): decay = exp(g_h), S *= decay (line 648-652 of linear_attn.rs)"
 
   - contract: gated-delta-net-v1.yaml
     equation: write
     module_path: "realizar::gpu::scheduler::linear_attn"
     function: "gated_delta_net_write"
     signature: "fn gated_delta_net_write(state: &mut [f32], k: &[f32], delta: &[f32], decay: &[f32])"
-    status: partial
-    notes: "State write: S = decay * S + k ⊗ delta; scaffolded in linear_attn"
+    status: implemented
+    notes: "State write in gated_delta_rule_step(): S += k ⊗ delta (line 670-680 of linear_attn.rs)"
 
   - contract: gated-delta-net-v1.yaml
     equation: output
     module_path: "realizar::gpu::scheduler::linear_attn"
     function: "gated_delta_net_output"
     signature: "fn gated_delta_net_output(y: &[f32], z: &[f32]) -> Vec<f32>"
-    status: partial
-    notes: "Output gating: output = y * silu(z); scaffolded in linear_attn"
+    status: implemented
+    notes: "Output in gated_delta_rule_step(): o = S^T @ q, then rms_norm_gated (line 682-694 of linear_attn.rs)"
 
   - contract: format-parity-v1.yaml
     equation: transpose_involution
@@ -1111,8 +1111,8 @@ bindings:
     module_path: "realizar::gpu::scheduler::linear_attn"
     function: "gated_delta_net_forward"
     signature: "fn gated_delta_net_forward(input: &[f32], weights: &GdnWeights, state: &mut GdnState) -> Vec<f32>"
-    status: partial
-    notes: "GDN forward pass scaffolded in realizar linear_attn; Conv1D + SiLU + recurrence"
+    status: implemented
+    notes: "forward_linear_block_with_cache() in linear_attn.rs: pre-norm → projections → causal Conv1D → SiLU → gated_delta_rule_step → RMSNorm_gated → out_proj → residual"
 
   - contract: qwen35-hybrid-forward-v1.yaml
     equation: ffn_sublayer
@@ -1265,40 +1265,40 @@ bindings:
     module_path: "realizar::gpu::scheduler::linear_attn"
     function: "gated_delta_net_decay"
     signature: "fn gated_delta_net_decay(a_log: &[f32], dt: &[f32]) -> Vec<f32>"
-    status: partial
-    notes: "Exponential decay in linear_attn; decay = exp(-softplus(A_log) * dt)"
+    status: implemented
+    notes: "Decay in gated_delta_rule_step(): decay = exp(g_h), S *= decay (line 648-652)"
 
   - contract: gated-delta-net-v1.yaml
     equation: read
     module_path: "realizar::gpu::scheduler::linear_attn"
     function: "gated_delta_net_read"
     signature: "fn gated_delta_net_read(state: &[f32], q: &[f32]) -> Vec<f32>"
-    status: partial
-    notes: "State read via query: read = state^T @ q; scaffolded in linear_attn"
+    status: implemented
+    notes: "State read in gated_delta_rule_step(): mem = S^T @ k_norm (line 654-665)"
 
   - contract: gated-delta-net-v1.yaml
     equation: delta
     module_path: "realizar::gpu::scheduler::linear_attn"
     function: "gated_delta_net_delta"
     signature: "fn gated_delta_net_delta(v: &[f32], read: &[f32], beta: &[f32]) -> Vec<f32>"
-    status: partial
-    notes: "Delta rule: delta = beta * (v - read); scaffolded in linear_attn"
+    status: implemented
+    notes: "Delta rule in gated_delta_rule_step(): delta = beta * (v - mem) (line 667-680)"
 
   - contract: gated-delta-net-v1.yaml
     equation: write
     module_path: "realizar::gpu::scheduler::linear_attn"
     function: "gated_delta_net_write"
     signature: "fn gated_delta_net_write(state: &mut [f32], k: &[f32], delta: &[f32], decay: &[f32])"
-    status: partial
-    notes: "State write: S = decay * S + k ⊗ delta; scaffolded in linear_attn"
+    status: implemented
+    notes: "State write in gated_delta_rule_step(): S += k ⊗ delta (line 670-680)"
 
   - contract: gated-delta-net-v1.yaml
     equation: output
     module_path: "realizar::gpu::scheduler::linear_attn"
     function: "gated_delta_net_output"
     signature: "fn gated_delta_net_output(y: &[f32], z: &[f32]) -> Vec<f32>"
-    status: partial
-    notes: "Output gating: output = y * silu(z); scaffolded in linear_attn"
+    status: implemented
+    notes: "Output in gated_delta_rule_step(): o = S^T @ q_norm (line 682-694)"
 
   - contract: gqa-kernel-v1.yaml
     equation: gqa
