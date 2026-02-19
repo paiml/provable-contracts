@@ -1000,11 +1000,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Dropout kernel (GH-8)
-  status: planned
+  status: completed
   priority: low
   assigned_to: null
   created: 2026-02-19T14:37:55Z
-  updated: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T15:24:05.895566831+00:00
   spec: null
   acceptance_criteria:
   - Create dropout-v1.yaml + dropout.rs
