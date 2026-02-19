@@ -898,11 +898,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: ALiBi positional encoding kernel (GH-2)
-  status: planned
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-02-19T14:37:55Z
-  updated: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T15:23:33.885826140+00:00
   spec: null
   acceptance_criteria:
   - Create alibi-kernel-v1.yaml + alibi.rs for Falcon/BLOOM
