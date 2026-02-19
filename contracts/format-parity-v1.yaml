@@ -79,6 +79,11 @@ falsification_tests:
     prediction: "GGUF→APR→GGUF roundtrip is lossless"
     test: "proptest with format converter"
     if_fails: "Data corruption in format conversion"
+  - id: FALSIFY-FP-005
+    rule: "SIMD format equivalence"
+    prediction: "SIMD format check matches scalar"
+    test: "proptest"
+    if_fails: " compare scalar vs SIMD format parity:SIMD format check diverges"
 
 kani_harnesses:
   - id: KANI-FP-001

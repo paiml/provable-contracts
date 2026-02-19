@@ -377,6 +377,17 @@ bindings:
     status: implemented
     notes: "Per-head QK normalization uses RMSNorm; tested via RMSNorm::without_affine"
 
+  - contract: qk-norm-v1.yaml
+    equation: qk_rmsnorm
+    module_path: "trueno_gpu::kernels::layernorm::PerHeadRmsNormKernel"
+    function: "PerHeadRmsNormKernel::build_ptx"
+    signature: "fn build_ptx(&self) -> PtxKernel"
+    status: implemented
+    notes: >
+      GPU per-head RMSNorm using rsqrt.approx and warp shuffle reduction.
+      Launched via realizar::per_head_rmsnorm_into(). Cross-backend equivalence
+      tested by FALSIFY-QKN-005 (GPU reference simulation vs CPU RMSNorm::forward).
+
   - contract: tensor-shape-flow-v1.yaml
     equation: qkv_projection
     module_path: ~

@@ -78,6 +78,11 @@ falsification_tests:
     prediction: "Doubling params halves bandwidth ceiling"
     test: "proptest comparing ceiling for n vs 2n params"
     if_fails: "Non-monotonic model size behavior"
+  - id: FALSIFY-RM-005
+    rule: "SIMD roofline equivalence"
+    prediction: "SIMD roofline matches scalar"
+    test: "proptest"
+    if_fails: " compare scalar vs SIMD roofline calc:SIMD roofline bounds differ"
 
 kani_harnesses:
   - id: KANI-RM-001

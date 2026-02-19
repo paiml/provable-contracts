@@ -87,6 +87,11 @@ falsification_tests:
     prediction: "|act_avx2(x) - act_scalar(x)| < 4 ULP for each activation"
     test: "proptest comparing all activations scalar vs SIMD"
     if_fails: "SIMD fast-math approximation diverges"
+  - id: FALSIFY-ACT-006
+    rule: "ReLU monotonic"
+    prediction: "x1 <= x2 => ReLU(x1) <= ReLU(x2)"
+    test: "proptest with random x1 <= x2 pairs"
+    if_fails: "ReLU implementation not monotonic"
 
 kani_harnesses:
   - id: KANI-ACT-001

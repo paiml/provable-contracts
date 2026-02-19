@@ -67,6 +67,16 @@ falsification_tests:
     prediction: "Calculation matches expected range"
     test: "Deterministic test with DDR4 values"
     if_fails: "Arithmetic error in ceiling formula"
+  - id: FALSIFY-PG-004
+    rule: "Efficiency grade monotonic"
+    prediction: "Higher efficiency => same or better grade"
+    test: "proptest: eff1 < eff2 => grade(eff1) <= grade(eff2)"
+    if_fails: "Grade function not monotonic"
+  - id: FALSIFY-PG-005
+    rule: "SIMD grading equivalence"
+    prediction: "SIMD grading matches scalar"
+    test: "proptest: compare scalar vs SIMD grade computation"
+    if_fails: "SIMD path assigns different grades"
 
 kani_harnesses:
   - id: KANI-PG-001

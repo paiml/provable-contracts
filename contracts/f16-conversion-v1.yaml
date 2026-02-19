@@ -59,6 +59,11 @@ falsification_tests:
     prediction: "Negative f16 maps to negative f32"
     test: "proptest with sign bit set"
     if_fails: "Sign bit position error"
+  - id: FALSIFY-F16-004
+    rule: "SIMD conversion equivalence"
+    prediction: "SIMD f16 conversion matches scalar"
+    test: "proptest"
+    if_fails: " compare scalar vs SIMD f16 conversion:SIMD conversion rounding differs"
 
 kani_harnesses:
   - id: KANI-F16-001

@@ -63,6 +63,11 @@ falsification_tests:
     prediction: "More layers => more launches"
     test: "proptest comparing L and L+delta"
     if_fails: "Non-monotonic launch count"
+  - id: FALSIFY-KL-004
+    rule: "SIMD kernel equivalence"
+    prediction: "SIMD kernel budget matches scalar"
+    test: "proptest"
+    if_fails: " compare scalar vs SIMD budget calc:SIMD budget computation differs"
 
 kani_harnesses:
   - id: KANI-KL-001

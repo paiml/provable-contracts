@@ -85,6 +85,26 @@ falsification_tests:
     prediction: "All dequantized values finite"
     test: "proptest with random valid superblock fields"
     if_fails: "NaN from scale overflow"
+  - id: FALSIFY-QS-004
+    rule: "Offset vanishing"
+    prediction: "Scale-only format has zero offset term"
+    test: "Deterministic: verify Q6K offset == 0"
+    if_fails: "Offset term present in scale-only format"
+  - id: FALSIFY-QS-005
+    rule: "bsum weight independence"
+    prediction: "bsums depend only on activations, not weights"
+    test: "proptest: change weights, verify bsums unchanged"
+    if_fails: "bsum incorrectly depends on weight values"
+  - id: FALSIFY-QS-006
+    rule: "Byte layout consistency"
+    prediction: "Superblock byte count matches format spec"
+    test: "Deterministic: sizeof matches documented layout"
+    if_fails: "Padding or alignment error in superblock"
+  - id: FALSIFY-QS-007
+    rule: "SIMD dequant equivalence"
+    prediction: "SIMD dequantization matches scalar"
+    test: "proptest: compare scalar vs SIMD dequant output"
+    if_fails: "SIMD path produces different dequant values"
 
 kani_harnesses:
   - id: KANI-QS-001

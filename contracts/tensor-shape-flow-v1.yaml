@@ -92,6 +92,11 @@ falsification_tests:
     prediction: "Final output dim == vocab_size"
     test: "proptest with random vocab sizes"
     if_fails: "LM head weight shape mismatch"
+  - id: FALSIFY-TSF-006
+    rule: "SIMD shape equivalence"
+    prediction: "SIMD shape propagation matches scalar"
+    test: "proptest"
+    if_fails: " compare scalar vs SIMD shape flow:SIMD path computes different shapes"
 
 kani_harnesses:
   - id: KANI-TSF-001

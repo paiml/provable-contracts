@@ -80,6 +80,11 @@ falsification_tests:
     prediction: "T=1 softmax matches raw softmax"
     test: "proptest with random logits"
     if_fails: "Temperature division error"
+  - id: FALSIFY-SA-005
+    rule: "SIMD sampling equivalence"
+    prediction: "SIMD sampling matches scalar"
+    test: "proptest"
+    if_fails: " compare scalar vs SIMD sampling:SIMD sampler selects different tokens"
 
 kani_harnesses:
   - id: KANI-SA-001

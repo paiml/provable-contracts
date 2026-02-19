@@ -42,6 +42,15 @@ proof_obligations:
     property: "SIMD matches scalar within ULP"
     tolerance: 8.0
     applies_to: simd
+  - type: equivalence
+    property: "GPU kernel matches CPU reference"
+    tolerance: 1.0e-3
+    applies_to: gpu
+  - type: invariant
+    property: "Per-head independence"
+    formal: "RMSNorm([h1;h2;...]) = [RMSNorm(h1); RMSNorm(h2); ...]"
+    tolerance: 0.0
+    applies_to: all
 
 falsification_tests:
   - id: FALSIFY-QKN-001
@@ -64,6 +73,21 @@ falsification_tests:
     prediction: "RMSNorm(0) = 0"
     test: "direct assertion on zero input"
     if_fails: "Division by zero not handled by eps"
+  - id: FALSIFY-QKN-005
+    rule: "SIMD scalar equivalence"
+    prediction: "SIMD QK-norm matches scalar within 8 ULP"
+    test: "proptest: compare scalar vs SIMD QK-norm output"
+    if_fails: "SIMD normalization diverges beyond ULP tolerance"
+  - id: FALSIFY-QKN-006
+    rule: "Cross-backend equivalence"
+    prediction: "GPU per-head RMSNorm algorithm (rsqrt.approx) matches CPU RMSNorm::forward"
+    test: "proptest comparing GPU reference simulation vs CPU at Qwen3-8B dimensions"
+    if_fails: "GPU kernel diverges from CPU — check argument order, head count, or rsqrt precision"
+  - id: FALSIFY-QKN-007
+    rule: "Per-head independence"
+    prediction: "Normalizing N heads produces same result as normalizing each head independently"
+    test: "proptest comparing batch per-head vs individual head normalization"
+    if_fails: "Head slicing or offset computation incorrect in GPU kernel"
 
 kani_harnesses:
   - id: KANI-QKN-001
@@ -83,5 +107,5 @@ qa_gate:
     - "bounded_amplitude"
     - "idempotent"
     - "zero_stability"
-  pass_criteria: "All 4 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 7 falsification tests pass"
   falsification: "Set eps=0 to trigger division by zero"
