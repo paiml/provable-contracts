@@ -58,6 +58,9 @@ pub mod lbfgs;
 pub mod cma_es;
 pub mod gated_delta_net;
 
+#[cfg(kani)]
+mod kani_proofs;
+
 /// Backend selector for kernel dispatch.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Backend {
