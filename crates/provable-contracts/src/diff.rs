@@ -83,11 +83,7 @@ pub fn diff_contracts(old: &Contract, new: &Contract) -> ContractDiff {
         removed: eq_diff.1,
         changed: eq_changed,
     };
-    if !eq_section.removed.is_empty() || !eq_section.changed.is_empty() {
-        max_bump = SemverBump::Major;
-    } else if !eq_section.added.is_empty() {
-        max_bump = bump_max(max_bump, SemverBump::Minor);
-    }
+    max_bump = bump_max(max_bump, section_bump(&eq_section, SemverBump::Major, SemverBump::Minor));
     sections.push(eq_section);
 
     // Proof obligations
@@ -102,11 +98,7 @@ pub fn diff_contracts(old: &Contract, new: &Contract) -> ContractDiff {
         .map(|o| format!("{}:{}", o.obligation_type, o.property))
         .collect();
     let ob_diff = diff_sets("proof_obligations", &old_obs, &new_obs);
-    if !ob_diff.removed.is_empty() {
-        max_bump = SemverBump::Major;
-    } else if !ob_diff.added.is_empty() {
-        max_bump = bump_max(max_bump, SemverBump::Minor);
-    }
+    max_bump = bump_max(max_bump, section_bump(&ob_diff, SemverBump::Major, SemverBump::Minor));
     sections.push(ob_diff);
 
     // Falsification tests
@@ -121,29 +113,21 @@ pub fn diff_contracts(old: &Contract, new: &Contract) -> ContractDiff {
         .map(|t| t.id.clone())
         .collect();
     let ft_diff = diff_sets("falsification_tests", &old_ft, &new_ft);
-    if !ft_diff.removed.is_empty() || !ft_diff.added.is_empty() {
-        max_bump = bump_max(max_bump, SemverBump::Minor);
-    }
+    max_bump = bump_max(max_bump, section_bump(&ft_diff, SemverBump::Minor, SemverBump::Minor));
     sections.push(ft_diff);
 
     // Kani harnesses
     let old_kh: BTreeSet<String> = old.kani_harnesses.iter().map(|h| h.id.clone()).collect();
     let new_kh: BTreeSet<String> = new.kani_harnesses.iter().map(|h| h.id.clone()).collect();
     let kh_diff = diff_sets("kani_harnesses", &old_kh, &new_kh);
-    if !kh_diff.removed.is_empty() || !kh_diff.added.is_empty() {
-        max_bump = bump_max(max_bump, SemverBump::Minor);
-    }
+    max_bump = bump_max(max_bump, section_bump(&kh_diff, SemverBump::Minor, SemverBump::Minor));
     sections.push(kh_diff);
 
     // Enforcement rules
     let old_enf: BTreeSet<String> = old.enforcement.keys().cloned().collect();
     let new_enf: BTreeSet<String> = new.enforcement.keys().cloned().collect();
     let enf_diff = diff_sets("enforcement", &old_enf, &new_enf);
-    if !enf_diff.removed.is_empty() {
-        max_bump = bump_max(max_bump, SemverBump::Minor);
-    } else if !enf_diff.added.is_empty() {
-        max_bump = bump_max(max_bump, SemverBump::Patch);
-    }
+    max_bump = bump_max(max_bump, section_bump(&enf_diff, SemverBump::Minor, SemverBump::Patch));
     sections.push(enf_diff);
 
     // Metadata version change
@@ -199,6 +183,17 @@ fn diff_equation_changes(old: &Contract, new: &Contract) -> Vec<String> {
         }
     }
     changed
+}
+
+/// Determine bump for a section: removals/changes → `on_break`, additions → `on_add`.
+fn section_bump(section: &SectionDiff, on_break: SemverBump, on_add: SemverBump) -> SemverBump {
+    if !section.removed.is_empty() || !section.changed.is_empty() {
+        on_break
+    } else if !section.added.is_empty() {
+        on_add
+    } else {
+        SemverBump::None
+    }
 }
 
 fn bump_max(current: SemverBump, candidate: SemverBump) -> SemverBump {
