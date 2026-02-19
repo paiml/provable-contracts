@@ -26,7 +26,7 @@ proof_obligations:
     lean:
       theorem: Softmax.partition_of_unity
       module: ProvableContracts.Softmax
-      status: sorry
+      status: proved
       depends_on:
         - Real.exp_pos
         - Finset.sum_div_distrib
@@ -41,7 +41,7 @@ proof_obligations:
     lean:
       theorem: Softmax.softmax_pos
       module: ProvableContracts.Softmax
-      status: sorry
+      status: proved
       depends_on:
         - Real.exp_pos
       mathlib_imports:
@@ -68,7 +68,7 @@ proof_obligations:
     lean:
       theorem: Softmax.monotone
       module: ProvableContracts.Softmax
-      status: sorry
+      status: proved
       depends_on:
         - Real.exp_strictMono
       mathlib_imports:
@@ -95,8 +95,8 @@ verification_summary:
   total_obligations: 6
   l2_property_tested: 6
   l3_kani_proved: 3
-  l4_lean_proved: 0
-  l4_sorry_count: 5
+  l4_lean_proved: 3
+  l4_sorry_count: 2
   l4_not_applicable: 1
 
 kernel_structure:

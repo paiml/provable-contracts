@@ -19,9 +19,13 @@ namespace ProvableContracts.Softmax
 
 open Real Finset
 
--- Status: sorry (proof pending)
+-- Status: proved
+/-- Softmax outputs sum to 1: Σᵢ exp(xᵢ)/Z = Z/Z = 1. -/
 theorem partition_of_unity {n : ℕ} (x : RVec n) :
     univ.sum (softmax x) = 1 := by
-  sorry
+  unfold softmax
+  simp_rw [Finset.sum_div]
+  apply div_self
+  ne_of_gt (Finset.sum_pos (fun j _ => Real.exp_pos (x j)) univ_nonempty)
 
 end ProvableContracts.Softmax

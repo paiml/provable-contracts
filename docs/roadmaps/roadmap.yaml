@@ -1064,3 +1064,20 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-060
+  github_issue: null
+  item_type: task
+  title: Prove three softmax theorems in Lean 4 (CB-1050)
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-19T16:49:29Z
+  updated: 2026-02-19T16:49:29Z
+  spec: null
+  acceptance_criteria:
+  - Replace sorry stubs with complete proofs for softmax_pos, partition_of_unity, and monotone theorems.
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
