@@ -82,5 +82,5 @@ qa_gate:
     - "bias_trick_correct"
     - "roundtrip_identity"
     - "sign_preserved"
-  pass_criteria: "All 3 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 4 falsification tests pass"
   falsification: "Pass subnormal f16 to observe precision loss"

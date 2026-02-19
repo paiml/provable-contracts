@@ -117,5 +117,5 @@ qa_gate:
     - "residual"
     - "swiglu_shape"
     - "lm_head"
-  pass_criteria: "All 5 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 6 falsification tests pass"
   falsification: "Set num_kv_heads to prime not dividing num_heads"

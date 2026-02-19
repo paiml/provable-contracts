@@ -84,5 +84,5 @@ qa_gate:
     - "density_gate"
     - "nan_inf_rejection"
     - "l2_norm_nondegeneracy"
-  pass_criteria: "All 3 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 4 falsification tests pass"
   falsification: "Pass 95% zero matrix to trigger density gate"

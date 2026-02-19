@@ -102,5 +102,5 @@ qa_gate:
     - "memory_bound_classification"
     - "throughput_bounded"
     - "monotonicity"
-  pass_criteria: "All 4 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 5 falsification tests pass"
   falsification: "Set bandwidth to 0 to trigger division by zero"

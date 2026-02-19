@@ -126,5 +126,5 @@ qa_gate:
     - "dequant_finite"
     - "offset_vanishing"
     - "bsum_independence"
-  pass_criteria: "All 6 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 7 falsification tests pass"
   falsification: "Change Q4K block size to 143 to break element count"

@@ -138,5 +138,5 @@ qa_gate:
     - "effective_context"
     - "attention_sparsity"
     - "multi_layer_receptive_field"
-  pass_criteria: "All 6 falsification tests pass"
+  pass_criteria: "All 7 falsification tests pass"
   falsification: "Set W=0 to break diagonal attendance invariant"

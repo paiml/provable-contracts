@@ -156,5 +156,5 @@ qa_gate:
     - "throughput_model"
     - "verification_ladder"
     - "contract_composition"
-  pass_criteria: "All 6 falsification tests pass + 100% obligation coverage"
+  pass_criteria: "All 7 falsification tests pass + 100% obligation coverage"
   falsification: "Remove one layer from parameter count to break total"

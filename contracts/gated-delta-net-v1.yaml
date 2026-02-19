@@ -100,6 +100,13 @@ kani_harnesses:
     strategy: stub_float
     solver: cadical
     harness: verify_decay_bound
+  - id: KANI-GDN-002
+    obligation: GDN-INV-002
+    property: "State shape preserved after recurrence update"
+    bound: 4
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_state_shape_preserved
 
 qa_gate:
   id: F-GDN-001
@@ -110,5 +117,5 @@ qa_gate:
     - "state_shape"
     - "causal_conv"
     - "l2_direction"
-  pass_criteria: "All tests ignored (not yet implemented)"
+  pass_criteria: "All 5 falsification tests pass"
   falsification: "Set A_log to extreme value to trigger sigmoid saturation"

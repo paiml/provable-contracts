@@ -110,6 +110,13 @@ kani_harnesses:
     strategy: bounded_int
     solver: cadical
     harness: verify_layer_partition
+  - id: KANI-HL-002
+    obligation: HL-INV-005
+    property: "Causal conv1d output length equals input length"
+    bound: 16
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_conv1d_causal_length
 
 qa_gate:
   id: F-HL-001
@@ -121,5 +128,5 @@ qa_gate:
     - "head_grouping"
     - "residual_preservation"
     - "conv1d_causal"
-  pass_criteria: "All 5 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 6 falsification tests pass"
   falsification: "Set n_v not divisible by n_k to break grouping"

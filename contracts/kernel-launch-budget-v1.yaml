@@ -86,5 +86,5 @@ qa_gate:
     - "per_token_formula"
     - "decomposition_sum"
     - "monotonicity"
-  pass_criteria: "All 3 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 4 falsification tests pass"
   falsification: "Change a component count to break sum"

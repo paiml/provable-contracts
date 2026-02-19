@@ -149,5 +149,5 @@ qa_gate:
     - "score_bound_with_qknorm"
     - "attention_entropy"
     - "numerical_stability"
-  pass_criteria: "All 6 falsification tests pass"
+  pass_criteria: "All 7 falsification tests pass"
   falsification: "Remove 1/√d_k scaling to trigger softmax saturation"

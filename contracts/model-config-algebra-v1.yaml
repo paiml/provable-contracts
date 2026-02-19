@@ -118,5 +118,5 @@ qa_gate:
     - "ordering"
     - "non_degeneracy"
     - "cross_constraint"
-  pass_criteria: "All 5 falsification tests pass"
+  pass_criteria: "All 6 falsification tests pass"
   falsification: "Generate config with num_heads not dividing hidden_dim"

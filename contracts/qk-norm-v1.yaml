@@ -97,6 +97,13 @@ kani_harnesses:
     strategy: stub_float
     solver: cadical
     harness: verify_qk_norm_finite
+  - id: KANI-QKN-002
+    obligation: QKN-INV-004
+    property: "Zero input produces zero output (eps-guarded)"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_qk_norm_zero_stability
 
 qa_gate:
   id: F-QKN-001

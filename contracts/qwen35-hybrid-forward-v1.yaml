@@ -153,5 +153,5 @@ qa_gate:
     - "hybrid_block"
     - "activation_magnitude"
     - "gradient_flow"
-  pass_criteria: "All 6 falsification tests pass"
+  pass_criteria: "All 7 falsification tests pass"
   falsification: "Remove RMSNorm before attention to trigger gradient explosion"

@@ -80,5 +80,5 @@ qa_gate:
     - "range_bound"
     - "zero_entropy"
     - "monotonicity"
-  pass_criteria: "All 3 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 4 falsification tests pass"
   falsification: "Pass non-normalized distribution to trigger range violation"

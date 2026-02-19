@@ -120,5 +120,5 @@ qa_gate:
     - "shape_compatibility"
     - "dare_unbiased"
     - "shape_preservation"
-  pass_criteria: "All 5 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 6 falsification tests pass"
   falsification: "Use rank > min(m,n) to break SVD truncation"
