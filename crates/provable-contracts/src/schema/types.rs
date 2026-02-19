@@ -124,8 +124,8 @@ pub enum AppliesTo {
     Simd,
     Converter,
     /// Algorithm-specific target (e.g., "degree", "bce", "huber").
-    #[serde(untagged)]
-    Other(String),
+    #[serde(other)]
+    Other,
 }
 
 /// Kernel phase decomposition.
