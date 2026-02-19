@@ -2105,3 +2105,283 @@ bindings:
     signature: "fn transform(&self, x: &Matrix<f32>) -> Result<Matrix<f32>>"
     status: implemented
     notes: "S = X W^T unmixing transformation"
+
+  # ────────────────────────────────────────────────────────
+  # P3 Algorithm Contracts: ARIMA
+  # ────────────────────────────────────────────────────────
+
+  - contract: arima-v1.yaml
+    equation: ar_forecast
+    module_path: "aprender::time_series"
+    function: "ARIMA::forecast"
+    signature: "fn forecast(&self, n_periods: usize) -> Result<Vec<f32>>"
+    status: implemented
+    notes: "AR(p) forecasting with fitted coefficients"
+
+  - contract: arima-v1.yaml
+    equation: differencing
+    module_path: "aprender::time_series"
+    function: "ARIMA::fit"
+    signature: "fn fit(&mut self, data: &[f32]) -> Result<()>"
+    status: implemented
+    notes: "d-th order differencing applied during fit"
+
+  - contract: arima-v1.yaml
+    equation: ma_filter
+    module_path: "aprender::time_series"
+    function: "ARIMA::forecast"
+    signature: "fn forecast(&self, n_periods: usize) -> Result<Vec<f32>>"
+    status: implemented
+    notes: "MA(q) error correction applied during forecast"
+
+  - contract: arima-v1.yaml
+    equation: forecast_finite
+    module_path: "aprender::time_series"
+    function: "ARIMA::forecast"
+    signature: "fn forecast(&self, n_periods: usize) -> Result<Vec<f32>>"
+    status: implemented
+    notes: "All forecast values must be finite (no NaN/Inf)"
+
+  # ────────────────────────────────────────────────────────
+  # P3 Algorithm Contracts: Bayesian
+  # ────────────────────────────────────────────────────────
+
+  - contract: bayesian-v1.yaml
+    equation: conjugate_update
+    module_path: "aprender::bayesian::conjugate"
+    function: "BetaBinomial::update"
+    signature: "fn update(&mut self, successes: usize, trials: usize)"
+    status: implemented
+    notes: "Beta-Binomial conjugate update: α += successes, β += failures"
+
+  - contract: bayesian-v1.yaml
+    equation: posterior_valid
+    module_path: "aprender::bayesian::conjugate"
+    function: "BetaBinomial::alpha + BetaBinomial::beta"
+    signature: "fn alpha(&self) -> f64, fn beta(&self) -> f64"
+    status: implemented
+    notes: "Posterior parameters must remain positive"
+
+  - contract: bayesian-v1.yaml
+    equation: blr_predict
+    module_path: "aprender::bayesian::regression"
+    function: "BayesianLinearRegression::predict"
+    signature: "fn predict(&self, x_test: &Matrix<f32>) -> Result<(Vector<f32>, Vector<f32>)>"
+    status: implemented
+    notes: "Posterior mean prediction with uncertainty"
+
+  - contract: bayesian-v1.yaml
+    equation: posterior_predictive
+    module_path: "aprender::bayesian::regression"
+    function: "BayesianLinearRegression::predict"
+    signature: "fn predict(&self, x_test: &Matrix<f32>) -> Result<(Vector<f32>, Vector<f32>)>"
+    status: implemented
+    notes: "Returns (mean, std) for predictive distribution"
+
+  # ────────────────────────────────────────────────────────
+  # P3 Algorithm Contracts: GLM
+  # ────────────────────────────────────────────────────────
+
+  - contract: glm-v1.yaml
+    equation: poisson_link
+    module_path: "aprender::glm"
+    function: "GLM::new with LinkFunction::Log"
+    signature: "fn new(family: Family, link: LinkFunction) -> Self"
+    status: implemented
+    notes: "Log link for Poisson: g(μ) = ln(μ)"
+
+  - contract: glm-v1.yaml
+    equation: gamma_link
+    module_path: "aprender::glm"
+    function: "GLM::new with LinkFunction::Reciprocal"
+    signature: "fn new(family: Family, link: LinkFunction) -> Self"
+    status: implemented
+    notes: "Reciprocal link for Gamma: g(μ) = 1/μ"
+
+  - contract: glm-v1.yaml
+    equation: binomial_link
+    module_path: "aprender::glm"
+    function: "GLM::new with LinkFunction::Logit"
+    signature: "fn new(family: Family, link: LinkFunction) -> Self"
+    status: implemented
+    notes: "Logit link for Binomial: g(μ) = ln(μ/(1-μ))"
+
+  - contract: glm-v1.yaml
+    equation: irls_fit
+    module_path: "aprender::glm"
+    function: "GLM::fit"
+    signature: "fn fit(&mut self, x: &Matrix<f32>, y: &[f32]) -> Result<()>"
+    status: implemented
+    notes: "IRLS iterative fitting with convergence check"
+
+  # ────────────────────────────────────────────────────────
+  # P3 Algorithm Contracts: Drift Detection
+  # ────────────────────────────────────────────────────────
+
+  - contract: drift-detection-v1.yaml
+    equation: univariate_drift
+    module_path: "aprender::metrics::drift"
+    function: "DriftDetector::detect_univariate"
+    signature: "fn detect_univariate(&self, reference: &Vector<f32>, current: &Vector<f32>) -> DriftStatus"
+    status: implemented
+    notes: "Normalized mean difference: |μ_ref - μ_cur| / σ_ref"
+
+  - contract: drift-detection-v1.yaml
+    equation: performance_drift
+    module_path: "aprender::metrics::drift"
+    function: "DriftDetector::detect_performance_drift"
+    signature: "fn detect_performance_drift(&self, baseline_scores: &[f32], current_scores: &[f32]) -> DriftStatus"
+    status: implemented
+    notes: "Score degradation detection"
+
+  - contract: drift-detection-v1.yaml
+    equation: classify_drift
+    module_path: "aprender::metrics::drift"
+    function: "DriftDetector::classify_drift"
+    signature: "fn classify_drift(&self, score: f32) -> DriftStatus"
+    status: implemented
+    notes: "Threshold-based classification into NoDrift/Warning/Drift"
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    module_path: "aprender::metrics::drift"
+    function: "DriftDetector::detect_univariate"
+    signature: "fn detect_univariate(&self, reference: &Vector<f32>, current: &Vector<f32>) -> DriftStatus"
+    status: implemented
+    notes: "Returns NoDrift when samples < min_samples (avoid false positives)"
+
+  # ────────────────────────────────────────────────────────
+  # P3 Algorithm Contracts: Ranking Metrics
+  # ────────────────────────────────────────────────────────
+
+  - contract: metrics-ranking-v1.yaml
+    equation: hit_at_k
+    module_path: "aprender::metrics::ranking"
+    function: "hit_at_k"
+    signature: "fn hit_at_k<T: PartialEq>(predictions: &[T], target: &T, k: usize) -> f32"
+    status: implemented
+    notes: "Binary 0/1 indicator: target in top-K"
+
+  - contract: metrics-ranking-v1.yaml
+    equation: reciprocal_rank
+    module_path: "aprender::metrics::ranking"
+    function: "reciprocal_rank"
+    signature: "fn reciprocal_rank<T: PartialEq>(predictions: &[T], target: &T) -> f32"
+    status: implemented
+    notes: "1/rank of first correct prediction"
+
+  - contract: metrics-ranking-v1.yaml
+    equation: mrr
+    module_path: "aprender::metrics::ranking"
+    function: "mrr"
+    signature: "fn mrr<T: PartialEq + Clone>(predictions: &[Vec<T>], targets: &[T]) -> f32"
+    status: implemented
+    notes: "Mean Reciprocal Rank across queries"
+
+  - contract: metrics-ranking-v1.yaml
+    equation: ndcg_at_k
+    module_path: "aprender::metrics::ranking"
+    function: "ndcg_at_k"
+    signature: "fn ndcg_at_k(relevance: &[f32], k: usize) -> f32"
+    status: implemented
+    notes: "Normalized DCG: DCG/IDCG ∈ [0,1]"
+
+  # ────────────────────────────────────────────────────────
+  # P3 Algorithm Contracts: GBM
+  # ────────────────────────────────────────────────────────
+
+  - contract: gbm-v1.yaml
+    equation: gradient_boost
+    module_path: "aprender::tree::gradient_boosting"
+    function: "GradientBoostingClassifier::fit"
+    signature: "fn fit(&mut self, x: &Matrix<f32>, y: &[usize]) -> Result<()>"
+    status: implemented
+    notes: "Boosting loop: F_m = F_{m-1} + ν·h_m"
+
+  - contract: gbm-v1.yaml
+    equation: negative_gradient
+    module_path: "aprender::tree::gradient_boosting"
+    function: "GradientBoostingClassifier::fit"
+    signature: "fn fit(&mut self, x: &Matrix<f32>, y: &[usize]) -> Result<()>"
+    status: implemented
+    notes: "Pseudo-residuals computed inside fit loop"
+
+  - contract: gbm-v1.yaml
+    equation: predict
+    module_path: "aprender::tree::gradient_boosting"
+    function: "GradientBoostingClassifier::predict"
+    signature: "fn predict(&self, x: &Matrix<f32>) -> Result<Vec<usize>>"
+    status: implemented
+    notes: "Aggregated tree predictions with sigmoid thresholding"
+
+  - contract: gbm-v1.yaml
+    equation: training_loss
+    module_path: "aprender::tree::gradient_boosting"
+    function: "GradientBoostingClassifier::fit"
+    signature: "fn fit(&mut self, x: &Matrix<f32>, y: &[usize]) -> Result<()>"
+    status: implemented
+    notes: "Loss computed per stage inside fit"
+
+  # ────────────────────────────────────────────────────────
+  # P3 Algorithm Contracts: Optimization
+  # ────────────────────────────────────────────────────────
+
+  - contract: optimization-v1.yaml
+    equation: cg_minimize
+    module_path: "aprender::optim::conjugate_gradient"
+    function: "ConjugateGradient::minimize"
+    signature: "fn minimize<F, G>(&self, f: F, grad: G, x0: &[f64]) -> Result<OptimizationResult>"
+    status: implemented
+    notes: "Fletcher-Reeves nonlinear CG with line search"
+
+  - contract: optimization-v1.yaml
+    equation: line_search
+    module_path: "aprender::optim::conjugate_gradient"
+    function: "ConjugateGradient::minimize"
+    signature: "fn minimize<F, G>(&self, f: F, grad: G, x0: &[f64]) -> Result<OptimizationResult>"
+    status: implemented
+    notes: "Backtracking line search inside minimize"
+
+  - contract: optimization-v1.yaml
+    equation: convergence
+    module_path: "aprender::optim::conjugate_gradient"
+    function: "ConjugateGradient::minimize"
+    signature: "fn minimize<F, G>(&self, f: F, grad: G, x0: &[f64]) -> Result<OptimizationResult>"
+    status: implemented
+    notes: "Convergence via gradient norm tolerance"
+
+  # ────────────────────────────────────────────────────────
+  # P3 Algorithm Contracts: Random Forest
+  # ────────────────────────────────────────────────────────
+
+  - contract: random-forest-v1.yaml
+    equation: bootstrap_sample
+    module_path: "aprender::tree::random_forest"
+    function: "RandomForestClassifier::fit"
+    signature: "fn fit(&mut self, x: &Matrix<f32>, y: &[usize]) -> Result<()>"
+    status: implemented
+    notes: "Bootstrap sampling with replacement inside fit"
+
+  - contract: random-forest-v1.yaml
+    equation: majority_vote
+    module_path: "aprender::tree::random_forest"
+    function: "RandomForestClassifier::predict"
+    signature: "fn predict(&self, x: &Matrix<f32>) -> Result<Vec<usize>>"
+    status: implemented
+    notes: "Majority vote across ensemble trees"
+
+  - contract: random-forest-v1.yaml
+    equation: predict
+    module_path: "aprender::tree::random_forest"
+    function: "RandomForestClassifier::predict"
+    signature: "fn predict(&self, x: &Matrix<f32>) -> Result<Vec<usize>>"
+    status: implemented
+    notes: "Aggregated prediction from bootstrap ensemble"
+
+  - contract: random-forest-v1.yaml
+    equation: ensemble_size
+    module_path: "aprender::tree::random_forest"
+    function: "RandomForestClassifier::fit"
+    signature: "fn fit(&mut self, x: &Matrix<f32>, y: &[usize]) -> Result<()>"
+    status: implemented
+    notes: "Number of trees matches n_estimators configuration"
