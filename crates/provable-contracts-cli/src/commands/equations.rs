@@ -249,6 +249,15 @@ mod tests {
     }
 
     #[test]
+    fn test_from_str_other_format_returns_descriptive_error() {
+        // Exercises the `other =>` catch-all arm in from_str
+        let other = "csv";
+        let err = OutputFormat::from_str(other).unwrap_err();
+        assert!(err.contains(other), "error should include the unrecognized format");
+        assert!(err.contains("unknown format"));
+    }
+
+    #[test]
     fn test_kernel_name() {
         assert_eq!(kernel_name("softmax-kernel-v1"), "softmax");
         assert_eq!(kernel_name("rmsnorm-kernel-v1"), "rmsnorm");
