@@ -170,3 +170,98 @@ fn qwen35_dag_integrity() {
         "Topo order should contain all nodes"
     );
 }
+
+#[test]
+fn contract_data_integrity() {
+    let paths = all_contract_paths();
+    let mut total_eq = 0usize;
+    let mut total_ob = 0usize;
+    let mut total_ft = 0usize;
+    let mut total_kani = 0usize;
+    let mut errors = Vec::new();
+
+    for path in &paths {
+        let stem = path.file_stem().unwrap().to_str().unwrap();
+        let contract = parse_contract(path)
+            .unwrap_or_else(|e| panic!("Failed to parse {stem}: {e}"));
+
+        let eq_count = contract.equations.len();
+        let ob_count = contract.proof_obligations.len();
+        let ft_count = contract.falsification_tests.len();
+        let kani_count = contract.kani_harnesses.len();
+
+        total_eq += eq_count;
+        total_ob += ob_count;
+        total_ft += ft_count;
+        total_kani += kani_count;
+
+        // Every contract must have at least 1 equation
+        if eq_count == 0 {
+            errors.push(format!("{stem}: no equations"));
+        }
+
+        // Every obligation must have at least one falsification test
+        if ft_count < ob_count {
+            errors.push(format!(
+                "{stem}: obligations ({ob_count}) > falsification tests ({ft_count})"
+            ));
+        }
+
+        // Every contract must have at least 1 Kani harness
+        if kani_count == 0 {
+            errors.push(format!("{stem}: no Kani harnesses"));
+        }
+
+        // Falsification test IDs must be sequential
+        let prefix_pattern: Vec<&str> = contract
+            .falsification_tests
+            .first()
+            .map(|ft| ft.id.rsplitn(2, '-').collect::<Vec<_>>())
+            .unwrap_or_default();
+        if prefix_pattern.len() == 2 {
+            let prefix = prefix_pattern[1]; // "FALSIFY-XX"
+            for (i, ft) in contract.falsification_tests.iter().enumerate() {
+                let expected = format!("{prefix}-{:03}", i + 1);
+                if ft.id != expected {
+                    errors.push(format!(
+                        "{stem}: test ID gap: expected {expected}, found {}",
+                        ft.id
+                    ));
+                    break; // One ID error per contract is enough
+                }
+            }
+        }
+
+        // pass_criteria number must match actual test count
+        if let Some(qa) = &contract.qa_gate {
+            if let Some(criteria) = &qa.pass_criteria {
+                // Extract "All N" pattern
+                if let Some(n_str) = criteria
+                    .strip_prefix("All ")
+                    .and_then(|s| s.split_whitespace().next())
+                {
+                    if let Ok(n) = n_str.parse::<usize>() {
+                        if n != ft_count {
+                            errors.push(format!(
+                                "{stem}: pass_criteria says {n} tests, \
+                                 actual {ft_count}"
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Verify totals
+    assert_eq!(total_eq, 166, "Total equations changed");
+    assert_eq!(total_ob, 262, "Total obligations changed");
+    assert_eq!(total_ft, 276, "Total falsification tests changed");
+    assert_eq!(total_kani, 81, "Total Kani harnesses changed");
+
+    assert!(
+        errors.is_empty(),
+        "Data integrity violations:\n{}",
+        errors.join("\n")
+    );
+}
