@@ -52,24 +52,41 @@ pub fn conv1d_scalar(
 
     for oc in 0..c_out {
         for ol in 0..out_length {
-            let mut sum = 0.0_f32;
-            for ic in 0..c_in {
-                for k in 0..kernel_size {
-                    let in_pos_signed = (ol * stride + k) as isize - padding as isize;
-                    if in_pos_signed >= 0 && (in_pos_signed as usize) < length {
-                        let in_pos = in_pos_signed as usize;
-                        let w_idx = oc * c_in * kernel_size + ic * kernel_size + k;
-                        let i_idx = ic * length + in_pos;
-                        sum += weight[w_idx] * input[i_idx];
-                    }
-                }
-            }
-            if let Some(b) = bias {
-                sum += b[oc];
-            }
-            output[oc * out_length + ol] = sum;
+            let sum = conv1d_output_element(
+                input, weight, c_in, length, kernel_size, stride, padding, oc, ol,
+            );
+            let bias_val = bias.map_or(0.0, |b| b[oc]);
+            output[oc * out_length + ol] = sum + bias_val;
         }
     }
+}
+
+/// Compute a single output element of the convolution.
+#[allow(clippy::too_many_arguments)]
+fn conv1d_output_element(
+    input: &[f32],
+    weight: &[f32],
+    c_in: usize,
+    length: usize,
+    kernel_size: usize,
+    stride: usize,
+    padding: usize,
+    oc: usize,
+    ol: usize,
+) -> f32 {
+    let mut sum = 0.0_f32;
+    for ic in 0..c_in {
+        for k in 0..kernel_size {
+            let in_pos_signed = (ol * stride + k) as isize - padding as isize;
+            if in_pos_signed >= 0 && (in_pos_signed as usize) < length {
+                let in_pos = in_pos_signed as usize;
+                let w_idx = oc * c_in * kernel_size + ic * kernel_size + k;
+                let i_idx = ic * length + in_pos;
+                sum += weight[w_idx] * input[i_idx];
+            }
+        }
+    }
+    sum
 }
 
 /// AVX2 implementation of 1D convolution.

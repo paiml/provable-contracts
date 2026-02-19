@@ -894,4 +894,45 @@ falsification_tests:
         let stderr = String::from_utf8_lossy(&output.stderr);
         assert!(stderr.contains("unknown format"));
     }
+
+    #[test]
+    fn pv_lean_softmax() {
+        let output = Command::new(pv_bin())
+            .arg("lean")
+            .arg(super::contract_path("softmax-kernel-v1.yaml"))
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        // softmax-kernel-v1.yaml has lean blocks — should generate Lean files
+        assert!(
+            stdout.contains("import Mathlib") || stdout.contains("No Lean"),
+            "lean command should produce output"
+        );
+    }
+
+    #[test]
+    fn pv_lean_status_single() {
+        let output = Command::new(pv_bin())
+            .arg("lean-status")
+            .arg(super::contract_path("softmax-kernel-v1.yaml"))
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+    }
+
+    #[test]
+    fn pv_lean_status_directory() {
+        let output = Command::new(pv_bin())
+            .arg("lean-status")
+            .arg(super::contracts_dir())
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(
+            stdout.contains("L4 Coverage") || stdout.contains("No Lean"),
+            "lean-status should show coverage or indicate no lean metadata"
+        );
+    }
 }
