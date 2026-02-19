@@ -71,10 +71,7 @@ pub fn verify_bindings(binding_yaml_path: &str, policy: BindingPolicy) -> Verify
     // Also rerun if the contracts directory changes
     if let Some(parent) = path.parent() {
         if let Some(grandparent) = parent.parent() {
-            println!(
-                "cargo:rerun-if-changed={}",
-                grandparent.display()
-            );
+            println!("cargo:rerun-if-changed={}", grandparent.display());
         }
     }
 
@@ -177,12 +174,8 @@ pub fn verify_bindings(binding_yaml_path: &str, policy: BindingPolicy) -> Verify
 ///
 /// Same convention as `provable-contracts-macros::make_env_key`.
 fn make_env_key(contract: &str, equation: &str) -> String {
-    let contract_part = contract
-        .to_uppercase()
-        .replace(['-', '.'], "_");
-    let equation_part = equation
-        .to_uppercase()
-        .replace(['-', '.'], "_");
+    let contract_part = contract.to_uppercase().replace(['-', '.'], "_");
+    let equation_part = equation.to_uppercase().replace(['-', '.'], "_");
     format!("CONTRACT_{contract_part}_{equation_part}")
 }
 

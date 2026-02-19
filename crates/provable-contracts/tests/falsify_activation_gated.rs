@@ -10,31 +10,25 @@ mod common;
 
 use proptest::prelude::*;
 
-use provable_contracts::kernels::activation::{
-    gelu_scalar, relu_scalar, silu_scalar,
-};
 #[cfg(target_arch = "x86_64")]
 use provable_contracts::kernels::activation::relu_avx2;
+use provable_contracts::kernels::activation::{gelu_scalar, relu_scalar, silu_scalar};
 
-use provable_contracts::kernels::silu_standalone::{
-    sigmoid_scalar, silu_standalone_scalar,
-};
 #[cfg(target_arch = "x86_64")]
 use provable_contracts::kernels::silu_standalone::silu_standalone_avx2;
+use provable_contracts::kernels::silu_standalone::{sigmoid_scalar, silu_standalone_scalar};
 
-use provable_contracts::kernels::swiglu::swiglu_scalar;
 #[cfg(target_arch = "x86_64")]
 use provable_contracts::kernels::swiglu::swiglu_avx2;
+use provable_contracts::kernels::swiglu::swiglu_scalar;
 
-use provable_contracts::kernels::cross_entropy::{
-    cross_entropy_scalar, log_softmax_scalar,
-};
 #[cfg(target_arch = "x86_64")]
 use provable_contracts::kernels::cross_entropy::cross_entropy_avx2;
+use provable_contracts::kernels::cross_entropy::{cross_entropy_scalar, log_softmax_scalar};
 
-use provable_contracts::kernels::rope::rope_scalar;
 #[cfg(target_arch = "x86_64")]
 use provable_contracts::kernels::rope::rope_avx2;
+use provable_contracts::kernels::rope::rope_scalar;
 
 // ============================================================================
 // Activation (FALSIFY-ACT-001 through FALSIFY-ACT-006)

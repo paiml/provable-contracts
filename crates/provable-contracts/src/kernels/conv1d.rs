@@ -53,7 +53,15 @@ pub fn conv1d_scalar(
     for oc in 0..c_out {
         for ol in 0..out_length {
             let sum = conv1d_output_element(
-                input, weight, c_in, length, kernel_size, stride, padding, oc, ol,
+                input,
+                weight,
+                c_in,
+                length,
+                kernel_size,
+                stride,
+                padding,
+                oc,
+                ol,
             );
             let bias_val = bias.map_or(0.0, |b| b[oc]);
             output[oc * out_length + ol] = sum + bias_val;
@@ -115,7 +123,18 @@ pub unsafe fn conv1d_avx2(
     padding: usize,
     output: &mut [f32],
 ) {
-    conv1d_scalar(input, weight, bias, c_in, c_out, length, kernel_size, stride, padding, output);
+    conv1d_scalar(
+        input,
+        weight,
+        bias,
+        c_in,
+        c_out,
+        length,
+        kernel_size,
+        stride,
+        padding,
+        output,
+    );
 }
 
 /// PTX assembly for the 1D convolution kernel.
@@ -272,7 +291,16 @@ mod tests {
         let mut output = vec![0.0_f32; c_out * out_length];
 
         conv1d_scalar(
-            &input, &weight, None, c_in, c_out, length, kernel_size, stride, padding, &mut output,
+            &input,
+            &weight,
+            None,
+            c_in,
+            c_out,
+            length,
+            kernel_size,
+            stride,
+            padding,
+            &mut output,
         );
 
         // Output should equal input
@@ -378,7 +406,10 @@ mod tests {
     #[test]
     fn test_conv1d_ptx_version() {
         let ptx = conv1d_ptx();
-        assert!(ptx.contains(".version 8.5"), "PTX must declare .version 8.5");
+        assert!(
+            ptx.contains(".version 8.5"),
+            "PTX must declare .version 8.5"
+        );
     }
 
     #[test]
@@ -404,6 +435,9 @@ mod tests {
         let ptx = conv1d_ptx();
         let opens = ptx.chars().filter(|&c| c == '{').count();
         let closes = ptx.chars().filter(|&c| c == '}').count();
-        assert_eq!(opens, closes, "PTX must have balanced braces: {opens} opens vs {closes} closes");
+        assert_eq!(
+            opens, closes,
+            "PTX must have balanced braces: {opens} opens vs {closes} closes"
+        );
     }
 }

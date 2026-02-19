@@ -47,7 +47,8 @@ macro_rules! golden_test {
             let actual = run_equations($contract, $format);
             let expected = $expected;
             assert_eq!(
-                actual, expected,
+                actual,
+                expected,
                 "\n=== GOLDEN MISMATCH: {} --format {} ===\n\
                  --- expected ({} bytes) ---\n{}\n\
                  --- actual ({} bytes) ---\n{}",
@@ -66,66 +67,146 @@ macro_rules! golden_test {
 // ReLU: y = max(0, x) — invariant, bound, idempotency, equivalence
 // ---------------------------------------------------------------------------
 
-golden_test!(relu_text, "relu-kernel-v1.yaml", "text",
-    include_str!("fixtures/expected/relu-text.txt"));
-golden_test!(relu_latex, "relu-kernel-v1.yaml", "latex",
-    include_str!("fixtures/expected/relu-latex.txt"));
-golden_test!(relu_ptx, "relu-kernel-v1.yaml", "ptx",
-    include_str!("fixtures/expected/relu-ptx.txt"));
-golden_test!(relu_asm, "relu-kernel-v1.yaml", "asm",
-    include_str!("fixtures/expected/relu-asm.txt"));
+golden_test!(
+    relu_text,
+    "relu-kernel-v1.yaml",
+    "text",
+    include_str!("fixtures/expected/relu-text.txt")
+);
+golden_test!(
+    relu_latex,
+    "relu-kernel-v1.yaml",
+    "latex",
+    include_str!("fixtures/expected/relu-latex.txt")
+);
+golden_test!(
+    relu_ptx,
+    "relu-kernel-v1.yaml",
+    "ptx",
+    include_str!("fixtures/expected/relu-ptx.txt")
+);
+golden_test!(
+    relu_asm,
+    "relu-kernel-v1.yaml",
+    "asm",
+    include_str!("fixtures/expected/relu-asm.txt")
+);
 
 // ---------------------------------------------------------------------------
 // Clamp: y = clamp(x, lo, hi) — bound, monotonicity, idempotency, equiv
 // ---------------------------------------------------------------------------
 
-golden_test!(clamp_text, "clamp-kernel-v1.yaml", "text",
-    include_str!("fixtures/expected/clamp-text.txt"));
-golden_test!(clamp_latex, "clamp-kernel-v1.yaml", "latex",
-    include_str!("fixtures/expected/clamp-latex.txt"));
-golden_test!(clamp_ptx, "clamp-kernel-v1.yaml", "ptx",
-    include_str!("fixtures/expected/clamp-ptx.txt"));
-golden_test!(clamp_asm, "clamp-kernel-v1.yaml", "asm",
-    include_str!("fixtures/expected/clamp-asm.txt"));
+golden_test!(
+    clamp_text,
+    "clamp-kernel-v1.yaml",
+    "text",
+    include_str!("fixtures/expected/clamp-text.txt")
+);
+golden_test!(
+    clamp_latex,
+    "clamp-kernel-v1.yaml",
+    "latex",
+    include_str!("fixtures/expected/clamp-latex.txt")
+);
+golden_test!(
+    clamp_ptx,
+    "clamp-kernel-v1.yaml",
+    "ptx",
+    include_str!("fixtures/expected/clamp-ptx.txt")
+);
+golden_test!(
+    clamp_asm,
+    "clamp-kernel-v1.yaml",
+    "asm",
+    include_str!("fixtures/expected/clamp-asm.txt")
+);
 
 // ---------------------------------------------------------------------------
 // Dot product: y = Σ x_i · w_i — linearity, invariant, equivalence
 // ---------------------------------------------------------------------------
 
-golden_test!(dot_text, "dot-kernel-v1.yaml", "text",
-    include_str!("fixtures/expected/dot-text.txt"));
-golden_test!(dot_latex, "dot-kernel-v1.yaml", "latex",
-    include_str!("fixtures/expected/dot-latex.txt"));
-golden_test!(dot_ptx, "dot-kernel-v1.yaml", "ptx",
-    include_str!("fixtures/expected/dot-ptx.txt"));
-golden_test!(dot_asm, "dot-kernel-v1.yaml", "asm",
-    include_str!("fixtures/expected/dot-asm.txt"));
+golden_test!(
+    dot_text,
+    "dot-kernel-v1.yaml",
+    "text",
+    include_str!("fixtures/expected/dot-text.txt")
+);
+golden_test!(
+    dot_latex,
+    "dot-kernel-v1.yaml",
+    "latex",
+    include_str!("fixtures/expected/dot-latex.txt")
+);
+golden_test!(
+    dot_ptx,
+    "dot-kernel-v1.yaml",
+    "ptx",
+    include_str!("fixtures/expected/dot-ptx.txt")
+);
+golden_test!(
+    dot_asm,
+    "dot-kernel-v1.yaml",
+    "asm",
+    include_str!("fixtures/expected/dot-asm.txt")
+);
 
 // ---------------------------------------------------------------------------
 // Scale: y = α·x + β — invariant, equivalence (single phase)
 // ---------------------------------------------------------------------------
 
-golden_test!(scale_text, "scale-kernel-v1.yaml", "text",
-    include_str!("fixtures/expected/scale-text.txt"));
-golden_test!(scale_latex, "scale-kernel-v1.yaml", "latex",
-    include_str!("fixtures/expected/scale-latex.txt"));
-golden_test!(scale_ptx, "scale-kernel-v1.yaml", "ptx",
-    include_str!("fixtures/expected/scale-ptx.txt"));
-golden_test!(scale_asm, "scale-kernel-v1.yaml", "asm",
-    include_str!("fixtures/expected/scale-asm.txt"));
+golden_test!(
+    scale_text,
+    "scale-kernel-v1.yaml",
+    "text",
+    include_str!("fixtures/expected/scale-text.txt")
+);
+golden_test!(
+    scale_latex,
+    "scale-kernel-v1.yaml",
+    "latex",
+    include_str!("fixtures/expected/scale-latex.txt")
+);
+golden_test!(
+    scale_ptx,
+    "scale-kernel-v1.yaml",
+    "ptx",
+    include_str!("fixtures/expected/scale-ptx.txt")
+);
+golden_test!(
+    scale_asm,
+    "scale-kernel-v1.yaml",
+    "asm",
+    include_str!("fixtures/expected/scale-asm.txt")
+);
 
 // ---------------------------------------------------------------------------
 // L2 norm: ||x|| = sqrt(Σ x_i²) — bound, invariant×2, equivalence
 // ---------------------------------------------------------------------------
 
-golden_test!(l2norm_text, "l2norm-kernel-v1.yaml", "text",
-    include_str!("fixtures/expected/l2norm-text.txt"));
-golden_test!(l2norm_latex, "l2norm-kernel-v1.yaml", "latex",
-    include_str!("fixtures/expected/l2norm-latex.txt"));
-golden_test!(l2norm_ptx, "l2norm-kernel-v1.yaml", "ptx",
-    include_str!("fixtures/expected/l2norm-ptx.txt"));
-golden_test!(l2norm_asm, "l2norm-kernel-v1.yaml", "asm",
-    include_str!("fixtures/expected/l2norm-asm.txt"));
+golden_test!(
+    l2norm_text,
+    "l2norm-kernel-v1.yaml",
+    "text",
+    include_str!("fixtures/expected/l2norm-text.txt")
+);
+golden_test!(
+    l2norm_latex,
+    "l2norm-kernel-v1.yaml",
+    "latex",
+    include_str!("fixtures/expected/l2norm-latex.txt")
+);
+golden_test!(
+    l2norm_ptx,
+    "l2norm-kernel-v1.yaml",
+    "ptx",
+    include_str!("fixtures/expected/l2norm-ptx.txt")
+);
+golden_test!(
+    l2norm_asm,
+    "l2norm-kernel-v1.yaml",
+    "asm",
+    include_str!("fixtures/expected/l2norm-asm.txt")
+);
 
 // ===========================================================================
 // Cross-format provability checks
@@ -167,9 +248,7 @@ fn extract_facts(contract: &str) -> ContractFacts {
     if let Some(ks) = doc.get("kernel_structure") {
         if let Some(phases) = ks.get("phases").and_then(|v| v.as_sequence()) {
             for phase in phases {
-                phase_names.push(
-                    phase["name"].as_str().unwrap().to_string(),
-                );
+                phase_names.push(phase["name"].as_str().unwrap().to_string());
             }
         }
     }
@@ -178,12 +257,8 @@ fn extract_facts(contract: &str) -> ContractFacts {
     let mut obligation_props = Vec::new();
     if let Some(obs) = doc.get("proof_obligations").and_then(|v| v.as_sequence()) {
         for ob in obs {
-            obligation_types.push(
-                ob["type"].as_str().unwrap().to_string(),
-            );
-            obligation_props.push(
-                ob["property"].as_str().unwrap().to_string(),
-            );
+            obligation_types.push(ob["type"].as_str().unwrap().to_string());
+            obligation_props.push(ob["property"].as_str().unwrap().to_string());
         }
     }
 
@@ -214,10 +289,7 @@ fn verify_provability(contract: &str) {
 
     // 2. Every formula appears in text output verbatim
     for formula in &facts.formulas {
-        assert!(
-            text.contains(formula),
-            "text missing formula '{formula}'"
-        );
+        assert!(text.contains(formula), "text missing formula '{formula}'");
     }
 
     // 3. Every invariant appears in text output
@@ -240,14 +312,8 @@ fn verify_provability(contract: &str) {
 
     // 5. Every proof obligation appears in PTX and ASM
     for prop in &facts.obligation_props {
-        assert!(
-            ptx.contains(prop),
-            "ptx missing obligation '{prop}'"
-        );
-        assert!(
-            asm.contains(prop),
-            "asm missing obligation '{prop}'"
-        );
+        assert!(ptx.contains(prop), "ptx missing obligation '{prop}'");
+        assert!(asm.contains(prop), "asm missing obligation '{prop}'");
     }
 
     // 6. Obligation types appear with brackets in PTX and ASM
@@ -335,9 +401,15 @@ fn provability_l2norm() {
 fn latex_conversions_relu() {
     let latex = run_equations("relu-kernel-v1.yaml", "latex");
     // ≥ → \geq
-    assert!(latex.contains("\\geq"), "relu latex: ≥ not converted to \\geq");
+    assert!(
+        latex.contains("\\geq"),
+        "relu latex: ≥ not converted to \\geq"
+    );
     // ∈ → \in
-    assert!(latex.contains("\\in"), "relu latex: ∈ not converted to \\in");
+    assert!(
+        latex.contains("\\in"),
+        "relu latex: ∈ not converted to \\in"
+    );
     // ℝ → \mathbb{R}
     assert!(latex.contains("\\mathbb{R}"), "relu latex: ℝ not converted");
 }
@@ -346,18 +418,30 @@ fn latex_conversions_relu() {
 fn latex_conversions_clamp() {
     let latex = run_equations("clamp-kernel-v1.yaml", "latex");
     // ≤ → \leq
-    assert!(latex.contains("\\leq"), "clamp latex: ≤ not converted to \\leq");
+    assert!(
+        latex.contains("\\leq"),
+        "clamp latex: ≤ not converted to \\leq"
+    );
     // → → \to
-    assert!(latex.contains("\\to"), "clamp latex: → not converted to \\to");
+    assert!(
+        latex.contains("\\to"),
+        "clamp latex: → not converted to \\to"
+    );
 }
 
 #[test]
 fn latex_conversions_dot() {
     let latex = run_equations("dot-kernel-v1.yaml", "latex");
     // Σ → \sum
-    assert!(latex.contains("\\sum"), "dot latex: Σ not converted to \\sum");
+    assert!(
+        latex.contains("\\sum"),
+        "dot latex: Σ not converted to \\sum"
+    );
     // α → \alpha
-    assert!(latex.contains("\\alpha"), "dot latex: α not converted to \\alpha");
+    assert!(
+        latex.contains("\\alpha"),
+        "dot latex: α not converted to \\alpha"
+    );
 }
 
 #[test]
@@ -373,7 +457,10 @@ fn latex_conversions_scale() {
 fn latex_conversions_l2norm() {
     let latex = run_equations("l2norm-kernel-v1.yaml", "latex");
     // sqrt(Σ x_i²) → \sqrt{\sum x_i²}
-    assert!(latex.contains("\\sqrt{"), "l2norm latex: sqrt not converted");
+    assert!(
+        latex.contains("\\sqrt{"),
+        "l2norm latex: sqrt not converted"
+    );
     assert!(latex.contains("\\sum"), "l2norm latex: Σ not converted");
     // ≥ → \geq
     assert!(latex.contains("\\geq"), "l2norm latex: ≥ not converted");

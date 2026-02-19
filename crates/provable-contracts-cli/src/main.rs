@@ -214,8 +214,7 @@ mod tests {
     use super::*;
 
     fn test_contract() -> PathBuf {
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../contracts/softmax-kernel-v1.yaml")
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts/softmax-kernel-v1.yaml")
     }
 
     #[test]
@@ -279,8 +278,7 @@ mod tests {
 
     #[test]
     fn dispatch_lean_status_directory() {
-        let contracts_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../contracts");
+        let contracts_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
         let result = run_command(Commands::LeanStatus {
             path: contracts_dir,
         });
@@ -309,8 +307,7 @@ mod tests {
 
     #[test]
     fn dispatch_proof_status_directory() {
-        let contracts_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../contracts");
+        let contracts_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
         let result = run_command(Commands::ProofStatus {
             path: contracts_dir,
             binding: None,
@@ -321,10 +318,9 @@ mod tests {
 
     #[test]
     fn dispatch_proof_status_with_binding() {
-        let contracts_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../contracts");
-        let binding = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../contracts/aprender/binding.yaml");
+        let contracts_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
+        let binding =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts/aprender/binding.yaml");
         let result = run_command(Commands::ProofStatus {
             path: contracts_dir,
             binding: Some(binding),

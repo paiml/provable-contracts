@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use provable_contracts::graph::{dependency_graph, graph_nodes, DependencyGraph};
+use provable_contracts::graph::{DependencyGraph, dependency_graph, graph_nodes};
 use provable_contracts::schema::parse_contract;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -25,10 +25,7 @@ impl GraphFormat {
     }
 }
 
-pub fn run(
-    contract_dir: &Path,
-    format: GraphFormat,
-) -> Result<(), Box<dyn std::error::Error>> {
+pub fn run(contract_dir: &Path, format: GraphFormat) -> Result<(), Box<dyn std::error::Error>> {
     let mut contracts = Vec::new();
     let entries = std::fs::read_dir(contract_dir)?;
     for entry in entries {
@@ -79,10 +76,7 @@ fn render_text(graph: &DependencyGraph) {
     for node in &nodes {
         let deps = graph.edges.get(&node.stem).cloned().unwrap_or_default();
         if deps.is_empty() {
-            println!(
-                "  {} (dependents: {}, deps: 0)",
-                node.stem, node.dependents
-            );
+            println!("  {} (dependents: {}, deps: 0)", node.stem, node.dependents);
         } else {
             println!(
                 "  {} → [{}] (dependents: {})",
@@ -162,17 +156,18 @@ fn render_json(graph: &DependencyGraph) {
     let mut edge_lines = Vec::new();
     for (node, deps) in &graph.edges {
         for dep in deps {
-            edge_lines.push(format!(
-                "    {{\"from\": \"{node}\", \"to\": \"{dep}\"}}"
-            ));
+            edge_lines.push(format!("    {{\"from\": \"{node}\", \"to\": \"{dep}\"}}"));
         }
     }
     println!("{}", edge_lines.join(",\n"));
     println!("  ],");
 
     // Topo order
-    let topo_json: Vec<String> =
-        graph.topo_order.iter().map(|n| format!("    \"{n}\"")).collect();
+    let topo_json: Vec<String> = graph
+        .topo_order
+        .iter()
+        .map(|n| format!("    \"{n}\""))
+        .collect();
     println!("  \"topo_order\": [");
     println!("{}", topo_json.join(",\n"));
     println!("  ],");
@@ -250,7 +245,10 @@ mod tests {
         // Exercises the `other =>` catch-all arm in from_str
         let other = "yaml";
         let err = GraphFormat::from_str(other).unwrap_err();
-        assert!(err.contains(other), "error should include the unrecognized format");
+        assert!(
+            err.contains(other),
+            "error should include the unrecognized format"
+        );
         assert!(err.contains("unknown format"));
     }
 

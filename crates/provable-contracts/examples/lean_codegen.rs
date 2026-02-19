@@ -33,7 +33,11 @@ fn main() {
         return;
     }
 
-    println!("Generated {} Lean files from {}:\n", files.len(), path.display());
+    println!(
+        "Generated {} Lean files from {}:\n",
+        files.len(),
+        path.display()
+    );
 
     for f in &files {
         println!("─── {} ───", f.path);

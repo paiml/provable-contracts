@@ -275,8 +275,16 @@ mod tests {
         let original = params;
 
         adamw_step_scalar(
-            &mut params, &grads, &mut m, &mut v,
-            0.001, 0.9, 0.999, 1e-8, 0.01, 1,
+            &mut params,
+            &grads,
+            &mut m,
+            &mut v,
+            0.001,
+            0.9,
+            0.999,
+            1e-8,
+            0.01,
+            1,
         );
 
         // With zero grad, m stays 0, v stays 0, but weight decay still pulls
@@ -303,7 +311,18 @@ mod tests {
         let eps = 1e-8;
         let wd = 0.01;
 
-        adamw_step_scalar(&mut params, &grads, &mut m, &mut v, lr, beta1, beta2, eps, wd, 1);
+        adamw_step_scalar(
+            &mut params,
+            &grads,
+            &mut m,
+            &mut v,
+            lr,
+            beta1,
+            beta2,
+            eps,
+            wd,
+            1,
+        );
 
         // m = 0.9*0 + 0.1*0.1 = 0.01
         assert!((m[0] - 0.01).abs() < 1e-7, "m[0] = {}", m[0]);
@@ -330,7 +349,18 @@ mod tests {
         let grads = [0.0_f32; 4];
         let mut m = [0.0_f32; 3];
         let mut v = [0.0_f32; 3];
-        adamw_step_scalar(&mut params, &grads, &mut m, &mut v, 0.001, 0.9, 0.999, 1e-8, 0.01, 1);
+        adamw_step_scalar(
+            &mut params,
+            &grads,
+            &mut m,
+            &mut v,
+            0.001,
+            0.9,
+            0.999,
+            1e-8,
+            0.01,
+            1,
+        );
     }
 
     #[test]
@@ -340,7 +370,18 @@ mod tests {
         let grads = [0.0_f32];
         let mut m = [0.0_f32];
         let mut v = [0.0_f32];
-        adamw_step_scalar(&mut params, &grads, &mut m, &mut v, 0.001, 0.9, 0.999, 1e-8, 0.01, 0);
+        adamw_step_scalar(
+            &mut params,
+            &grads,
+            &mut m,
+            &mut v,
+            0.001,
+            0.9,
+            0.999,
+            1e-8,
+            0.01,
+            0,
+        );
     }
 
     proptest! {
@@ -401,13 +442,29 @@ mod tests {
             let mut v_a = v_s.clone();
 
             adamw_step_scalar(
-                &mut params_s, &grads, &mut m_s, &mut v_s,
-                0.001, 0.9, 0.999, 1e-8, 0.01, 1,
+                &mut params_s,
+                &grads,
+                &mut m_s,
+                &mut v_s,
+                0.001,
+                0.9,
+                0.999,
+                1e-8,
+                0.01,
+                1,
             );
             unsafe {
                 adamw_step_avx2(
-                    &mut params_a, &grads, &mut m_a, &mut v_a,
-                    0.001, 0.9, 0.999, 1e-8, 0.01, 1,
+                    &mut params_a,
+                    &grads,
+                    &mut m_a,
+                    &mut v_a,
+                    0.001,
+                    0.9,
+                    0.999,
+                    1e-8,
+                    0.01,
+                    1,
                 );
             }
 
@@ -456,7 +513,10 @@ mod tests {
     #[test]
     fn test_adamw_ptx_version() {
         let ptx = adamw_step_ptx();
-        assert!(ptx.contains(".version 8.5"), "PTX must declare .version 8.5");
+        assert!(
+            ptx.contains(".version 8.5"),
+            "PTX must declare .version 8.5"
+        );
     }
 
     #[test]
@@ -482,6 +542,9 @@ mod tests {
         let ptx = adamw_step_ptx();
         let opens = ptx.chars().filter(|&c| c == '{').count();
         let closes = ptx.chars().filter(|&c| c == '}').count();
-        assert_eq!(opens, closes, "PTX must have balanced braces: {opens} opens vs {closes} closes");
+        assert_eq!(
+            opens, closes,
+            "PTX must have balanced braces: {opens} opens vs {closes} closes"
+        );
     }
 }

@@ -254,8 +254,15 @@ mod tests {
 
         lbfgs_direction_scalar(&gradient, &s_history, &y_history, 1, d, &mut direction);
 
-        let dot: f32 = gradient.iter().zip(direction.iter()).map(|(g, d)| g * d).sum();
-        assert!(dot < 0.0, "direction must be a descent direction, got g.d = {dot}");
+        let dot: f32 = gradient
+            .iter()
+            .zip(direction.iter())
+            .map(|(g, d)| g * d)
+            .sum();
+        assert!(
+            dot < 0.0,
+            "direction must be a descent direction, got g.d = {dot}"
+        );
     }
 
     #[test]
@@ -297,7 +304,10 @@ mod tests {
     #[test]
     fn test_lbfgs_ptx_version() {
         let ptx = lbfgs_direction_ptx();
-        assert!(ptx.contains(".version 8.5"), "PTX must declare .version 8.5");
+        assert!(
+            ptx.contains(".version 8.5"),
+            "PTX must declare .version 8.5"
+        );
     }
 
     #[test]
@@ -309,7 +319,10 @@ mod tests {
     #[test]
     fn test_lbfgs_ptx_entry() {
         let ptx = lbfgs_direction_ptx();
-        assert!(ptx.contains(".entry lbfgs_direction_kernel"), "PTX must have .entry");
+        assert!(
+            ptx.contains(".entry lbfgs_direction_kernel"),
+            "PTX must have .entry"
+        );
     }
 
     #[test]
@@ -323,6 +336,9 @@ mod tests {
         let ptx = lbfgs_direction_ptx();
         let opens = ptx.chars().filter(|&c| c == '{').count();
         let closes = ptx.chars().filter(|&c| c == '}').count();
-        assert_eq!(opens, closes, "PTX must have balanced braces: {opens} opens vs {closes} closes");
+        assert_eq!(
+            opens, closes,
+            "PTX must have balanced braces: {opens} opens vs {closes} closes"
+        );
     }
 }

@@ -34,7 +34,10 @@ pub fn greedy_scalar(logits: &[f32]) -> usize {
 /// # Panics
 /// Panics if `temperature <= 0`.
 pub fn temperature_scalar(logits: &mut [f32], temperature: f32) {
-    assert!(temperature > 0.0, "temperature must be positive, got {temperature}");
+    assert!(
+        temperature > 0.0,
+        "temperature must be positive, got {temperature}"
+    );
     for v in logits.iter_mut() {
         *v /= temperature;
     }
@@ -56,7 +59,11 @@ pub fn top_k_scalar(probs: &mut [f32], k: usize) {
 
     // Find the k-th largest value (selection via sorted indices)
     let mut indices: Vec<usize> = (0..n).collect();
-    indices.sort_by(|&a, &b| probs[b].partial_cmp(&probs[a]).unwrap_or(std::cmp::Ordering::Equal));
+    indices.sort_by(|&a, &b| {
+        probs[b]
+            .partial_cmp(&probs[a])
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
 
     // Zero out everything below top-K
     for &idx in &indices[k..] {
@@ -88,7 +95,11 @@ pub fn top_p_scalar(probs: &mut [f32], threshold: f32) {
 
     // Sort indices by probability descending
     let mut indices: Vec<usize> = (0..n).collect();
-    indices.sort_by(|&a, &b| probs[b].partial_cmp(&probs[a]).unwrap_or(std::cmp::Ordering::Equal));
+    indices.sort_by(|&a, &b| {
+        probs[b]
+            .partial_cmp(&probs[a])
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
 
     // Accumulate until we exceed threshold
     let mut cumsum = 0.0f32;
@@ -227,9 +238,12 @@ mod tests {
     fn test_greedy_is_argmax() {
         let logits = [0.1, 0.5, -0.3, 0.8, 0.2];
         let result = greedy_scalar(&logits);
-        let argmax = logits.iter().enumerate()
+        let argmax = logits
+            .iter()
+            .enumerate()
             .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
-            .unwrap().0;
+            .unwrap()
+            .0;
         assert_eq!(result, argmax);
     }
 
@@ -292,7 +306,10 @@ mod tests {
         // Only index 3 (0.4) and index 2 (0.3) needed: 0.4+0.3 = 0.7 >= 0.5
         // Actually, 0.4 alone is not >= 0.5, so need 0.4+0.3
         let nonzero = probs.iter().filter(|&&p| p > 0.0).count();
-        assert!(nonzero <= 2, "expected minimal set size <= 2, got {nonzero}");
+        assert!(
+            nonzero <= 2,
+            "expected minimal set size <= 2, got {nonzero}"
+        );
     }
 
     proptest! {

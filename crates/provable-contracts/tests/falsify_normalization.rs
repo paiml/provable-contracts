@@ -7,10 +7,10 @@
 mod common;
 
 use proptest::prelude::*;
-use provable_contracts::kernels::softmax::*;
-use provable_contracts::kernels::rmsnorm::*;
-use provable_contracts::kernels::layernorm::*;
 use provable_contracts::kernels::batchnorm::*;
+use provable_contracts::kernels::layernorm::*;
+use provable_contracts::kernels::rmsnorm::*;
+use provable_contracts::kernels::softmax::*;
 
 // ============================================================================
 // Softmax (6 tests: FALSIFY-SM-001 through FALSIFY-SM-006)
@@ -528,9 +528,17 @@ fn falsify_bn_002_running_variance_update() {
     let mut output = vec![0.0_f32; n * c];
 
     batchnorm_scalar(
-        &input, n, c, &gamma, &beta, 1e-5,
-        &mut running_mean, &mut running_var,
-        &mut output, 0.1, true,
+        &input,
+        n,
+        c,
+        &gamma,
+        &beta,
+        1e-5,
+        &mut running_mean,
+        &mut running_var,
+        &mut output,
+        0.1,
+        true,
     );
 
     let mut any_changed = false;
@@ -562,9 +570,17 @@ fn falsify_bn_003_denominator_safety() {
     let mut output = vec![0.0_f32; n * c];
 
     batchnorm_scalar(
-        &input, n, c, &gamma, &beta, 1e-5,
-        &mut running_mean, &mut running_var,
-        &mut output, 0.1, true,
+        &input,
+        n,
+        c,
+        &gamma,
+        &beta,
+        1e-5,
+        &mut running_mean,
+        &mut running_var,
+        &mut output,
+        0.1,
+        true,
     );
 
     common::assert_all_finite(&output);
@@ -587,9 +603,17 @@ fn falsify_bn_005_eval_vs_train_mode() {
     let mut rv_train = vec![2.0_f32; c];
     let mut train_out = vec![0.0_f32; n * c];
     batchnorm_scalar(
-        &input, n, c, &gamma, &beta, 1e-5,
-        &mut rm_train, &mut rv_train,
-        &mut train_out, 0.1, true,
+        &input,
+        n,
+        c,
+        &gamma,
+        &beta,
+        1e-5,
+        &mut rm_train,
+        &mut rv_train,
+        &mut train_out,
+        0.1,
+        true,
     );
 
     // Eval output (with different running stats than batch stats)
@@ -597,9 +621,17 @@ fn falsify_bn_005_eval_vs_train_mode() {
     let mut rv_eval = vec![2.0_f32; c];
     let mut eval_out = vec![0.0_f32; n * c];
     batchnorm_scalar(
-        &input, n, c, &gamma, &beta, 1e-5,
-        &mut rm_eval, &mut rv_eval,
-        &mut eval_out, 0.1, false,
+        &input,
+        n,
+        c,
+        &gamma,
+        &beta,
+        1e-5,
+        &mut rm_eval,
+        &mut rv_eval,
+        &mut eval_out,
+        0.1,
+        false,
     );
 
     // They should differ since batch stats != running stats
@@ -633,9 +665,17 @@ fn falsify_bn_006_running_stats_updated() {
     let mut output = vec![0.0_f32; n * c];
 
     batchnorm_scalar(
-        &input, n, c, &gamma, &beta, 1e-5,
-        &mut running_mean, &mut running_var,
-        &mut output, 0.1, true,
+        &input,
+        n,
+        c,
+        &gamma,
+        &beta,
+        1e-5,
+        &mut running_mean,
+        &mut running_var,
+        &mut output,
+        0.1,
+        true,
     );
 
     // After training, running_mean should be non-zero (input is non-zero)

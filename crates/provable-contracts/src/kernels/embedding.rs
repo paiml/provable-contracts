@@ -27,11 +27,18 @@ pub fn embedding_scalar(
     output: &mut [f32],
 ) {
     assert_eq!(weight.len(), vocab_size * dim, "weight dimension mismatch");
-    assert_eq!(output.len(), token_ids.len() * dim, "output dimension mismatch");
+    assert_eq!(
+        output.len(),
+        token_ids.len() * dim,
+        "output dimension mismatch"
+    );
 
     for (i, &tid) in token_ids.iter().enumerate() {
         let tid = tid as usize;
-        assert!(tid < vocab_size, "token_id {tid} >= vocab_size {vocab_size}");
+        assert!(
+            tid < vocab_size,
+            "token_id {tid} >= vocab_size {vocab_size}"
+        );
         let src = &weight[tid * dim..(tid + 1) * dim];
         let dst = &mut output[i * dim..(i + 1) * dim];
         dst.copy_from_slice(src);

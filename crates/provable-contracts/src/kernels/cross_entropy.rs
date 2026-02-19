@@ -46,7 +46,11 @@ pub fn log_softmax_scalar(logits: &[f32], output: &mut [f32]) {
 /// # Panics
 /// Panics if `targets.len() != logits.len()` or `logits.is_empty()`.
 pub fn cross_entropy_scalar(targets: &[f32], logits: &[f32]) -> f32 {
-    assert_eq!(targets.len(), logits.len(), "targets/logits length mismatch");
+    assert_eq!(
+        targets.len(),
+        logits.len(),
+        "targets/logits length mismatch"
+    );
     assert!(!logits.is_empty(), "logits must not be empty");
 
     let mut log_sm = vec![0.0f32; logits.len()];
@@ -208,8 +212,8 @@ LOSS_DONE:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::*;
     use proptest::prelude::*;
 
     // ── log_softmax known-answer tests ────────────────────────────────────
@@ -277,7 +281,8 @@ mod tests {
             assert!(
                 (out1[i] - out2[i]).abs() < 1e-5,
                 "log_softmax should be shift-invariant, index {i}: {} vs {}",
-                out1[i], out2[i]
+                out1[i],
+                out2[i]
             );
         }
     }
@@ -293,16 +298,13 @@ mod tests {
         let e2 = 2.0f32.exp();
         let e3 = 3.0f32.exp();
         let total = e1 + e2 + e3;
-        let expected = [
-            (e1 / total).ln(),
-            (e2 / total).ln(),
-            (e3 / total).ln(),
-        ];
+        let expected = [(e1 / total).ln(), (e2 / total).ln(), (e3 / total).ln()];
         for i in 0..3 {
             assert!(
                 (output[i] - expected[i]).abs() < 1e-5,
                 "log_softmax([1,2,3])[{i}]: expected {}, got {}",
-                expected[i], output[i]
+                expected[i],
+                output[i]
             );
         }
     }
@@ -550,13 +552,19 @@ mod tests {
         let ptx = cross_entropy_ptx();
         assert!(ptx.contains(".version 8.5"), "missing PTX version");
         assert!(ptx.contains(".target sm_90"), "missing PTX target");
-        assert!(ptx.contains(".entry cross_entropy_kernel"), "missing entry point");
+        assert!(
+            ptx.contains(".entry cross_entropy_kernel"),
+            "missing entry point"
+        );
         assert!(ptx.contains("ret;"), "missing ret instruction");
         assert!(ptx.contains("ex2.approx.f32"), "missing ex2.approx for exp");
         assert!(ptx.contains("lg2.approx.f32"), "missing lg2.approx for log");
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 
     #[test]

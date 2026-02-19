@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use provable_contracts::latex::{latex_escape, math_to_latex};
-use provable_contracts::schema::{parse_contract, Contract, Equation};
+use provable_contracts::schema::{Contract, Equation, parse_contract};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OutputFormat {
@@ -85,18 +85,12 @@ fn render_latex(name: &str, equations: &std::collections::BTreeMap<String, Equat
         println!();
 
         if let Some(ref dom) = eq.domain {
-            println!(
-                "\\textbf{{Domain:}} ${}$",
-                math_to_latex(dom)
-            );
+            println!("\\textbf{{Domain:}} ${}$", math_to_latex(dom));
             println!();
         }
 
         if let Some(ref cod) = eq.codomain {
-            println!(
-                "\\textbf{{Codomain:}} ${}$",
-                math_to_latex(cod)
-            );
+            println!("\\textbf{{Codomain:}} ${}$", math_to_latex(cod));
             println!();
         }
 
@@ -205,18 +199,53 @@ fn render_body_comments(contract: &Contract) {
     }
 }
 
-struct SimdIsa { label: &'static str, suffix: &'static str, reg_prefix: &'static str, reg_count: u32, width: u32 }
+struct SimdIsa {
+    label: &'static str,
+    suffix: &'static str,
+    reg_prefix: &'static str,
+    reg_count: u32,
+    width: u32,
+}
 
 fn detect_simd_isa(contract: &Contract) -> SimdIsa {
-    let has = |pat: &str| contract.simd_dispatch.values().any(|m| m.keys().any(|k| k.contains(pat)));
+    let has = |pat: &str| {
+        contract
+            .simd_dispatch
+            .values()
+            .any(|m| m.keys().any(|k| k.contains(pat)))
+    };
     if has("avx512") || has("512") {
-        SimdIsa { label: "AVX-512", suffix: "avx512", reg_prefix: "zmm", reg_count: 32, width: 512 }
+        SimdIsa {
+            label: "AVX-512",
+            suffix: "avx512",
+            reg_prefix: "zmm",
+            reg_count: 32,
+            width: 512,
+        }
     } else if has("avx2") {
-        SimdIsa { label: "AVX2", suffix: "avx2", reg_prefix: "ymm", reg_count: 16, width: 256 }
+        SimdIsa {
+            label: "AVX2",
+            suffix: "avx2",
+            reg_prefix: "ymm",
+            reg_count: 16,
+            width: 256,
+        }
     } else if !contract.simd_dispatch.is_empty() {
-        SimdIsa { label: "SSE4.1", suffix: "sse41", reg_prefix: "xmm", reg_count: 16, width: 128 }
+        SimdIsa {
+            label: "SSE4.1",
+            suffix: "sse41",
+            reg_prefix: "xmm",
+            reg_count: 16,
+            width: 128,
+        }
     } else {
-        SimdIsa { label: "scalar", suffix: "scalar", reg_prefix: "xmm", reg_count: 0, width: 0 }
+        SimdIsa {
+            label: "scalar",
+            suffix: "scalar",
+            reg_prefix: "xmm",
+            reg_count: 0,
+            width: 0,
+        }
     }
 }
 
@@ -242,7 +271,10 @@ mod tests {
     #[test]
     fn test_output_format_from_str() {
         assert_eq!(OutputFormat::from_str("text").unwrap(), OutputFormat::Text);
-        assert_eq!(OutputFormat::from_str("latex").unwrap(), OutputFormat::Latex);
+        assert_eq!(
+            OutputFormat::from_str("latex").unwrap(),
+            OutputFormat::Latex
+        );
         assert_eq!(OutputFormat::from_str("ptx").unwrap(), OutputFormat::Ptx);
         assert_eq!(OutputFormat::from_str("asm").unwrap(), OutputFormat::Asm);
         assert!(OutputFormat::from_str("json").is_err());
@@ -253,7 +285,10 @@ mod tests {
         // Exercises the `other =>` catch-all arm in from_str
         let other = "csv";
         let err = OutputFormat::from_str(other).unwrap_err();
-        assert!(err.contains(other), "error should include the unrecognized format");
+        assert!(
+            err.contains(other),
+            "error should include the unrecognized format"
+        );
         assert!(err.contains("unknown format"));
     }
 
@@ -262,7 +297,10 @@ mod tests {
         assert_eq!(kernel_name("softmax-kernel-v1"), "softmax");
         assert_eq!(kernel_name("rmsnorm-kernel-v1"), "rmsnorm");
         assert_eq!(kernel_name("flash-attention-v1"), "flash_attention");
-        assert_eq!(kernel_name("model-config-algebra-v1"), "model_config_algebra");
+        assert_eq!(
+            kernel_name("model-config-algebra-v1"),
+            "model_config_algebra"
+        );
         assert_eq!(kernel_name("silu-kernel-v2"), "silu");
     }
 

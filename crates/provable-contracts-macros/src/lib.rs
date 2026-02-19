@@ -31,7 +31,7 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::parse::{Parse, ParseStream};
-use syn::{parse_macro_input, Expr, ItemFn, Lit, Meta, Token};
+use syn::{Expr, ItemFn, Lit, Meta, Token, parse_macro_input};
 
 /// Arguments to `#[contract("contract-name", equation = "equation-name")]`
 struct ContractArgs {
@@ -49,7 +49,7 @@ impl Parse for ContractArgs {
                 return Err(syn::Error::new_spanned(
                     contract_lit,
                     "expected string literal for contract name",
-                ))
+                ));
             }
         };
 
@@ -66,17 +66,22 @@ impl Parse for ContractArgs {
                         return Err(syn::Error::new_spanned(
                             &nv.value,
                             "expected string literal for equation name",
-                        ))
+                        ));
                     }
                 },
                 _ => {
                     return Err(syn::Error::new_spanned(
                         &nv.value,
                         "expected string literal for equation name",
-                    ))
+                    ));
                 }
             },
-            _ => return Err(syn::Error::new_spanned(meta, "expected `equation = \"...\"`")),
+            _ => {
+                return Err(syn::Error::new_spanned(
+                    meta,
+                    "expected `equation = \"...\"`",
+                ));
+            }
         };
 
         Ok(ContractArgs {
@@ -128,9 +133,7 @@ pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
     let env_key = make_env_key(&args.contract_name, &args.equation_name);
     let const_name = format_ident!(
         "_CONTRACT_CHECK_{}_{}",
-        args.contract_name
-            .to_uppercase()
-            .replace(['-', '.'], "_"),
+        args.contract_name.to_uppercase().replace(['-', '.'], "_"),
         args.equation_name.to_uppercase().replace(['-', '.'], "_")
     );
 
@@ -141,9 +144,7 @@ pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let binding_const_name = format_ident!(
         "_CONTRACT_BINDING_{}_{}",
-        args.contract_name
-            .to_uppercase()
-            .replace(['-', '.'], "_"),
+        args.contract_name.to_uppercase().replace(['-', '.'], "_"),
         args.equation_name.to_uppercase().replace(['-', '.'], "_")
     );
 
@@ -188,12 +189,8 @@ pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///
 /// Example: `("rmsnorm-kernel-v1", "rmsnorm")` → `"CONTRACT_RMSNORM_KERNEL_V1_RMSNORM"`
 fn make_env_key(contract: &str, equation: &str) -> String {
-    let contract_part = contract
-        .to_uppercase()
-        .replace(['-', '.'], "_");
-    let equation_part = equation
-        .to_uppercase()
-        .replace(['-', '.'], "_");
+    let contract_part = contract.to_uppercase().replace(['-', '.'], "_");
+    let equation_part = equation.to_uppercase().replace(['-', '.'], "_");
     format!("CONTRACT_{contract_part}_{equation_part}")
 }
 
@@ -219,9 +216,6 @@ mod tests {
 
     #[test]
     fn test_make_env_key_with_dots() {
-        assert_eq!(
-            make_env_key("v1.0", "eq.1"),
-            "CONTRACT_V1_0_EQ_1"
-        );
+        assert_eq!(make_env_key("v1.0", "eq.1"), "CONTRACT_V1_0_EQ_1");
     }
 }

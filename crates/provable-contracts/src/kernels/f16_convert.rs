@@ -231,8 +231,10 @@ mod tests {
         for &bits in &test_values {
             let f32_val = f16_to_f32_single(bits);
             let back = f32_to_f16_single(f32_val);
-            assert_eq!(bits, back,
-                "roundtrip failed for 0x{bits:04X}: f32={f32_val}, back=0x{back:04X}");
+            assert_eq!(
+                bits, back,
+                "roundtrip failed for 0x{bits:04X}: f32={f32_val}, back=0x{back:04X}"
+            );
         }
     }
 

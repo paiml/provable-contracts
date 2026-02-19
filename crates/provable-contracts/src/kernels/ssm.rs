@@ -251,15 +251,31 @@ mod tests {
 
         // t=0: h = 0.5*0 + 1.0*1.0 = 1.0; y = 2.0*1.0 = 2.0
         // t=1: h = 0.5*1.0 + 1.0*1.0 = 1.5; y = 2.0*1.5 = 3.0
-        assert!((output[0] - 2.0).abs() < 1e-6, "t=0: expected 2.0, got {}", output[0]);
-        assert!((output[1] - 3.0).abs() < 1e-6, "t=1: expected 3.0, got {}", output[1]);
+        assert!(
+            (output[0] - 2.0).abs() < 1e-6,
+            "t=0: expected 2.0, got {}",
+            output[0]
+        );
+        assert!(
+            (output[1] - 3.0).abs() < 1e-6,
+            "t=1: expected 3.0, got {}",
+            output[1]
+        );
     }
 
     #[test]
     #[should_panic(expected = "a_bar length mismatch")]
     fn test_ssm_abar_mismatch() {
         let mut output = [0.0_f32; 2];
-        ssm_scan_scalar(&[0.5], &[1.0; 4], &[1.0, 1.0], &[1.0, 1.0], 2, 2, &mut output);
+        ssm_scan_scalar(
+            &[0.5],
+            &[1.0; 4],
+            &[1.0, 1.0],
+            &[1.0, 1.0],
+            2,
+            2,
+            &mut output,
+        );
     }
 
     // ---------------------------------------------------------------
@@ -298,7 +314,10 @@ mod tests {
     #[test]
     fn test_ssm_ptx_version() {
         let ptx = ssm_scan_ptx();
-        assert!(ptx.contains(".version 8.5"), "PTX must declare .version 8.5");
+        assert!(
+            ptx.contains(".version 8.5"),
+            "PTX must declare .version 8.5"
+        );
     }
 
     #[test]
@@ -310,7 +329,10 @@ mod tests {
     #[test]
     fn test_ssm_ptx_entry() {
         let ptx = ssm_scan_ptx();
-        assert!(ptx.contains(".entry ssm_scan_kernel"), "PTX must have .entry");
+        assert!(
+            ptx.contains(".entry ssm_scan_kernel"),
+            "PTX must have .entry"
+        );
     }
 
     #[test]
@@ -324,6 +346,9 @@ mod tests {
         let ptx = ssm_scan_ptx();
         let opens = ptx.chars().filter(|&c| c == '{').count();
         let closes = ptx.chars().filter(|&c| c == '}').count();
-        assert_eq!(opens, closes, "PTX must have balanced braces: {opens} opens vs {closes} closes");
+        assert_eq!(
+            opens, closes,
+            "PTX must have balanced braces: {opens} opens vs {closes} closes"
+        );
     }
 }

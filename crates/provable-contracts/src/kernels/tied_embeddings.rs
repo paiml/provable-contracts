@@ -31,8 +31,16 @@ pub fn tied_lm_head_scalar(
     output: &mut [f32],
 ) {
     assert_eq!(x.len(), seq_len * d_model, "x dimension mismatch");
-    assert_eq!(embed_weight.len(), vocab_size * d_model, "embed_weight dimension mismatch");
-    assert_eq!(output.len(), seq_len * vocab_size, "output dimension mismatch");
+    assert_eq!(
+        embed_weight.len(),
+        vocab_size * d_model,
+        "embed_weight dimension mismatch"
+    );
+    assert_eq!(
+        output.len(),
+        seq_len * vocab_size,
+        "output dimension mismatch"
+    );
 
     for s in 0..seq_len {
         let x_row = &x[s * d_model..(s + 1) * d_model];
@@ -143,8 +151,8 @@ EXIT:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::*;
     use proptest::prelude::*;
 
     #[test]

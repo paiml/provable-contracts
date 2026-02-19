@@ -184,10 +184,7 @@ fn kernel_class_map() -> Vec<(&'static str, &'static str, &'static [&'static str
 /// - **L2**: falsification tests count >= obligations count
 /// - **L1**: contract exists with equations
 #[allow(clippy::cast_possible_truncation)]
-pub fn compute_proof_level(
-    contract: &Contract,
-    binding_status: Option<(u32, u32)>,
-) -> ProofLevel {
+pub fn compute_proof_level(contract: &Contract, binding_status: Option<(u32, u32)>) -> ProofLevel {
     let total_obligations = contract.proof_obligations.len() as u32;
     let ft_count = contract.falsification_tests.len() as u32;
     let kani_count = contract.kani_harnesses.len() as u32;
@@ -417,11 +414,7 @@ fn build_kernel_classes(statuses: &[ContractProofStatus]) -> Vec<KernelClassSumm
 }
 
 fn truncate(s: &str, max: usize) -> &str {
-    if s.len() > max {
-        &s[..max]
-    } else {
-        s
-    }
+    if s.len() > max { &s[..max] } else { s }
 }
 
 fn current_timestamp() -> String {
@@ -595,11 +588,7 @@ bindings:
 "#,
         )
         .unwrap();
-        let report = proof_status_report(
-            &[("test-v1".to_string(), &c)],
-            Some(&binding),
-            false,
-        );
+        let report = proof_status_report(&[("test-v1".to_string(), &c)], Some(&binding), false);
         assert_eq!(report.contracts[0].bindings_implemented, 1);
         assert_eq!(report.contracts[0].bindings_total, 1);
     }
@@ -607,11 +596,7 @@ bindings:
     #[test]
     fn report_with_kernel_classes() {
         let c = minimal_contract(3, 3, 2);
-        let report = proof_status_report(
-            &[("softmax-kernel-v1".to_string(), &c)],
-            None,
-            true,
-        );
+        let report = proof_status_report(&[("softmax-kernel-v1".to_string(), &c)], None, true);
         assert!(!report.kernel_classes.is_empty());
         // Softmax is in classes A, B, C, D, E
         let class_a = report
@@ -619,17 +604,17 @@ bindings:
             .iter()
             .find(|kc| kc.label == "A")
             .unwrap();
-        assert!(class_a.contract_stems.contains(&"softmax-kernel-v1".to_string()));
+        assert!(
+            class_a
+                .contract_stems
+                .contains(&"softmax-kernel-v1".to_string())
+        );
     }
 
     #[test]
     fn format_text_produces_output() {
         let c = minimal_contract(3, 3, 2);
-        let report = proof_status_report(
-            &[("softmax-kernel-v1".to_string(), &c)],
-            None,
-            true,
-        );
+        let report = proof_status_report(&[("softmax-kernel-v1".to_string(), &c)], None, true);
         let text = format_text(&report);
         assert!(text.contains("Proof Status"));
         assert!(text.contains("softmax-kernel-v1"));
@@ -649,11 +634,7 @@ bindings:
     #[test]
     fn json_roundtrip() {
         let c = minimal_contract(3, 3, 2);
-        let report = proof_status_report(
-            &[("test-v1".to_string(), &c)],
-            None,
-            true,
-        );
+        let report = proof_status_report(&[("test-v1".to_string(), &c)], None, true);
         let json = serde_json::to_string(&report).unwrap();
         let parsed: ProofStatusReport = serde_json::from_str(&json).unwrap();
         assert_eq!(parsed.contracts.len(), 1);

@@ -25,49 +25,49 @@
     unsafe_op_in_unsafe_fn
 )]
 
-pub mod ulp;
 pub mod ops;
+pub mod ulp;
 
 // Group A — Elementwise
 pub mod activation;
 pub mod silu_standalone;
 
 // Group B — Normalization
-pub mod softmax;
-pub mod rmsnorm;
-pub mod layernorm;
 pub mod batchnorm;
+pub mod layernorm;
+pub mod rmsnorm;
+pub mod softmax;
 
 // Group C — Gated + Positional + Loss
-pub mod swiglu;
-pub mod cross_entropy;
-pub mod rope;
-pub mod gelu;
 pub mod absolute_position;
 pub mod bias_add;
+pub mod cross_entropy;
 pub mod dropout;
+pub mod gelu;
+pub mod rope;
+pub mod swiglu;
 
 // Group D — Matrix + Projection
-pub mod matmul;
 pub mod attention;
-pub mod gqa;
 pub mod flash_attention;
+pub mod gqa;
 pub mod linear;
+pub mod matmul;
 pub mod tied_embeddings;
 
 // Group E — Optimizer + Sequence + Classical ML + IO
 pub mod adamw;
-pub mod conv1d;
-pub mod ssm;
-pub mod kmeans;
-pub mod pagerank;
-pub mod lbfgs;
-pub mod cma_es;
-pub mod gated_delta_net;
-pub mod embedding;
-pub mod sampling;
-pub mod f16_convert;
 pub mod alibi;
+pub mod cma_es;
+pub mod conv1d;
+pub mod embedding;
+pub mod f16_convert;
+pub mod gated_delta_net;
+pub mod kmeans;
+pub mod lbfgs;
+pub mod pagerank;
+pub mod sampling;
+pub mod ssm;
 
 #[cfg(kani)]
 mod kani_proofs;

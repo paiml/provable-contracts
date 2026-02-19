@@ -7,9 +7,9 @@
 //! This module re-exports those functions and adds GELU-specific tests that go
 //! beyond the generic activation tests.
 
-pub use super::activation::{gelu_scalar, gelu_ptx};
 #[cfg(target_arch = "x86_64")]
 pub use super::activation::gelu_avx2;
+pub use super::activation::{gelu_ptx, gelu_scalar};
 
 // ────────────────────────────────────────────────────────────────────────────
 // Tests
@@ -25,7 +25,11 @@ mod tests {
         let input = [0.0f32];
         let mut output = [999.0f32];
         gelu_scalar(&input, &mut output);
-        assert!((output[0]).abs() < 1e-7, "GELU(0) should be 0, got {}", output[0]);
+        assert!(
+            (output[0]).abs() < 1e-7,
+            "GELU(0) should be 0, got {}",
+            output[0]
+        );
     }
 
     #[test]
@@ -44,8 +48,11 @@ mod tests {
         let input = [100.0f32];
         let mut output = [0.0f32];
         gelu_scalar(&input, &mut output);
-        assert!((output[0] - 100.0).abs() < 0.1,
-            "GELU(100) should be ≈ 100, got {}", output[0]);
+        assert!(
+            (output[0] - 100.0).abs() < 0.1,
+            "GELU(100) should be ≈ 100, got {}",
+            output[0]
+        );
     }
 
     #[test]
@@ -56,8 +63,13 @@ mod tests {
         gelu_scalar(&input, &mut output);
 
         for i in 1..output.len() {
-            assert!(output[i] > output[i - 1],
-                "GELU not monotonic at x={}: {:.6} vs {:.6}", input[i], output[i], output[i - 1]);
+            assert!(
+                output[i] > output[i - 1],
+                "GELU not monotonic at x={}: {:.6} vs {:.6}",
+                input[i],
+                output[i],
+                output[i - 1]
+            );
         }
     }
 
@@ -69,8 +81,12 @@ mod tests {
         gelu_scalar(&input, &mut output);
 
         for (i, &val) in output.iter().enumerate() {
-            assert!(val >= -0.18,
-                "GELU({}) = {} below lower bound", input[i], val);
+            assert!(
+                val >= -0.18,
+                "GELU({}) = {} below lower bound",
+                input[i],
+                val
+            );
         }
     }
 

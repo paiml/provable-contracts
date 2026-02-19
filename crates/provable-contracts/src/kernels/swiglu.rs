@@ -118,8 +118,8 @@ DONE:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::*;
     use proptest::prelude::*;
 
     // ── Known-answer tests ────────────────────────────────────────────────
@@ -332,10 +332,16 @@ mod tests {
         assert!(ptx.contains(".entry swiglu_kernel"), "missing entry point");
         assert!(ptx.contains("ret;"), "missing ret instruction");
         assert!(ptx.contains("ex2.approx.f32"), "missing ex2.approx for exp");
-        assert!(ptx.contains("rcp.approx.f32"), "missing rcp.approx for reciprocal");
+        assert!(
+            ptx.contains("rcp.approx.f32"),
+            "missing rcp.approx for reciprocal"
+        );
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 
     #[test]

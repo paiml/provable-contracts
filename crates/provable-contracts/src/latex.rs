@@ -178,10 +178,7 @@ mod tests {
 
     #[test]
     fn test_math_to_latex_exp() {
-        assert_eq!(
-            math_to_latex("exp(x_i - max(x))"),
-            "\\exp(x_i - max(x))"
-        );
+        assert_eq!(math_to_latex("exp(x_i - max(x))"), "\\exp(x_i - max(x))");
     }
 
     #[test]

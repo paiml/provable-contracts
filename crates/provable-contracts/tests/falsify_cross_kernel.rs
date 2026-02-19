@@ -9,27 +9,27 @@
 
 mod common;
 
-use provable_contracts::kernels::softmax::softmax_scalar;
-use provable_contracts::kernels::rmsnorm::rmsnorm_scalar;
-use provable_contracts::kernels::layernorm::layernorm_scalar;
-use provable_contracts::kernels::batchnorm::batchnorm_scalar;
-use provable_contracts::kernels::activation::{relu_scalar, gelu_scalar, silu_scalar};
-use provable_contracts::kernels::silu_standalone::silu_standalone_scalar;
-use provable_contracts::kernels::swiglu::swiglu_scalar;
-use provable_contracts::kernels::cross_entropy::{cross_entropy_scalar, log_softmax_scalar};
-use provable_contracts::kernels::rope::rope_scalar;
-use provable_contracts::kernels::matmul::matmul_scalar;
-use provable_contracts::kernels::attention::attention_scalar;
-use provable_contracts::kernels::gqa::gqa_scalar;
-use provable_contracts::kernels::flash_attention::flash_attention_scalar;
+use provable_contracts::kernels::activation::{gelu_scalar, relu_scalar, silu_scalar};
 use provable_contracts::kernels::adamw::adamw_step_scalar;
-use provable_contracts::kernels::conv1d::conv1d_scalar;
-use provable_contracts::kernels::ssm::ssm_scan_scalar;
-use provable_contracts::kernels::kmeans::kmeans_assign_scalar;
-use provable_contracts::kernels::pagerank::pagerank_iterate_scalar;
-use provable_contracts::kernels::lbfgs::lbfgs_direction_scalar;
+use provable_contracts::kernels::attention::attention_scalar;
+use provable_contracts::kernels::batchnorm::batchnorm_scalar;
 use provable_contracts::kernels::cma_es::cma_sample_scalar;
+use provable_contracts::kernels::conv1d::conv1d_scalar;
+use provable_contracts::kernels::cross_entropy::{cross_entropy_scalar, log_softmax_scalar};
+use provable_contracts::kernels::flash_attention::flash_attention_scalar;
 use provable_contracts::kernels::gated_delta_net::gdn_recurrence_scalar;
+use provable_contracts::kernels::gqa::gqa_scalar;
+use provable_contracts::kernels::kmeans::kmeans_assign_scalar;
+use provable_contracts::kernels::layernorm::layernorm_scalar;
+use provable_contracts::kernels::lbfgs::lbfgs_direction_scalar;
+use provable_contracts::kernels::matmul::matmul_scalar;
+use provable_contracts::kernels::pagerank::pagerank_iterate_scalar;
+use provable_contracts::kernels::rmsnorm::rmsnorm_scalar;
+use provable_contracts::kernels::rope::rope_scalar;
+use provable_contracts::kernels::silu_standalone::silu_standalone_scalar;
+use provable_contracts::kernels::softmax::softmax_scalar;
+use provable_contracts::kernels::ssm::ssm_scan_scalar;
+use provable_contracts::kernels::swiglu::swiglu_scalar;
 
 // ============================================================================
 // Part 1: Isolation Tests (21 tests)
@@ -259,7 +259,16 @@ fn isolation_flash_through_attention() {
     // The key isolation property: feeding flash output through standard attention
     // produces a DIFFERENT result (not idempotent)
     let mut attn_of_flash = [0.0f32; 8];
-    attention_scalar(&flash_out, &flash_out, &flash_out, 4, 4, 2, 2, &mut attn_of_flash);
+    attention_scalar(
+        &flash_out,
+        &flash_out,
+        &flash_out,
+        4,
+        4,
+        2,
+        2,
+        &mut attn_of_flash,
+    );
     let dist = common::l2_distance(&flash_out, &attn_of_flash);
     assert!(
         dist > 0.01,
@@ -356,8 +365,16 @@ fn isolation_adamw_through_lbfgs() {
     let mut m_buf = [0.0f32; 4];
     let mut v_buf = [0.0f32; 4];
     adamw_step_scalar(
-        &mut params, &gradient, &mut m_buf, &mut v_buf,
-        0.001, 0.9, 0.999, 1e-8, 0.01, 1,
+        &mut params,
+        &gradient,
+        &mut m_buf,
+        &mut v_buf,
+        0.001,
+        0.9,
+        0.999,
+        1e-8,
+        0.01,
+        1,
     );
     let adamw_delta: Vec<f32> = [1.0f32, 2.0, 3.0, 4.0]
         .iter()
@@ -456,10 +473,7 @@ fn isolation_pagerank_through_softmax() {
     let rank = [0.4f32, 0.3, 0.2, 0.1];
     // Manually create a transition matrix with non-trivial structure
     let transition = [
-        0.1f32, 0.2, 0.3, 0.4,
-        0.4, 0.1, 0.2, 0.3,
-        0.3, 0.4, 0.1, 0.2,
-        0.2, 0.3, 0.4, 0.1,
+        0.1f32, 0.2, 0.3, 0.4, 0.4, 0.1, 0.2, 0.3, 0.3, 0.4, 0.1, 0.2, 0.2, 0.3, 0.4, 0.1,
     ];
     let mut pr_out = [0.0f32; 4];
     pagerank_iterate_scalar(&transition, &rank, n, 0.85, &mut pr_out);
@@ -492,8 +506,16 @@ fn isolation_lbfgs_through_adamw() {
     let mut m_buf = [0.0f32; 4];
     let mut v_buf = [0.0f32; 4];
     adamw_step_scalar(
-        &mut params, &direction, &mut m_buf, &mut v_buf,
-        0.001, 0.9, 0.999, 1e-8, 0.0, 1,
+        &mut params,
+        &direction,
+        &mut m_buf,
+        &mut v_buf,
+        0.001,
+        0.9,
+        0.999,
+        1e-8,
+        0.0,
+        1,
     );
 
     // AdamW with these "gradients" produces update different from raw direction
@@ -511,10 +533,7 @@ fn isolation_cma_through_rmsnorm() {
     let sigma = 0.5;
     // Lower triangular Cholesky factor (non-identity)
     let cholesky_l = [
-        2.0f32, 0.0, 0.0, 0.0,
-        0.5, 1.5, 0.0, 0.0,
-        0.3, 0.2, 1.0, 0.0,
-        0.1, 0.4, 0.3, 0.8,
+        2.0f32, 0.0, 0.0, 0.0, 0.5, 1.5, 0.0, 0.0, 0.3, 0.2, 1.0, 0.0, 0.1, 0.4, 0.3, 0.8,
     ];
     let z = [0.5f32, -0.3, 0.7, -0.1];
     let mut cma_out = [0.0f32; 4];
@@ -544,7 +563,17 @@ fn isolation_gdn_through_ssm() {
     let alpha = [0.9f32, 0.8, 0.7, 0.6];
     let beta = [0.1f32, 0.2, 0.3, 0.4];
     let mut gdn_out = [0.0f32; 8]; // seq_len * v_dim
-    gdn_recurrence_scalar(&q, &k, &v, &alpha, &beta, seq_len, k_dim, v_dim, &mut gdn_out);
+    gdn_recurrence_scalar(
+        &q,
+        &k,
+        &v,
+        &alpha,
+        &beta,
+        seq_len,
+        k_dim,
+        v_dim,
+        &mut gdn_out,
+    );
 
     // SSM on same data (using first v_dim elements as x, etc.)
     let state_dim = 2;
@@ -553,7 +582,15 @@ fn isolation_gdn_through_ssm() {
     let c_ssm = [1.0f32, 1.0];
     let x_ssm = [1.0f32, 3.0, 5.0, 7.0];
     let mut ssm_out = [0.0f32; 4];
-    ssm_scan_scalar(&a_bar, &b_bar, &c_ssm, &x_ssm, state_dim, seq_len, &mut ssm_out);
+    ssm_scan_scalar(
+        &a_bar,
+        &b_bar,
+        &c_ssm,
+        &x_ssm,
+        state_dim,
+        seq_len,
+        &mut ssm_out,
+    );
 
     // Different output dimensions and values
     assert_ne!(gdn_out.len(), ssm_out.len());
@@ -668,14 +705,23 @@ fn mutation_batchnorm_detect_no_running_update() {
 
     // Correct: training updates running stats
     batchnorm_scalar(
-        &input, 4, 1, &gamma, &beta, 1e-5,
-        &mut running_mean, &mut running_var,
-        &mut output, 0.1, true,
+        &input,
+        4,
+        1,
+        &gamma,
+        &beta,
+        1e-5,
+        &mut running_mean,
+        &mut running_var,
+        &mut output,
+        0.1,
+        true,
     );
     // After training, running_mean should have moved from 0
     assert!(
         running_mean[0].abs() > 0.01,
-        "running_mean should be updated after training: {}", running_mean[0]
+        "running_mean should be updated after training: {}",
+        running_mean[0]
     );
 
     // Mutated: if we skip running stat update, running_mean stays at 0
@@ -768,7 +814,9 @@ fn mutation_cross_entropy_detect_no_max_logsumexp() {
     for (i, &x) in logits.iter().enumerate() {
         log_sm_mutated[i] = x - lse;
     }
-    let mutated_loss: f32 = -targets.iter().zip(log_sm_mutated.iter())
+    let mutated_loss: f32 = -targets
+        .iter()
+        .zip(log_sm_mutated.iter())
         .map(|(&t, &ls)| t * ls)
         .sum::<f32>();
 
@@ -964,7 +1012,10 @@ fn mutation_flash_detect_no_rescaling() {
                 }
                 tile_scores[tj] = dot * scale;
             }
-            let tile_max = tile_scores.iter().copied().fold(f32::NEG_INFINITY, f32::max);
+            let tile_max = tile_scores
+                .iter()
+                .copied()
+                .fold(f32::NEG_INFINITY, f32::max);
             // MUTATION: no rescaling of previous accumulation (skip correction)
             for (tj, j) in (tile_start..tile_end).enumerate() {
                 let w = (tile_scores[tj] - tile_max).exp();
@@ -1002,8 +1053,16 @@ fn mutation_adamw_detect_l2_instead_of_decoupled() {
     let mut m_correct = [0.0f32; 4];
     let mut v_correct = [0.0f32; 4];
     adamw_step_scalar(
-        &mut correct_params, &grads, &mut m_correct, &mut v_correct,
-        lr, beta1, beta2, eps, wd, 1,
+        &mut correct_params,
+        &grads,
+        &mut m_correct,
+        &mut v_correct,
+        lr,
+        beta1,
+        beta2,
+        eps,
+        wd,
+        1,
     );
 
     // Mutated: L2 regularization (add wd*param to grad BEFORE moment update)
@@ -1056,7 +1115,18 @@ fn mutation_conv1d_detect_off_by_one() {
     let input = [1.0f32, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
     let weight = [1.0f32, 1.0, 1.0];
     let mut output = vec![0.0f32; correct_out_len];
-    conv1d_scalar(&input, &weight, None, c_in, c_out, length, kernel_size, stride, padding, &mut output);
+    conv1d_scalar(
+        &input,
+        &weight,
+        None,
+        c_in,
+        c_out,
+        length,
+        kernel_size,
+        stride,
+        padding,
+        &mut output,
+    );
     assert_eq!(output.len(), correct_out_len);
 }
 
@@ -1082,19 +1152,22 @@ fn mutation_ssm_detect_noncausal() {
     assert!(
         (out1[0] - out2[0]).abs() < 1e-7,
         "SSM is non-causal: output[0] changed from {} to {}",
-        out1[0], out2[0]
+        out1[0],
+        out2[0]
     );
     assert!(
         (out1[1] - out2[1]).abs() < 1e-7,
         "SSM is non-causal: output[1] changed from {} to {}",
-        out1[1], out2[1]
+        out1[1],
+        out2[1]
     );
 
     // But t=2 and beyond should change (the modification propagates forward)
     assert!(
         (out1[2] - out2[2]).abs() > 0.1,
         "SSM modification at t=2 should affect output[2]: {} vs {}",
-        out1[2], out2[2]
+        out1[2],
+        out2[2]
     );
 }
 
@@ -1121,21 +1194,29 @@ fn mutation_kmeans_detect_random_assignment() {
     let mutated_assignments: [u32; 4] = [1, 0, 0, 1]; // Deliberately wrong
 
     // Compute objective (sum of squared distances)
-    let correct_obj: f32 = (0..n).map(|p| {
-        let c = correct_assignments[p] as usize;
-        (0..d).map(|j| {
-            let diff = points[p * d + j] - centroids[c * d + j];
-            diff * diff
-        }).sum::<f32>()
-    }).sum();
+    let correct_obj: f32 = (0..n)
+        .map(|p| {
+            let c = correct_assignments[p] as usize;
+            (0..d)
+                .map(|j| {
+                    let diff = points[p * d + j] - centroids[c * d + j];
+                    diff * diff
+                })
+                .sum::<f32>()
+        })
+        .sum();
 
-    let mutated_obj: f32 = (0..n).map(|p| {
-        let c = mutated_assignments[p] as usize;
-        (0..d).map(|j| {
-            let diff = points[p * d + j] - centroids[c * d + j];
-            diff * diff
-        }).sum::<f32>()
-    }).sum();
+    let mutated_obj: f32 = (0..n)
+        .map(|p| {
+            let c = mutated_assignments[p] as usize;
+            (0..d)
+                .map(|j| {
+                    let diff = points[p * d + j] - centroids[c * d + j];
+                    diff * diff
+                })
+                .sum::<f32>()
+        })
+        .sum();
 
     // Correct assignments minimize objective; random assignments have higher cost
     assert!(
@@ -1191,7 +1272,8 @@ fn mutation_lbfgs_detect_reverse_loop() {
         assert!(
             (correct[i] - (-gradient[i])).abs() < 1e-7,
             "lbfgs(m=0) should give -gradient at index {i}: got {} expected {}",
-            correct[i], -gradient[i]
+            correct[i],
+            -gradient[i]
         );
     }
 
@@ -1216,10 +1298,7 @@ fn mutation_cma_detect_no_cholesky() {
     let sigma = 1.0;
     // Non-identity lower triangular Cholesky factor
     let cholesky_l = [
-        2.0f32, 0.0, 0.0, 0.0,
-        0.5, 1.5, 0.0, 0.0,
-        0.3, 0.2, 1.0, 0.0,
-        0.1, 0.4, 0.3, 0.8,
+        2.0f32, 0.0, 0.0, 0.0, 0.5, 1.5, 0.0, 0.0, 0.3, 0.2, 1.0, 0.0, 0.1, 0.4, 0.3, 0.8,
     ];
     let z = [0.5f32, -0.3, 0.7, -0.1];
 
@@ -1254,12 +1333,32 @@ fn mutation_gdn_detect_extreme_decay() {
     // Correct: alpha = 0.5 (valid range)
     let alpha_correct = [0.5f32; 4];
     let mut correct = [0.0f32; 8];
-    gdn_recurrence_scalar(&q, &k, &v, &alpha_correct, &beta, seq_len, k_dim, v_dim, &mut correct);
+    gdn_recurrence_scalar(
+        &q,
+        &k,
+        &v,
+        &alpha_correct,
+        &beta,
+        seq_len,
+        k_dim,
+        v_dim,
+        &mut correct,
+    );
 
     // Mutated: alpha = 100 (extreme, state explodes)
     let alpha_extreme = [100.0f32; 4];
     let mut mutated = [0.0f32; 8];
-    gdn_recurrence_scalar(&q, &k, &v, &alpha_extreme, &beta, seq_len, k_dim, v_dim, &mut mutated);
+    gdn_recurrence_scalar(
+        &q,
+        &k,
+        &v,
+        &alpha_extreme,
+        &beta,
+        seq_len,
+        k_dim,
+        v_dim,
+        &mut mutated,
+    );
 
     let dist = common::l2_distance(&correct, &mutated);
     assert!(

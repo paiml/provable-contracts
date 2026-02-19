@@ -188,8 +188,8 @@ DONE:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::*;
     use proptest::prelude::*;
 
     // ── Sigmoid known-answer tests ───────────────────────────────────────
@@ -396,7 +396,10 @@ mod tests {
         assert!(ptx.contains("ex2.approx.f32"), "missing ex2.approx for exp");
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 
     #[test]
@@ -404,12 +407,18 @@ mod tests {
         let ptx = silu_standalone_ptx();
         assert!(ptx.contains(".version 8.5"), "missing PTX version");
         assert!(ptx.contains(".target sm_90"), "missing PTX target");
-        assert!(ptx.contains(".entry silu_standalone_kernel"), "missing entry point");
+        assert!(
+            ptx.contains(".entry silu_standalone_kernel"),
+            "missing entry point"
+        );
         assert!(ptx.contains("ret;"), "missing ret instruction");
         assert!(ptx.contains("ex2.approx.f32"), "missing ex2.approx for exp");
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 
     #[test]

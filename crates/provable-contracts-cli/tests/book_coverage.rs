@@ -45,10 +45,7 @@ fn every_contract_generates_book_page() {
     for (stem, contract) in &contracts {
         let page = generate_contract_page(contract, stem, &graph);
 
-        assert!(
-            !page.is_empty(),
-            "Book page for {stem} is empty"
-        );
+        assert!(!page.is_empty(), "Book page for {stem} is empty");
         assert!(
             page.contains(&format!("# {stem}")),
             "Book page for {stem} missing title"

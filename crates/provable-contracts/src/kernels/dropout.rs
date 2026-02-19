@@ -23,12 +23,7 @@
 ///
 /// # Panics
 /// Panics if dimensions don't match or `p >= 1.0`.
-pub fn dropout_train_scalar(
-    input: &[f32],
-    mask: &[f32],
-    p: f32,
-    output: &mut [f32],
-) {
+pub fn dropout_train_scalar(input: &[f32], mask: &[f32], p: f32, output: &mut [f32]) {
     assert_eq!(input.len(), mask.len(), "input/mask dimension mismatch");
     assert_eq!(input.len(), output.len(), "input/output dimension mismatch");
     assert!((0.0..1.0).contains(&p), "p must be in [0, 1), got {p}");
@@ -60,12 +55,7 @@ pub fn dropout_eval_scalar(input: &[f32], output: &mut [f32]) {
 /// Requires AVX2 support.
 #[cfg(target_arch = "x86_64")]
 #[target_feature(enable = "avx2")]
-pub unsafe fn dropout_train_avx2(
-    input: &[f32],
-    mask: &[f32],
-    p: f32,
-    output: &mut [f32],
-) {
+pub unsafe fn dropout_train_avx2(input: &[f32], mask: &[f32], p: f32, output: &mut [f32]) {
     dropout_train_scalar(input, mask, p, output);
 }
 

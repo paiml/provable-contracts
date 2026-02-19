@@ -654,10 +654,7 @@ falsification_tests:
     fn pv_coverage_contracts() {
         let output = Command::new(pv_bin())
             .arg("coverage")
-            .arg(
-                Path::new(env!("CARGO_MANIFEST_DIR"))
-                    .join("../../contracts"),
-            )
+            .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts"))
             .output()
             .expect("failed to run pv");
         assert!(output.status.success());
@@ -670,10 +667,7 @@ falsification_tests:
     fn pv_coverage_with_binding() {
         let output = Command::new(pv_bin())
             .arg("coverage")
-            .arg(
-                Path::new(env!("CARGO_MANIFEST_DIR"))
-                    .join("../../contracts"),
-            )
+            .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts"))
             .arg("--binding")
             .arg(binding_path())
             .output()

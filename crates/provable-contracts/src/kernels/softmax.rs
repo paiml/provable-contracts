@@ -310,8 +310,8 @@ pass3_done:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::*;
     use proptest::prelude::*;
 
     // ── Scalar known-answer tests ────────────────────────────────────────
@@ -457,8 +457,8 @@ mod tests {
             return;
         }
         let input = [
-            1.0_f32, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0,
-            15.0, 16.0,
+            1.0_f32, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0,
+            16.0,
         ];
         let mut scalar_out = [0.0_f32; 16];
         let mut avx2_out = [0.0_f32; 16];
@@ -533,13 +533,19 @@ mod tests {
     #[test]
     fn test_softmax_ptx_warp_shuffle() {
         let ptx = softmax_ptx();
-        assert!(ptx.contains("shfl.sync"), "missing warp shuffle instructions");
+        assert!(
+            ptx.contains("shfl.sync"),
+            "missing warp shuffle instructions"
+        );
     }
 
     #[test]
     fn test_softmax_ptx_bar_sync() {
         let ptx = softmax_ptx();
-        assert!(ptx.contains("bar.sync"), "missing bar.sync for block synchronization");
+        assert!(
+            ptx.contains("bar.sync"),
+            "missing bar.sync for block synchronization"
+        );
     }
 
     #[test]
@@ -547,6 +553,9 @@ mod tests {
         let ptx = softmax_ptx();
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 }

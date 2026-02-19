@@ -216,9 +216,7 @@ fn generate_defs_file(contract: &Contract, module_name: &str) -> LeanFile {
         if let Some(ref domain) = eq.domain {
             content.push_str(&format!("-- Domain: {domain}\n"));
         }
-        content.push_str(&format!(
-            "noncomputable def {name} : sorry := sorry\n\n"
-        ));
+        content.push_str(&format!("noncomputable def {name} : sorry := sorry\n\n"));
     }
 
     content.push_str(&format!("end ProvableContracts.{module_name}\n"));
@@ -242,9 +240,7 @@ fn generate_theorem_file(
     content.push_str("-- Generated with `pv lean`\n\n");
 
     // Imports
-    content.push_str(&format!(
-        "import ProvableContracts.Defs.{module_name}\n"
-    ));
+    content.push_str(&format!("import ProvableContracts.Defs.{module_name}\n"));
     for imp in &lean.mathlib_imports {
         content.push_str(&format!("import {imp}\n"));
     }
@@ -284,11 +280,7 @@ fn generate_theorem_file(
     content.push_str(&format!("\nend ProvableContracts.{module_name}\n"));
 
     // Derive file path from theorem name
-    let theorem_file = lean
-        .theorem
-        .split('.')
-        .last()
-        .unwrap_or(&lean.theorem);
+    let theorem_file = lean.theorem.split('.').last().unwrap_or(&lean.theorem);
     LeanFile {
         path: format!("ProvableContracts/Theorems/{module_name}/{theorem_file}.lean"),
         content,
@@ -355,7 +347,10 @@ falsification_tests: []
         assert!(defs.path.contains("Defs/Softmax"));
         assert!(defs.content.contains("noncomputable def softmax"));
         assert!(defs.content.contains("namespace ProvableContracts.Softmax"));
-        assert!(defs.content.contains("Mathlib.Analysis.SpecialFunctions.ExpDeriv"));
+        assert!(
+            defs.content
+                .contains("Mathlib.Analysis.SpecialFunctions.ExpDeriv")
+        );
 
         // Check theorem file
         let thm = &files[1];
