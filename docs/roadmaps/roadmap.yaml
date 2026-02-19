@@ -1017,11 +1017,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: F16 conversion kernel (GH-9)
-  status: planned
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-02-19T14:37:55Z
-  updated: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T15:24:07.529932538+00:00
   spec: null
   acceptance_criteria:
   - Implement f16_convert.rs for existing f16-conversion-v1.yaml
