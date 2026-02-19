@@ -6,6 +6,8 @@ pub mod equations;
 pub mod generate;
 pub mod graph;
 pub mod kani;
+pub mod lean;
+pub mod lean_status;
 pub mod probar;
 pub mod scaffold;
 pub mod status;

@@ -23,18 +23,57 @@ proof_obligations:
     formal: "|Σ σ(x)_i - 1.0| < ε"
     tolerance: 1.0e-6
     applies_to: all
+    lean:
+      theorem: Softmax.partition_of_unity
+      module: ProvableContracts.Softmax
+      status: sorry
+      depends_on:
+        - Real.exp_pos
+        - Finset.sum_div_distrib
+      mathlib_imports:
+        - Mathlib.Analysis.SpecialFunctions.ExpDeriv
+        - Mathlib.Algebra.BigOperators.Group.Finset
+      notes: "Proof over reals; f32 gap addressed by error-bound lemma"
   - type: invariant
     property: "All outputs strictly positive"
     formal: "σ(x)_i > 0 for all i"
     applies_to: all
+    lean:
+      theorem: Softmax.softmax_pos
+      module: ProvableContracts.Softmax
+      status: sorry
+      depends_on:
+        - Real.exp_pos
+      mathlib_imports:
+        - Mathlib.Analysis.SpecialFunctions.ExpDeriv
+      notes: "Follows from exp_pos and positivity of denominator"
   - type: bound
     property: "Each output bounded in (0,1)"
     formal: "0 < σ(x)_i < 1 for all i"
     applies_to: all
+    lean:
+      theorem: Softmax.softmax_bounded
+      module: ProvableContracts.Softmax
+      status: sorry
+      depends_on:
+        - Softmax.softmax_pos
+        - Softmax.partition_of_unity
+      mathlib_imports:
+        - Mathlib.Analysis.SpecialFunctions.ExpDeriv
+      notes: "Upper bound from partition-of-unity; lower bound from positivity"
   - type: monotonicity
     property: "Order preservation"
     formal: "x_i > x_j ⟹ σ(x)_i > σ(x)_j"
     applies_to: all
+    lean:
+      theorem: Softmax.monotone
+      module: ProvableContracts.Softmax
+      status: sorry
+      depends_on:
+        - Real.exp_strictMono
+      mathlib_imports:
+        - Mathlib.Analysis.SpecialFunctions.ExpDeriv
+      notes: "Follows from strict monotonicity of exp"
   - type: equivalence
     property: "SIMD matches scalar within ULP"
     tolerance: 8.0
@@ -43,6 +82,22 @@ proof_obligations:
     property: "Translation invariance"
     formal: "σ(x + c·1) = σ(x) for any scalar c"
     applies_to: all
+    lean:
+      theorem: Softmax.shift_invariance
+      module: ProvableContracts.Softmax
+      status: sorry
+      depends_on: []
+      mathlib_imports:
+        - Mathlib.Analysis.SpecialFunctions.ExpDeriv
+      notes: "Key for numerical stability; exp(x-c)/Σexp(x-c) = exp(x)/Σexp(x)"
+
+verification_summary:
+  total_obligations: 6
+  l2_property_tested: 6
+  l3_kani_proved: 3
+  l4_lean_proved: 0
+  l4_sorry_count: 5
+  l4_not_applicable: 1
 
 kernel_structure:
   phases:

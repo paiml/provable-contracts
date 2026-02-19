@@ -798,3 +798,82 @@ roadmap:
   - testing
   - debt
   notes: null
+- id: PMAT-045
+  github_issue: null
+  item_type: task
+  title: 'Phase 7 M1: Extend YAML schema with lean proof block and verification_summary'
+  status: inprogress
+  priority: high
+  assigned_to: null
+  created: 2026-02-19T13:06:13Z
+  updated: 2026-02-19T13:06:29.697062837+00:00
+  spec: null
+  acceptance_criteria:
+  - Add optional lean block to ProofObligation (theorem, module, status, depends_on, mathlib_imports, notes). Add VerificationSummary to Contract. Refs phase7-lean-integration spec.
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - phase7
+  - lean4
+  - schema
+  notes: null
+- id: PMAT-046
+  github_issue: null
+  item_type: task
+  title: 'Phase 7 M1: Implement pv lean CLI command for Lean 4 codegen'
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-02-19T13:06:19Z
+  updated: 2026-02-19T13:06:19Z
+  spec: null
+  acceptance_criteria:
+  - Implement pv lean <contract.yaml> [--output-dir <dir>] command. Generates Lean 4 definition files and sorry theorem stubs from contract YAML. Refs phase7-lean-integration spec Milestone 1.
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - phase7
+  - lean4
+  - cli
+  notes: null
+- id: PMAT-047
+  github_issue: null
+  item_type: task
+  title: 'Phase 7 M1: Implement pv lean-status CLI command'
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-19T13:06:21Z
+  updated: 2026-02-19T13:06:21Z
+  spec: null
+  acceptance_criteria:
+  - Implement pv lean-status [<contract.yaml> | <dir>] command. Tabular report of Lean proof status (proved/sorry/wip/n-a) per contract. Refs phase7-lean-integration spec.
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - phase7
+  - lean4
+  - cli
+  notes: null
+- id: PMAT-048
+  github_issue: null
+  item_type: task
+  title: 'Phase 7 M1: Lean 4 project scaffold with lakefile and Basic.lean'
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-02-19T13:06:24Z
+  updated: 2026-02-19T13:06:24Z
+  spec: null
+  acceptance_criteria:
+  - Create lean/ directory with lakefile.lean, lean-toolchain, ProvableContracts/Basic.lean with shared defs (Vector, Tensor, notation). Refs phase7-lean-integration spec Milestone 1.
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - phase7
+  - lean4
+  notes: null

@@ -169,7 +169,9 @@ fn generate_wired_obligation_test(
         | ObligationType::Symmetry
         | ObligationType::Associativity
         | ObligationType::Conservation
-        | ObligationType::Ordering => {
+        | ObligationType::Ordering
+        | ObligationType::Completeness
+        | ObligationType::Soundness => {
             generate_wired_generic(out, ob);
         }
     }

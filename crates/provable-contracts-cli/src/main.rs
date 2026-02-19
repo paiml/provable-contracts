@@ -98,6 +98,20 @@ enum Commands {
         #[arg(long, default_value = "text")]
         format: String,
     },
+    /// Generate Lean 4 definitions and theorem stubs from a contract
+    Lean {
+        /// Path to the contract YAML file
+        contract: PathBuf,
+        /// Output directory for generated Lean files
+        #[arg(long)]
+        output_dir: Option<PathBuf>,
+    },
+    /// Report Lean 4 proof status across contracts
+    LeanStatus {
+        /// Path to a contract YAML file or directory of contracts
+        #[arg(default_value = "contracts")]
+        path: PathBuf,
+    },
     /// Generate mdBook pages for contracts
     Book {
         /// Directory containing contract YAML files
@@ -150,6 +164,11 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
                 Err(e) => Err(e.into()),
             }
         }
+        Commands::Lean {
+            contract,
+            output_dir,
+        } => commands::lean::run(&contract, output_dir.as_deref()),
+        Commands::LeanStatus { path } => commands::lean_status::run(&path),
         Commands::Book {
             contract_dir,
             output,

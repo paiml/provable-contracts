@@ -23,6 +23,9 @@ pub struct Contract {
     pub kani_harnesses: Vec<KaniHarness>,
     #[serde(default)]
     pub qa_gate: Option<QaGate>,
+    /// Phase 7: Lean 4 verification summary across all obligations.
+    #[serde(default)]
+    pub verification_summary: Option<VerificationSummary>,
 }
 
 /// Contract metadata block.
@@ -58,7 +61,8 @@ pub struct Equation {
 ///
 /// Maps to one of the types in the Proof Obligation Taxonomy
 /// (spec Section 12): invariant, equivalence, bound, monotonicity,
-/// idempotency, linearity, symmetry, associativity, conservation.
+/// idempotency, linearity, symmetry, associativity, conservation,
+/// ordering, completeness.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProofObligation {
     #[serde(rename = "type")]
@@ -70,6 +74,9 @@ pub struct ProofObligation {
     pub tolerance: Option<f64>,
     #[serde(default)]
     pub applies_to: Option<AppliesTo>,
+    /// Phase 7: Lean 4 theorem proving metadata.
+    #[serde(default)]
+    pub lean: Option<LeanProof>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -85,6 +92,8 @@ pub enum ObligationType {
     Associativity,
     Conservation,
     Ordering,
+    Completeness,
+    Soundness,
 }
 
 impl std::fmt::Display for ObligationType {
@@ -100,6 +109,8 @@ impl std::fmt::Display for ObligationType {
             Self::Associativity => "associativity",
             Self::Conservation => "conservation",
             Self::Ordering => "ordering",
+            Self::Completeness => "completeness",
+            Self::Soundness => "soundness",
         };
         write!(f, "{s}")
     }
@@ -194,6 +205,71 @@ impl std::fmt::Display for KaniStrategy {
     }
 }
 
+/// Phase 7: Lean 4 theorem proving metadata for a proof obligation.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LeanProof {
+    /// Lean 4 theorem name (e.g., `Softmax.partition_of_unity`).
+    pub theorem: String,
+    /// Lean 4 module path (e.g., `ProvableContracts.Softmax`).
+    #[serde(default)]
+    pub module: Option<String>,
+    /// Current status of the Lean proof.
+    #[serde(default)]
+    pub status: LeanStatus,
+    /// Lean-level theorem dependencies.
+    #[serde(default)]
+    pub depends_on: Vec<String>,
+    /// Mathlib import paths required.
+    #[serde(default)]
+    pub mathlib_imports: Vec<String>,
+    /// Free-form notes (e.g., "Proof over reals; f32 gap addressed separately").
+    #[serde(default)]
+    pub notes: Option<String>,
+}
+
+/// Status of a Lean 4 proof.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum LeanStatus {
+    /// Proof is complete and type-checks.
+    Proved,
+    /// Proof uses `sorry` (axiomatized, not yet proved).
+    #[default]
+    Sorry,
+    /// Work in progress.
+    Wip,
+    /// Obligation is not amenable to Lean proof (e.g., performance).
+    NotApplicable,
+}
+
+impl std::fmt::Display for LeanStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Self::Proved => "proved",
+            Self::Sorry => "sorry",
+            Self::Wip => "wip",
+            Self::NotApplicable => "not-applicable",
+        };
+        write!(f, "{s}")
+    }
+}
+
+/// Phase 7: Verification summary across all obligations in a contract.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VerificationSummary {
+    pub total_obligations: u32,
+    #[serde(default)]
+    pub l2_property_tested: u32,
+    #[serde(default)]
+    pub l3_kani_proved: u32,
+    #[serde(default)]
+    pub l4_lean_proved: u32,
+    #[serde(default)]
+    pub l4_sorry_count: u32,
+    #[serde(default)]
+    pub l4_not_applicable: u32,
+}
+
 /// QA gate definition for certeza integration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QaGate {
@@ -225,6 +301,21 @@ mod tests {
         assert_eq!(ObligationType::Associativity.to_string(), "associativity");
         assert_eq!(ObligationType::Conservation.to_string(), "conservation");
         assert_eq!(ObligationType::Ordering.to_string(), "ordering");
+        assert_eq!(ObligationType::Completeness.to_string(), "completeness");
+        assert_eq!(ObligationType::Soundness.to_string(), "soundness");
+    }
+
+    #[test]
+    fn lean_status_display() {
+        assert_eq!(LeanStatus::Proved.to_string(), "proved");
+        assert_eq!(LeanStatus::Sorry.to_string(), "sorry");
+        assert_eq!(LeanStatus::Wip.to_string(), "wip");
+        assert_eq!(LeanStatus::NotApplicable.to_string(), "not-applicable");
+    }
+
+    #[test]
+    fn lean_status_default_is_sorry() {
+        assert_eq!(LeanStatus::default(), LeanStatus::Sorry);
     }
 
     #[test]
