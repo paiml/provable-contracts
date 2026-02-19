@@ -175,6 +175,19 @@ fn kernel_class_map() -> Vec<(&'static str, &'static str, &'static [&'static str
 
 // ── Core computation ──────────────────────────────────────────────
 
+/// Returns `true` when all obligations are Lean-proved.
+fn is_lean_proved(contract: &Contract) -> bool {
+    contract
+        .verification_summary
+        .as_ref()
+        .is_some_and(|vs| vs.total_obligations > 0 && vs.l4_lean_proved == vs.total_obligations)
+}
+
+/// Returns `true` when all bindings are implemented.
+fn is_fully_bound(binding_status: Option<(u32, u32)>) -> bool {
+    binding_status.is_some_and(|(implemented, total)| total > 0 && implemented == total)
+}
+
 /// Compute the proof level for a single contract.
 ///
 /// Derivation rules (highest matching level wins):
@@ -190,25 +203,22 @@ pub fn compute_proof_level(contract: &Contract, binding_status: Option<(u32, u32
     let kani_count = contract.kani_harnesses.len() as u32;
 
     // Check L4/L5: Lean proved
-    if let Some(ref vs) = contract.verification_summary {
-        if vs.total_obligations > 0 && vs.l4_lean_proved == vs.total_obligations {
-            // All Lean proved — check bindings for L5
-            if let Some((implemented, total)) = binding_status {
-                if total > 0 && implemented == total {
-                    return ProofLevel::L5;
-                }
-            }
-            return ProofLevel::L4;
-        }
+    if is_lean_proved(contract) {
+        return if is_fully_bound(binding_status) {
+            ProofLevel::L5
+        } else {
+            ProofLevel::L4
+        };
     }
 
     // Check L3: Kani + falsification
-    if kani_count > 0 && ft_count >= total_obligations && total_obligations > 0 {
+    let has_tests = ft_count >= total_obligations && total_obligations > 0;
+    if kani_count > 0 && has_tests {
         return ProofLevel::L3;
     }
 
     // Check L2: falsification tests cover obligations
-    if ft_count >= total_obligations && total_obligations > 0 {
+    if has_tests {
         return ProofLevel::L2;
     }
 
