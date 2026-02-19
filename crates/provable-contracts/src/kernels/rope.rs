@@ -176,8 +176,8 @@ DONE:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::*;
     use proptest::prelude::*;
 
     // ── Known-answer tests ────────────────────────────────────────────────
@@ -192,7 +192,8 @@ mod tests {
             assert!(
                 (output[i] - x[i]).abs() < 1e-6,
                 "RoPE at position 0 should be identity: x[{i}]={}, output[{i}]={}",
-                x[i], output[i]
+                x[i],
+                output[i]
             );
         }
     }
@@ -247,12 +248,14 @@ mod tests {
         assert!(
             (output[0] - cos1).abs() < 1e-6,
             "RoPE(1,0) at pos=1: expected ({cos1}, {sin1}), got ({}, {})",
-            output[0], output[1]
+            output[0],
+            output[1]
         );
         assert!(
             (output[1] - sin1).abs() < 1e-6,
             "RoPE(1,0) at pos=1: expected ({cos1}, {sin1}), got ({}, {})",
-            output[0], output[1]
+            output[0],
+            output[1]
         );
     }
 
@@ -445,13 +448,28 @@ mod tests {
         assert!(ptx.contains(".target sm_90"), "missing PTX target");
         assert!(ptx.contains(".entry rope_kernel"), "missing entry point");
         assert!(ptx.contains("ret;"), "missing ret instruction");
-        assert!(ptx.contains("sin.approx.f32"), "missing sin.approx for trig");
-        assert!(ptx.contains("cos.approx.f32"), "missing cos.approx for trig");
-        assert!(ptx.contains("ex2.approx.f32"), "missing ex2.approx for powf");
-        assert!(ptx.contains("lg2.approx.f32"), "missing lg2.approx for powf");
+        assert!(
+            ptx.contains("sin.approx.f32"),
+            "missing sin.approx for trig"
+        );
+        assert!(
+            ptx.contains("cos.approx.f32"),
+            "missing cos.approx for trig"
+        );
+        assert!(
+            ptx.contains("ex2.approx.f32"),
+            "missing ex2.approx for powf"
+        );
+        assert!(
+            ptx.contains("lg2.approx.f32"),
+            "missing lg2.approx for powf"
+        );
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 
     #[test]
@@ -464,7 +482,10 @@ mod tests {
         let ptx = rope_ptx();
         assert!(ptx.contains(".param .u64 input"), "missing input param");
         assert!(ptx.contains(".param .u64 output"), "missing output param");
-        assert!(ptx.contains(".param .u32 position"), "missing position param");
+        assert!(
+            ptx.contains(".param .u32 position"),
+            "missing position param"
+        );
         assert!(ptx.contains(".param .u32 dim"), "missing dim param");
         assert!(ptx.contains(".param .f32 base"), "missing base param");
     }

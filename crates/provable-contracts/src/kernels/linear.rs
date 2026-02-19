@@ -34,8 +34,16 @@ pub fn linear_scalar(
     output: &mut [f32],
 ) {
     assert_eq!(x.len(), batch * in_features, "x dimension mismatch");
-    assert_eq!(weight.len(), out_features * in_features, "weight dimension mismatch");
-    assert_eq!(output.len(), batch * out_features, "output dimension mismatch");
+    assert_eq!(
+        weight.len(),
+        out_features * in_features,
+        "weight dimension mismatch"
+    );
+    assert_eq!(
+        output.len(),
+        batch * out_features,
+        "output dimension mismatch"
+    );
     assert!(
         bias.is_empty() || bias.len() == out_features,
         "bias must be empty or out_features={out_features}, got {}",
@@ -175,8 +183,8 @@ EXIT:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::*;
     use proptest::prelude::*;
 
     #[test]
@@ -241,8 +249,12 @@ mod tests {
         linear_scalar(&x2, &w, &[], 1, 3, 2, &mut out2);
 
         for i in 0..2 {
-            assert!((out2[i] - 2.0 * out1[i]).abs() < 1e-5,
-                "linearity violated at {i}: f(2x)={} vs 2*f(x)={}", out2[i], 2.0 * out1[i]);
+            assert!(
+                (out2[i] - 2.0 * out1[i]).abs() < 1e-5,
+                "linearity violated at {i}: f(2x)={} vs 2*f(x)={}",
+                out2[i],
+                2.0 * out1[i]
+            );
         }
     }
 

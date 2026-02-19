@@ -18,13 +18,7 @@ use std::arch::x86_64::*;
 ///
 /// Panics if `input`, `gamma`, `beta`, and `output` do not all have the same
 /// length, or if `input` is empty.
-pub fn layernorm_scalar(
-    input: &[f32],
-    gamma: &[f32],
-    beta: &[f32],
-    eps: f32,
-    output: &mut [f32],
-) {
+pub fn layernorm_scalar(input: &[f32], gamma: &[f32], beta: &[f32], eps: f32, output: &mut [f32]) {
     let n = input.len();
     assert_eq!(n, gamma.len(), "input/gamma length mismatch");
     assert_eq!(n, beta.len(), "input/beta length mismatch");
@@ -322,8 +316,8 @@ norm_done:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::*;
     use proptest::prelude::*;
 
     // ── Scalar known-answer tests ────────────────────────────────────────
@@ -338,10 +332,7 @@ mod tests {
         let mut output = [0.0_f32; 4];
         layernorm_scalar(&input, &gamma, &beta, 1e-5, &mut output);
         for (i, (&o, &b)) in output.iter().zip(beta.iter()).enumerate() {
-            assert!(
-                (o - b).abs() < 1e-4,
-                "output[{i}] = {o}, expected ~{b}"
-            );
+            assert!((o - b).abs() < 1e-4, "output[{i}] = {o}, expected ~{b}");
         }
     }
 
@@ -578,7 +569,10 @@ mod tests {
     #[test]
     fn test_layernorm_ptx_entry() {
         let ptx = layernorm_ptx();
-        assert!(ptx.contains(".entry layernorm_kernel"), "missing entry point");
+        assert!(
+            ptx.contains(".entry layernorm_kernel"),
+            "missing entry point"
+        );
     }
 
     #[test]
@@ -596,13 +590,19 @@ mod tests {
     #[test]
     fn test_layernorm_ptx_warp_shuffle() {
         let ptx = layernorm_ptx();
-        assert!(ptx.contains("shfl.sync"), "missing warp shuffle instructions");
+        assert!(
+            ptx.contains("shfl.sync"),
+            "missing warp shuffle instructions"
+        );
     }
 
     #[test]
     fn test_layernorm_ptx_bar_sync() {
         let ptx = layernorm_ptx();
-        assert!(ptx.contains("bar.sync"), "missing bar.sync for block synchronization");
+        assert!(
+            ptx.contains("bar.sync"),
+            "missing bar.sync for block synchronization"
+        );
     }
 
     #[test]
@@ -610,6 +610,9 @@ mod tests {
         let ptx = layernorm_ptx();
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 }

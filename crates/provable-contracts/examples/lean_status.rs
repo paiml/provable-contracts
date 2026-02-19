@@ -44,10 +44,7 @@ fn main() {
                 }
             }
             Err(e) => {
-                eprintln!(
-                    "warning: skipping {}: {e}",
-                    entry.path().display()
-                );
+                eprintln!("warning: skipping {}: {e}", entry.path().display());
             }
         }
     }

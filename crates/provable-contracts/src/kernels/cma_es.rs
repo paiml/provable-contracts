@@ -170,11 +170,7 @@ mod tests {
     fn test_cma_sigma_zero() {
         // sigma=0 -> output = mean regardless of z and L
         let mean = [1.0_f32, 2.0, 3.0];
-        let cholesky_l = [
-            1.0, 0.0, 0.0,
-            0.5, 1.0, 0.0,
-            0.3, 0.2, 1.0,
-        ];
+        let cholesky_l = [1.0, 0.0, 0.0, 0.5, 1.0, 0.0, 0.3, 0.2, 1.0];
         let z = [10.0_f32, 20.0, 30.0];
         let mut output = [0.0_f32; 3];
 
@@ -187,11 +183,7 @@ mod tests {
     fn test_cma_identity_cholesky() {
         // L=I -> output = mean + sigma*z
         let mean = [1.0_f32, 2.0, 3.0];
-        let cholesky_l = [
-            1.0, 0.0, 0.0,
-            0.0, 1.0, 0.0,
-            0.0, 0.0, 1.0,
-        ];
+        let cholesky_l = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
         let z = [0.5_f32, -0.3, 0.8];
         let sigma = 2.0;
         let mut output = [0.0_f32; 3];
@@ -208,10 +200,7 @@ mod tests {
     fn test_cma_lower_triangular() {
         // Verify lower-triangular multiplication
         let mean = [0.0_f32; 2];
-        let cholesky_l = [
-            2.0, 0.0,
-            3.0, 4.0,
-        ];
+        let cholesky_l = [2.0, 0.0, 3.0, 4.0];
         let z = [1.0_f32, 1.0];
         let sigma = 1.0;
         let mut output = [0.0_f32; 2];
@@ -257,10 +246,7 @@ mod tests {
         let d = 4;
         let mean = [1.0_f32, 2.0, 3.0, 4.0];
         let cholesky_l = [
-            1.0, 0.0, 0.0, 0.0,
-            0.5, 1.0, 0.0, 0.0,
-            0.3, 0.2, 1.0, 0.0,
-            0.1, 0.4, 0.6, 1.0,
+            1.0, 0.0, 0.0, 0.0, 0.5, 1.0, 0.0, 0.0, 0.3, 0.2, 1.0, 0.0, 0.1, 0.4, 0.6, 1.0,
         ];
         let z = [0.1_f32, -0.2, 0.3, -0.4];
         let sigma = 1.5;
@@ -282,7 +268,10 @@ mod tests {
     #[test]
     fn test_cma_ptx_version() {
         let ptx = cma_sample_ptx();
-        assert!(ptx.contains(".version 8.5"), "PTX must declare .version 8.5");
+        assert!(
+            ptx.contains(".version 8.5"),
+            "PTX must declare .version 8.5"
+        );
     }
 
     #[test]
@@ -294,7 +283,10 @@ mod tests {
     #[test]
     fn test_cma_ptx_entry() {
         let ptx = cma_sample_ptx();
-        assert!(ptx.contains(".entry cma_sample_kernel"), "PTX must have .entry");
+        assert!(
+            ptx.contains(".entry cma_sample_kernel"),
+            "PTX must have .entry"
+        );
     }
 
     #[test]
@@ -308,6 +300,9 @@ mod tests {
         let ptx = cma_sample_ptx();
         let opens = ptx.chars().filter(|&c| c == '{').count();
         let closes = ptx.chars().filter(|&c| c == '}').count();
-        assert_eq!(opens, closes, "PTX must have balanced braces: {opens} opens vs {closes} closes");
+        assert_eq!(
+            opens, closes,
+            "PTX must have balanced braces: {opens} opens vs {closes} closes"
+        );
     }
 }

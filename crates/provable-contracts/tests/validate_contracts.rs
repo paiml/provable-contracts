@@ -19,12 +19,7 @@ fn all_contract_paths() -> Vec<std::path::PathBuf> {
             let entry = entry.ok()?;
             let path = entry.path();
             if path.extension().and_then(|e| e.to_str()) == Some("yaml")
-                && !path
-                    .file_name()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .starts_with('.')
+                && !path.file_name().unwrap().to_str().unwrap().starts_with('.')
             {
                 Some(path)
             } else {
@@ -120,11 +115,18 @@ fn qwen35_dag_integrity() {
     let graph = dependency_graph(&refs);
 
     // No cycles in the full DAG
-    assert!(graph.cycles.is_empty(), "DAG has cycles: {:?}", graph.cycles);
+    assert!(
+        graph.cycles.is_empty(),
+        "DAG has cycles: {:?}",
+        graph.cycles
+    );
 
     // qwen35-e2e-verification is the capstone (no dependents)
     let e2e = "qwen35-e2e-verification-v1";
-    assert!(graph.nodes.contains(e2e), "Missing e2e verification contract");
+    assert!(
+        graph.nodes.contains(e2e),
+        "Missing e2e verification contract"
+    );
 
     // Verify e2e depends on exactly 8 sub-contracts
     let e2e_deps = graph.edges.get(e2e).unwrap();
@@ -146,13 +148,19 @@ fn qwen35_dag_integrity() {
         "qwen35-e2e-verification-v1",
     ];
     for name in &qwen_contracts {
-        assert!(graph.nodes.contains(*name), "Missing Qwen 3.5 contract: {name}");
+        assert!(
+            graph.nodes.contains(*name),
+            "Missing Qwen 3.5 contract: {name}"
+        );
     }
 
     // Topological order: foundations before composites
     let topo = &graph.topo_order;
     let softmax_pos = topo.iter().position(|n| n == "softmax-kernel-v1").unwrap();
-    let attention_pos = topo.iter().position(|n| n == "attention-kernel-v1").unwrap();
+    let attention_pos = topo
+        .iter()
+        .position(|n| n == "attention-kernel-v1")
+        .unwrap();
     let e2e_pos = topo.iter().position(|n| n == e2e).unwrap();
     assert!(
         softmax_pos < attention_pos,
@@ -182,8 +190,8 @@ fn contract_data_integrity() {
 
     for path in &paths {
         let stem = path.file_stem().unwrap().to_str().unwrap();
-        let contract = parse_contract(path)
-            .unwrap_or_else(|e| panic!("Failed to parse {stem}: {e}"));
+        let contract =
+            parse_contract(path).unwrap_or_else(|e| panic!("Failed to parse {stem}: {e}"));
 
         let eq_count = contract.equations.len();
         let ob_count = contract.proof_obligations.len();

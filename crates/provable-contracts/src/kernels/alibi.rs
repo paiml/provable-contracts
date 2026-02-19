@@ -28,11 +28,7 @@ pub fn alibi_slope(h: usize, num_heads: usize) -> f32 {
 ///
 /// # Panics
 /// Panics if dimensions don't match.
-pub fn alibi_bias_scalar(
-    scores: &mut [f32],
-    num_heads: usize,
-    seq_len: usize,
-) {
+pub fn alibi_bias_scalar(scores: &mut [f32], num_heads: usize, seq_len: usize) {
     assert_eq!(
         scores.len(),
         num_heads * seq_len * seq_len,
@@ -64,11 +60,7 @@ pub fn alibi_bias_scalar(
 /// Requires AVX2 support.
 #[cfg(target_arch = "x86_64")]
 #[target_feature(enable = "avx2")]
-pub unsafe fn alibi_bias_avx2(
-    scores: &mut [f32],
-    num_heads: usize,
-    seq_len: usize,
-) {
+pub unsafe fn alibi_bias_avx2(scores: &mut [f32], num_heads: usize, seq_len: usize) {
     alibi_bias_scalar(scores, num_heads, seq_len);
 }
 
@@ -180,7 +172,10 @@ mod tests {
         for h in 0..num_heads {
             for i in 0..seq_len {
                 let idx = h * seq_len * seq_len + i * seq_len + i;
-                assert_eq!(scores[idx], 1.0, "diagonal should be unchanged at h={h} i={i}");
+                assert_eq!(
+                    scores[idx], 1.0,
+                    "diagonal should be unchanged at h={h} i={i}"
+                );
             }
         }
     }
@@ -197,8 +192,11 @@ mod tests {
         for i in 0..seq_len {
             for j in 0..seq_len {
                 if i != j {
-                    assert!(scores[i * seq_len + j] < 0.0,
-                        "off-diagonal [{i},{j}] should be negative, got {}", scores[i * seq_len + j]);
+                    assert!(
+                        scores[i * seq_len + j] < 0.0,
+                        "off-diagonal [{i},{j}] should be negative, got {}",
+                        scores[i * seq_len + j]
+                    );
                 }
             }
         }
@@ -218,8 +216,10 @@ mod tests {
                 for j in 0..seq_len {
                     let a = scores[base + i * seq_len + j];
                     let b = scores[base + j * seq_len + i];
-                    assert!((a - b).abs() < 1e-6,
-                        "asymmetry at h={h} [{i},{j}]: {a} vs {b}");
+                    assert!(
+                        (a - b).abs() < 1e-6,
+                        "asymmetry at h={h} [{i},{j}]: {a} vs {b}"
+                    );
                 }
             }
         }

@@ -19,13 +19,7 @@
 ///
 /// # Panics
 /// Panics if dimensions don't match.
-pub fn bias_add_scalar(
-    x: &[f32],
-    bias: &[f32],
-    batch: usize,
-    dim: usize,
-    output: &mut [f32],
-) {
+pub fn bias_add_scalar(x: &[f32], bias: &[f32], batch: usize, dim: usize, output: &mut [f32]) {
     assert_eq!(x.len(), batch * dim, "x dimension mismatch");
     assert_eq!(bias.len(), dim, "bias dimension mismatch");
     assert_eq!(output.len(), batch * dim, "output dimension mismatch");
@@ -62,13 +56,7 @@ pub fn bias_add_inplace(x: &mut [f32], bias: &[f32], batch: usize, dim: usize) {
 /// Requires AVX2 support.
 #[cfg(target_arch = "x86_64")]
 #[target_feature(enable = "avx2")]
-pub unsafe fn bias_add_avx2(
-    x: &[f32],
-    bias: &[f32],
-    batch: usize,
-    dim: usize,
-    output: &mut [f32],
-) {
+pub unsafe fn bias_add_avx2(x: &[f32], bias: &[f32], batch: usize, dim: usize, output: &mut [f32]) {
     bias_add_scalar(x, bias, batch, dim, output);
 }
 
@@ -180,8 +168,12 @@ mod tests {
         bias_add_scalar(&x, &b12, 2, 2, &mut direct);
 
         for i in 0..4 {
-            assert!((step2[i] - direct[i]).abs() < 1e-6,
-                "additivity violated at {i}: {:.6} vs {:.6}", step2[i], direct[i]);
+            assert!(
+                (step2[i] - direct[i]).abs() < 1e-6,
+                "additivity violated at {i}: {:.6} vs {:.6}",
+                step2[i],
+                direct[i]
+            );
         }
     }
 

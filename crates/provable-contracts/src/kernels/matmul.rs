@@ -19,9 +19,27 @@
 /// # Panics
 /// Panics if `a.len() != m*p`, `b.len() != p*n`, or `c.len() != m*n`.
 pub fn matmul_scalar(a: &[f32], b: &[f32], m: usize, p: usize, n: usize, c: &mut [f32]) {
-    assert_eq!(a.len(), m * p, "A dimension mismatch: expected {} got {}", m * p, a.len());
-    assert_eq!(b.len(), p * n, "B dimension mismatch: expected {} got {}", p * n, b.len());
-    assert_eq!(c.len(), m * n, "C dimension mismatch: expected {} got {}", m * n, c.len());
+    assert_eq!(
+        a.len(),
+        m * p,
+        "A dimension mismatch: expected {} got {}",
+        m * p,
+        a.len()
+    );
+    assert_eq!(
+        b.len(),
+        p * n,
+        "B dimension mismatch: expected {} got {}",
+        p * n,
+        b.len()
+    );
+    assert_eq!(
+        c.len(),
+        m * n,
+        "C dimension mismatch: expected {} got {}",
+        m * n,
+        c.len()
+    );
     for i in 0..m {
         for j in 0..n {
             let mut sum = 0.0f32;
@@ -55,9 +73,27 @@ use std::arch::x86_64::*;
 #[cfg(target_arch = "x86_64")]
 #[target_feature(enable = "avx2,fma")]
 pub unsafe fn matmul_avx2(a: &[f32], b: &[f32], m: usize, p: usize, n: usize, c: &mut [f32]) {
-    assert_eq!(a.len(), m * p, "A dimension mismatch: expected {} got {}", m * p, a.len());
-    assert_eq!(b.len(), p * n, "B dimension mismatch: expected {} got {}", p * n, b.len());
-    assert_eq!(c.len(), m * n, "C dimension mismatch: expected {} got {}", m * n, c.len());
+    assert_eq!(
+        a.len(),
+        m * p,
+        "A dimension mismatch: expected {} got {}",
+        m * p,
+        a.len()
+    );
+    assert_eq!(
+        b.len(),
+        p * n,
+        "B dimension mismatch: expected {} got {}",
+        p * n,
+        b.len()
+    );
+    assert_eq!(
+        c.len(),
+        m * n,
+        "C dimension mismatch: expected {} got {}",
+        m * n,
+        c.len()
+    );
 
     let simd_width = 8;
     let n_simd = n - (n % simd_width);
@@ -240,8 +276,8 @@ EXIT:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::*;
     use proptest::prelude::*;
 
     // ── Identity matrix test ────────────────────────────────────────────
@@ -459,7 +495,10 @@ mod tests {
         assert!(ptx.contains("fma.rn.f32"), "missing FMA instruction");
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 
     #[test]

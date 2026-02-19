@@ -24,12 +24,7 @@ fn all_contract_paths() -> Vec<std::path::PathBuf> {
             let entry = entry.ok()?;
             let path = entry.path();
             if path.extension().and_then(|e| e.to_str()) == Some("yaml")
-                && !path
-                    .file_name()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .starts_with('.')
+                && !path.file_name().unwrap().to_str().unwrap().starts_with('.')
             {
                 Some(path)
             } else {

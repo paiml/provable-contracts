@@ -127,16 +127,8 @@ pub fn diff_contracts(old: &Contract, new: &Contract) -> ContractDiff {
     sections.push(ft_diff);
 
     // Kani harnesses
-    let old_kh: BTreeSet<String> = old
-        .kani_harnesses
-        .iter()
-        .map(|h| h.id.clone())
-        .collect();
-    let new_kh: BTreeSet<String> = new
-        .kani_harnesses
-        .iter()
-        .map(|h| h.id.clone())
-        .collect();
+    let old_kh: BTreeSet<String> = old.kani_harnesses.iter().map(|h| h.id.clone()).collect();
+    let new_kh: BTreeSet<String> = new.kani_harnesses.iter().map(|h| h.id.clone()).collect();
     let kh_diff = diff_sets("kani_harnesses", &old_kh, &new_kh);
     if !kh_diff.removed.is_empty() || !kh_diff.added.is_empty() {
         max_bump = bump_max(max_bump, SemverBump::Minor);

@@ -63,7 +63,10 @@ pub fn run(
     // Print manifest
     println!("Generated {} contract pages:", generated.len());
     for (stem, bytes) in &generated {
-        println!("  {output_dir}/{stem}.md ({bytes} bytes)", output_dir = output_dir.display());
+        println!(
+            "  {output_dir}/{stem}.md ({bytes} bytes)",
+            output_dir = output_dir.display()
+        );
     }
 
     Ok(())

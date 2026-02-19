@@ -13,7 +13,11 @@ use crate::schema::Contract;
 ///
 /// `stem` is the contract filename without `.yaml` (e.g. "softmax-kernel-v1").
 /// `dep_graph` is the full dependency graph (used to render this contract's neighborhood).
-pub fn generate_contract_page(contract: &Contract, stem: &str, dep_graph: &DependencyGraph) -> String {
+pub fn generate_contract_page(
+    contract: &Contract,
+    stem: &str,
+    dep_graph: &DependencyGraph,
+) -> String {
     let mut out = String::new();
 
     write_title(&mut out, contract, stem);
@@ -238,9 +242,7 @@ fn write_kani_harnesses(out: &mut String, contract: &Contract) {
     let _ = writeln!(out, "|----|------------|-------|----------|");
 
     for kh in &contract.kani_harnesses {
-        let bound = kh
-            .bound
-            .map_or_else(|| "-".to_string(), |b| b.to_string());
+        let bound = kh.bound.map_or_else(|| "-".to_string(), |b| b.to_string());
         let strategy = kh
             .strategy
             .map_or_else(|| "-".to_string(), |s| s.to_string());

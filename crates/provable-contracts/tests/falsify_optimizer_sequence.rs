@@ -8,13 +8,13 @@ mod common;
 
 use proptest::prelude::*;
 use provable_contracts::kernels::adamw::*;
-use provable_contracts::kernels::conv1d::*;
-use provable_contracts::kernels::ssm::*;
-use provable_contracts::kernels::kmeans::*;
-use provable_contracts::kernels::pagerank::*;
-use provable_contracts::kernels::lbfgs::*;
 use provable_contracts::kernels::cma_es::*;
+use provable_contracts::kernels::conv1d::*;
 use provable_contracts::kernels::gated_delta_net::*;
+use provable_contracts::kernels::kmeans::*;
+use provable_contracts::kernels::lbfgs::*;
+use provable_contracts::kernels::pagerank::*;
+use provable_contracts::kernels::ssm::*;
 
 // ============================================================================
 // AdamW (6 tests: FALSIFY-AW-001 through FALSIFY-AW-006)
@@ -34,7 +34,18 @@ fn falsify_aw_001_decoupled_weight_decay() {
     let mut m = [0.0_f32; 4];
     let mut v = [0.0_f32; 4];
 
-    adamw_step_scalar(&mut params, &grads, &mut m, &mut v, lr, 0.9, 0.999, 1e-8, wd, 1);
+    adamw_step_scalar(
+        &mut params,
+        &grads,
+        &mut m,
+        &mut v,
+        lr,
+        0.9,
+        0.999,
+        1e-8,
+        wd,
+        1,
+    );
 
     for i in 0..4 {
         // With zero grads, m and v stay zero, so adaptive term is 0/(0+eps) ~ 0
@@ -59,7 +70,18 @@ fn falsify_aw_002_bias_correction() {
     let mut m = [0.0_f32; 4];
     let mut v = [0.0_f32; 4];
 
-    adamw_step_scalar(&mut params, &grads, &mut m, &mut v, 0.001, 0.9, 0.999, 1e-8, 0.0, 1);
+    adamw_step_scalar(
+        &mut params,
+        &grads,
+        &mut m,
+        &mut v,
+        0.001,
+        0.9,
+        0.999,
+        1e-8,
+        0.0,
+        1,
+    );
 
     // After one step with non-zero grads, m and v should be non-zero
     for i in 0..4 {
@@ -202,10 +224,10 @@ fn falsify_cv_001_output_shape() {
     // Test with various concrete sizes
     let cases: Vec<(usize, usize, usize, usize, usize, usize)> = vec![
         // (c_in, c_out, length, kernel_size, stride, padding)
-        (1, 1, 8, 3, 1, 0),   // out = (8+0-3)/1+1 = 6
-        (2, 3, 10, 3, 2, 1),  // out = (10+2-3)/2+1 = 5
-        (1, 1, 4, 1, 1, 0),   // out = (4+0-1)/1+1 = 4
-        (1, 2, 6, 3, 1, 1),   // out = (6+2-3)/1+1 = 6
+        (1, 1, 8, 3, 1, 0),  // out = (8+0-3)/1+1 = 6
+        (2, 3, 10, 3, 2, 1), // out = (10+2-3)/2+1 = 5
+        (1, 1, 4, 1, 1, 0),  // out = (4+0-1)/1+1 = 4
+        (1, 2, 6, 3, 1, 1),  // out = (6+2-3)/1+1 = 6
     ];
 
     for (c_in, c_out, length, kernel_size, stride, padding) in cases {
@@ -216,7 +238,16 @@ fn falsify_cv_001_output_shape() {
 
         // Should not panic -- output buffer has correct size
         conv1d_scalar(
-            &input, &weight, None, c_in, c_out, length, kernel_size, stride, padding, &mut output,
+            &input,
+            &weight,
+            None,
+            c_in,
+            c_out,
+            length,
+            kernel_size,
+            stride,
+            padding,
+            &mut output,
         );
         assert_eq!(
             output.len(),
@@ -286,14 +317,26 @@ fn falsify_cv_003_pointwise_equivalence() {
     let weight = [2.5_f32]; // single weight, kernel_size=1
     let mut output = vec![0.0_f32; c_out * out_len];
 
-    conv1d_scalar(&input, &weight, None, c_in, c_out, length, kernel_size, stride, padding, &mut output);
+    conv1d_scalar(
+        &input,
+        &weight,
+        None,
+        c_in,
+        c_out,
+        length,
+        kernel_size,
+        stride,
+        padding,
+        &mut output,
+    );
 
     for i in 0..length {
         let expected = input[i] * weight[0];
         assert!(
             (output[i] - expected).abs() < 1e-6,
             "FALSIFY-CV-003 failed: output[{i}] = {}, expected {} (pointwise mul)",
-            output[i], expected
+            output[i],
+            expected
         );
     }
 }
@@ -391,7 +434,8 @@ fn falsify_cv_006_identity_kernel() {
         assert!(
             (output[i] - input[i]).abs() < 1e-7,
             "FALSIFY-CV-006 failed: output[{i}] = {}, expected {}",
-            output[i], input[i]
+            output[i],
+            input[i]
         );
     }
 }
@@ -427,7 +471,8 @@ fn falsify_ssm_001_causality() {
         assert!(
             (out1[t] - out2[t]).abs() < 1e-7,
             "FALSIFY-SSM-001 failed: output[{t}] differs ({} vs {}) when only x[3] changed",
-            out1[t], out2[t]
+            out1[t],
+            out2[t]
         );
     }
 }
@@ -512,7 +557,8 @@ fn falsify_ssm_004_deterministic() {
         assert!(
             (out1[t] - out2[t]).abs() < 1e-10,
             "FALSIFY-SSM-004 failed: output[{t}] differs between runs: {} vs {}",
-            out1[t], out2[t]
+            out1[t],
+            out2[t]
         );
     }
 }
@@ -659,14 +705,7 @@ fn falsify_km_003_objective_decrease() {
     let d = 2_usize;
     // Well-separated clusters
     let points = [
-        1.0_f32, 1.0,
-        1.5, 1.5,
-        2.0, 2.0,
-        0.5, 0.5,
-        10.0, 10.0,
-        10.5, 10.5,
-        11.0, 11.0,
-        9.5, 9.5,
+        1.0_f32, 1.0, 1.5, 1.5, 2.0, 2.0, 0.5, 0.5, 10.0, 10.0, 10.5, 10.5, 11.0, 11.0, 9.5, 9.5,
     ];
     // Start with suboptimal centroids
     let mut centroids = [0.0_f32, 0.0, 5.0, 5.0];
@@ -783,14 +822,7 @@ fn falsify_km_006_convergence() {
     let k = 2_usize;
     let d = 2_usize;
     let points = [
-        0.0_f32, 0.0,
-        0.1, 0.1,
-        -0.1, 0.1,
-        0.1, -0.1,
-        10.0, 10.0,
-        10.1, 10.1,
-        9.9, 10.1,
-        10.1, 9.9,
+        0.0_f32, 0.0, 0.1, 0.1, -0.1, 0.1, 0.1, -0.1, 10.0, 10.0, 10.1, 10.1, 9.9, 10.1, 10.1, 9.9,
     ];
     let mut centroids = [1.0_f32, 1.0, 8.0, 8.0];
     let mut assignments = vec![0_u32; n];
@@ -1065,7 +1097,8 @@ fn falsify_lb_003_history_bound() {
         assert!(
             (direction[i] - (-gradient[i])).abs() < 1e-7,
             "FALSIFY-LB-003 failed: direction[{i}] = {}, expected {} (-gradient)",
-            direction[i], -gradient[i]
+            direction[i],
+            -gradient[i]
         );
     }
 }
@@ -1147,7 +1180,8 @@ fn falsify_lb_006_gradient_recovery() {
         assert!(
             (direction[i] + gradient[i]).abs() < 1e-7,
             "FALSIFY-LB-006 failed: direction[{i}] = {}, expected {} (should be -gradient)",
-            direction[i], -gradient[i]
+            direction[i],
+            -gradient[i]
         );
     }
 }
@@ -1346,7 +1380,17 @@ fn falsify_gdn_001_output_shape() {
     let mut output = vec![0.0_f32; expected_len];
 
     // Should not panic -- output buffer has correct size
-    gdn_recurrence_scalar(&q, &k, &v, &alpha, &beta, seq_len, k_dim, v_dim, &mut output);
+    gdn_recurrence_scalar(
+        &q,
+        &k,
+        &v,
+        &alpha,
+        &beta,
+        seq_len,
+        k_dim,
+        v_dim,
+        &mut output,
+    );
 
     assert_eq!(
         output.len(),
@@ -1372,7 +1416,9 @@ fn falsify_gdn_002_causality() {
     let beta = vec![0.5_f32; seq_len];
 
     let mut out1 = vec![0.0_f32; seq_len * v_dim];
-    gdn_recurrence_scalar(&q, &k1, &v1, &alpha, &beta, seq_len, k_dim, v_dim, &mut out1);
+    gdn_recurrence_scalar(
+        &q, &k1, &v1, &alpha, &beta, seq_len, k_dim, v_dim, &mut out1,
+    );
 
     // Modify last timestep's key and value
     let mut k2 = k1.clone();
@@ -1385,7 +1431,9 @@ fn falsify_gdn_002_causality() {
     }
 
     let mut out2 = vec![0.0_f32; seq_len * v_dim];
-    gdn_recurrence_scalar(&q, &k2, &v2, &alpha, &beta, seq_len, k_dim, v_dim, &mut out2);
+    gdn_recurrence_scalar(
+        &q, &k2, &v2, &alpha, &beta, seq_len, k_dim, v_dim, &mut out2,
+    );
 
     // Outputs before the last timestep must be identical
     for t in 0..(seq_len - 1) {
@@ -1394,7 +1442,8 @@ fn falsify_gdn_002_causality() {
             assert!(
                 (out1[idx] - out2[idx]).abs() < 1e-7,
                 "FALSIFY-GDN-002 failed: output[{t},{j}] differs ({} vs {}) when only last timestep changed",
-                out1[idx], out2[idx]
+                out1[idx],
+                out2[idx]
             );
         }
     }

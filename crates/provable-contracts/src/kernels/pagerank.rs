@@ -185,9 +185,15 @@ mod tests {
         // 3-node graph, uniform transition, uniform rank
         let n = 3;
         let transition = [
-            1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0,
-            1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0,
-            1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0,
+            1.0 / 3.0,
+            1.0 / 3.0,
+            1.0 / 3.0,
+            1.0 / 3.0,
+            1.0 / 3.0,
+            1.0 / 3.0,
+            1.0 / 3.0,
+            1.0 / 3.0,
+            1.0 / 3.0,
         ];
         let rank = [1.0 / 3.0_f32; 3];
         let mut output = [0.0_f32; 3];
@@ -226,11 +232,7 @@ mod tests {
         // After many iterations with a valid transition matrix, ranks should
         // converge to a stationary distribution
         let n = 3;
-        let transition = [
-            0.0, 0.5, 0.5,
-            1.0, 0.0, 0.0,
-            0.0, 1.0, 0.0,
-        ];
+        let transition = [0.0, 0.5, 0.5, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0];
         let mut rank = vec![1.0 / 3.0_f32; n];
         let mut output = vec![0.0_f32; n];
         let damping = 0.85;
@@ -291,10 +293,7 @@ mod tests {
         }
         let n = 4;
         let transition = [
-            0.25_f32, 0.25, 0.25, 0.25,
-            0.0, 0.0, 0.5, 0.5,
-            0.5, 0.5, 0.0, 0.0,
-            0.1, 0.2, 0.3, 0.4,
+            0.25_f32, 0.25, 0.25, 0.25, 0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.0, 0.0, 0.1, 0.2, 0.3, 0.4,
         ];
         let rank = [0.25_f32; 4];
         let mut scalar_out = [0.0_f32; 4];
@@ -315,7 +314,10 @@ mod tests {
     #[test]
     fn test_pagerank_ptx_version() {
         let ptx = pagerank_iterate_ptx();
-        assert!(ptx.contains(".version 8.5"), "PTX must declare .version 8.5");
+        assert!(
+            ptx.contains(".version 8.5"),
+            "PTX must declare .version 8.5"
+        );
     }
 
     #[test]
@@ -327,7 +329,10 @@ mod tests {
     #[test]
     fn test_pagerank_ptx_entry() {
         let ptx = pagerank_iterate_ptx();
-        assert!(ptx.contains(".entry pagerank_kernel"), "PTX must have .entry");
+        assert!(
+            ptx.contains(".entry pagerank_kernel"),
+            "PTX must have .entry"
+        );
     }
 
     #[test]
@@ -341,18 +346,27 @@ mod tests {
         let ptx = pagerank_iterate_ptx();
         let opens = ptx.chars().filter(|&c| c == '{').count();
         let closes = ptx.chars().filter(|&c| c == '}').count();
-        assert_eq!(opens, closes, "PTX must have balanced braces: {opens} opens vs {closes} closes");
+        assert_eq!(
+            opens, closes,
+            "PTX must have balanced braces: {opens} opens vs {closes} closes"
+        );
     }
 
     #[test]
     fn test_pagerank_ptx_shared_memory() {
         let ptx = pagerank_iterate_ptx();
-        assert!(ptx.contains(".shared"), "PTX must use shared memory for reduction");
+        assert!(
+            ptx.contains(".shared"),
+            "PTX must use shared memory for reduction"
+        );
     }
 
     #[test]
     fn test_pagerank_ptx_bar_sync() {
         let ptx = pagerank_iterate_ptx();
-        assert!(ptx.contains("bar.sync"), "PTX must have bar.sync for synchronization");
+        assert!(
+            ptx.contains("bar.sync"),
+            "PTX must have bar.sync for synchronization"
+        );
     }
 }

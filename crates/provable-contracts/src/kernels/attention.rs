@@ -34,9 +34,27 @@ pub fn attention_scalar(
     d_v: usize,
     output: &mut [f32],
 ) {
-    assert_eq!(q.len(), n * d_k, "Q dimension mismatch: expected {} got {}", n * d_k, q.len());
-    assert_eq!(k.len(), m * d_k, "K dimension mismatch: expected {} got {}", m * d_k, k.len());
-    assert_eq!(v.len(), m * d_v, "V dimension mismatch: expected {} got {}", m * d_v, v.len());
+    assert_eq!(
+        q.len(),
+        n * d_k,
+        "Q dimension mismatch: expected {} got {}",
+        n * d_k,
+        q.len()
+    );
+    assert_eq!(
+        k.len(),
+        m * d_k,
+        "K dimension mismatch: expected {} got {}",
+        m * d_k,
+        k.len()
+    );
+    assert_eq!(
+        v.len(),
+        m * d_v,
+        "V dimension mismatch: expected {} got {}",
+        m * d_v,
+        v.len()
+    );
     assert_eq!(
         output.len(),
         n * d_v,
@@ -281,9 +299,9 @@ OUT_DONE:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use super::super::ulp::assert_ulp_eq;
     use super::super::ops::sequential_floats;
+    use super::super::ulp::assert_ulp_eq;
+    use super::*;
     use proptest::prelude::*;
 
     // ── Single query, single key ────────────────────────────────────────
@@ -326,10 +344,7 @@ mod tests {
         // Mean of V rows: [(3+6+9)/3, (6+9+12)/3] = [6.0, 9.0]
         let expected = vec![6.0, 9.0];
         for (a, b) in output.iter().zip(expected.iter()) {
-            assert!(
-                (a - b).abs() < 1e-5,
-                "expected ~{b}, got {a}"
-            );
+            assert!((a - b).abs() < 1e-5, "expected ~{b}, got {a}");
         }
     }
 
@@ -356,8 +371,14 @@ mod tests {
 
         // First query attends more to first key, second to second key
         // Exact values depend on softmax but first row should be closer to [10,20]
-        assert!(output[0] < 20.0, "first query, first dim should lean toward V[0]");
-        assert!(output[2] > 20.0, "second query, first dim should lean toward V[1]");
+        assert!(
+            output[0] < 20.0,
+            "first query, first dim should lean toward V[0]"
+        );
+        assert!(
+            output[2] > 20.0,
+            "second query, first dim should lean toward V[1]"
+        );
     }
 
     // ── Dimension assertions ────────────────────────────────────────────
@@ -473,7 +494,10 @@ mod tests {
         let ptx = attention_ptx();
         assert!(ptx.contains(".version 8.5"), "missing PTX version");
         assert!(ptx.contains(".target sm_90"), "missing PTX target");
-        assert!(ptx.contains(".entry attention_kernel"), "missing entry point");
+        assert!(
+            ptx.contains(".entry attention_kernel"),
+            "missing entry point"
+        );
         assert!(ptx.contains("ret;"), "missing ret instruction");
         assert!(ptx.contains(".shared"), "missing shared memory declaration");
         assert!(ptx.contains("bar.sync"), "missing barrier synchronization");
@@ -481,7 +505,10 @@ mod tests {
         assert!(ptx.contains("fma.rn.f32"), "missing FMA instruction");
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 
     #[test]
@@ -496,7 +523,10 @@ mod tests {
         let mut row = vec![1.0, 1.0, 1.0, 1.0];
         ops::softmax_row(&mut row);
         for &v in &row {
-            assert!((v - 0.25).abs() < 1e-6, "uniform input should give 0.25, got {v}");
+            assert!(
+                (v - 0.25).abs() < 1e-6,
+                "uniform input should give 0.25, got {v}"
+            );
         }
     }
 
@@ -504,7 +534,10 @@ mod tests {
     fn test_softmax_row_single() {
         let mut row = vec![42.0];
         ops::softmax_row(&mut row);
-        assert!((row[0] - 1.0).abs() < 1e-6, "single element softmax should be 1.0");
+        assert!(
+            (row[0] - 1.0).abs() < 1e-6,
+            "single element softmax should be 1.0"
+        );
     }
 
     #[test]
@@ -512,7 +545,10 @@ mod tests {
         let mut row = vec![1.0, 2.0, 3.0, 4.0, 5.0];
         ops::softmax_row(&mut row);
         let sum: f32 = row.iter().sum();
-        assert!((sum - 1.0).abs() < 1e-6, "softmax should sum to 1.0, got {sum}");
+        assert!(
+            (sum - 1.0).abs() < 1e-6,
+            "softmax should sum to 1.0, got {sum}"
+        );
     }
 
     #[test]

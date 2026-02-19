@@ -59,7 +59,14 @@ pub fn score_matrix(q: &[f32], k: &[f32], m: usize, n: usize, d: usize, scores: 
 ///
 /// This is the final step in attention: applying softmax weights to value vectors.
 /// `output` must be `rows x d_v`, zeroed or overwritten.
-pub fn matmul_sv(scores: &[f32], v: &[f32], rows: usize, cols: usize, d_v: usize, output: &mut [f32]) {
+pub fn matmul_sv(
+    scores: &[f32],
+    v: &[f32],
+    rows: usize,
+    cols: usize,
+    d_v: usize,
+    output: &mut [f32],
+) {
     debug_assert_eq!(scores.len(), rows * cols);
     debug_assert_eq!(v.len(), cols * d_v);
     debug_assert_eq!(output.len(), rows * d_v);
@@ -97,7 +104,9 @@ pub fn sequential_floats(len: usize, scale: f32) -> Vec<f32> {
 /// Used in flash attention tests for varied test data.
 #[cfg(test)]
 pub fn patterned_floats(len: usize, modulus: usize, offset: f32, scale: f32) -> Vec<f32> {
-    (0..len).map(|i| ((i % modulus) as f32 - offset) * scale).collect()
+    (0..len)
+        .map(|i| ((i % modulus) as f32 - offset) * scale)
+        .collect()
 }
 
 #[cfg(test)]

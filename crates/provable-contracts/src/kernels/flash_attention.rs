@@ -48,9 +48,27 @@ pub fn flash_attention_scalar(
     tile_size: usize,
     output: &mut [f32],
 ) {
-    assert_eq!(q.len(), n * d, "Q dimension mismatch: expected {} got {}", n * d, q.len());
-    assert_eq!(k.len(), n * d, "K dimension mismatch: expected {} got {}", n * d, k.len());
-    assert_eq!(v.len(), n * d, "V dimension mismatch: expected {} got {}", n * d, v.len());
+    assert_eq!(
+        q.len(),
+        n * d,
+        "Q dimension mismatch: expected {} got {}",
+        n * d,
+        q.len()
+    );
+    assert_eq!(
+        k.len(),
+        n * d,
+        "K dimension mismatch: expected {} got {}",
+        n * d,
+        k.len()
+    );
+    assert_eq!(
+        v.len(),
+        n * d,
+        "V dimension mismatch: expected {} got {}",
+        n * d,
+        v.len()
+    );
     assert_eq!(
         output.len(),
         n * d,
@@ -72,8 +90,17 @@ pub fn flash_attention_scalar(
         while tile_start < n {
             let tile_end = (tile_start + tile_size).min(n);
             process_tile(
-                q, k, v, i, d, scale, tile_start, tile_end,
-                &mut running_max, &mut running_sum, &mut acc,
+                q,
+                k,
+                v,
+                i,
+                d,
+                scale,
+                tile_start,
+                tile_end,
+                &mut running_max,
+                &mut running_sum,
+                &mut acc,
             );
             tile_start = tile_end;
         }
@@ -398,9 +425,9 @@ EXIT:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::super::ops::{patterned_floats, sequential_floats};
     use super::super::ulp::assert_ulp_eq;
-    use super::super::ops::{sequential_floats, patterned_floats};
+    use super::*;
     use proptest::prelude::*;
 
     // ── Flash attention matches naive attention ─────────────────────────
@@ -639,16 +666,25 @@ mod tests {
         let ptx = flash_attention_ptx();
         assert!(ptx.contains(".version 8.5"), "missing PTX version");
         assert!(ptx.contains(".target sm_90"), "missing PTX target");
-        assert!(ptx.contains(".entry flash_attention_kernel"), "missing entry point");
+        assert!(
+            ptx.contains(".entry flash_attention_kernel"),
+            "missing entry point"
+        );
         assert!(ptx.contains("ret;"), "missing ret instruction");
         assert!(ptx.contains(".shared"), "missing shared memory declaration");
         assert!(ptx.contains("bar.sync"), "missing barrier synchronization");
         assert!(ptx.contains("ex2.approx.f32"), "missing exp approximation");
         assert!(ptx.contains("fma.rn.f32"), "missing FMA instruction");
-        assert!(ptx.contains("rcp.approx.f32"), "missing reciprocal for normalization");
+        assert!(
+            ptx.contains("rcp.approx.f32"),
+            "missing reciprocal for normalization"
+        );
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 
     #[test]

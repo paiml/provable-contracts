@@ -97,12 +97,11 @@ pub fn coverage_report(
         let kani_covered = kh_count.min(obligations);
 
         // Binding coverage
-        let (binding_implemented, binding_partial, binding_missing) =
-            if let Some(reg) = binding {
-                count_binding_coverage(&contract_file, contract, reg)
-            } else {
-                (0, 0, equations)
-            };
+        let (binding_implemented, binding_partial, binding_missing) = if let Some(reg) = binding {
+            count_binding_coverage(&contract_file, contract, reg)
+        } else {
+            (0, 0, equations)
+        };
 
         totals.equations += equations;
         totals.obligations += obligations;
@@ -247,10 +246,7 @@ proof_obligations:
     fn multiple_contracts() {
         let c1 = contract_with_obs(2, 2, 1);
         let c2 = contract_with_obs(3, 0, 3);
-        let report = coverage_report(
-            &[("a".to_string(), &c1), ("b".to_string(), &c2)],
-            None,
-        );
+        let report = coverage_report(&[("a".to_string(), &c1), ("b".to_string(), &c2)], None);
         assert_eq!(report.totals.contracts, 2);
         assert_eq!(report.totals.obligations, 5);
         assert_eq!(report.totals.equations, 2);

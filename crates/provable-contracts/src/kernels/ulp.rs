@@ -33,7 +33,13 @@ pub fn ulp_distance(a: f32, b: f32) -> u32 {
 /// Panics if slices have different lengths or any element pair exceeds
 /// the ULP tolerance.
 pub fn assert_ulp_eq(a: &[f32], b: &[f32], max_ulp: u32) {
-    assert_eq!(a.len(), b.len(), "slice length mismatch: {} vs {}", a.len(), b.len());
+    assert_eq!(
+        a.len(),
+        b.len(),
+        "slice length mismatch: {} vs {}",
+        a.len(),
+        b.len()
+    );
     for (i, (&va, &vb)) in a.iter().zip(b.iter()).enumerate() {
         let dist = ulp_distance(va, vb);
         assert!(

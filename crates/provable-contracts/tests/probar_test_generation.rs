@@ -23,12 +23,7 @@ fn all_contract_paths() -> Vec<std::path::PathBuf> {
             let entry = entry.ok()?;
             let path = entry.path();
             if path.extension().and_then(|e| e.to_str()) == Some("yaml")
-                && !path
-                    .file_name()
-                    .unwrap()
-                    .to_str()
-                    .unwrap()
-                    .starts_with('.')
+                && !path.file_name().unwrap().to_str().unwrap().starts_with('.')
             {
                 Some(path)
             } else {
@@ -143,10 +138,7 @@ fn contracts_with_obligations_generate_property_tests() {
 #[test]
 fn contracts_with_falsification_tests_generate_stubs() {
     let dir = contracts_dir();
-    let contracts = [
-        "softmax-kernel-v1.yaml",
-        "rmsnorm-kernel-v1.yaml",
-    ];
+    let contracts = ["softmax-kernel-v1.yaml", "rmsnorm-kernel-v1.yaml"];
 
     for name in &contracts {
         let code = load_and_generate(&dir.join(name));

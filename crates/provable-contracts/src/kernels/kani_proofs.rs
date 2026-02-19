@@ -7,26 +7,26 @@
 //! All code here is behind `#[cfg(kani)]` and invisible to normal builds.
 
 use super::activation;
-use super::softmax;
-use super::rmsnorm;
-use super::layernorm;
-use super::batchnorm;
-use super::silu_standalone;
-use super::swiglu;
-use super::cross_entropy;
-use super::rope;
-use super::matmul;
-use super::attention;
-use super::gqa;
-use super::flash_attention;
 use super::adamw;
-use super::conv1d;
-use super::ssm;
-use super::kmeans;
-use super::pagerank;
-use super::lbfgs;
+use super::attention;
+use super::batchnorm;
 use super::cma_es;
+use super::conv1d;
+use super::cross_entropy;
+use super::flash_attention;
 use super::gated_delta_net;
+use super::gqa;
+use super::kmeans;
+use super::layernorm;
+use super::lbfgs;
+use super::matmul;
+use super::pagerank;
+use super::rmsnorm;
+use super::rope;
+use super::silu_standalone;
+use super::softmax;
+use super::ssm;
+use super::swiglu;
 
 // ════════════════════════════════════════════════════════════════════════════
 // Float transcendental stubs
@@ -107,7 +107,12 @@ fn verify_relu_nonnegative() {
     activation::relu_scalar(&input, &mut output);
 
     for i in 0..N {
-        assert!(output[i] >= 0.0, "KANI-ACT-001: output[{}] = {} < 0", i, output[i]);
+        assert!(
+            output[i] >= 0.0,
+            "KANI-ACT-001: output[{}] = {} < 0",
+            i,
+            output[i]
+        );
     }
 }
 
@@ -133,7 +138,8 @@ fn verify_relu_monotonic() {
         if a[i] <= b[i] {
             assert!(
                 out_a[i] <= out_b[i],
-                "KANI-ACT-002: monotonicity violated at {}", i
+                "KANI-ACT-002: monotonicity violated at {}",
+                i
             );
         }
     }
@@ -180,7 +186,8 @@ fn verify_silu_lower_bound() {
         // With stubs we can't check the exact bound, but we verify output is finite.
         assert!(
             output[i].is_finite(),
-            "KANI-SI-002: output[{}] not finite", i
+            "KANI-SI-002: output[{}] not finite",
+            i
         );
     }
 }
@@ -209,7 +216,8 @@ fn verify_softmax_normalization() {
     let sum: f32 = output.iter().sum();
     assert!(
         (sum - 1.0).abs() < 1e-4,
-        "KANI-SM-001: sum = {}, expected 1.0", sum
+        "KANI-SM-001: sum = {}, expected 1.0",
+        sum
     );
 }
 
@@ -229,7 +237,12 @@ fn verify_softmax_positivity() {
     softmax::softmax_scalar(&input, &mut output);
 
     for i in 0..N {
-        assert!(output[i] > 0.0, "KANI-SM-002: output[{}] = {} <= 0", i, output[i]);
+        assert!(
+            output[i] > 0.0,
+            "KANI-SM-002: output[{}] = {} <= 0",
+            i,
+            output[i]
+        );
     }
 }
 
@@ -251,7 +264,9 @@ fn verify_softmax_bounded() {
     for i in 0..N {
         assert!(
             output[i] > 0.0 && output[i] < 1.0,
-            "KANI-SM-003: output[{}] = {} not in (0, 1)", i, output[i]
+            "KANI-SM-003: output[{}] = {} not in (0, 1)",
+            i,
+            output[i]
         );
     }
 }
@@ -278,7 +293,8 @@ fn verify_rmsnorm_finiteness() {
     for i in 0..N {
         assert!(
             output[i].is_finite(),
-            "KANI-RN-001: output[{}] is not finite", i
+            "KANI-RN-001: output[{}] is not finite",
+            i
         );
     }
 }
@@ -355,7 +371,8 @@ fn verify_layernorm_standardization() {
     for i in 0..N {
         assert!(
             output[i].is_finite(),
-            "KANI-LN-002: output[{}] not finite", i
+            "KANI-LN-002: output[{}] not finite",
+            i
         );
     }
 }
@@ -459,9 +476,17 @@ fn verify_running_variance_nonneg() {
     let mut output = [0.0f32; BATCH * CHANNELS];
 
     batchnorm::batchnorm_scalar(
-        &input, BATCH, CHANNELS, &gamma, &beta, 1e-5,
-        &mut running_mean, &mut running_var,
-        &mut output, momentum, true,
+        &input,
+        BATCH,
+        CHANNELS,
+        &gamma,
+        &beta,
+        1e-5,
+        &mut running_mean,
+        &mut running_var,
+        &mut output,
+        momentum,
+        true,
     );
 
     assert!(
@@ -522,7 +547,9 @@ fn verify_swiglu_zero_preservation() {
         // SiLU(0) = 0 * sigmoid(0) = 0, so 0 * value = 0
         assert!(
             output[i].abs() < 1e-5,
-            "KANI-SG-001: output[{}] = {}, expected 0", i, output[i]
+            "KANI-SG-001: output[{}] = {}, expected 0",
+            i,
+            output[i]
         );
     }
 }
@@ -555,8 +582,12 @@ fn verify_swiglu_fused_equivalence() {
 
     for i in 0..N {
         assert!(
-            (fused[i] - unfused[i]).abs() < 1e-5 || (!fused[i].is_finite() && !unfused[i].is_finite()),
-            "KANI-SG-002: fused[{}] = {} != unfused = {}", i, fused[i], unfused[i]
+            (fused[i] - unfused[i]).abs() < 1e-5
+                || (!fused[i].is_finite() && !unfused[i].is_finite()),
+            "KANI-SG-002: fused[{}] = {} != unfused = {}",
+            i,
+            fused[i],
+            unfused[i]
         );
     }
 }
@@ -581,7 +612,8 @@ fn verify_swiglu_silu_lower_bound() {
     for i in 0..N {
         assert!(
             output[i].is_finite(),
-            "KANI-SG-003: output[{}] not finite", i
+            "KANI-SG-003: output[{}] not finite",
+            i
         );
     }
 }
@@ -608,10 +640,7 @@ fn verify_cross_entropy_non_negative() {
     let loss = cross_entropy::cross_entropy_scalar(&targets, &logits);
 
     // With stubs, verify the function produces a finite result
-    assert!(
-        loss.is_finite(),
-        "KANI-CE-001: loss = {} not finite", loss
-    );
+    assert!(loss.is_finite(), "KANI-CE-001: loss = {} not finite", loss);
 }
 
 /// KANI-CE-002: log_softmax output is <= 0.
@@ -634,7 +663,8 @@ fn verify_log_softmax_upper_bound() {
     for i in 0..N {
         assert!(
             output[i].is_finite(),
-            "KANI-CE-002: output[{}] not finite", i
+            "KANI-CE-002: output[{}] not finite",
+            i
         );
     }
 }
@@ -656,10 +686,7 @@ fn verify_cross_entropy_finite() {
     let targets = [1.0 / N as f32; N];
 
     let loss = cross_entropy::cross_entropy_scalar(&targets, &logits);
-    assert!(
-        loss.is_finite(),
-        "KANI-CE-003: loss = {} not finite", loss
-    );
+    assert!(loss.is_finite(), "KANI-CE-003: loss = {} not finite", loss);
 }
 
 /// KANI-RP-001: RoPE preserves vector norm (||rope(x)|| = ||x||).
@@ -687,7 +714,8 @@ fn verify_rope_norm_preservation() {
     for i in 0..D {
         assert!(
             output[i].is_finite(),
-            "KANI-RP-001: output[{}] not finite", i
+            "KANI-RP-001: output[{}] not finite",
+            i
         );
     }
 }
@@ -704,8 +732,14 @@ fn verify_quantized_dot_bounded() {
     let a: [f32; K] = kani::any();
     let b: [f32; K] = kani::any();
     // Restrict to "quantized" range to keep dot product bounded
-    kani::assume(a.iter().all(|x| *x >= -128.0 && *x <= 127.0 && x.is_finite()));
-    kani::assume(b.iter().all(|x| *x >= -128.0 && *x <= 127.0 && x.is_finite()));
+    kani::assume(
+        a.iter()
+            .all(|x| *x >= -128.0 && *x <= 127.0 && x.is_finite()),
+    );
+    kani::assume(
+        b.iter()
+            .all(|x| *x >= -128.0 && *x <= 127.0 && x.is_finite()),
+    );
 
     let mut c = [0.0f32; 1];
     matmul::matmul_scalar(&a, &b, 1, K, 1, &mut c);
@@ -715,7 +749,9 @@ fn verify_quantized_dot_bounded() {
     let bound = K as f32 * 128.0 * 128.0;
     assert!(
         c[0].abs() <= bound,
-        "KANI-MM-001: dot = {}, bound = {}", c[0], bound
+        "KANI-MM-001: dot = {}, bound = {}",
+        c[0],
+        bound
     );
 }
 
@@ -752,7 +788,8 @@ fn verify_attention_weights_normalize() {
     for i in 0..output.len() {
         assert!(
             output[i].is_finite(),
-            "KANI-ATT-001: output[{}] not finite", i
+            "KANI-ATT-001: output[{}] not finite",
+            i
         );
     }
 }
@@ -785,7 +822,8 @@ fn verify_gqa_weight_normalization() {
     for i in 0..output.len() {
         assert!(
             output[i].is_finite(),
-            "KANI-GQ-001: output[{}] not finite", i
+            "KANI-GQ-001: output[{}] not finite",
+            i
         );
     }
 }
@@ -821,7 +859,8 @@ fn verify_gqa_mha_equivalence() {
     for i in 0..output_gqa.len() {
         assert!(
             output_gqa[i].is_finite(),
-            "KANI-GQ-002: output[{}] not finite", i
+            "KANI-GQ-002: output[{}] not finite",
+            i
         );
     }
 }
@@ -856,7 +895,8 @@ fn verify_gqa_convex_bound() {
     for i in 0..output.len() {
         assert!(
             output[i].is_finite(),
-            "KANI-GQ-003: output[{}] not finite", i
+            "KANI-GQ-003: output[{}] not finite",
+            i
         );
     }
 }
@@ -885,7 +925,8 @@ fn verify_online_softmax_2tiles() {
     for i in 0..output.len() {
         assert!(
             output[i].is_finite(),
-            "KANI-FA-001: output[{}] not finite", i
+            "KANI-FA-001: output[{}] not finite",
+            i
         );
     }
 }
@@ -918,15 +959,24 @@ fn verify_adamw_decoupled() {
     kani::assume(eps > 0.0 && eps < 1.0 && eps.is_finite());
 
     adamw::adamw_step_scalar(
-        &mut params, &grads, &mut m, &mut v,
-        lr, 0.9, 0.999, eps, 0.01, 1,
+        &mut params,
+        &grads,
+        &mut m,
+        &mut v,
+        lr,
+        0.9,
+        0.999,
+        eps,
+        0.01,
+        1,
     );
 
     // Verify all params are finite after update (decoupled WD doesn't blow up)
     for i in 0..N {
         assert!(
             params[i].is_finite(),
-            "KANI-AW-001: params[{}] not finite", i
+            "KANI-AW-001: params[{}] not finite",
+            i
         );
     }
 }
@@ -950,15 +1000,20 @@ fn verify_adamw_moment_positive() {
     let mut v = [0.0f32; N];
 
     adamw::adamw_step_scalar(
-        &mut params, &grads, &mut m, &mut v,
-        0.001, 0.9, 0.999, 1e-8, 0.01, 1,
+        &mut params,
+        &grads,
+        &mut m,
+        &mut v,
+        0.001,
+        0.9,
+        0.999,
+        1e-8,
+        0.01,
+        1,
     );
 
     for i in 0..N {
-        assert!(
-            v[i] >= 0.0,
-            "KANI-AW-002: v[{}] = {} < 0", i, v[i]
-        );
+        assert!(v[i] >= 0.0, "KANI-AW-002: v[{}] = {} < 0", i, v[i]);
     }
 }
 
@@ -984,14 +1039,23 @@ fn verify_adamw_finite_update() {
     kani::assume(eps > 1e-10 && eps < 1.0 && eps.is_finite());
 
     adamw::adamw_step_scalar(
-        &mut params, &grads, &mut m, &mut v,
-        0.001, 0.9, 0.999, eps, 0.01, 1,
+        &mut params,
+        &grads,
+        &mut m,
+        &mut v,
+        0.001,
+        0.9,
+        0.999,
+        eps,
+        0.01,
+        1,
     );
 
     for i in 0..N {
         assert!(
             params[i].is_finite(),
-            "KANI-AW-003: params[{}] not finite", i
+            "KANI-AW-003: params[{}] not finite",
+            i
         );
     }
 }
@@ -1022,8 +1086,15 @@ fn verify_conv1d_output_shape() {
 
     let mut output = [0.0f32; C_OUT * OUT_LEN];
     conv1d::conv1d_scalar(
-        &input, &weight, None,
-        C_IN, C_OUT, LENGTH, KERNEL_SIZE, STRIDE, PADDING,
+        &input,
+        &weight,
+        None,
+        C_IN,
+        C_OUT,
+        LENGTH,
+        KERNEL_SIZE,
+        STRIDE,
+        PADDING,
         &mut output,
     );
 
@@ -1031,7 +1102,8 @@ fn verify_conv1d_output_shape() {
     for i in 0..output.len() {
         assert!(
             output[i].is_finite(),
-            "KANI-CV-001: output[{}] not finite", i
+            "KANI-CV-001: output[{}] not finite",
+            i
         );
     }
 }
@@ -1062,8 +1134,15 @@ fn verify_conv1d_linearity() {
     // conv(x)
     let mut out1 = [0.0f32; C_OUT * OUT_LEN];
     conv1d::conv1d_scalar(
-        &input, &weight, None,
-        C_IN, C_OUT, LENGTH, KERNEL_SIZE, STRIDE, PADDING,
+        &input,
+        &weight,
+        None,
+        C_IN,
+        C_OUT,
+        LENGTH,
+        KERNEL_SIZE,
+        STRIDE,
+        PADDING,
         &mut out1,
     );
 
@@ -1074,8 +1153,15 @@ fn verify_conv1d_linearity() {
     }
     let mut out2 = [0.0f32; C_OUT * OUT_LEN];
     conv1d::conv1d_scalar(
-        &scaled_input, &weight, None,
-        C_IN, C_OUT, LENGTH, KERNEL_SIZE, STRIDE, PADDING,
+        &scaled_input,
+        &weight,
+        None,
+        C_IN,
+        C_OUT,
+        LENGTH,
+        KERNEL_SIZE,
+        STRIDE,
+        PADDING,
         &mut out2,
     );
 
@@ -1088,7 +1174,10 @@ fn verify_conv1d_linearity() {
         let scale = expected.abs().max(1.0);
         assert!(
             diff / scale < 1e-4 || diff < 1e-5,
-            "KANI-CV-002: linearity violated at {}: {} vs {}", i, actual, expected
+            "KANI-CV-002: linearity violated at {}: {} vs {}",
+            i,
+            actual,
+            expected
         );
     }
 }
@@ -1127,11 +1216,15 @@ fn verify_ssm_causality() {
     // output[0] and output[1] must be unchanged
     assert!(
         out1[0] == out2[0],
-        "KANI-SSM-001: output[0] changed: {} vs {}", out1[0], out2[0]
+        "KANI-SSM-001: output[0] changed: {} vs {}",
+        out1[0],
+        out2[0]
     );
     assert!(
         out1[1] == out2[1],
-        "KANI-SSM-001: output[1] changed: {} vs {}", out1[1], out2[1]
+        "KANI-SSM-001: output[1] changed: {} vs {}",
+        out1[1],
+        out2[1]
     );
 }
 
@@ -1201,7 +1294,10 @@ fn verify_kmeans_nearest() {
             assert!(
                 d_assigned <= d_c,
                 "KANI-KM-001: point {} not nearest: d(assigned)={} > d({})={}",
-                p, d_assigned, c, d_c
+                p,
+                d_assigned,
+                c,
+                d_c
             );
         }
     }
@@ -1238,7 +1334,8 @@ fn verify_kmeans_objective_nonneg() {
 
     assert!(
         objective >= 0.0,
-        "KANI-KM-002: objective = {} < 0", objective
+        "KANI-KM-002: objective = {} < 0",
+        objective
     );
 }
 
@@ -1266,7 +1363,8 @@ fn verify_pagerank_distribution() {
     // With uniform transition and uniform rank, output should sum to 1
     assert!(
         (sum - 1.0).abs() < 1e-4,
-        "KANI-PR-001: sum = {}, expected ~1.0", sum
+        "KANI-PR-001: sum = {}, expected ~1.0",
+        sum
     );
 }
 
@@ -1293,7 +1391,9 @@ fn verify_pagerank_nonneg() {
     for i in 0..N {
         assert!(
             output[i] >= 0.0,
-            "KANI-PR-002: output[{}] = {} < 0", i, output[i]
+            "KANI-PR-002: output[{}] = {} < 0",
+            i,
+            output[i]
         );
     }
 }
@@ -1324,10 +1424,7 @@ fn verify_lbfgs_descent() {
         dot += direction[j] * gradient[j];
     }
 
-    assert!(
-        dot < 0.0,
-        "KANI-LB-001: dot(dir, grad) = {} >= 0", dot
-    );
+    assert!(dot < 0.0, "KANI-LB-001: dot(dir, grad) = {} >= 0", dot);
 }
 
 /// KANI-LB-002: L-BFGS history access is bounded (no OOB).
@@ -1354,7 +1451,8 @@ fn verify_lbfgs_history_bound() {
     for j in 0..D {
         assert!(
             direction[j].is_finite(),
-            "KANI-LB-002: direction[{}] not finite", j
+            "KANI-LB-002: direction[{}] not finite",
+            j
         );
     }
 }
@@ -1390,7 +1488,8 @@ fn verify_cma_sigma_positive() {
     for i in 0..D {
         assert!(
             output[i].is_finite(),
-            "KANI-CMA-001: output[{}] not finite", i
+            "KANI-CMA-001: output[{}] not finite",
+            i
         );
     }
     // sigma is unchanged (it's passed by value)
@@ -1422,7 +1521,8 @@ fn verify_cma_weights_normalized() {
     let norm_sum: f32 = normalized.iter().sum();
     assert!(
         (norm_sum - 1.0).abs() < 1e-4,
-        "KANI-CMA-002: sum = {}, expected ~1.0", norm_sum
+        "KANI-CMA-002: sum = {}, expected ~1.0",
+        norm_sum
     );
 }
 
@@ -1446,7 +1546,9 @@ fn verify_decay_bound() {
         let sigmoid = 1.0 / (1.0 + exp_neg_x);
         assert!(
             sigmoid > 0.0 && sigmoid < 1.0,
-            "KANI-GDN-001: sigmoid(x[{}]) = {} not in (0, 1)", i, sigmoid
+            "KANI-GDN-001: sigmoid(x[{}]) = {} not in (0, 1)",
+            i,
+            sigmoid
         );
     }
 }
@@ -1475,8 +1577,14 @@ fn verify_state_shape_preserved() {
 
     let mut output = [0.0f32; SEQ_LEN * V_DIM];
     gated_delta_net::gdn_recurrence_scalar(
-        &q, &k, &v, &alpha, &beta,
-        SEQ_LEN, K_DIM, V_DIM,
+        &q,
+        &k,
+        &v,
+        &alpha,
+        &beta,
+        SEQ_LEN,
+        K_DIM,
+        V_DIM,
         &mut output,
     );
 
@@ -1484,7 +1592,8 @@ fn verify_state_shape_preserved() {
     for i in 0..output.len() {
         assert!(
             output[i].is_finite(),
-            "KANI-GDN-002: output[{}] not finite", i
+            "KANI-GDN-002: output[{}] not finite",
+            i
         );
     }
 }

@@ -378,8 +378,8 @@ norm_done:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::*;
     use proptest::prelude::*;
 
     // ── Scalar known-answer tests ────────────────────────────────────────
@@ -396,18 +396,23 @@ mod tests {
         let mut output = [0.0_f32; 4];
 
         batchnorm_scalar(
-            &input, 4, 1, &gamma, &beta, 1e-5,
-            &mut running_mean, &mut running_var,
-            &mut output, 0.1, true,
+            &input,
+            4,
+            1,
+            &gamma,
+            &beta,
+            1e-5,
+            &mut running_mean,
+            &mut running_var,
+            &mut output,
+            0.1,
+            true,
         );
 
         // With constant input: mean=5.0, var=0.0, (x-mean)=0
         // output = gamma * 0 + beta = beta = 3.0
         for (i, &o) in output.iter().enumerate() {
-            assert!(
-                (o - 3.0).abs() < 1e-3,
-                "output[{i}] = {o}, expected ~3.0"
-            );
+            assert!((o - 3.0).abs() < 1e-3, "output[{i}] = {o}, expected ~3.0");
         }
     }
 
@@ -421,9 +426,17 @@ mod tests {
         let mut output = [0.0_f32; 4];
 
         batchnorm_scalar(
-            &input, 4, 1, &gamma, &beta, 1e-5,
-            &mut running_mean, &mut running_var,
-            &mut output, 0.1, true,
+            &input,
+            4,
+            1,
+            &gamma,
+            &beta,
+            1e-5,
+            &mut running_mean,
+            &mut running_var,
+            &mut output,
+            0.1,
+            true,
         );
 
         // batch_mean = 2.5, batch_var = 1.25
@@ -451,9 +464,17 @@ mod tests {
         let mut output = [0.0_f32; 4];
 
         batchnorm_scalar(
-            &input, 4, 1, &gamma, &beta, 0.0,
-            &mut running_mean, &mut running_var,
-            &mut output, 0.1, false,
+            &input,
+            4,
+            1,
+            &gamma,
+            &beta,
+            0.0,
+            &mut running_mean,
+            &mut running_var,
+            &mut output,
+            0.1,
+            false,
         );
 
         // Inference uses running stats: inv_std = 1/sqrt(4) = 0.5
@@ -484,9 +505,17 @@ mod tests {
         let mut rv_train = [2.0_f32];
         let mut train_out = [0.0_f32; 4];
         batchnorm_scalar(
-            &input, 4, 1, &gamma, &beta, 1e-5,
-            &mut rm_train, &mut rv_train,
-            &mut train_out, 0.1, true,
+            &input,
+            4,
+            1,
+            &gamma,
+            &beta,
+            1e-5,
+            &mut rm_train,
+            &mut rv_train,
+            &mut train_out,
+            0.1,
+            true,
         );
 
         // Inference output (with different running stats)
@@ -494,9 +523,17 @@ mod tests {
         let mut rv_eval = [2.0_f32];
         let mut eval_out = [0.0_f32; 4];
         batchnorm_scalar(
-            &input, 4, 1, &gamma, &beta, 1e-5,
-            &mut rm_eval, &mut rv_eval,
-            &mut eval_out, 0.1, false,
+            &input,
+            4,
+            1,
+            &gamma,
+            &beta,
+            1e-5,
+            &mut rm_eval,
+            &mut rv_eval,
+            &mut eval_out,
+            0.1,
+            false,
         );
 
         // They should differ since batch stats != running stats
@@ -525,9 +562,17 @@ mod tests {
         let mut output = [0.0_f32; 4];
 
         batchnorm_scalar(
-            &input, 2, 2, &gamma, &beta, 1e-8,
-            &mut running_mean, &mut running_var,
-            &mut output, 0.1, true,
+            &input,
+            2,
+            2,
+            &gamma,
+            &beta,
+            1e-8,
+            &mut running_mean,
+            &mut running_var,
+            &mut output,
+            0.1,
+            true,
         );
 
         // Channel 0: mean=2, var=1, inv_std=1/sqrt(1+eps)~1
@@ -551,14 +596,26 @@ mod tests {
         let mut output = [0.0_f32; 2];
 
         batchnorm_scalar(
-            &input, 1, 2, &gamma, &beta, 1e-5,
-            &mut running_mean, &mut running_var,
-            &mut output, 0.1, true,
+            &input,
+            1,
+            2,
+            &gamma,
+            &beta,
+            1e-5,
+            &mut running_mean,
+            &mut running_var,
+            &mut output,
+            0.1,
+            true,
         );
 
         // With N=1: mean=input, var=0, (x-mean)=0, output=beta
         assert!((output[0] - 5.0).abs() < 1e-3, "output[0] = {}", output[0]);
-        assert!((output[1] - (-5.0)).abs() < 1e-3, "output[1] = {}", output[1]);
+        assert!(
+            (output[1] - (-5.0)).abs() < 1e-3,
+            "output[1] = {}",
+            output[1]
+        );
     }
 
     #[test]
@@ -570,7 +627,19 @@ mod tests {
         let mut rm = [0.0_f32];
         let mut rv = [0.0_f32];
         let mut output = [0.0_f32; 2];
-        batchnorm_scalar(&input, 3, 1, &gamma, &beta, 1e-5, &mut rm, &mut rv, &mut output, 0.1, true);
+        batchnorm_scalar(
+            &input,
+            3,
+            1,
+            &gamma,
+            &beta,
+            1e-5,
+            &mut rm,
+            &mut rv,
+            &mut output,
+            0.1,
+            true,
+        );
     }
 
     #[test]
@@ -582,7 +651,19 @@ mod tests {
         let mut rm: [f32; 0] = [];
         let mut rv: [f32; 0] = [];
         let mut output: [f32; 0] = [];
-        batchnorm_scalar(&input, 0, 0, &gamma, &beta, 1e-5, &mut rm, &mut rv, &mut output, 0.1, true);
+        batchnorm_scalar(
+            &input,
+            0,
+            0,
+            &gamma,
+            &beta,
+            1e-5,
+            &mut rm,
+            &mut rv,
+            &mut output,
+            0.1,
+            true,
+        );
     }
 
     // ── Property-based tests ─────────────────────────────────────────────
@@ -665,9 +746,17 @@ mod tests {
         let mut rv_scalar = vec![1.0_f32; 4];
         let mut scalar_out = vec![0.0_f32; 16];
         batchnorm_scalar(
-            &input, 4, 4, &gamma, &beta, 1e-5,
-            &mut rm_scalar, &mut rv_scalar,
-            &mut scalar_out, 0.1, true,
+            &input,
+            4,
+            4,
+            &gamma,
+            &beta,
+            1e-5,
+            &mut rm_scalar,
+            &mut rv_scalar,
+            &mut scalar_out,
+            0.1,
+            true,
         );
 
         let mut rm_avx2 = vec![0.0_f32; 4];
@@ -675,9 +764,17 @@ mod tests {
         let mut avx2_out = vec![0.0_f32; 16];
         unsafe {
             batchnorm_avx2(
-                &input, 4, 4, &gamma, &beta, 1e-5,
-                &mut rm_avx2, &mut rv_avx2,
-                &mut avx2_out, 0.1, true,
+                &input,
+                4,
+                4,
+                &gamma,
+                &beta,
+                1e-5,
+                &mut rm_avx2,
+                &mut rv_avx2,
+                &mut avx2_out,
+                0.1,
+                true,
             );
         }
 
@@ -700,9 +797,17 @@ mod tests {
         let mut rv_scalar = vec![1.0_f32; 3];
         let mut scalar_out = vec![0.0_f32; 12];
         batchnorm_scalar(
-            &input, 4, 3, &gamma, &beta, 1e-5,
-            &mut rm_scalar, &mut rv_scalar,
-            &mut scalar_out, 0.1, false,
+            &input,
+            4,
+            3,
+            &gamma,
+            &beta,
+            1e-5,
+            &mut rm_scalar,
+            &mut rv_scalar,
+            &mut scalar_out,
+            0.1,
+            false,
         );
 
         let mut rm_avx2 = vec![2.0_f32; 3];
@@ -710,9 +815,17 @@ mod tests {
         let mut avx2_out = vec![0.0_f32; 12];
         unsafe {
             batchnorm_avx2(
-                &input, 4, 3, &gamma, &beta, 1e-5,
-                &mut rm_avx2, &mut rv_avx2,
-                &mut avx2_out, 0.1, false,
+                &input,
+                4,
+                3,
+                &gamma,
+                &beta,
+                1e-5,
+                &mut rm_avx2,
+                &mut rv_avx2,
+                &mut avx2_out,
+                0.1,
+                false,
             );
         }
 
@@ -736,7 +849,10 @@ mod tests {
     #[test]
     fn test_batchnorm_ptx_entry() {
         let ptx = batchnorm_ptx();
-        assert!(ptx.contains(".entry batchnorm_kernel"), "missing entry point");
+        assert!(
+            ptx.contains(".entry batchnorm_kernel"),
+            "missing entry point"
+        );
     }
 
     #[test]
@@ -754,13 +870,19 @@ mod tests {
     #[test]
     fn test_batchnorm_ptx_warp_shuffle() {
         let ptx = batchnorm_ptx();
-        assert!(ptx.contains("shfl.sync"), "missing warp shuffle instructions");
+        assert!(
+            ptx.contains("shfl.sync"),
+            "missing warp shuffle instructions"
+        );
     }
 
     #[test]
     fn test_batchnorm_ptx_bar_sync() {
         let ptx = batchnorm_ptx();
-        assert!(ptx.contains("bar.sync"), "missing bar.sync for block synchronization");
+        assert!(
+            ptx.contains("bar.sync"),
+            "missing bar.sync for block synchronization"
+        );
     }
 
     #[test]
@@ -768,6 +890,9 @@ mod tests {
         let ptx = batchnorm_ptx();
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 }

@@ -243,8 +243,8 @@ norm_done:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::*;
     use proptest::prelude::*;
 
     // ── Scalar known-answer tests ────────────────────────────────────────
@@ -259,10 +259,7 @@ mod tests {
         let mut output = [0.0_f32; 4];
         rmsnorm_scalar(&input, &gamma, 0.0, &mut output);
         for (i, &o) in output.iter().enumerate() {
-            assert!(
-                (o - 1.0).abs() < 1e-6,
-                "output[{i}] = {o}, expected 1.0"
-            );
+            assert!((o - 1.0).abs() < 1e-6, "output[{i}] = {o}, expected 1.0");
         }
     }
 
@@ -460,7 +457,10 @@ mod tests {
     #[test]
     fn test_rmsnorm_ptx_warp_shuffle() {
         let ptx = rmsnorm_ptx();
-        assert!(ptx.contains("shfl.sync"), "missing warp shuffle instructions");
+        assert!(
+            ptx.contains("shfl.sync"),
+            "missing warp shuffle instructions"
+        );
     }
 
     #[test]
@@ -472,7 +472,10 @@ mod tests {
     #[test]
     fn test_rmsnorm_ptx_bar_sync() {
         let ptx = rmsnorm_ptx();
-        assert!(ptx.contains("bar.sync"), "missing bar.sync for block synchronization");
+        assert!(
+            ptx.contains("bar.sync"),
+            "missing bar.sync for block synchronization"
+        );
     }
 
     #[test]
@@ -480,6 +483,9 @@ mod tests {
         let ptx = rmsnorm_ptx();
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 }

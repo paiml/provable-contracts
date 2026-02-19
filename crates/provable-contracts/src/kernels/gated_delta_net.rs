@@ -49,8 +49,7 @@ pub fn gdn_recurrence_scalar(
         let b = beta[t];
         for i in 0..k_dim {
             for j in 0..v_dim {
-                s[i * v_dim + j] = a * s[i * v_dim + j]
-                    + b * k[t * k_dim + i] * v[t * v_dim + j];
+                s[i * v_dim + j] = a * s[i * v_dim + j] + b * k[t * k_dim + i] * v[t * v_dim + j];
             }
         }
 
@@ -209,7 +208,17 @@ mod tests {
         let beta = [1.0_f32; 3];
         let mut output = [0.0_f32; 6];
 
-        gdn_recurrence_scalar(&q, &k, &v, &alpha, &beta, seq_len, k_dim, v_dim, &mut output);
+        gdn_recurrence_scalar(
+            &q,
+            &k,
+            &v,
+            &alpha,
+            &beta,
+            seq_len,
+            k_dim,
+            v_dim,
+            &mut output,
+        );
 
         // t=0: S = [[2,3],[0,0]], o = [1,0]*S = [2, 3]
         assert!((output[0] - 2.0).abs() < 1e-6, "t=0,j=0: {}", output[0]);
@@ -237,7 +246,17 @@ mod tests {
         let beta = [0.0_f32; 4];
         let mut output = vec![0.0_f32; seq_len * v_dim];
 
-        gdn_recurrence_scalar(&q, &k, &v, &alpha, &beta, seq_len, k_dim, v_dim, &mut output);
+        gdn_recurrence_scalar(
+            &q,
+            &k,
+            &v,
+            &alpha,
+            &beta,
+            seq_len,
+            k_dim,
+            v_dim,
+            &mut output,
+        );
 
         for (idx, &o) in output.iter().enumerate() {
             assert!(o.abs() < 1e-7, "output[{idx}] should be 0, got {o}");
@@ -269,8 +288,15 @@ mod tests {
     fn test_gdn_q_mismatch() {
         let mut output = [0.0_f32; 4];
         gdn_recurrence_scalar(
-            &[1.0; 3], &[1.0; 4], &[1.0; 4], &[1.0; 2], &[1.0; 2],
-            2, 2, 2, &mut output,
+            &[1.0; 3],
+            &[1.0; 4],
+            &[1.0; 4],
+            &[1.0; 2],
+            &[1.0; 2],
+            2,
+            2,
+            2,
+            &mut output,
         );
     }
 
@@ -288,16 +314,40 @@ mod tests {
         let k_dim = 3;
         let v_dim = 2;
         let q: Vec<f32> = (0..seq_len * k_dim).map(|i| (i as f32) * 0.1).collect();
-        let k: Vec<f32> = (0..seq_len * k_dim).map(|i| (i as f32) * 0.2 + 0.1).collect();
-        let v: Vec<f32> = (0..seq_len * v_dim).map(|i| (i as f32) * 0.3 - 0.5).collect();
+        let k: Vec<f32> = (0..seq_len * k_dim)
+            .map(|i| (i as f32) * 0.2 + 0.1)
+            .collect();
+        let v: Vec<f32> = (0..seq_len * v_dim)
+            .map(|i| (i as f32) * 0.3 - 0.5)
+            .collect();
         let alpha = [0.9_f32, 0.8, 0.7, 0.6];
         let beta = [0.1_f32, 0.2, 0.3, 0.4];
         let mut scalar_out = vec![0.0_f32; seq_len * v_dim];
         let mut avx2_out = vec![0.0_f32; seq_len * v_dim];
 
-        gdn_recurrence_scalar(&q, &k, &v, &alpha, &beta, seq_len, k_dim, v_dim, &mut scalar_out);
+        gdn_recurrence_scalar(
+            &q,
+            &k,
+            &v,
+            &alpha,
+            &beta,
+            seq_len,
+            k_dim,
+            v_dim,
+            &mut scalar_out,
+        );
         unsafe {
-            gdn_recurrence_avx2(&q, &k, &v, &alpha, &beta, seq_len, k_dim, v_dim, &mut avx2_out);
+            gdn_recurrence_avx2(
+                &q,
+                &k,
+                &v,
+                &alpha,
+                &beta,
+                seq_len,
+                k_dim,
+                v_dim,
+                &mut avx2_out,
+            );
         }
 
         assert_ulp_eq(&scalar_out, &avx2_out, 0);
@@ -310,7 +360,10 @@ mod tests {
     #[test]
     fn test_gdn_ptx_version() {
         let ptx = gdn_recurrence_ptx();
-        assert!(ptx.contains(".version 8.5"), "PTX must declare .version 8.5");
+        assert!(
+            ptx.contains(".version 8.5"),
+            "PTX must declare .version 8.5"
+        );
     }
 
     #[test]
@@ -322,7 +375,10 @@ mod tests {
     #[test]
     fn test_gdn_ptx_entry() {
         let ptx = gdn_recurrence_ptx();
-        assert!(ptx.contains(".entry gdn_recurrence_kernel"), "PTX must have .entry");
+        assert!(
+            ptx.contains(".entry gdn_recurrence_kernel"),
+            "PTX must have .entry"
+        );
     }
 
     #[test]
@@ -336,6 +392,9 @@ mod tests {
         let ptx = gdn_recurrence_ptx();
         let opens = ptx.chars().filter(|&c| c == '{').count();
         let closes = ptx.chars().filter(|&c| c == '}').count();
-        assert_eq!(opens, closes, "PTX must have balanced braces: {opens} opens vs {closes} closes");
+        assert_eq!(
+            opens, closes,
+            "PTX must have balanced braces: {opens} opens vs {closes} closes"
+        );
     }
 }

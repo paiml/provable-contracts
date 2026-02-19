@@ -53,9 +53,7 @@ pub fn silu_scalar(input: &[f32], output: &mut [f32]) {
 // ────────────────────────────────────────────────────────────────────────────
 
 #[cfg(target_arch = "x86_64")]
-use std::arch::x86_64::{
-    _mm256_loadu_ps, _mm256_max_ps, _mm256_setzero_ps, _mm256_storeu_ps,
-};
+use std::arch::x86_64::{_mm256_loadu_ps, _mm256_max_ps, _mm256_setzero_ps, _mm256_storeu_ps};
 
 /// AVX2 `ReLU`: `_mm256_max_ps(x, zero)` with scalar tail.
 ///
@@ -292,8 +290,8 @@ DONE:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::*;
     use proptest::prelude::*;
 
     // ── ReLU known-answer tests ──────────────────────────────────────────
@@ -333,7 +331,11 @@ mod tests {
         let input = [0.0f32];
         let mut output = vec![0.0f32; 1];
         gelu_scalar(&input, &mut output);
-        assert!((output[0]).abs() < 1e-7, "GELU(0) should be 0, got {}", output[0]);
+        assert!(
+            (output[0]).abs() < 1e-7,
+            "GELU(0) should be 0, got {}",
+            output[0]
+        );
     }
 
     #[test]
@@ -369,7 +371,11 @@ mod tests {
         let input = [0.0f32];
         let mut output = vec![0.0f32; 1];
         silu_scalar(&input, &mut output);
-        assert!((output[0]).abs() < 1e-7, "SiLU(0) should be 0, got {}", output[0]);
+        assert!(
+            (output[0]).abs() < 1e-7,
+            "SiLU(0) should be 0, got {}",
+            output[0]
+        );
     }
 
     #[test]
@@ -516,7 +522,10 @@ mod tests {
         assert!(ptx.contains("ret;"), "missing ret instruction");
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 
     #[test]
@@ -529,7 +538,10 @@ mod tests {
         assert!(ptx.contains("ex2.approx.f32"), "missing ex2.approx for exp");
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 
     #[test]
@@ -542,7 +554,10 @@ mod tests {
         assert!(ptx.contains("ex2.approx.f32"), "missing ex2.approx for exp");
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 
     #[test]

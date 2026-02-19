@@ -27,8 +27,16 @@ pub fn abs_position_scalar(
     dim: usize,
     output: &mut [f32],
 ) {
-    assert_eq!(token_embed.len(), seq_len * dim, "token_embed dimension mismatch");
-    assert_eq!(pos_embed.len(), max_pos * dim, "pos_embed dimension mismatch");
+    assert_eq!(
+        token_embed.len(),
+        seq_len * dim,
+        "token_embed dimension mismatch"
+    );
+    assert_eq!(
+        pos_embed.len(),
+        max_pos * dim,
+        "pos_embed dimension mismatch"
+    );
     assert_eq!(output.len(), seq_len * dim, "output dimension mismatch");
     assert!(
         seq_len <= max_pos,

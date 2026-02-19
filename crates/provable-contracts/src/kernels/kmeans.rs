@@ -395,9 +395,7 @@ mod tests {
         if !is_x86_feature_detected!("avx2") {
             return;
         }
-        let points = [
-            1.0_f32, 1.0, 9.0, 9.0, 0.5, 0.5, 10.0, 10.0,
-        ];
+        let points = [1.0_f32, 1.0, 9.0, 9.0, 0.5, 0.5, 10.0, 10.0];
         let centroids = [0.0_f32, 0.0, 10.0, 10.0];
         let mut asg_s = [0_u32; 4];
         let mut asg_a = [0_u32; 4];
@@ -417,7 +415,10 @@ mod tests {
     #[test]
     fn test_kmeans_assign_ptx_version() {
         let ptx = kmeans_assign_ptx();
-        assert!(ptx.contains(".version 8.5"), "PTX must declare .version 8.5");
+        assert!(
+            ptx.contains(".version 8.5"),
+            "PTX must declare .version 8.5"
+        );
     }
 
     #[test]
@@ -429,7 +430,10 @@ mod tests {
     #[test]
     fn test_kmeans_assign_ptx_entry() {
         let ptx = kmeans_assign_ptx();
-        assert!(ptx.contains(".entry kmeans_assign_kernel"), "PTX must have .entry");
+        assert!(
+            ptx.contains(".entry kmeans_assign_kernel"),
+            "PTX must have .entry"
+        );
     }
 
     #[test]
@@ -443,13 +447,19 @@ mod tests {
         let ptx = kmeans_assign_ptx();
         let opens = ptx.chars().filter(|&c| c == '{').count();
         let closes = ptx.chars().filter(|&c| c == '}').count();
-        assert_eq!(opens, closes, "PTX must have balanced braces: {opens} opens vs {closes} closes");
+        assert_eq!(
+            opens, closes,
+            "PTX must have balanced braces: {opens} opens vs {closes} closes"
+        );
     }
 
     #[test]
     fn test_kmeans_update_ptx_version() {
         let ptx = kmeans_update_ptx();
-        assert!(ptx.contains(".version 8.5"), "PTX must declare .version 8.5");
+        assert!(
+            ptx.contains(".version 8.5"),
+            "PTX must declare .version 8.5"
+        );
     }
 
     #[test]
@@ -461,7 +471,10 @@ mod tests {
     #[test]
     fn test_kmeans_update_ptx_entry() {
         let ptx = kmeans_update_ptx();
-        assert!(ptx.contains(".entry kmeans_update_kernel"), "PTX must have .entry");
+        assert!(
+            ptx.contains(".entry kmeans_update_kernel"),
+            "PTX must have .entry"
+        );
     }
 
     #[test]
@@ -475,6 +488,9 @@ mod tests {
         let ptx = kmeans_update_ptx();
         let opens = ptx.chars().filter(|&c| c == '{').count();
         let closes = ptx.chars().filter(|&c| c == '}').count();
-        assert_eq!(opens, closes, "PTX must have balanced braces: {opens} opens vs {closes} closes");
+        assert_eq!(
+            opens, closes,
+            "PTX must have balanced braces: {opens} opens vs {closes} closes"
+        );
     }
 }

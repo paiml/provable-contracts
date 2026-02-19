@@ -72,9 +72,24 @@ pub fn gqa_scalar(
     let k_total = num_kv_heads * seq_len * d_k;
     let v_total = num_kv_heads * seq_len * d_v;
     let o_total = num_heads * seq_len * d_v;
-    assert_eq!(q.len(), q_total, "Q dimension mismatch: expected {q_total} got {}", q.len());
-    assert_eq!(k.len(), k_total, "K dimension mismatch: expected {k_total} got {}", k.len());
-    assert_eq!(v.len(), v_total, "V dimension mismatch: expected {v_total} got {}", v.len());
+    assert_eq!(
+        q.len(),
+        q_total,
+        "Q dimension mismatch: expected {q_total} got {}",
+        q.len()
+    );
+    assert_eq!(
+        k.len(),
+        k_total,
+        "K dimension mismatch: expected {k_total} got {}",
+        k.len()
+    );
+    assert_eq!(
+        v.len(),
+        v_total,
+        "V dimension mismatch: expected {v_total} got {}",
+        v.len()
+    );
     assert_eq!(
         output.len(),
         o_total,
@@ -354,9 +369,9 @@ EXIT:
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::super::ops::{patterned_floats, sequential_floats};
     use super::super::ulp::assert_ulp_eq;
-    use super::super::ops::{sequential_floats, patterned_floats};
+    use super::*;
     use proptest::prelude::*;
 
     // ── MHA equivalence (num_heads == num_kv_heads) ─────────────────────
@@ -376,7 +391,17 @@ mod tests {
         let v = sequential_floats(num_kv_heads * seq_len * d_v, 0.2);
         let mut output = vec![0.0f32; num_heads * seq_len * d_v];
 
-        gqa_scalar(&q, &k, &v, seq_len, d_k, d_v, num_heads, num_kv_heads, &mut output);
+        gqa_scalar(
+            &q,
+            &k,
+            &v,
+            seq_len,
+            d_k,
+            d_v,
+            num_heads,
+            num_kv_heads,
+            &mut output,
+        );
 
         // Verify by computing each head independently
         for h in 0..num_heads {
@@ -396,11 +421,7 @@ mod tests {
                 &mut expected,
             );
 
-            assert_ulp_eq(
-                &output[o_start..o_start + seq_len * d_v],
-                &expected,
-                0,
-            );
+            assert_ulp_eq(&output[o_start..o_start + seq_len * d_v], &expected, 0);
         }
     }
 
@@ -420,7 +441,17 @@ mod tests {
         let v = sequential_floats(num_kv_heads * seq_len * d_v, 0.15);
         let mut output = vec![0.0f32; num_heads * seq_len * d_v];
 
-        gqa_scalar(&q, &k, &v, seq_len, d_k, d_v, num_heads, num_kv_heads, &mut output);
+        gqa_scalar(
+            &q,
+            &k,
+            &v,
+            seq_len,
+            d_k,
+            d_v,
+            num_heads,
+            num_kv_heads,
+            &mut output,
+        );
 
         // Verify: heads 0 and 1 use kv_head=0, heads 2 and 3 use kv_head=1
         let head_stride_o = seq_len * d_v;
@@ -432,8 +463,8 @@ mod tests {
         let mut head1_ref = vec![0.0f32; seq_len * d_v];
         single_head_attention(
             &q[0..seq_len * d_k],
-            &k[0..seq_len * d_k],  // kv head 0
-            &v[0..seq_len * d_v],  // kv head 0
+            &k[0..seq_len * d_k], // kv head 0
+            &v[0..seq_len * d_v], // kv head 0
             seq_len,
             d_k,
             d_v,
@@ -441,8 +472,8 @@ mod tests {
         );
         single_head_attention(
             &q[seq_len * d_k..2 * seq_len * d_k],
-            &k[0..seq_len * d_k],  // kv head 0 (shared)
-            &v[0..seq_len * d_v],  // kv head 0 (shared)
+            &k[0..seq_len * d_k], // kv head 0 (shared)
+            &v[0..seq_len * d_v], // kv head 0 (shared)
             seq_len,
             d_k,
             d_v,
@@ -457,8 +488,8 @@ mod tests {
         let mut head3_ref = vec![0.0f32; seq_len * d_v];
         single_head_attention(
             &q[2 * seq_len * d_k..3 * seq_len * d_k],
-            &k[seq_len * d_k..2 * seq_len * d_k],  // kv head 1
-            &v[seq_len * d_v..2 * seq_len * d_v],  // kv head 1
+            &k[seq_len * d_k..2 * seq_len * d_k], // kv head 1
+            &v[seq_len * d_v..2 * seq_len * d_v], // kv head 1
             seq_len,
             d_k,
             d_v,
@@ -466,8 +497,8 @@ mod tests {
         );
         single_head_attention(
             &q[3 * seq_len * d_k..4 * seq_len * d_k],
-            &k[seq_len * d_k..2 * seq_len * d_k],  // kv head 1
-            &v[seq_len * d_v..2 * seq_len * d_v],  // kv head 1
+            &k[seq_len * d_k..2 * seq_len * d_k], // kv head 1
+            &v[seq_len * d_v..2 * seq_len * d_v], // kv head 1
             seq_len,
             d_k,
             d_v,
@@ -494,7 +525,17 @@ mod tests {
         let v = vec![2.0, 3.0, 4.0];
         let mut output = vec![0.0f32; d_v];
 
-        gqa_scalar(&q, &k, &v, seq_len, d_k, d_v, num_heads, num_kv_heads, &mut output);
+        gqa_scalar(
+            &q,
+            &k,
+            &v,
+            seq_len,
+            d_k,
+            d_v,
+            num_heads,
+            num_kv_heads,
+            &mut output,
+        );
 
         // Single query, single key: softmax of single score = 1.0, output = V
         assert_ulp_eq(&output, &v, 0);
@@ -605,9 +646,29 @@ mod tests {
         let mut scalar_out = vec![0.0f32; num_heads * seq_len * d_v];
         let mut avx2_out = vec![0.0f32; num_heads * seq_len * d_v];
 
-        gqa_scalar(&q, &k, &v, seq_len, d_k, d_v, num_heads, num_kv_heads, &mut scalar_out);
+        gqa_scalar(
+            &q,
+            &k,
+            &v,
+            seq_len,
+            d_k,
+            d_v,
+            num_heads,
+            num_kv_heads,
+            &mut scalar_out,
+        );
         unsafe {
-            gqa_avx2(&q, &k, &v, seq_len, d_k, d_v, num_heads, num_kv_heads, &mut avx2_out);
+            gqa_avx2(
+                &q,
+                &k,
+                &v,
+                seq_len,
+                d_k,
+                d_v,
+                num_heads,
+                num_kv_heads,
+                &mut avx2_out,
+            );
         }
 
         assert_ulp_eq(&scalar_out, &avx2_out, 8);
@@ -624,11 +685,17 @@ mod tests {
         assert!(ptx.contains("ret;"), "missing ret instruction");
         assert!(ptx.contains(".shared"), "missing shared memory declaration");
         assert!(ptx.contains("bar.sync"), "missing barrier synchronization");
-        assert!(ptx.contains("div.u32"), "missing integer division for head mapping");
+        assert!(
+            ptx.contains("div.u32"),
+            "missing integer division for head mapping"
+        );
         assert!(ptx.contains("ex2.approx.f32"), "missing exp approximation");
         let open = ptx.matches('{').count();
         let close = ptx.matches('}').count();
-        assert_eq!(open, close, "unbalanced braces: {open} open vs {close} close");
+        assert_eq!(
+            open, close,
+            "unbalanced braces: {open} open vs {close} close"
+        );
     }
 
     #[test]
