@@ -966,11 +966,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Sampling algorithms kernel (GH-6)
-  status: planned
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-02-19T14:37:55Z
-  updated: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T15:23:57.606065498+00:00
   spec: null
   acceptance_criteria:
   - Implement sampling.rs for existing sampling-algorithms-v1.yaml
