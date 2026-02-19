@@ -64,6 +64,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | pagerank_iterate | avx2 | `pagerank_iterate_avx2` |
+| pagerank_iterate | ptx | `pagerank_ptx` |
 | pagerank_iterate | scalar | `pagerank_iterate_scalar` |
 
 ## Falsification Tests

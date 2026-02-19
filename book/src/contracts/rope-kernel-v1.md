@@ -47,6 +47,14 @@ $$
 2. **compute_sincos**: Compute cos(m·θ_k) and sin(m·θ_k) — *cos²+sin² = 1 within precision*
 3. **rotate_pairs**: Apply 2D rotation to each (x_{2k}, x_{2k+1}) pair — *pair norm preserved*
 
+## SIMD Dispatch
+
+| Kernel | ISA | Target |
+|--------|-----|--------|
+| rope | avx2 | `rope_avx2` |
+| rope | ptx | `rope_ptx` |
+| rope | scalar | `rope_scalar` |
+
 ## Falsification Tests
 
 | ID | Rule | Prediction | If Fails |

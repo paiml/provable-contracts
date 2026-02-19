@@ -56,6 +56,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | rmsnorm | avx2 | `rmsnorm_avx2` |
+| rmsnorm | ptx | `rmsnorm_ptx` |
 | rmsnorm | scalar | `rmsnorm_scalar` |
 
 ## Falsification Tests

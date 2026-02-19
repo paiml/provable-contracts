@@ -107,6 +107,14 @@ $$
 | 4 | invariant | L2 norm preserves direction | $L2(q) / \|\|L2(q)\|\| \approx q / \|\|q\|\|$ |
 | 5 | equivalence | SIMD matches scalar within ULP |  |
 
+## SIMD Dispatch
+
+| Kernel | ISA | Target |
+|--------|-----|--------|
+| gated_delta_net | avx2 | `gdn_recurrence_avx2` |
+| gated_delta_net | ptx | `gated_delta_net_ptx` |
+| gated_delta_net | scalar | `gdn_recurrence_scalar` |
+
 ## Falsification Tests
 
 | ID | Rule | Prediction | If Fails |

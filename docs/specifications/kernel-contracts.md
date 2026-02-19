@@ -62,7 +62,7 @@ Uncontracted kernels are technical debt.
 
 The extraction methodology converts a paper's mathematical claims into
 a falsifiable contract. This is Phase 1 (Extract) and Phase 2 (Specify)
-of the six-phase pipeline.
+of the seven-phase pipeline.
 
 ### 2.1 Identification: Finding Contractable Kernels
 
@@ -295,7 +295,7 @@ Every kernel contract follows this structure:
 | Papers | Hendrycks & Gimpel (2016), Ramachandran (2017), Nair & Hinton (2010) |
 | Equations | GELU, SiLU/Swish, ReLU (3 equations) |
 | Obligations | 6 (3 invariant, 1 bound, 1 monotonicity, 1 equivalence) |
-| Falsification | 5 tests (GELU zero, GELU approx, SiLU zero, ReLU, SIMD) |
+| Falsification | 6 tests (GELU zero, GELU approx, SiLU zero, ReLU, SIMD, boundary) |
 | Kani | 2 harnesses (ReLU non-negative, ReLU monotonic) |
 | Key invariant | `ReLU(x) ≥ 0` (non-negativity, exhaustively provable) |
 | SIMD tolerance | 4 ULP |
@@ -307,7 +307,7 @@ Every kernel contract follows this structure:
 | Papers | Vaswani et al. (2017) |
 | Equation | `Attention(Q,K,V) = softmax(QK^T/√d_k)·V` |
 | Obligations | 5 (2 invariant, 1 bound, 1 equivalence, 1 invariant) |
-| Falsification | 4 tests (weight normalization, convexity, scaling, SIMD) |
+| Falsification | 5 tests (weight normalization, convexity, scaling, SIMD, boundary) |
 | Kani | 1 harness (weight normalization) |
 | Key invariant | Each output row is a convex combination of V rows |
 | SIMD tolerance | 8 ULP |
@@ -457,34 +457,37 @@ enforcement. Each fusion entry records:
 
 #### Binding Registry (`contracts/aprender/binding.yaml`)
 
-Maps each contract equation to the aprender function that implements it:
+Maps each contract equation to the aprender function that implements it.
+These paths reference functions in the **aprender** crate (external),
+not in this repository. The binding registry at
+`contracts/aprender/binding.yaml` tracks the mapping.
 
-| Contract | Equation | aprender Path | Status |
+| Contract | Equation | aprender Function | Status |
 |---|---|---|---|
-| softmax-kernel-v1 | softmax | `nn::functional::softmax` | Implemented |
-| rmsnorm-kernel-v1 | rmsnorm | `nn::RMSNorm::forward` | Implemented |
-| rope-kernel-v1 | rope | `nn::RotaryPositionEmbedding::apply` | Implemented |
-| activation-kernel-v1 | gelu | `nn::functional::gelu` | Implemented |
-| activation-kernel-v1 | relu | `nn::functional::relu` | Implemented |
+| softmax-kernel-v1 | softmax | aprender softmax | Implemented |
+| rmsnorm-kernel-v1 | rmsnorm | aprender RMSNorm forward | Implemented |
+| rope-kernel-v1 | rope | aprender RotaryPositionEmbedding apply | Implemented |
+| activation-kernel-v1 | gelu | aprender gelu | Implemented |
+| activation-kernel-v1 | relu | aprender relu | Implemented |
 | activation-kernel-v1 | silu | — | Not implemented |
-| attention-kernel-v1 | attention | `nn::transformer::scaled_dot_product_attention` | Partial |
-| matmul-kernel-v1 | matmul | `autograd::Tensor::matmul` | Implemented |
+| attention-kernel-v1 | attention | aprender scaled_dot_product_attention | Partial |
+| matmul-kernel-v1 | matmul | aprender Tensor matmul | Implemented |
 | matmul-kernel-v1 | quantized_dot | — | Not implemented |
 | flash-attention-v1 | flash_attention | — | Not implemented |
-| swiglu-kernel-v1 | swiglu | `models::qwen2::swiglu` | Partial |
-| swiglu-kernel-v1 | silu_gate | `nn::functional::silu` | Partial |
-| gqa-kernel-v1 | gqa | `nn::transformer::grouped_query_attention` | Partial |
-| gqa-kernel-v1 | kv_broadcast | `nn::transformer::kv_head_broadcast` | Partial |
-| layernorm-kernel-v1 | layernorm | `nn::LayerNorm::forward` | Implemented |
-| layernorm-kernel-v1 | statistics | `nn::LayerNorm::compute_stats` | Implemented |
+| swiglu-kernel-v1 | swiglu | aprender swiglu | Partial |
+| swiglu-kernel-v1 | silu_gate | aprender silu | Partial |
+| gqa-kernel-v1 | gqa | aprender grouped_query_attention | Partial |
+| gqa-kernel-v1 | kv_broadcast | aprender kv_head_broadcast | Partial |
+| layernorm-kernel-v1 | layernorm | aprender LayerNorm forward | Implemented |
+| layernorm-kernel-v1 | statistics | aprender LayerNorm compute_stats | Implemented |
 | silu-kernel-v1 | silu | — | Not implemented |
 | silu-kernel-v1 | sigmoid | — | Not implemented |
-| cross-entropy-kernel-v1 | cross_entropy | `nn::CrossEntropyLoss::forward` | Implemented |
-| cross-entropy-kernel-v1 | log_softmax | `nn::functional::log_softmax` | Implemented |
-| adamw-kernel-v1 | adam_moments | `nn::optim::AdamW::step` | Implemented |
-| adamw-kernel-v1 | bias_correction | `nn::optim::AdamW::step` | Implemented |
-| adamw-kernel-v1 | adam_variance | `nn::optim::AdamW::step` | Implemented |
-| adamw-kernel-v1 | weight_update | `nn::optim::AdamW::step` | Implemented |
+| cross-entropy-kernel-v1 | cross_entropy | aprender CrossEntropyLoss forward | Implemented |
+| cross-entropy-kernel-v1 | log_softmax | aprender log_softmax | Implemented |
+| adamw-kernel-v1 | adam_moments | aprender AdamW step | Implemented |
+| adamw-kernel-v1 | bias_correction | aprender AdamW step | Implemented |
+| adamw-kernel-v1 | adam_variance | aprender AdamW step | Implemented |
+| adamw-kernel-v1 | weight_update | aprender AdamW step | Implemented |
 
 **Coverage:** 13/24 equations implemented, 9/24 fully bound.
 
@@ -714,11 +717,11 @@ LayerNorm (`layernorm-kernel-v1.yaml`), GroupedQueryAttention (`gqa-kernel-v1.ya
 CMA-ES (`cma-es-kernel-v1.yaml`), BatchNorm (`batchnorm-kernel-v1.yaml`),
 PageRank (`pagerank-kernel-v1.yaml`), SSM (`ssm-kernel-v1.yaml`), Conv1d (`conv1d-kernel-v1.yaml`).
 
-| Function | Module | Paper | Notes |
+| Function | Target Module (planned) | Paper | Notes |
 |---|---|---|---|
-| Cholesky solve | `linear_model` | — | Positive-definiteness check |
-| ARIMA | `time_series::arima` | Box & Jenkins (1976) | Stationarity |
-| Differential Evolution | `metaheuristics::de` | Storn & Price (1997) | Population bounds |
+| Cholesky solve | linear_model (planned) | — | Positive-definiteness check |
+| ARIMA | time_series (planned) | Box & Jenkins (1976) | Stationarity |
+| Differential Evolution | metaheuristics (planned) | Storn & Price (1997) | Population bounds |
 
 ### 8.2 Coverage by Architecture Class
 
@@ -754,11 +757,19 @@ output, the root cause is almost always a kernel bug:
 
 ## 9. Planned Contracts
 
-All planned contracts have been implemented. See Section 5.1 (Tier 1/2) and Section 5.3 (Tier 3) for details.
+All planned contracts have been implemented. The files
+`contracts/swiglu-kernel-v1.yaml`, `contracts/gqa-kernel-v1.yaml`,
+`contracts/layernorm-kernel-v1.yaml`, `contracts/silu-kernel-v1.yaml`,
+`contracts/cross-entropy-kernel-v1.yaml`, `contracts/adamw-kernel-v1.yaml`,
+`contracts/ssm-kernel-v1.yaml`, `contracts/conv1d-kernel-v1.yaml`,
+`contracts/batchnorm-kernel-v1.yaml`, `contracts/kmeans-kernel-v1.yaml`,
+`contracts/pagerank-kernel-v1.yaml`, `contracts/lbfgs-kernel-v1.yaml`,
+and `contracts/cma-es-kernel-v1.yaml` all exist on disk.
 
 ### 9.1 Immediate (close gap for Class A/B architectures) — COMPLETED
 
-All three Tier 1 contracts implemented: `swiglu-kernel-v1.yaml`, `gqa-kernel-v1.yaml`, `layernorm-kernel-v1.yaml`.
+All three Tier 1 contracts exist: the files `contracts/swiglu-kernel-v1.yaml`,
+`contracts/gqa-kernel-v1.yaml`, and `contracts/layernorm-kernel-v1.yaml` are present.
 
 #### `swiglu-kernel-v1.yaml`
 
@@ -805,7 +816,8 @@ Obligations:
 
 ### 9.2 Near-term (Tier 2 compound kernels) — COMPLETED
 
-All three Tier 2 contracts implemented: `silu-kernel-v1.yaml`, `cross-entropy-kernel-v1.yaml`, `adamw-kernel-v1.yaml`.
+All three Tier 2 contracts exist: the files `contracts/silu-kernel-v1.yaml`,
+`contracts/cross-entropy-kernel-v1.yaml`, and `contracts/adamw-kernel-v1.yaml` are present.
 
 #### `silu-kernel-v1.yaml`
 
@@ -848,9 +860,10 @@ Obligations:
 
 ### 9.3 Future (Tier 3 — classical ML and special kernels) — COMPLETED
 
-All seven Tier 3 contracts implemented: `ssm-kernel-v1.yaml`, `conv1d-kernel-v1.yaml`,
-`batchnorm-kernel-v1.yaml`, `kmeans-kernel-v1.yaml`, `pagerank-kernel-v1.yaml`,
-`lbfgs-kernel-v1.yaml`, `cma-es-kernel-v1.yaml`.
+All seven Tier 3 contracts exist: the files `contracts/ssm-kernel-v1.yaml`,
+`contracts/conv1d-kernel-v1.yaml`, `contracts/batchnorm-kernel-v1.yaml`,
+`contracts/kmeans-kernel-v1.yaml`, `contracts/pagerank-kernel-v1.yaml`,
+`contracts/lbfgs-kernel-v1.yaml`, and `contracts/cma-es-kernel-v1.yaml` are present.
 
 | Contract | Paper | Status |
 |---|---|---|
@@ -939,8 +952,8 @@ metadata:
    cases (zero input, identity element).
 
 4. **Choose obligation types.** Map each invariant to a proof
-   obligation type. Every contract MUST have at least one `equivalence`
-   obligation (SIMD parity).
+   obligation type. Kernel contracts with SIMD dispatch SHOULD have
+   at least one `equivalence` obligation for SIMD parity.
 
 5. **Set tolerances.** Use:
    - 1e-6 for exact properties (normalization, non-negativity)

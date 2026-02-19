@@ -78,6 +78,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | kmeans_assign | avx2 | `kmeans_assign_avx2` |
+| kmeans_assign | ptx | `kmeans_ptx` |
 | kmeans_assign | scalar | `kmeans_assign_scalar` |
 
 ## Falsification Tests

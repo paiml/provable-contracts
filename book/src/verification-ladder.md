@@ -7,8 +7,9 @@ practically possible.
 ```
 Level   Method                  Tool            What it proves
 ─────   ──────                  ────            ──────────────
-  5     Mathematical proof      Lean/Coq        True for ALL inputs. Period.
-                                                (out of scope for this project)
+  5     Mathematical proof      Lean 4 ←──────  True for ALL inputs. Period.
+        (theorem proving)       + Mathlib       Unbounded. Unconditional.
+                                                Machine-checked.  ← PHASE 7
 
   4     Bounded model check     Kani ←────────  True for ALL inputs up to size N.
         (formal verification)                   Exhaustive. No sampling. ACTUAL PROOF
@@ -28,14 +29,14 @@ Level   Method                  Tool            What it proves
 
 ## Where Each Tool Lives
 
-| Obligation Type | Level 1 (Types) | Level 3 (probar) | Level 4 (Kani) |
-|----------------|-----------------|-------------------|-----------------|
-| Shape correctness | `ValidatedTensor` newtype | N/A (compile-time) | N/A (compile-time) |
-| Softmax sums to 1 | N/A | proptest random vectors | `#[kani::proof]` all vectors <= 16 |
-| SIMD = scalar | N/A | proptest random data | `#[kani::proof]` all data <= 256 |
-| No overflow | N/A | proptest edge cases | Kani automatic (checks ALL paths) |
-| Quantized bsums correct | N/A | proptest random blocks | `#[kani::proof]` all blocks (integer-exact) |
-| Format isolation | `#[test]` cross-format | N/A | `#[kani::proof]` + `#[kani::should_panic]` |
+| Obligation Type | Level 1 (Types) | Level 3 (probar) | Level 4 (Kani) | Level 5 (Lean) |
+|----------------|-----------------|-------------------|-----------------|----------------|
+| Shape correctness | `ValidatedTensor` newtype | N/A (compile-time) | N/A (compile-time) | N/A |
+| Softmax sums to 1 | N/A | proptest random vectors | `#[kani::proof]` all vectors <= 16 | `sorry` (pending) |
+| SIMD = scalar | N/A | proptest random data | `#[kani::proof]` all data <= 256 | N/A (empirical) |
+| No overflow | N/A | proptest edge cases | Kani automatic (checks ALL paths) | N/A |
+| Quantized bsums correct | N/A | proptest random blocks | `#[kani::proof]` all blocks (integer-exact) | N/A |
+| Format isolation | `#[test]` cross-format | N/A | `#[kani::proof]` + `#[kani::should_panic]` | N/A |
 
 ## The Provability Claim
 
@@ -46,7 +47,10 @@ When we say a kernel is "provable," we mean:
 3. **Level 4:** Kani has exhaustively verified the property for ALL inputs up
    to the kernel's natural bound (super-block size, SIMD width, etc.).
 
-This is not Level 5 (full mathematical proof in Lean/Coq). But for fixed-size
-kernel operations -- which is what ML inference IS -- bounded verification at
-the natural bound IS exhaustive. A Q4_K super-block is always 256 elements.
-Verifying for all 256-element inputs IS verifying for all inputs.
+For fixed-size kernel operations -- which is what ML inference IS -- bounded
+verification at the natural bound IS exhaustive. A Q4_K super-block is always
+256 elements. Verifying for all 256-element inputs IS verifying for all inputs.
+
+Phase 7 (Level 5) extends this to **unbounded proofs** via Lean 4 for
+algebraic identities like `Σ softmax(x)_i = 1` that hold regardless of vector
+length. See [Phase 7: Prove](./phase-7-prove.md) for details.

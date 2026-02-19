@@ -1,4 +1,4 @@
-# The Six-Phase Pipeline
+# The Seven-Phase Pipeline
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -50,7 +50,17 @@
 │  Kani explores ALL       kani::any() = symbolic (all possible)       │
 │  execution paths up      ↓                                          │
 │  to the kernel's         VERIFIED: property holds for ALL inputs     │
-│  natural bound.          within bound (Level 4: actual proof)        │
+│  natural bound.          within bound (Level 4: bounded proof)       │
+│                                                                     │
+│  Phase 7: PROVE          Kani proofs + YAML contracts                │
+│  ──────────────────      ↓                                          │
+│  Lift selected           Lean 4 theorem stubs (sorry)                │
+│  obligations into        ↓                                          │
+│  Lean 4 dependent        Machine-checked proofs over ℝ               │
+│  type theory.            ↓                                          │
+│  Prove unconditionally   PROVED: property holds for ALL inputs       │
+│  over mathematical       unconditionally (Level 5: unbounded proof)  │
+│  reals via Mathlib.                                                  │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -64,7 +74,10 @@
 | Scaffold | YAML contract | Rust trait + failing tests | `src/<name>/trait.rs`, `src/<name>/contract_tests.rs` |
 | Implement | Trait | Scalar + SIMD kernels | `src/<name>/scalar.rs`, `src/<name>/simd.rs` |
 | Falsify | Implementation | probar tests + certeza report | `src/<name>/probar_tests.rs` |
-| **Verify** | **Implementation** | **Kani proof harnesses + verification report** | **`src/<name>/kani_proofs.rs`** |
+| Verify | Implementation | Kani proof harnesses + verification report | `src/<name>/kani_proofs.rs` |
+| **Prove** | **YAML + Kani proofs** | **Lean 4 theorems (proved or sorry)** | **`lean/ProvableContracts/Theorems/<name>/`** |
 
 No phase is complete until its artifact is committed.
 **A contract is not "provable" until Phase 6 Kani harnesses pass.**
+Phase 7 Lean proofs are optional but provide the strongest guarantee:
+unbounded certainty over mathematical reals.

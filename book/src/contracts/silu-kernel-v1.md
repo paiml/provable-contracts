@@ -70,6 +70,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | silu | avx2 | `silu_avx2` |
+| silu | ptx | `silu_ptx` |
 | silu | scalar | `silu_scalar` |
 
 ## Falsification Tests

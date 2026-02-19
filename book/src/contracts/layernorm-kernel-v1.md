@@ -65,6 +65,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | layernorm | avx2 | `layernorm_avx2` |
+| layernorm | ptx | `layernorm_ptx` |
 | layernorm | scalar | `layernorm_scalar` |
 
 ## Falsification Tests

@@ -77,6 +77,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | swiglu | avx2 | `swiglu_avx2` |
+| swiglu | ptx | `swiglu_ptx` |
 | swiglu | scalar | `swiglu_scalar` |
 
 ## Falsification Tests

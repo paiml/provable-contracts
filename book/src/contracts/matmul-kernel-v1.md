@@ -65,6 +65,14 @@ $$
 2. **micro_kernel**: Compute C_tile += A_panel × B_panel — *Accumulation is exact (fused multiply-add)*
 3. **store_result**: Write tile results to output matrix — *No overlap in output tiles*
 
+## SIMD Dispatch
+
+| Kernel | ISA | Target |
+|--------|-----|--------|
+| matmul | avx2 | `matmul_avx2` |
+| matmul | ptx | `matmul_ptx` |
+| matmul | scalar | `matmul_scalar` |
+
 ## Falsification Tests
 
 | ID | Rule | Prediction | If Fails |

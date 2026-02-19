@@ -78,6 +78,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | batchnorm | avx2 | `batchnorm_avx2` |
+| batchnorm | ptx | `batchnorm_ptx` |
 | batchnorm | scalar | `batchnorm_scalar` |
 
 ## Falsification Tests
