@@ -104,6 +104,22 @@ enforcement:
     check: "contract_tests::FALSIFY-PP-001"
     severity: "ERROR"
 
+kani_harnesses:
+  - id: KANI-PP-001
+    obligation: PP-INV-001
+    property: "StandardScaler produces zero-mean output"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_standard_scaler_zero_mean
+  - id: KANI-PP-002
+    obligation: PP-BND-001
+    property: "MinMaxScaler output bounded in [min, max]"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_minmax_scaler_bounded
+
 qa_gate:
   id: F-PP-001
   name: "Preprocessing Normalization Contract"
@@ -115,5 +131,5 @@ qa_gate:
     - "minmax_extremes"
     - "standard_inverse"
     - "minmax_inverse"
-  pass_criteria: "All 6 falsification tests pass"
+  pass_criteria: "All 6 falsification tests pass + Kani harnesses verify"
   falsification: "Apply same mean/std to all features instead of per-feature"

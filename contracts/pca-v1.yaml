@@ -81,6 +81,22 @@ enforcement:
     check: "contract_tests::FALSIFY-PCA-002"
     severity: "ERROR"
 
+kani_harnesses:
+  - id: KANI-PCA-001
+    obligation: PCA-INV-001
+    property: "PCA output has correct dimensionality (n, k)"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_pca_dimensionality
+  - id: KANI-PCA-002
+    obligation: PCA-BND-001
+    property: "Explained variance ratios bounded in [0, 1]"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_explained_variance_bounded
+
 qa_gate:
   id: F-PCA-001
   name: "PCA Contract"
@@ -90,5 +106,5 @@ qa_gate:
     - "variance_bounded"
     - "variance_ordering"
     - "deterministic"
-  pass_criteria: "All 4 falsification tests pass"
+  pass_criteria: "All 4 falsification tests pass + Kani harnesses verify"
   falsification: "Sort eigenvalues ascending instead of descending"

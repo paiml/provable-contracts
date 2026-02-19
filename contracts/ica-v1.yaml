@@ -70,6 +70,15 @@ enforcement:
     check: "contract_tests::FALSIFY-ICA-001"
     severity: "ERROR"
 
+kani_harnesses:
+  - id: KANI-ICA-001
+    obligation: ICA-INV-001
+    property: "ICA output shape matches (n_samples, n_components)"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_ica_output_shape
+
 qa_gate:
   id: F-ICA-001
   name: "ICA Contract"
@@ -78,5 +87,5 @@ qa_gate:
     - "output_shape"
     - "deterministic"
     - "finite_output"
-  pass_criteria: "All 3 falsification tests pass"
+  pass_criteria: "All 3 falsification tests pass + Kani harnesses verify"
   falsification: "Skip whitening step or use wrong convergence criterion"

@@ -93,6 +93,22 @@ enforcement:
     check: "contract_tests::FALSIFY-NB-004"
     severity: "ERROR"
 
+kani_harnesses:
+  - id: KANI-NB-001
+    obligation: NB-INV-001
+    property: "Class priors sum to 1 after fit"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_prior_sum_to_one
+  - id: KANI-NB-002
+    obligation: NB-BND-001
+    property: "Each class prior bounded in (0, 1)"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_prior_bounded
+
 qa_gate:
   id: F-NB-001
   name: "Naive Bayes Contract"
@@ -103,5 +119,5 @@ qa_gate:
     - "prediction_in_classes"
     - "prediction_deterministic"
     - "separable_high_accuracy"
-  pass_criteria: "All 5 falsification tests pass"
+  pass_criteria: "All 5 falsification tests pass + Kani harnesses verify"
   falsification: "Use raw counts instead of normalized priors"
