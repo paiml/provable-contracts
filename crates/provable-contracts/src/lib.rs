@@ -20,6 +20,7 @@
 //! - [`graph`] — Contract dependency graph and cycle detection
 //! - [`latex`] — LaTeX conversion for contract math notation
 //! - [`book_gen`] — mdBook page generation for contracts
+//! - [`lean_gen`] — Lean 4 definition and theorem stub generation
 //! - [`kernels`] — Scalar, AVX2, and PTX kernel implementations
 
 pub mod audit;
@@ -33,6 +34,7 @@ pub mod generate;
 pub mod graph;
 pub mod kani_gen;
 pub mod kernels;
+pub mod lean_gen;
 pub mod latex;
 pub mod probar_gen;
 pub mod scaffold;

@@ -89,7 +89,7 @@ fn generate_obligation_test(out: &mut String, ob: &ProofObligation, index: usize
 
     // Body based on obligation type
     match ob.obligation_type {
-        ObligationType::Invariant => {
+        ObligationType::Completeness | ObligationType::Soundness | ObligationType::Invariant => {
             generate_invariant_body(out, ob);
         }
         ObligationType::Equivalence => {
@@ -150,6 +150,8 @@ fn obligation_pattern(ot: ObligationType) -> &'static str {
         ObligationType::Associativity => "(a ⊕ b) ⊕ c = a ⊕ (b ⊕ c) — grouping invariant",
         ObligationType::Conservation => "Q(before) = Q(after) — conserved quantity",
         ObligationType::Ordering => "a ≤ b → f(a) ≤ f(b) — order relation maintained",
+        ObligationType::Completeness => "∀ required elements present — completeness verified",
+        ObligationType::Soundness => "∀x: P(x) → Q(f(x)) — soundness of transformation",
     }
 }
 
