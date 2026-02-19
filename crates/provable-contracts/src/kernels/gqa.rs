@@ -156,7 +156,7 @@ include!("gqa_ptx.rs");
 
 #[cfg(test)]
 mod tests {
-    use super::super::ops::{patterned_floats, sequential_floats};
+    use super::super::ops::sequential_floats;
     use super::super::ulp::assert_ulp_eq;
     use super::*;
     use proptest::prelude::*;
