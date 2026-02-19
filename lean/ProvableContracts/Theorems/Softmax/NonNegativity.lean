@@ -17,9 +17,17 @@ namespace ProvableContracts.Softmax
 
 open Real Finset
 
--- Status: sorry (proof pending)
+-- Status: proved
+/-- Softmax outputs are strictly positive.
+    Follows from `exp > 0` and the denominator being a sum of positives. -/
 theorem softmax_pos {n : ℕ} (x : RVec n) (i : Fin n) :
     softmax x i > 0 := by
-  sorry
+  unfold softmax
+  apply div_pos
+  · exact Real.exp_pos (x i)
+  · apply Finset.sum_pos
+    · intro j _
+      exact Real.exp_pos (x j)
+    · exact univ_nonempty
 
 end ProvableContracts.Softmax
