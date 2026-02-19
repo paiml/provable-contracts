@@ -131,6 +131,12 @@ pv generate contracts/softmax-kernel-v1.yaml -o generated/
 
 # Dependency graph with topological order
 pv graph contracts/
+
+# Display equations (text)
+pv equations contracts/softmax-kernel-v1.yaml
+
+# Display equations (LaTeX)
+pv equations contracts/softmax-kernel-v1.yaml --format latex
 ```
 
 ## CLI Reference
@@ -147,6 +153,7 @@ pv graph contracts/
 | `coverage` | Cross-contract obligation coverage report            |
 | `generate` | End-to-end codegen (scaffold + kani + probar)        |
 | `graph`    | Dependency DAG with cycle detection + topo order     |
+| `equations`| Display equations (text or `--format latex`)         |
 
 ## Contract Registry
 
