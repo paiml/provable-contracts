@@ -779,3 +779,22 @@ roadmap:
   - documentation
   - book
   notes: null
+- id: PMAT-044
+  github_issue: null
+  item_type: task
+  title: Add match arm test coverage for CLI command dispatch
+  status: planned
+  priority: low
+  assigned_to: null
+  created: 2026-02-19T09:14:07Z
+  updated: 2026-02-19T09:14:07Z
+  spec: null
+  acceptance_criteria:
+  - Pre-existing untested match arms in equations.rs::from_str other, graph.rs::from_str other, and main.rs CLI dispatch variants
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - testing
+  - debt
+  notes: null
