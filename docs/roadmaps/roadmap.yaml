@@ -842,11 +842,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Phase 7 M1: Implement pv lean-status CLI command'
-  status: inprogress
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-02-19T13:06:21Z
-  updated: 2026-02-19T14:00:04.192852948+00:00
+  updated: 2026-02-19T14:00:34.961429822+00:00
   spec: null
   acceptance_criteria:
   - Implement pv lean-status [<contract.yaml> | <dir>] command. Tabular report of Lean proof status (proved/sorry/wip/n-a) per contract. Refs phase7-lean-integration spec.
