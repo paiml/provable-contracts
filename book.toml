@@ -7,6 +7,11 @@ src = "book/src"
 [build]
 build-dir = "book/html"
 
+[preprocessor.katex]
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
+
 [output.html]
 default-theme = "navy"
 git-repository-url = "https://github.com/paiml/provable-contracts"

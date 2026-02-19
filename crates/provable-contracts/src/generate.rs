@@ -6,6 +6,8 @@
 use std::path::{Path, PathBuf};
 
 use crate::binding::BindingRegistry;
+use crate::book_gen::generate_contract_page;
+use crate::graph::{dependency_graph, DependencyGraph};
 use crate::kani_gen::generate_kani_harnesses;
 use crate::probar_gen::{generate_probar_tests, generate_wired_probar_tests};
 use crate::scaffold::generate_trait;
@@ -38,6 +40,7 @@ pub enum ArtifactKind {
     KaniHarness,
     ProbarTest,
     WiredProbarTest,
+    BookPage,
 }
 
 impl std::fmt::Display for ArtifactKind {
@@ -47,6 +50,7 @@ impl std::fmt::Display for ArtifactKind {
             Self::KaniHarness => write!(f, "kani"),
             Self::ProbarTest => write!(f, "probar"),
             Self::WiredProbarTest => write!(f, "wired-probar"),
+            Self::BookPage => write!(f, "book-page"),
         }
     }
 }
@@ -119,7 +123,26 @@ pub fn generate_all(
         });
     }
 
+    // Book page (single-contract graph with just this contract)
+    let single_graph = build_single_contract_graph(contract, stem);
+    let book_content = generate_contract_page(contract, stem, &single_graph);
+    let book_path = output_dir.join(format!("{stem}_book.md"));
+    std::fs::write(&book_path, &book_content)?;
+    files.push(GeneratedFile {
+        relative_path: PathBuf::from(format!("{stem}_book.md")),
+        absolute_path: book_path,
+        kind: ArtifactKind::BookPage,
+        bytes: book_content.len(),
+    });
+
     Ok(GeneratedFiles { files })
+}
+
+/// Build a minimal dependency graph for a single contract.
+/// Used by `generate_all` when the full graph isn't available.
+fn build_single_contract_graph(contract: &Contract, stem: &str) -> DependencyGraph {
+    let refs = vec![(stem.to_string(), contract)];
+    dependency_graph(&refs)
 }
 
 #[cfg(test)]
@@ -159,7 +182,7 @@ kani_harnesses:
         let c = minimal_contract();
         let dir = tempfile::tempdir().unwrap();
         let result = generate_all(&c, "test-kernel-v1", dir.path(), None).unwrap();
-        assert_eq!(result.files.len(), 3);
+        assert_eq!(result.files.len(), 4);
         assert!(result.files.iter().any(|f| f.kind == ArtifactKind::Scaffold));
         assert!(result
             .files
@@ -169,6 +192,10 @@ kani_harnesses:
             .files
             .iter()
             .any(|f| f.kind == ArtifactKind::ProbarTest));
+        assert!(result
+            .files
+            .iter()
+            .any(|f| f.kind == ArtifactKind::BookPage));
         for f in &result.files {
             assert!(f.absolute_path.exists());
             assert!(f.bytes > 0);
@@ -194,7 +221,7 @@ bindings:
         .unwrap();
         let dir = tempfile::tempdir().unwrap();
         let result = generate_all(&c, "test-kernel-v1", dir.path(), Some(&binding)).unwrap();
-        assert_eq!(result.files.len(), 4);
+        assert_eq!(result.files.len(), 5);
         assert!(result
             .files
             .iter()
@@ -207,7 +234,7 @@ bindings:
         let dir = tempfile::tempdir().unwrap();
         let sub = dir.path().join("deep").join("nested");
         let result = generate_all(&c, "test-kernel-v1", &sub, None).unwrap();
-        assert_eq!(result.files.len(), 3);
+        assert_eq!(result.files.len(), 4);
         assert!(sub.exists());
     }
 
@@ -217,6 +244,7 @@ bindings:
         assert_eq!(ArtifactKind::KaniHarness.to_string(), "kani");
         assert_eq!(ArtifactKind::ProbarTest.to_string(), "probar");
         assert_eq!(ArtifactKind::WiredProbarTest.to_string(), "wired-probar");
+        assert_eq!(ArtifactKind::BookPage.to_string(), "book-page");
     }
 
     #[test]

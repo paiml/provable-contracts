@@ -8,6 +8,11 @@ fn contract_path(name: &str) -> std::path::PathBuf {
         .join(name)
 }
 
+/// Helper to get the contracts directory path.
+fn contracts_dir() -> std::path::PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts")
+}
+
 /// Helper to get the binding registry path.
 fn binding_path() -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts/aprender/binding.yaml")
@@ -715,16 +720,78 @@ falsification_tests:
     fn pv_graph_contracts() {
         let output = Command::new(pv_bin())
             .arg("graph")
-            .arg(
-                Path::new(env!("CARGO_MANIFEST_DIR"))
-                    .join("../../contracts"),
-            )
+            .arg(contracts_dir())
             .output()
             .expect("failed to run pv");
         assert!(output.status.success());
         let stdout = String::from_utf8_lossy(&output.stdout);
         assert!(stdout.contains("Contract Dependency Graph"));
         assert!(stdout.contains("Topological order"));
+    }
+
+    #[test]
+    fn pv_graph_dot() {
+        let output = Command::new(pv_bin())
+            .arg("graph")
+            .arg(contracts_dir())
+            .arg("--format")
+            .arg("dot")
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains("digraph contracts {"));
+        assert!(stdout.contains("rankdir=LR"));
+        assert!(stdout.contains("->"));
+        assert!(stdout.contains("}"));
+    }
+
+    #[test]
+    fn pv_graph_json() {
+        let output = Command::new(pv_bin())
+            .arg("graph")
+            .arg(contracts_dir())
+            .arg("--format")
+            .arg("json")
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains("\"nodes\""));
+        assert!(stdout.contains("\"edges\""));
+        assert!(stdout.contains("\"topo_order\""));
+        assert!(stdout.contains("\"cycles\""));
+        assert!(stdout.contains("\"from\""));
+        assert!(stdout.contains("\"to\""));
+    }
+
+    #[test]
+    fn pv_graph_mermaid() {
+        let output = Command::new(pv_bin())
+            .arg("graph")
+            .arg(contracts_dir())
+            .arg("--format")
+            .arg("mermaid")
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains("graph TD"));
+        assert!(stdout.contains("-->"));
+    }
+
+    #[test]
+    fn pv_graph_invalid_format() {
+        let output = Command::new(pv_bin())
+            .arg("graph")
+            .arg(contracts_dir())
+            .arg("--format")
+            .arg("xml")
+            .output()
+            .expect("failed to run pv");
+        assert!(!output.status.success());
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(stderr.contains("unknown format"));
     }
 
     #[test]
@@ -757,6 +824,61 @@ falsification_tests:
         assert!(stdout.contains("\\begin{equation}"));
         assert!(stdout.contains("\\end{equation}"));
         assert!(stdout.contains("\\begin{itemize}"));
+    }
+
+    #[test]
+    fn pv_equations_ptx() {
+        let output = Command::new(pv_bin())
+            .arg("equations")
+            .arg(super::contract_path("softmax-kernel-v1.yaml"))
+            .arg("--format")
+            .arg("ptx")
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains(".version 8.5"));
+        assert!(stdout.contains(".target sm_90"));
+        assert!(stdout.contains(".visible .entry softmax("));
+        assert!(stdout.contains("Phase 1: find_max"));
+        assert!(stdout.contains("Phase 4: normalize"));
+        assert!(stdout.contains("ret;"));
+    }
+
+    #[test]
+    fn pv_equations_asm() {
+        let output = Command::new(pv_bin())
+            .arg("equations")
+            .arg(super::contract_path("softmax-kernel-v1.yaml"))
+            .arg("--format")
+            .arg("asm")
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains(".intel_syntax noprefix"));
+        assert!(stdout.contains("softmax_avx2:"));
+        assert!(stdout.contains("AVX2"));
+        assert!(stdout.contains("ymm"));
+        assert!(stdout.contains("Phase 1: find_max"));
+        assert!(stdout.contains("ret"));
+    }
+
+    #[test]
+    fn pv_equations_ptx_no_kernel_structure() {
+        // model-config-algebra has no kernel_structure
+        let output = Command::new(pv_bin())
+            .arg("equations")
+            .arg(super::contract_path("model-config-algebra-v1.yaml"))
+            .arg("--format")
+            .arg("ptx")
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains(".visible .entry model_config_algebra("));
+        assert!(stdout.contains("// Equation:"));
+        assert!(stdout.contains("ret;"));
     }
 
     #[test]
