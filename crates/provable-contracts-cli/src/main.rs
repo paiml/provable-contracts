@@ -112,6 +112,18 @@ enum Commands {
         #[arg(default_value = "contracts")]
         path: PathBuf,
     },
+    /// Report hierarchical proof levels (L1–L5) across contracts
+    ProofStatus {
+        /// Path to a contract YAML file or directory of contracts
+        #[arg(default_value = "contracts")]
+        path: PathBuf,
+        /// Path to binding registry YAML (adds binding coverage)
+        #[arg(long)]
+        binding: Option<PathBuf>,
+        /// Output format: text (default) or json
+        #[arg(long, default_value = "text")]
+        format: String,
+    },
     /// Generate mdBook pages for contracts
     Book {
         /// Directory containing contract YAML files
@@ -169,6 +181,11 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             output_dir,
         } => commands::lean::run(&contract, output_dir.as_deref()),
         Commands::LeanStatus { path } => commands::lean_status::run(&path),
+        Commands::ProofStatus {
+            path,
+            binding,
+            format,
+        } => commands::proof_status::run(&path, binding.as_deref(), &format),
         Commands::Book {
             contract_dir,
             output,
@@ -266,6 +283,52 @@ mod tests {
             .join("../../contracts");
         let result = run_command(Commands::LeanStatus {
             path: contracts_dir,
+        });
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn dispatch_proof_status() {
+        let result = run_command(Commands::ProofStatus {
+            path: test_contract(),
+            binding: None,
+            format: "text".to_string(),
+        });
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn dispatch_proof_status_json() {
+        let result = run_command(Commands::ProofStatus {
+            path: test_contract(),
+            binding: None,
+            format: "json".to_string(),
+        });
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn dispatch_proof_status_directory() {
+        let contracts_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../contracts");
+        let result = run_command(Commands::ProofStatus {
+            path: contracts_dir,
+            binding: None,
+            format: "text".to_string(),
+        });
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn dispatch_proof_status_with_binding() {
+        let contracts_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../contracts");
+        let binding = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../contracts/aprender/binding.yaml");
+        let result = run_command(Commands::ProofStatus {
+            path: contracts_dir,
+            binding: Some(binding),
+            format: "json".to_string(),
         });
         assert!(result.is_ok());
     }

@@ -37,5 +37,6 @@ pub mod kernels;
 pub mod lean_gen;
 pub mod latex;
 pub mod probar_gen;
+pub mod proof_status;
 pub mod scaffold;
 pub mod schema;
