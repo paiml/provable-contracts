@@ -87,6 +87,14 @@ enum Commands {
         #[arg(default_value = "contracts")]
         contract_dir: PathBuf,
     },
+    /// Display equations from a contract
+    Equations {
+        /// Path to the contract YAML file
+        contract: PathBuf,
+        /// Output format: text (default) or latex
+        #[arg(long, default_value = "text")]
+        format: String,
+    },
 }
 
 fn main() {
@@ -114,6 +122,12 @@ fn main() {
             binding,
         } => commands::generate::run(&contract, &output, binding.as_deref()),
         Commands::Graph { contract_dir } => commands::graph::run(&contract_dir),
+        Commands::Equations { contract, format } => {
+            match commands::equations::OutputFormat::from_str(&format) {
+                Ok(fmt) => commands::equations::run(&contract, fmt),
+                Err(e) => Err(e.into()),
+            }
+        }
     };
 
     if let Err(e) = result {

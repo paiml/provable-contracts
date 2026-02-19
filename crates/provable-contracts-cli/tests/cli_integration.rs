@@ -726,4 +726,50 @@ falsification_tests:
         assert!(stdout.contains("Contract Dependency Graph"));
         assert!(stdout.contains("Topological order"));
     }
+
+    #[test]
+    fn pv_equations_text() {
+        let output = Command::new(pv_bin())
+            .arg("equations")
+            .arg(super::contract_path("softmax-kernel-v1.yaml"))
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains("Equations for softmax-kernel-v1"));
+        assert!(stdout.contains("formula:"));
+        assert!(stdout.contains("domain:"));
+        assert!(stdout.contains("invariants:"));
+    }
+
+    #[test]
+    fn pv_equations_latex() {
+        let output = Command::new(pv_bin())
+            .arg("equations")
+            .arg(super::contract_path("softmax-kernel-v1.yaml"))
+            .arg("--format")
+            .arg("latex")
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains("\\section{Equations:"));
+        assert!(stdout.contains("\\begin{equation}"));
+        assert!(stdout.contains("\\end{equation}"));
+        assert!(stdout.contains("\\begin{itemize}"));
+    }
+
+    #[test]
+    fn pv_equations_invalid_format() {
+        let output = Command::new(pv_bin())
+            .arg("equations")
+            .arg(super::contract_path("softmax-kernel-v1.yaml"))
+            .arg("--format")
+            .arg("json")
+            .output()
+            .expect("failed to run pv");
+        assert!(!output.status.success());
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(stderr.contains("unknown format"));
+    }
 }

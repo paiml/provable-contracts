@@ -1,6 +1,7 @@
 pub mod audit;
 pub mod coverage;
 pub mod diff;
+pub mod equations;
 pub mod generate;
 pub mod graph;
 pub mod kani;
