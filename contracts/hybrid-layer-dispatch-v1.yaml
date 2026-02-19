@@ -82,10 +82,25 @@ falsification_tests:
     test: "proptest with small random matrices"
     if_fails: "Numerical instability in matmul"
   - id: FALSIFY-HL-003
+    rule: "Head grouping exact"
+    prediction: "n_v divisible by n_k for all valid configs"
+    test: "proptest: n_v, n_k in [1, 32], verify n_v % n_k == 0"
+    if_fails: "Head grouping constraint not enforced"
+  - id: FALSIFY-HL-004
+    rule: "Residual shape preservation"
+    prediction: "O_proj output dim == hidden_dim"
+    test: "proptest with random hidden_dim and head configs"
+    if_fails: "O projection output size != hidden_dim"
+  - id: FALSIFY-HL-005
     rule: "Conv1d causal"
     prediction: "Padded conv1d preserves sequence length"
     test: "proptest with random sequences and kernel sizes"
     if_fails: "Padding calculation error"
+  - id: FALSIFY-HL-006
+    rule: "SIMD linear attention equivalence"
+    prediction: "SIMD linear attention matches scalar"
+    test: "proptest: compare scalar vs SIMD linear attention"
+    if_fails: "SIMD path diverges from scalar reference"
 
 kani_harnesses:
   - id: KANI-HL-001

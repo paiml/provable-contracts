@@ -120,7 +120,12 @@ falsification_tests:
     test: "pv coverage --binding check"
     if_fails: "Missing obligation coverage"
   - id: FALSIFY-QE2E-006
-    rule: "Shape preservation"
+    rule: "Compositional proof structure"
+    prediction: "Each block preserves shape: shape(block_l(x)) = shape(x)"
+    test: "proptest: verify shape(block(x)) = shape(x) for random blocks"
+    if_fails: "Block l breaks shape invariant"
+  - id: FALSIFY-QE2E-007
+    rule: "End-to-end shape conservation"
     prediction: "tokens → [seq_len, d] → ... → [seq_len, V]"
     test: "proptest: trace shapes through mock pipeline"
     if_fails: "Shape break in layer composition"

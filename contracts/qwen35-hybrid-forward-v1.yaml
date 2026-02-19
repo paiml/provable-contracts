@@ -117,6 +117,11 @@ falsification_tests:
     test: "proptest: random input through mock layer stack"
     if_fails: "Numerical instability in deep composition"
   - id: FALSIFY-QHF-006
+    rule: "RMSNorm pre-normalization"
+    prediction: "RMSNorm applied before attention/GDN and before FFN"
+    test: "proptest: verify norm(h) fed to sublayer, not raw h"
+    if_fails: "Missing pre-norm before sublayer"
+  - id: FALSIFY-QHF-007
     rule: "Residual stream correctness"
     prediction: "h_{l+1} - h_l = sublayer(norm(h_l))"
     test: "proptest: verify residual arithmetic"

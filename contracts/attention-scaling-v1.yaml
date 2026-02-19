@@ -117,6 +117,11 @@ falsification_tests:
     prediction: "score shape is [n_queries, n_keys]"
     test: "proptest with random n and m"
     if_fails: "Transposition error in Q @ K^T"
+  - id: FALSIFY-ASCL-007
+    rule: "Entropy upper bound"
+    prediction: "H(attn_i) <= log(m) for m keys"
+    test: "proptest: verify H <= log(m) for random score matrices"
+    if_fails: "Softmax normalization error breaks entropy bound"
 
 kani_harnesses:
   - id: KANI-ASCL-001

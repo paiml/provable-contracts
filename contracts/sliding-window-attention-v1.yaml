@@ -107,6 +107,11 @@ falsification_tests:
     prediction: "Windowed softmax sums to 1"
     test: "proptest with random logits and window mask"
     if_fails: "Masked softmax not properly normalized"
+  - id: FALSIFY-SWA-007
+    rule: "Attention count bounded"
+    prediction: "count(mask(i,:) == 1) <= W for all i"
+    test: "proptest with random seq_len and W"
+    if_fails: "Window boundary off-by-one expands count"
 
 kani_harnesses:
   - id: KANI-SWA-001

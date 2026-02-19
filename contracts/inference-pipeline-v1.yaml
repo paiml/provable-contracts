@@ -115,6 +115,11 @@ falsification_tests:
     test: "proptest: cache_size(t+1) - cache_size(t) = constant"
     if_fails: "Variable KV cache increment"
   - id: FALSIFY-INF-006
+    rule: "Residual dimension preservation"
+    prediction: "shape(h_{l+1}) = shape(h_l) for all layers"
+    test: "proptest: verify dimension after each layer"
+    if_fails: "Layer l changes hidden dimension"
+  - id: FALSIFY-INF-007
     rule: "Activation finiteness"
     prediction: "No NaN or Inf in hidden states"
     test: "proptest: inject random inputs, check all finite"

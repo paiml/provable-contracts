@@ -109,6 +109,11 @@ falsification_tests:
     prediction: "logits / 1.0 == logits exactly"
     test: "proptest with random logit vectors"
     if_fails: "Floating-point division by 1.0 not exact"
+  - id: FALSIFY-EMB-007
+    rule: "Temperature scaling monotonicity"
+    prediction: "Higher temperature => higher entropy of softmax(logits/T)"
+    test: "proptest: T1 < T2 => H(softmax(logits/T1)) <= H(softmax(logits/T2))"
+    if_fails: "Temperature scaling inverted"
 
 kani_harnesses:
   - id: KANI-EMB-001
