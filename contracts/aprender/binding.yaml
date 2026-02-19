@@ -2001,3 +2001,107 @@ bindings:
     signature: "fn predict(&self, x: &Matrix<f32>) -> Result<Vec<usize>>"
     status: implemented
     notes: "Argmax of log-posteriors for classification"
+
+  # ────────────────────────────────────────────────────────
+  # P2 Algorithm Contracts: Linear Models
+  # ────────────────────────────────────────────────────────
+
+  - contract: linear-models-v1.yaml
+    equation: ols_fit
+    module_path: "aprender::linear_model"
+    function: "LinearRegression::fit"
+    signature: "fn fit(&mut self, x: &Matrix<f32>, y: &Vector<f32>) -> Result<()>"
+    status: implemented
+    notes: "OLS via normal equations (Cholesky solver)"
+
+  - contract: linear-models-v1.yaml
+    equation: ols_predict
+    module_path: "aprender::linear_model"
+    function: "LinearRegression::predict"
+    signature: "fn predict(&self, x: &Matrix<f32>) -> Result<Vector<f32>>"
+    status: implemented
+    notes: "Linear prediction: ŷ = Xβ + b"
+
+  - contract: linear-models-v1.yaml
+    equation: r_squared_training
+    module_path: "aprender::linear_model"
+    function: "LinearRegression::score"
+    signature: "fn score(&self, x: &Matrix<f32>, y: &Vector<f32>) -> f32"
+    status: implemented
+    notes: "R² = 1 - SS_res/SS_tot on training data"
+
+  - contract: linear-models-v1.yaml
+    equation: logistic_predict_proba
+    module_path: "aprender::classification"
+    function: "LogisticRegression::predict_proba"
+    signature: "fn predict_proba(&self, x: &Matrix<f32>) -> Result<Vec<f32>>"
+    status: implemented
+    notes: "Sigmoid probability output"
+
+  # ────────────────────────────────────────────────────────
+  # P2 Algorithm Contracts: SVM
+  # ────────────────────────────────────────────────────────
+
+  - contract: svm-v1.yaml
+    equation: hinge_loss
+    module_path: "aprender::classification"
+    function: "LinearSVM::fit"
+    signature: "fn fit(&mut self, x: &Matrix<f32>, y: &[usize]) -> Result<()>"
+    status: implemented
+    notes: "Subgradient descent with hinge loss"
+
+  - contract: svm-v1.yaml
+    equation: decision_function
+    module_path: "aprender::classification"
+    function: "LinearSVM::decision_function"
+    signature: "fn decision_function(&self, x: &Matrix<f32>) -> Result<Vec<f32>>"
+    status: implemented
+    notes: "w·x + b decision values"
+
+  - contract: svm-v1.yaml
+    equation: svm_predict
+    module_path: "aprender::classification"
+    function: "LinearSVM::predict"
+    signature: "fn predict(&self, x: &Matrix<f32>) -> Result<Vec<usize>>"
+    status: implemented
+    notes: "Binary classification via sign(decision_function)"
+
+  # ────────────────────────────────────────────────────────
+  # P2 Algorithm Contracts: PCA
+  # ────────────────────────────────────────────────────────
+
+  - contract: pca-v1.yaml
+    equation: pca_transform
+    module_path: "aprender::preprocessing"
+    function: "PCA::fit + PCA::transform"
+    signature: "fn fit(&mut self, x: &Matrix<f32>) -> Result<()>, fn transform(&self, x: &Matrix<f32>) -> Result<Matrix<f32>>"
+    status: implemented
+    notes: "Eigendecomposition-based dimensionality reduction"
+
+  - contract: pca-v1.yaml
+    equation: explained_variance
+    module_path: "aprender::preprocessing"
+    function: "PCA::explained_variance_ratio"
+    signature: "fn explained_variance_ratio(&self) -> Option<&[f32]>"
+    status: implemented
+    notes: "Ratio of variance captured per component"
+
+  # ────────────────────────────────────────────────────────
+  # P2 Algorithm Contracts: ICA
+  # ────────────────────────────────────────────────────────
+
+  - contract: ica-v1.yaml
+    equation: fastica
+    module_path: "aprender::decomposition"
+    function: "ICA::fit"
+    signature: "fn fit(&mut self, x: &Matrix<f32>) -> Result<()>"
+    status: implemented
+    notes: "FastICA with deflation and tanh nonlinearity"
+
+  - contract: ica-v1.yaml
+    equation: unmixing
+    module_path: "aprender::decomposition"
+    function: "ICA::transform"
+    signature: "fn transform(&self, x: &Matrix<f32>) -> Result<Matrix<f32>>"
+    status: implemented
+    notes: "S = X W^T unmixing transformation"
