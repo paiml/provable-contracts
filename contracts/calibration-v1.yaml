@@ -110,6 +110,11 @@ falsification_tests:
     test: "proptest with extreme logits [-100, 100]"
     if_fails: "Sigmoid overflow/underflow"
   - id: FALSIFY-CAL-006
+    rule: "Isotonic monotonicity"
+    prediction: "Isotonic regression output is monotone non-decreasing"
+    test: "proptest with random probability-label pairs, fit isotonic, check ordering"
+    if_fails: "Isotonic regression solver violated monotonicity constraint"
+  - id: FALSIFY-CAL-007
     rule: "Reliability bin bounds"
     prediction: "All bin (confidence, accuracy) pairs in [0,1]²"
     test: "proptest with random inputs"
@@ -125,6 +130,22 @@ enforcement:
     check: "contract_tests::FALSIFY-CAL-003"
     severity: "ERROR"
 
+kani_harnesses:
+  - id: KANI-CAL-001
+    obligation: CAL-BND-001
+    property: "ECE bounded in [0, 1] for all valid inputs"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_ece_bounded
+  - id: KANI-CAL-002
+    obligation: CAL-BND-002
+    property: "MCE bounded in [0, 1] for all valid inputs"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_mce_bounded
+
 qa_gate:
   id: F-CAL-001
   name: "Calibration Metrics Contract"
@@ -135,6 +156,7 @@ qa_gate:
     - "mce_dominates_ece"
     - "perfect_calibration_zero"
     - "platt_bounded"
+    - "isotonic_monotonicity"
     - "reliability_bounded"
-  pass_criteria: "All 6 falsification tests pass"
+  pass_criteria: "All 7 falsification tests pass + Kani harnesses verify"
   falsification: "Omit bin normalization or allow empty-bin division"

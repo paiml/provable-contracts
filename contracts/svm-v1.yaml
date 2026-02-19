@@ -86,6 +86,22 @@ enforcement:
     check: "contract_tests::FALSIFY-SVM-001"
     severity: "ERROR"
 
+kani_harnesses:
+  - id: KANI-SVM-001
+    obligation: SVM-BND-001
+    property: "Hinge loss is non-negative for all inputs"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_hinge_loss_non_negative
+  - id: KANI-SVM-002
+    obligation: SVM-INV-001
+    property: "SVM predictions are binary {0, 1}"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_svm_binary_prediction
+
 qa_gate:
   id: F-SVM-001
   name: "SVM Contract"
@@ -95,5 +111,5 @@ qa_gate:
     - "prediction_deterministic"
     - "separable_accuracy"
     - "fit_predict_consistency"
-  pass_criteria: "All 4 falsification tests pass"
+  pass_criteria: "All 4 falsification tests pass + Kani harnesses verify"
   falsification: "Forget to map decision function to {0,1}"

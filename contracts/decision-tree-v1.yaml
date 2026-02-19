@@ -100,6 +100,11 @@ falsification_tests:
     test: "proptest with constant target vectors"
     if_fails: "Float drift in mean computation"
   - id: FALSIFY-DT-006
+    rule: "Prediction deterministic"
+    prediction: "predict(x, tree) = predict(x, tree) for same input"
+    test: "proptest: fit tree, predict twice on same input, compare"
+    if_fails: "Non-deterministic state in tree traversal"
+  - id: FALSIFY-DT-007
     rule: "Fit-predict class range"
     prediction: "Classifier predictions ⊆ training classes"
     test: "proptest with random training data, check prediction set"
@@ -115,6 +120,22 @@ enforcement:
     check: "contract_tests::FALSIFY-DT-004"
     severity: "ERROR"
 
+kani_harnesses:
+  - id: KANI-DT-001
+    obligation: DT-BND-001
+    property: "Gini impurity bounded in [0, 1) for all non-empty sets"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_gini_bounded
+  - id: KANI-DT-002
+    obligation: DT-BND-002
+    property: "MSE non-negative for all target sets"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_mse_non_negative
+
 qa_gate:
   id: F-DT-001
   name: "Decision Tree Contract"
@@ -125,6 +146,7 @@ qa_gate:
     - "gini_split_reduction"
     - "mse_non_negative"
     - "mse_constant_zero"
+    - "prediction_deterministic"
     - "fit_predict_class_range"
-  pass_criteria: "All 6 falsification tests pass"
+  pass_criteria: "All 7 falsification tests pass + Kani harnesses verify"
   falsification: "Use entropy instead of Gini or omit class count normalization"

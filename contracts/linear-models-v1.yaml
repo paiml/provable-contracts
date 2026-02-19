@@ -82,16 +82,37 @@ falsification_tests:
     test: "proptest: generate exact linear relationship, fit, check R²"
     if_fails: "Solver numerical instability"
   - id: FALSIFY-LM-004
-    rule: "Prediction class range (logistic)"
-    prediction: "All predictions ∈ {0, 1} for binary classifier"
-    test: "proptest: fit LogisticRegression, predict, check labels"
-    if_fails: "Thresholding error"
+    rule: "Logistic probability bounded"
+    prediction: "P(y=1|x) ∈ (0, 1) for all finite x"
+    test: "proptest: fit LogisticRegression, predict_proba, check all in (0,1)"
+    if_fails: "Sigmoid overflow or underflow producing 0.0 or 1.0"
+  - id: FALSIFY-LM-005
+    rule: "Logistic probabilities sum to 1"
+    prediction: "P(y=0) + P(y=1) = 1 for all predictions"
+    test: "proptest: fit LogisticRegression, predict_proba, check P(0)+P(1)=1"
+    if_fails: "Probability normalization error"
 
 enforcement:
   bounded:
     description: "R² must be non-negative for OLS on training data"
     check: "contract_tests::FALSIFY-LM-001"
     severity: "ERROR"
+
+kani_harnesses:
+  - id: KANI-LM-001
+    obligation: LM-BND-001
+    property: "OLS training R-squared is non-negative"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_ols_r2_nonneg
+  - id: KANI-LM-002
+    obligation: LM-BND-002
+    property: "Logistic probability bounded in (0, 1)"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_logistic_prob_bounded
 
 qa_gate:
   id: F-LM-001
@@ -101,6 +122,7 @@ qa_gate:
     - "ols_r2_nonneg"
     - "prediction_deterministic"
     - "perfect_fit"
-    - "logistic_class_range"
-  pass_criteria: "All 4 falsification tests pass"
+    - "logistic_prob_bounded"
+    - "logistic_probs_sum_to_one"
+  pass_criteria: "All 5 falsification tests pass + Kani harnesses verify"
   falsification: "Omit intercept or use wrong matrix inverse"
