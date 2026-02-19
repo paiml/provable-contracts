@@ -1935,8 +1935,8 @@ bindings:
     module_path: "aprender::preprocessing"
     function: "RobustScaler::fit + RobustScaler::transform"
     signature: "fn fit(&mut self, x: &Matrix<f32>) -> Result<()>, fn transform(&self, x: &Matrix<f32>) -> Result<Matrix<f32>>"
-    status: not_implemented
-    notes: "Robust scaling with median/IQR — not yet implemented"
+    status: implemented
+    notes: "Robust scaling with median/IQR — uses percentile interpolation"
 
   # ────────────────────────────────────────────────────────
   # P1 Algorithm Contracts: Decision Tree
