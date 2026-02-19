@@ -1960,11 +1960,11 @@ bindings:
 
   - contract: decision-tree-v1.yaml
     equation: mse_split
-    module_path: "aprender::tree::helpers"
-    function: "mse_impurity"
-    signature: "fn mse_impurity(targets: &[f32]) -> f32"
-    status: not_implemented
-    notes: "MSE impurity for regression trees"
+    module_path: "aprender::tree::helpers_part_02"
+    function: "compute_mse"
+    signature: "fn compute_mse(y_left: &[f32], y_right: &[f32]) -> f32"
+    status: implemented
+    notes: "MSE impurity for regression tree split (weighted variance)"
 
   - contract: decision-tree-v1.yaml
     equation: prediction
