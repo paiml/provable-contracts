@@ -169,7 +169,7 @@ qwen35-e2e-verification-v1
 | Qwen 3.5 contracts | 7 |
 | Equations | 41 |
 | Proof obligations | 50 |
-| Falsification tests | 46 |
+| Falsification tests | 50 |
 | Kani harnesses | 14 |
 | Binding entries | 41 |
 
