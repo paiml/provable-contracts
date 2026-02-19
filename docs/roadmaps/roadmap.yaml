@@ -802,11 +802,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Phase 7 M1: Extend YAML schema with lean proof block and verification_summary'
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-02-19T13:06:13Z
-  updated: 2026-02-19T13:06:29.697062837+00:00
+  updated: 2026-02-19T14:02:00+00:00
   spec: null
   acceptance_criteria:
   - Add optional lean block to ProofObligation (theorem, module, status, depends_on, mathlib_imports, notes). Add VerificationSummary to Contract. Refs phase7-lean-integration spec.
