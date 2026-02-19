@@ -90,6 +90,16 @@ falsification_tests:
     prediction: "Mean of 1000 DARE samples ≈ delta"
     test: "proptest with statistical tolerance"
     if_fails: "Rescaling factor wrong"
+  - id: FALSIFY-LA-005
+    rule: "Shape preservation"
+    prediction: "W + BA has same shape as W"
+    test: "proptest: verify shape(W + B@A) == shape(W)"
+    if_fails: "LoRA rank dimensions incompatible"
+  - id: FALSIFY-LA-006
+    rule: "SIMD LoRA equivalence"
+    prediction: "SIMD LoRA application matches scalar"
+    test: "proptest: compare scalar vs SIMD LoRA forward"
+    if_fails: "SIMD LoRA accumulation order differs"
 
 kani_harnesses:
   - id: KANI-LA-001

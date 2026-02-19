@@ -93,6 +93,11 @@ falsification_tests:
     prediction: "rope_theta finite positive, eps in (0, 0.1)"
     test: "proptest with floating-point ranges"
     if_fails: "Config allows degenerate float parameters"
+  - id: FALSIFY-MCA-006
+    rule: "SIMD config equivalence"
+    prediction: "SIMD config algebra matches scalar"
+    test: "proptest"
+    if_fails: " compare scalar vs SIMD config computation:SIMD config path diverges"
 
 kani_harnesses:
   - id: KANI-MCA-001

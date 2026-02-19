@@ -73,6 +73,16 @@ falsification_tests:
     prediction: "9B param model sizes within 20% of expected"
     test: "Deterministic test with Qwen3.5 parameters"
     if_fails: "Block size constants wrong"
+  - id: FALSIFY-QO-004
+    rule: "Dropout expectation"
+    prediction: "Expected output unchanged after dropout scaling"
+    test: "proptest: verify E[dropout(x)] ≈ x"
+    if_fails: "Dropout scaling factor wrong"
+  - id: FALSIFY-QO-005
+    rule: "SIMD quantization equivalence"
+    prediction: "SIMD quantization matches scalar"
+    test: "proptest: compare scalar vs SIMD quantization"
+    if_fails: "SIMD rounding differs from scalar"
 
 kani_harnesses:
   - id: KANI-QO-001

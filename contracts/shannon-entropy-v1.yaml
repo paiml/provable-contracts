@@ -57,6 +57,11 @@ falsification_tests:
     prediction: "More symbols => higher uniform entropy"
     test: "proptest comparing H_uniform(k) for k1 < k2"
     if_fails: "log2 implementation error"
+  - id: FALSIFY-SE-004
+    rule: "SIMD entropy equivalence"
+    prediction: "SIMD entropy matches scalar"
+    test: "proptest"
+    if_fails: " compare scalar vs SIMD entropy computation:SIMD entropy calculation diverges"
 
 kani_harnesses:
   - id: KANI-SE-001

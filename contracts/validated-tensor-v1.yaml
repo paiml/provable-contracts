@@ -61,6 +61,11 @@ falsification_tests:
     prediction: "Zero rows are detected"
     test: "proptest with random matrices having zero rows"
     if_fails: "Row norm calculation error"
+  - id: FALSIFY-VT-004
+    rule: "SIMD validation equivalence"
+    prediction: "SIMD validation matches scalar"
+    test: "proptest"
+    if_fails: " compare scalar vs SIMD validation:SIMD validation rejects different inputs"
 
 kani_harnesses:
   - id: KANI-VT-001

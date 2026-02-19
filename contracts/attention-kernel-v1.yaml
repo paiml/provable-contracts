@@ -76,6 +76,11 @@ falsification_tests:
     prediction: "|attn_simd(Q,K,V) - attn_scalar(Q,K,V)| < 8 ULP"
     test: "proptest comparing implementations"
     if_fails: "Matmul accumulation order in SIMD differs"
+  - id: FALSIFY-ATT-005
+    rule: "Attention weights bounded"
+    prediction: "All attention weights in (0, 1)"
+    test: "proptest: verify 0 < attn_ij < 1 for random Q,K"
+    if_fails: "Softmax output outside (0,1) range"
 
 kani_harnesses:
   - id: KANI-ATT-001

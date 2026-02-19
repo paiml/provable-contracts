@@ -69,6 +69,16 @@ falsification_tests:
     prediction: "Dot product of unit vectors bounded by sqrt(d)"
     test: "proptest with random unit vectors"
     if_fails: "L2 normalization not applied"
+  - id: FALSIFY-BD-004
+    rule: "BPE roundtrip"
+    prediction: "encode(decode(tokens)) == tokens"
+    test: "proptest with random valid token sequences"
+    if_fails: "Lossy tokenization roundtrip"
+  - id: FALSIFY-BD-005
+    rule: "SIMD dispatch equivalence"
+    prediction: "SIMD backend produces same results as scalar"
+    test: "proptest: compare scalar vs SIMD dispatch"
+    if_fails: "SIMD backend diverges from scalar"
 
 kani_harnesses:
   - id: KANI-BD-001

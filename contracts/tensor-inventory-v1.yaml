@@ -84,6 +84,21 @@ falsification_tests:
     prediction: "More aggressive quant => fewer bytes"
     test: "proptest with same params, different quant schemes"
     if_fails: "Quant block size formula wrong"
+  - id: FALSIFY-TI-004
+    rule: "Parameter decomposition exact"
+    prediction: "Sum of per-layer params == total params"
+    test: "Deterministic: verify sum across all layers"
+    if_fails: "Missing tensor in decomposition"
+  - id: FALSIFY-TI-005
+    rule: "Tied embedding count"
+    prediction: "Tied weights counted exactly once"
+    test: "Deterministic: verify count(embed) == 1 when tied"
+    if_fails: "Tied weights double-counted or missing"
+  - id: FALSIFY-TI-006
+    rule: "SIMD inventory equivalence"
+    prediction: "SIMD tensor shapes match scalar"
+    test: "proptest: compare scalar vs SIMD tensor shapes"
+    if_fails: "SIMD layout differs from scalar"
 
 kani_harnesses:
   - id: KANI-TI-001
