@@ -90,8 +90,8 @@ fn validate_flash_attention_contract() {
 fn validate_all_contracts() {
     let paths = all_contract_paths();
     assert!(
-        paths.len() >= 48,
-        "Expected at least 48 contracts, found {}",
+        paths.len() >= 81,
+        "Expected at least 81 contracts, found {}",
         paths.len()
     );
     for path in &paths {
@@ -262,10 +262,10 @@ fn contract_data_integrity() {
     }
 
     // Verify totals
-    assert_eq!(total_eq, 234, "Total equations changed");
-    assert_eq!(total_ob, 379, "Total obligations changed");
-    assert_eq!(total_ft, 399, "Total falsification tests changed");
-    assert_eq!(total_kani, 126, "Total Kani harnesses changed");
+    assert_eq!(total_eq, 277, "Total equations changed");
+    assert_eq!(total_ob, 425, "Total obligations changed");
+    assert_eq!(total_ft, 449, "Total falsification tests changed");
+    assert_eq!(total_kani, 151, "Total Kani harnesses changed");
 
     assert!(
         errors.is_empty(),
