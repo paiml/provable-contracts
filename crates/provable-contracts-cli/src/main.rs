@@ -115,10 +115,8 @@ enum Commands {
     },
 }
 
-fn main() {
-    let cli = Cli::parse();
-
-    let result = match cli.command {
+fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
+    match command {
         Commands::Validate { contract } => commands::validate::run(&contract),
         Commands::Scaffold { contract } => commands::scaffold::run(&contract),
         Commands::Kani { contract } => commands::kani::run(&contract),
@@ -163,10 +161,66 @@ fn main() {
             update_summary,
             summary_path.as_deref(),
         ),
-    };
+    }
+}
 
-    if let Err(e) = result {
+fn main() {
+    let cli = Cli::parse();
+
+    if let Err(e) = run_command(cli.command) {
         eprintln!("error: {e}");
         process::exit(1);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_contract() -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../contracts/softmax-kernel-v1.yaml")
+    }
+
+    #[test]
+    fn dispatch_validate() {
+        let result = run_command(Commands::Validate {
+            contract: test_contract(),
+        });
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn dispatch_scaffold() {
+        let result = run_command(Commands::Scaffold {
+            contract: test_contract(),
+        });
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn dispatch_kani() {
+        let result = run_command(Commands::Kani {
+            contract: test_contract(),
+        });
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn dispatch_status() {
+        let result = run_command(Commands::Status {
+            contract: test_contract(),
+        });
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn dispatch_diff() {
+        let c = test_contract();
+        let result = run_command(Commands::Diff {
+            old: c.clone(),
+            new: c,
+        });
+        assert!(result.is_ok());
     }
 }

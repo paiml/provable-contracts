@@ -246,6 +246,15 @@ mod tests {
     }
 
     #[test]
+    fn test_from_str_other_format_returns_descriptive_error() {
+        // Exercises the `other =>` catch-all arm in from_str
+        let other = "yaml";
+        let err = GraphFormat::from_str(other).unwrap_err();
+        assert!(err.contains(other), "error should include the unrecognized format");
+        assert!(err.contains("unknown format"));
+    }
+
+    #[test]
     fn test_mermaid_id() {
         assert_eq!(mermaid_id("softmax-kernel-v1"), "softmax_kernel_v1");
         assert_eq!(mermaid_id("silu"), "silu");
