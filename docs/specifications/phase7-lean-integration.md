@@ -12,9 +12,16 @@
 
 ## Summary
 
-Extend the six-phase provable-contracts pipeline with a seventh phase: **full theorem proving via Lean 4**. This phase completes the verification hierarchy by discharging proof obligations as machine-checked theorems with no bounds on input size, data type, or vector dimension — achieving what Kani bounded model checking cannot.
+Extend the six-phase provable-contracts pipeline with a seventh phase:
+**full theorem proving via Lean 4**. This phase completes the
+verification hierarchy by discharging proof obligations as
+machine-checked theorems with no bounds on input size, data type, or
+vector dimension — achieving what Kani bounded model checking cannot.
 
-The current pipeline terminates at Phase 6 (Kani BMC), which proves correctness within finite bounds. Phase 7 lifts selected obligations into Lean 4's dependent type theory, producing proofs valid **for all inputs unconditionally**.
+The current pipeline terminates at Phase 6 (Kani BMC), which proves
+correctness within finite bounds. Phase 7 lifts selected obligations
+into Lean 4's dependent type theory, producing proofs valid
+**for all inputs unconditionally**.
 
 ```
 Phase 5: Falsify   →  Probabilistic confidence  (proptest/probar)
@@ -34,15 +41,24 @@ Kani proves `softmax_non_negative` for all `f32` vectors up to length `N=8`. But
 - What about the algebraic identity `Σᵢ softmax(xᵢ) = 1` independent of precision?
 - What about compositional properties across the Qwen 3.5 verification DAG?
 
-These require **unbounded proofs over mathematical reals**, which is precisely what Lean 4 + Mathlib provide.
+These require **unbounded proofs over mathematical reals**, which is
+precisely what Lean 4 + Mathlib provide.
 
 ### The Obligation Coverage Argument
 
-The repo currently tracks **262 proof obligations** across 48 contracts. Each has at least one falsification test. Many have Kani harnesses. But the verification level for each obligation is implicit. Phase 7 makes the **proof hierarchy explicit and auditable** per obligation.
+The repo currently tracks **262 proof obligations** across 48
+contracts. Each has at least one falsification test. Many have Kani
+harnesses. But the verification level for each obligation is implicit.
+Phase 7 makes the **proof hierarchy explicit and auditable** per
+obligation.
 
 ### Strategic Differentiation
 
-No existing project offers a traceable pipeline from peer-reviewed paper → YAML contract → Rust implementation → property tests → bounded model checking → machine-checked theorem. This positions provable-contracts uniquely in both the formal methods and ML systems communities.
+No existing project offers a traceable pipeline from peer-reviewed
+paper → YAML contract → Rust implementation → property tests →
+bounded model checking → machine-checked theorem. This positions
+provable-contracts uniquely in both the formal methods and ML systems
+communities.
 
 ---
 
@@ -50,7 +66,8 @@ No existing project offers a traceable pipeline from peer-reviewed paper → YAM
 
 ### 7.1 Verification Hierarchy Model
 
-Each proof obligation gains a `verification_level` field representing the highest level at which it has been discharged:
+Each proof obligation gains a `verification_level` field representing
+the highest level at which it has been discharged:
 
 | Level | Method | Guarantees | Tool |
 |-------|--------|-----------|------|
@@ -60,7 +77,10 @@ Each proof obligation gains a `verification_level` field representing the highes
 | L3 | Bounded model checking | Exhaustive within bounds | Kani |
 | L4 | Theorem proving | Unbounded, unconditional | Lean 4 |
 
-Obligations can be discharged at multiple levels simultaneously. Higher levels subsume lower ones logically but serve different practical purposes (L2 catches regressions fast; L4 provides mathematical certainty).
+Obligations can be discharged at multiple levels simultaneously.
+Higher levels subsume lower ones logically but serve different
+practical purposes (L2 catches regressions fast; L4 provides
+mathematical certainty).
 
 ### 7.2 YAML Contract Schema Extensions
 
@@ -210,7 +230,9 @@ Obligation: softmax-numerical-stability
 
 #### `pv lean-sync <contract.yaml> <lean-dir/>`
 
-Verify that Lean definitions and theorem names match the YAML contract. Catches drift between the contract specification and the Lean formalization.
+Verify that Lean definitions and theorem names match the YAML
+contract. Catches drift between the contract specification and the
+Lean formalization.
 
 ```bash
 $ pv lean-sync contracts/softmax-kernel-v1.yaml lean/
@@ -238,13 +260,17 @@ Not every obligation warrants a Lean proof. The triage criteria:
 
 ### 7.6 Bridging the Real↔Float Gap
 
-Lean proofs operate over `ℝ` (mathematical reals). Rust code operates over `f32`/`f64`. This gap must be explicitly addressed:
+Lean proofs operate over `ℝ` (mathematical reals). Rust code
+operates over `f32`/`f64`. This gap must be explicitly addressed:
 
 **Strategy: Layered Proofs**
 
 1. **Ideal layer** (Lean): Prove the property over `ℝ` unconditionally
-2. **Error layer** (Lean): Prove an error bound: if inputs are within `[−M, M]` and operations use IEEE 754 rounding, the f32 result deviates from the real result by at most `ε`
-3. **Concrete layer** (Kani): Verify the Rust implementation matches the error-bounded specification for concrete bit-widths
+2. **Error layer** (Lean): Prove an error bound: if inputs are
+   within `[−M, M]` and operations use IEEE 754 rounding, the f32
+   result deviates from the real result by at most `ε`
+3. **Concrete layer** (Kani): Verify the Rust implementation matches
+   the error-bounded specification for concrete bit-widths
 
 ```lean
 -- Ideal layer
@@ -257,11 +283,14 @@ theorem softmax_partition_f32_error (x : Vector Float32 n)
     |∑ i, softmax_f32 x i - 1| ≤ n * Float32.epsilon := by ...
 ```
 
-This makes the verification hierarchy not just a progression of strength, but a **refinement from ideal to concrete**.
+This makes the verification hierarchy not just a progression of
+strength, but a **refinement from ideal to concrete**.
 
 ### 7.7 Compositional Proofs and the Qwen 3.5 DAG
 
-The Qwen 3.5 end-to-end verification contract composes 8 sub-contracts. In Lean, this becomes a compositional proof where sub-contract theorems are combined:
+The Qwen 3.5 end-to-end verification contract composes 8
+sub-contracts. In Lean, this becomes a compositional proof where
+sub-contract theorems are combined:
 
 ```lean
 -- Each sub-contract provides its own correctness theorem
@@ -283,7 +312,8 @@ theorem qwen35_e2e_correctness
   · exact rmsnorm_idempotent config input hconfig
 ```
 
-The contract dependency graph becomes a **theorem dependency graph** — the exact structure your `pv graph` command already visualizes.
+The contract dependency graph becomes a **theorem dependency graph**
+— the exact structure your `pv graph` command already visualizes.
 
 ---
 
@@ -353,20 +383,30 @@ The contract dependency graph becomes a **theorem dependency graph** — the exa
 
 - **Lean 4** (stable release) + **Mathlib** (latest)
 - `lake` build system
-- Mathlib modules: `Analysis.SpecialFunctions.Exp`, `Algebra.BigOperators`, `Topology.MetricSpace`, `Order.Basic`
+- Mathlib modules: `Analysis.SpecialFunctions.Exp`,
+  `Algebra.BigOperators`, `Topology.MetricSpace`, `Order.Basic`
 - CI: GitHub Actions with `leanprover/lean4-action`
 
 ---
 
 ## Open Questions
 
-1. **Extraction:** Should Lean proofs extract to executable Rust via C FFI, or remain a parallel verification artifact? (Recommendation: parallel artifact — extraction adds complexity with marginal runtime benefit since Rust implementations already exist.)
+1. **Extraction:** Should Lean proofs extract to executable Rust via
+   C FFI, or remain a parallel verification artifact?
+   (Recommendation: parallel artifact — extraction adds complexity
+   with marginal runtime benefit since Rust implementations already
+   exist.)
 
-2. **Automation:** How aggressively to invest in LLM-assisted proof? Lean Copilot can discharge simple goals but struggles with multi-step algebraic reasoning. Budget time for manual proofs.
+2. **Automation:** How aggressively to invest in LLM-assisted proof?
+   Lean Copilot can discharge simple goals but struggles with
+   multi-step algebraic reasoning. Budget time for manual proofs.
 
-3. **Granularity:** Should every equation get a Lean definition, or only equations referenced by proof obligations? (Recommendation: only obligated equations to avoid maintenance burden.)
+3. **Granularity:** Should every equation get a Lean definition, or
+   only equations referenced by proof obligations? (Recommendation:
+   only obligated equations to avoid maintenance burden.)
 
-4. **Mathlib stability:** Mathlib moves fast and breaks imports. Pin a Mathlib version per release cycle and batch-update.
+4. **Mathlib stability:** Mathlib moves fast and breaks imports. Pin
+   a Mathlib version per release cycle and batch-update.
 
 ---
 

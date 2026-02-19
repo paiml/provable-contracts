@@ -68,7 +68,8 @@ $$
 
 ## Kernel Phases
 
-1. **two_loop_backward**: Backward pass: compute alpha_i = rho_i * s_i^T * q — *rho_i = 1 / (y_i^T * s_i) well-defined when curvature holds*
+1. **two_loop_backward**: Backward pass: compute alpha_i = rho_i * s_i^T * q
+   — *rho_i = 1 / (y_i^T * s_i) well-defined when curvature holds*
 2. **initial_scaling**: Scale by H_0 = (y_k^T*s_k)/(y_k^T*y_k) * I — *Scaling factor positive*
 3. **two_loop_forward**: Forward pass: correct direction using stored betas — *Final direction is descent direction*
 4. **line_search**: Backtracking or strong Wolfe line search — *Step size satisfies Wolfe conditions*

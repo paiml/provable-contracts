@@ -159,7 +159,8 @@ $$
 
 Full model verification composition quality gate
 
-**Checks:** model_parameter_count, flops_per_token, memory_breakdown, throughput_model, verification_ladder, contract_composition
+**Checks:** model_parameter_count, flops_per_token, memory_breakdown,
+throughput_model, verification_ladder, contract_composition
 
 **Pass criteria:** All 7 falsification tests pass + 100% obligation coverage
 

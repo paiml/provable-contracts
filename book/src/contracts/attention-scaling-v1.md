@@ -147,7 +147,9 @@ $$
 
 Numerical stability and scaling quality gate
 
-**Checks:** scaled_dot_product, variance_preservation, softmax_saturation, score_bound_with_qknorm, attention_entropy, numerical_stability
+**Checks:** scaled_dot_product, variance_preservation,
+softmax_saturation, score_bound_with_qknorm,
+attention_entropy, numerical_stability
 
 **Pass criteria:** All 7 falsification tests pass
 

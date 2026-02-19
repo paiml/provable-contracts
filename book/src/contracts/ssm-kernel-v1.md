@@ -69,7 +69,8 @@ $$
 ## Kernel Phases
 
 1. **selective_projection**: Compute input-dependent Delta, B, C via linear projections — *Delta > 0 via softplus*
-2. **discretize**: Convert continuous A, B to discrete A_bar, B_bar using Delta — *A_bar stable when A has negative eigenvalues*
+2. **discretize**: Convert continuous A, B to discrete A_bar, B_bar
+   using Delta — *A_bar stable when A has negative eigenvalues*
 3. **parallel_scan**: Associative parallel prefix scan over sequence — *Equivalent to sequential recurrence*
 4. **output_projection**: Compute y = C * h for each timestep — *Output dimension matches input*
 

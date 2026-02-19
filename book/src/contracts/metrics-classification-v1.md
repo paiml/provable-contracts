@@ -131,7 +131,9 @@ $$
 
 Classification metric correctness quality gate
 
-**Checks:** accuracy_bounded, precision_bounded, f1_harmonic_mean, confusion_matrix_conservation, perfect_classification, micro_average_identity
+**Checks:** accuracy_bounded, precision_bounded, f1_harmonic_mean,
+confusion_matrix_conservation, perfect_classification,
+micro_average_identity
 
 **Pass criteria:** All 8 falsification tests pass
 

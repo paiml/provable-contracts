@@ -20,7 +20,10 @@ graph LR
 ### rope
 
 $$
-RoPE(x, m)_{2k} = x_{2k}·cos(m\theta_k) - x_{2k+1}·sin(m\theta_k), RoPE(x, m)_{2k+1} = x_{2k}·sin(m\theta_k) + x_{2k+1}·cos(m\theta_k)
+RoPE(x, m)_{2k} = x_{2k} \cdot cos(m\theta_k)
+  - x_{2k+1} \cdot sin(m\theta_k)
+RoPE(x, m)_{2k+1} = x_{2k} \cdot sin(m\theta_k)
+  + x_{2k+1} \cdot cos(m\theta_k)
 $$
 
 **Domain:** $x \in \mathbb{R}^d, m \in ℕ, \theta_k = 10000^(-2k/d)$
