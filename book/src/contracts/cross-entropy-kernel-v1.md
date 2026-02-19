@@ -76,6 +76,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | cross_entropy | avx2 | `cross_entropy_avx2` |
+| cross_entropy | ptx | `cross_entropy_ptx` |
 | cross_entropy | scalar | `cross_entropy_scalar` |
 
 ## Falsification Tests

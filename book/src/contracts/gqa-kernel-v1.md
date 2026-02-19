@@ -63,6 +63,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | gqa | avx2 | `gqa_avx2` |
+| gqa | ptx | `gqa_ptx` |
 | gqa | scalar | `gqa_scalar` |
 
 ## Falsification Tests

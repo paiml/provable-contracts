@@ -78,6 +78,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | ssm_scan | avx2 | `ssm_scan_avx2` |
+| ssm_scan | ptx | `ssm_ptx` |
 | ssm_scan | scalar | `ssm_scan_scalar` |
 
 ## Falsification Tests

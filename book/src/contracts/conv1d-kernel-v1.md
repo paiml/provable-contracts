@@ -55,6 +55,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | conv1d | avx2 | `conv1d_avx2` |
+| conv1d | ptx | `conv1d_ptx` |
 | conv1d | scalar | `conv1d_scalar` |
 
 ## Falsification Tests

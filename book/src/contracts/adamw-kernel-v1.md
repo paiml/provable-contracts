@@ -94,6 +94,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | adamw | avx2 | `adamw_step_avx2` |
+| adamw | ptx | `adamw_ptx` |
 | adamw | scalar | `adamw_step_scalar` |
 
 ## Falsification Tests

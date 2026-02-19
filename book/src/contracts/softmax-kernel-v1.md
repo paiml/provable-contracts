@@ -64,6 +64,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | softmax | avx2 | `softmax_avx2` |
+| softmax | ptx | `softmax_ptx` |
 | softmax | scalar | `softmax_scalar` |
 
 ## Falsification Tests

@@ -78,6 +78,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | lbfgs_direction | avx2 | `lbfgs_direction_avx2` |
+| lbfgs_direction | ptx | `lbfgs_ptx` |
 | lbfgs_direction | scalar | `lbfgs_direction_scalar` |
 
 ## Falsification Tests

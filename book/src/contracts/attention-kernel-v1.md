@@ -57,6 +57,14 @@ $$
 3. **softmax_rows**: Apply softmax to each row — *each row sums to 1.0*
 4. **weighted_sum**: Multiply attention weights by V — *output shape is (n, d_v)*
 
+## SIMD Dispatch
+
+| Kernel | ISA | Target |
+|--------|-----|--------|
+| attention | avx2 | `attention_avx2` |
+| attention | ptx | `attention_ptx` |
+| attention | scalar | `attention_scalar` |
+
 ## Falsification Tests
 
 | ID | Rule | Prediction | If Fails |

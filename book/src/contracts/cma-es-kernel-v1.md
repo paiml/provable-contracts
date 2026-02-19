@@ -81,6 +81,7 @@ $$
 | Kernel | ISA | Target |
 |--------|-----|--------|
 | cma_sample | avx2 | `cma_sample_avx2` |
+| cma_sample | ptx | `cma_es_ptx` |
 | cma_sample | scalar | `cma_sample_scalar` |
 
 ## Falsification Tests

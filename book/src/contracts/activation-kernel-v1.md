@@ -71,6 +71,14 @@ $$
 | 5 | invariant | ReLU non-negative | $ReLU(x) \geq 0 for all x$ |
 | 6 | equivalence | SIMD matches scalar |  |
 
+## SIMD Dispatch
+
+| Kernel | ISA | Target |
+|--------|-----|--------|
+| activation | avx2 | `activation_avx2` |
+| activation | ptx | `activation_ptx` |
+| activation | scalar | `activation_scalar` |
+
 ## Falsification Tests
 
 | ID | Rule | Prediction | If Fails |

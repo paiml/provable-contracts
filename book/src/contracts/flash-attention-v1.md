@@ -54,6 +54,14 @@ $$
 3. **online_softmax**: Update running max and sum for numerically stable softmax — *Running max >= all seen scores*
 4. **accumulate**: Rescale and accumulate output tile — *Rescaling preserves running normalization*
 
+## SIMD Dispatch
+
+| Kernel | ISA | Target |
+|--------|-----|--------|
+| flash_attention | avx2 | `flash_attention_avx2` |
+| flash_attention | ptx | `flash_attention_ptx` |
+| flash_attention | scalar | `flash_attention_scalar` |
+
 ## Falsification Tests
 
 | ID | Rule | Prediction | If Fails |
