@@ -1034,11 +1034,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Proof status module and CLI for cross-repo MQS integration
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-02-19T16:18:11Z
-  updated: 2026-02-19T16:18:15.295782147+00:00
+  updated: 2026-02-19T16:37:50Z
   spec: null
   acceptance_criteria:
   - Add proof_status module with L1-L5 level assessment, kernel class mapping (A-E), and pv proof-status CLI command for JSON bridge to apr-model-qa-playbook MQS scoring.
