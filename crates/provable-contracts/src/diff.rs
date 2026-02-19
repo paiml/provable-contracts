@@ -83,7 +83,10 @@ pub fn diff_contracts(old: &Contract, new: &Contract) -> ContractDiff {
         removed: eq_diff.1,
         changed: eq_changed,
     };
-    max_bump = bump_max(max_bump, section_bump(&eq_section, SemverBump::Major, SemverBump::Minor));
+    max_bump = bump_max(
+        max_bump,
+        section_bump(&eq_section, SemverBump::Major, SemverBump::Minor),
+    );
     sections.push(eq_section);
 
     // Proof obligations
@@ -98,7 +101,10 @@ pub fn diff_contracts(old: &Contract, new: &Contract) -> ContractDiff {
         .map(|o| format!("{}:{}", o.obligation_type, o.property))
         .collect();
     let ob_diff = diff_sets("proof_obligations", &old_obs, &new_obs);
-    max_bump = bump_max(max_bump, section_bump(&ob_diff, SemverBump::Major, SemverBump::Minor));
+    max_bump = bump_max(
+        max_bump,
+        section_bump(&ob_diff, SemverBump::Major, SemverBump::Minor),
+    );
     sections.push(ob_diff);
 
     // Falsification tests
@@ -113,21 +119,30 @@ pub fn diff_contracts(old: &Contract, new: &Contract) -> ContractDiff {
         .map(|t| t.id.clone())
         .collect();
     let ft_diff = diff_sets("falsification_tests", &old_ft, &new_ft);
-    max_bump = bump_max(max_bump, section_bump(&ft_diff, SemverBump::Minor, SemverBump::Minor));
+    max_bump = bump_max(
+        max_bump,
+        section_bump(&ft_diff, SemverBump::Minor, SemverBump::Minor),
+    );
     sections.push(ft_diff);
 
     // Kani harnesses
     let old_kh: BTreeSet<String> = old.kani_harnesses.iter().map(|h| h.id.clone()).collect();
     let new_kh: BTreeSet<String> = new.kani_harnesses.iter().map(|h| h.id.clone()).collect();
     let kh_diff = diff_sets("kani_harnesses", &old_kh, &new_kh);
-    max_bump = bump_max(max_bump, section_bump(&kh_diff, SemverBump::Minor, SemverBump::Minor));
+    max_bump = bump_max(
+        max_bump,
+        section_bump(&kh_diff, SemverBump::Minor, SemverBump::Minor),
+    );
     sections.push(kh_diff);
 
     // Enforcement rules
     let old_enf: BTreeSet<String> = old.enforcement.keys().cloned().collect();
     let new_enf: BTreeSet<String> = new.enforcement.keys().cloned().collect();
     let enf_diff = diff_sets("enforcement", &old_enf, &new_enf);
-    max_bump = bump_max(max_bump, section_bump(&enf_diff, SemverBump::Minor, SemverBump::Patch));
+    max_bump = bump_max(
+        max_bump,
+        section_bump(&enf_diff, SemverBump::Minor, SemverBump::Patch),
+    );
     sections.push(enf_diff);
 
     // Metadata version change
