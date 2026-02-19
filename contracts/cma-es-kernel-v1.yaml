@@ -80,6 +80,7 @@ simd_dispatch:
   cma_sample:
     scalar: cma_sample_scalar
     avx2: cma_sample_avx2
+    ptx: cma_es_ptx
 
 enforcement:
   step_size:

@@ -91,3 +91,9 @@ qa_gate:
     - "weight_normalization"
   pass_criteria: "All 4 falsification tests pass"
   falsification: "Skip rescaling step in tile accumulation"
+
+simd_dispatch:
+  flash_attention:
+    scalar: flash_attention_scalar
+    avx2: flash_attention_avx2
+    ptx: flash_attention_ptx

@@ -903,6 +903,69 @@ simd_dispatch:
     neon: "softmax_neon"
 ```
 
+### CUDA PTX Kernels
+
+The implementation flow extends to include PTX as a third backend:
+
+```
+1. Scalar reference (ground truth)
+   ↓
+2. Tests pass for scalar
+   ↓
+3. AVX2 variant
+   ↓
+4. AVX2 parity tests pass (ULP tolerance)
+   ↓
+5. PTX kernel (inline assembly string)
+   ↓
+6. PTX structural tests pass
+   ↓
+7. Dispatch table updated in contract YAML
+```
+
+PTX kernels use hardware approximations (`ex2.approx`, `rsqrt.approx`, FMA) and
+are **not** required to match scalar bit-for-bit. They must be loadable by
+`cuModuleLoadData`, target `sm_90`, and use `.version 8.5`.
+
+Each PTX kernel is returned as a `&'static str` from a Rust function. This allows
+compile-time embedding without runtime file I/O. The PTX string is valid NVIDIA
+PTX assembly that can be JIT-compiled by the CUDA driver API.
+
+### Dispatch Table Extension
+
+The `simd_dispatch` section in each contract YAML extends with a `ptx` entry:
+
+```yaml
+simd_dispatch:
+  softmax:
+    scalar: "softmax_scalar"
+    avx2: "softmax_avx2"
+    ptx: "softmax_ptx"
+```
+
+The PTX entry maps to a function returning `&'static str` containing the PTX
+assembly source. This is distinct from scalar/AVX2 entries which map to
+executable Rust functions.
+
+### The `kernels` Module
+
+All kernel implementations live in `crates/provable-contracts/src/kernels/`.
+Each kernel submodule provides three functions following a consistent pattern:
+
+- `fn {name}_scalar(...)` — Pure Rust scalar reference implementation
+- `unsafe fn {name}_avx2(...)` — AVX2 SIMD implementation (unsafe due to intrinsics)
+- `fn {name}_ptx() -> &'static str` — Returns PTX assembly source as a static string
+
+The module is organized by kernel category:
+
+| Category | Kernels |
+|----------|---------|
+| Elementwise | relu, gelu, silu, sigmoid |
+| Normalization | softmax, rmsnorm, layernorm, batchnorm |
+| Gated + Positional + Loss | swiglu, cross-entropy, rope |
+| Matrix | matmul, attention, gqa, flash-attention |
+| Optimizer + Sequence + ML | adamw, conv1d, ssm, kmeans, pagerank, lbfgs, cma-es, gated-delta-net |
+
 ---
 
 ## 10. Phase 5: Falsify — Property Testing via probar + certeza

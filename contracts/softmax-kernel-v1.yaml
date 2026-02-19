@@ -63,6 +63,7 @@ simd_dispatch:
   softmax:
     scalar: softmax_scalar
     avx2: softmax_avx2
+    ptx: softmax_ptx
 
 enforcement:
   normalization:

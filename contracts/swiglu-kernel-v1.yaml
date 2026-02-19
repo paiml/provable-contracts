@@ -65,6 +65,7 @@ simd_dispatch:
   swiglu:
     scalar: swiglu_scalar
     avx2: swiglu_avx2
+    ptx: swiglu_ptx
 
 enforcement:
   zero_preservation:

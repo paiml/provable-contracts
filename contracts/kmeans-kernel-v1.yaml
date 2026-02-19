@@ -71,6 +71,7 @@ simd_dispatch:
   kmeans_assign:
     scalar: kmeans_assign_scalar
     avx2: kmeans_assign_avx2
+    ptx: kmeans_ptx
 
 enforcement:
   nearest_assignment:

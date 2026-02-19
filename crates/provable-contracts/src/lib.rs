@@ -20,16 +20,19 @@
 //! - [`graph`] — Contract dependency graph and cycle detection
 //! - [`latex`] — LaTeX conversion for contract math notation
 //! - [`book_gen`] — mdBook page generation for contracts
+//! - [`kernels`] — Scalar, AVX2, and PTX kernel implementations
 
 pub mod audit;
 pub mod binding;
 pub mod book_gen;
+pub mod build_helper;
 pub mod coverage;
 pub mod diff;
 pub mod error;
 pub mod generate;
 pub mod graph;
 pub mod kani_gen;
+pub mod kernels;
 pub mod latex;
 pub mod probar_gen;
 pub mod scaffold;

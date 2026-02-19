@@ -67,6 +67,7 @@ simd_dispatch:
   pagerank_iterate:
     scalar: pagerank_iterate_scalar
     avx2: pagerank_iterate_avx2
+    ptx: pagerank_ptx
 
 enforcement:
   probability:

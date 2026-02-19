@@ -116,3 +116,9 @@ qa_gate:
     - "simd_equivalence"
   pass_criteria: "All 6 falsification tests pass + Kani verifies ReLU"
   falsification: "Replace max(0,x) with x to break ReLU non-negativity"
+
+simd_dispatch:
+  activation:
+    scalar: activation_scalar
+    avx2: activation_avx2
+    ptx: activation_ptx

@@ -64,6 +64,7 @@ simd_dispatch:
   gqa:
     scalar: gqa_scalar
     avx2: gqa_avx2
+    ptx: gqa_ptx
 
 enforcement:
   weight_normalization:

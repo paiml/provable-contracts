@@ -71,6 +71,7 @@ simd_dispatch:
   lbfgs_direction:
     scalar: lbfgs_direction_scalar
     avx2: lbfgs_direction_avx2
+    ptx: lbfgs_ptx
 
 enforcement:
   descent:

@@ -99,3 +99,9 @@ qa_gate:
     - "scaling_factor"
   pass_criteria: "All 5 falsification tests pass"
   falsification: "Use 1/d_k instead of 1/√d_k for scaling"
+
+simd_dispatch:
+  attention:
+    scalar: attention_scalar
+    avx2: attention_avx2
+    ptx: attention_ptx

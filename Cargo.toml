@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "crates/provable-contracts",
     "crates/provable-contracts-cli",
+    "crates/provable-contracts-macros",
 ]
 exclude = [
     "target",
@@ -35,6 +36,7 @@ format_push_string = "allow"
 
 [workspace.dependencies]
 provable-contracts = { path = "crates/provable-contracts" }
+provable-contracts-macros = { path = "crates/provable-contracts-macros" }
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"
 thiserror = "2"

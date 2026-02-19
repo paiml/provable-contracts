@@ -72,6 +72,7 @@ simd_dispatch:
   batchnorm:
     scalar: batchnorm_scalar
     avx2: batchnorm_avx2
+    ptx: batchnorm_ptx
 
 enforcement:
   standardization:
