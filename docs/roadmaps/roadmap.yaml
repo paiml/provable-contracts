@@ -731,11 +731,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Qwen 3.5 kaizen: schema fixes and contract quality'
-  status: inprogress
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-02-19T07:37:23Z
-  updated: 2026-02-19T07:37:27.127505430+00:00
+  updated: 2026-02-19T07:50:30.123134261+00:00
   spec: null
   acceptance_criteria: []
   phases: []
