@@ -81,6 +81,21 @@ falsification_tests:
     prediction: "Only attention layers counted"
     test: "proptest with random layer type arrays"
     if_fails: "Linear layers incorrectly counted"
+  - id: FALSIFY-KV-004
+    rule: "Bias absence"
+    prediction: "has_bias=false => 0 bias tensors"
+    test: "proptest with random configs, verify bias count"
+    if_fails: "Bias present despite config setting"
+  - id: FALSIFY-KV-005
+    rule: "Zero input identity"
+    prediction: "W @ zeros = zeros for bias-free projection"
+    test: "proptest with random W dimensions"
+    if_fails: "Bias term leaking into zero-input result"
+  - id: FALSIFY-KV-006
+    rule: "SIMD KV equivalence"
+    prediction: "SIMD KV sizing matches scalar"
+    test: "proptest: compare scalar vs SIMD KV byte calc"
+    if_fails: "SIMD path uses different byte formula"
 
 kani_harnesses:
   - id: KANI-KV-001

@@ -119,6 +119,16 @@ falsification_tests:
     prediction: "cos(0) = 1, sin(0) = 0"
     test: "Deterministic: R(0, i) == I"
     if_fails: "Off-by-one position indexing"
+  - id: FALSIFY-REXT-007
+    rule: "NTK base monotonicity"
+    prediction: "Larger target length => larger base"
+    test: "proptest: L1 < L2 => base'(L1) <= base'(L2)"
+    if_fails: "Exponent formula inverted in NTK scaling"
+  - id: FALSIFY-REXT-008
+    rule: "YaRN ramp non-decreasing"
+    prediction: "ramp(r1) <= ramp(r2) for r1 < r2"
+    test: "proptest with ordered r values"
+    if_fails: "Ramp function not monotonic"
 
 kani_harnesses:
   - id: KANI-REXT-001
