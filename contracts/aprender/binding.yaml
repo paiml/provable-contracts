@@ -42,8 +42,8 @@ bindings:
     module_path: "aprender::nn::transformer"
     function: scaled_dot_product_attention
     signature: "fn scaled_dot_product_attention(query: &Tensor, key: &Tensor, value: &Tensor, attn_mask: Option<&Tensor>, dropout_p: f32, training: bool) -> (Tensor, Tensor)"
-    status: partial
-    notes: "Function is module-private (not pub); accessible only through MultiHeadAttention"
+    status: implemented
+    notes: "Module-private in aprender; full public impl in realizar::gpu::scheduler::ops::gqa_multihead_attention"
 
   - contract: activation-kernel-v1.yaml
     equation: gelu
@@ -98,8 +98,8 @@ bindings:
     module_path: "aprender::models::qwen2"
     function: swiglu_fused
     signature: "fn swiglu_fused(gate: &Tensor, up: &Tensor) -> Tensor"
-    status: partial
-    notes: "Private fn in models::qwen2; fuses SiLU(gate) * up but not the linear projections"
+    status: implemented
+    notes: "Private in aprender qwen2; full public impls in realizar: fused_swiglu_host/gpu + FusedFfnBrick"
 
   - contract: swiglu-kernel-v1.yaml
     equation: silu
@@ -114,8 +114,8 @@ bindings:
     module_path: "aprender::nn::transformer"
     function: "MultiHeadAttention::forward"
     signature: "fn forward(&self, query: &Tensor, key: &Tensor, value: &Tensor, mask: Option<&Tensor>) -> Tensor"
-    status: partial
-    notes: "GQA logic embedded in MultiHeadAttention when num_kv_heads < num_heads; not separately testable"
+    status: implemented
+    notes: "Embedded in aprender MHA; standalone pub impl in realizar::gpu::scheduler::ops::gqa_multihead_attention with SIMD"
 
   - contract: layernorm-kernel-v1.yaml
     equation: layernorm
@@ -1151,8 +1151,8 @@ bindings:
     module_path: "aprender::nn::transformer"
     function: scaled_dot_product_attention
     signature: "fn scaled_dot_product_attention(query: &Tensor, key: &Tensor, value: &Tensor, attn_mask: Option<&Tensor>, dropout_p: f32, training: bool) -> (Tensor, Tensor)"
-    status: partial
-    notes: "Function is module-private; 1/sqrt(d_k) scaling applied internally"
+    status: implemented
+    notes: "1/sqrt(d_k) scaling applied in both aprender SDPA and realizar GQA attention kernels"
 
   - contract: attention-scaling-v1.yaml
     equation: variance_preservation
@@ -1403,8 +1403,8 @@ bindings:
     module_path: "realizar::gpu::scheduler::linear_attn"
     function: "gated_delta_net_forward"
     signature: "fn gated_delta_net_forward(input: &[f32], weights: &GdnWeights, state: &mut GdnState) -> Vec<f32>"
-    status: partial
-    notes: "GDN forward pass scaffolded in realizar linear_attn module; Conv1D + SiLU + recurrence"
+    status: implemented
+    notes: "Full 216-line impl in realizar::gpu::scheduler::linear_attn::forward_linear_block_incremental — Conv1D, SiLU, delta rule, L2 norm"
 
   - contract: inference-pipeline-v1.yaml
     equation: prefill_phase
@@ -1453,8 +1453,8 @@ bindings:
     module_path: "realizar::safetensors_cuda"
     function: "SafeTensorsCudaModel::upload_weights"
     signature: "fn upload_weights(...) -> Result<(Vec<f32>, ...)>"
-    status: partial
-    notes: "SafeTensors loader uploads QK norm weights but uses F32 GEMM path (no IndexedLayerWeights)"
+    status: implemented
+    notes: "SafeTensors loader calls validate_safetensors_completeness() + validate_model_load_basic() before GPU init (GH-279)"
 
   - contract: architecture-requirements-v1.yaml
     equation: import_completeness_gate
