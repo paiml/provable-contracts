@@ -983,11 +983,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Tied embeddings + bias-add kernels (GH-7)
-  status: planned
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-02-19T14:37:55Z
-  updated: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T15:24:04.358011272+00:00
   spec: null
   acceptance_criteria:
   - Create tied-embeddings-v1.yaml + bias-add-v1.yaml + implementations
