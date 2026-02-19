@@ -822,11 +822,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Phase 7 M1: Implement pv lean CLI command for Lean 4 codegen'
-  status: planned
+  status: inprogress
   priority: high
   assigned_to: null
   created: 2026-02-19T13:06:19Z
-  updated: 2026-02-19T13:06:19Z
+  updated: 2026-02-19T14:00:04.174531183+00:00
   spec: null
   acceptance_criteria:
   - Implement pv lean <contract.yaml> [--output-dir <dir>] command. Generates Lean 4 definition files and sorry theorem stubs from contract YAML. Refs phase7-lean-integration spec Milestone 1.
@@ -842,11 +842,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Phase 7 M1: Implement pv lean-status CLI command'
-  status: planned
+  status: inprogress
   priority: medium
   assigned_to: null
   created: 2026-02-19T13:06:21Z
-  updated: 2026-02-19T13:06:21Z
+  updated: 2026-02-19T14:00:04.192852948+00:00
   spec: null
   acceptance_criteria:
   - Implement pv lean-status [<contract.yaml> | <dir>] command. Tabular report of Lean proof status (proved/sorry/wip/n-a) per contract. Refs phase7-lean-integration spec.
@@ -862,11 +862,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Phase 7 M1: Lean 4 project scaffold with lakefile and Basic.lean'
-  status: planned
+  status: inprogress
   priority: medium
   assigned_to: null
   created: 2026-02-19T13:06:24Z
-  updated: 2026-02-19T13:06:24Z
+  updated: 2026-02-19T14:00:04.210856693+00:00
   spec: null
   acceptance_criteria:
   - Create lean/ directory with lakefile.lean, lean-toolchain, ProvableContracts/Basic.lean with shared defs (Vector, Tensor, notation). Refs phase7-lean-integration spec Milestone 1.
