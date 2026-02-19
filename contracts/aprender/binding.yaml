@@ -1429,3 +1429,37 @@ bindings:
     signature: "fn o_projection_shape(&self) -> [usize; 2]"
     status: not_implemented
     notes: "Output projection: [hidden, n_h * d_k] = [4096, 4096]"
+
+  # --- GH-279: Architecture Requirements (Weight Loading Validation) ---
+
+  - contract: architecture-requirements-v1.yaml
+    equation: gguf_loader_validation
+    module_path: "realizar::cuda::executor::weights"
+    function: "CudaExecutor::build_indexed_weights"
+    signature: "fn build_indexed_weights(&mut self, num_layers: usize, layer_prefix_fn: F, arch: &ArchConstraints) -> Result<(), GpuError>"
+    status: implemented
+    notes: "GGUF loader path — validates via ValidatedLayerWeights::validate()"
+
+  - contract: architecture-requirements-v1.yaml
+    equation: apr_loader_validation
+    module_path: "realizar::apr::cuda_part_02_part_03"
+    function: "AprV2ModelCuda::upload_quantized_weights_to_gpu"
+    signature: "fn upload_quantized_weights_to_gpu(&mut self) -> Result<usize>"
+    status: implemented
+    notes: "APR loader path — derives ArchConstraints from metadata, validates via build_indexed_weights"
+
+  - contract: architecture-requirements-v1.yaml
+    equation: safetensors_loader_validation
+    module_path: "realizar::safetensors_cuda"
+    function: "SafeTensorsCudaModel::upload_weights"
+    signature: "fn upload_weights(...) -> Result<(Vec<f32>, ...)>"
+    status: partial
+    notes: "SafeTensors loader uploads QK norm weights but uses F32 GEMM path (no IndexedLayerWeights)"
+
+  - contract: architecture-requirements-v1.yaml
+    equation: import_completeness_gate
+    module_path: "aprender::format::layout_contract"
+    function: "enforce_architecture_completeness"
+    signature: "fn enforce_architecture_completeness(tensor_names: &[&str], architecture: &str, num_layers: usize) -> Result<(), ContractError>"
+    status: implemented
+    notes: "Import/export boundary check — rejects incomplete models before writing APR file"
