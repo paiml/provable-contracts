@@ -1,0 +1,94 @@
+metadata:
+  version: "1.0.0"
+  created: "2026-02-19"
+  author: "PAIML Engineering"
+  description: "Principal Component Analysis — eigendecomposition-based dimensionality reduction"
+  references:
+    - "Jolliffe (2002) Principal Component Analysis"
+    - "Bishop (2006) Pattern Recognition and Machine Learning, §12.1"
+
+equations:
+  pca_transform:
+    formula: "Z = (X - μ) W_k where W_k = [w_1, ..., w_k] (top-k eigenvectors of Cov(X))"
+    domain: "X ∈ ℝ^{n×d}, k ≤ d"
+    codomain: "Z ∈ ℝ^{n×k}"
+    invariants:
+      - "Output has k columns (dimensionality reduction)"
+      - "Components are orthogonal: Z^T Z is diagonal"
+      - "First component captures maximum variance"
+
+  explained_variance:
+    formula: "explained_ratio_j = λ_j / Σ λ_i"
+    domain: "eigenvalues λ_1 ≥ λ_2 ≥ ... ≥ λ_d ≥ 0"
+    codomain: "ratio_j ∈ [0, 1], Σ ratio_j = 1"
+    invariants:
+      - "Each ratio ∈ [0, 1]"
+      - "Ratios sum to 1"
+      - "Ratios are non-increasing (λ sorted descending)"
+      - "All eigenvalues ≥ 0 (covariance matrix is PSD)"
+
+  reconstruction:
+    formula: "X̂ = Z W_k^T + μ (approximate reconstruction)"
+    domain: "Z ∈ ℝ^{n×k}, W_k ∈ ℝ^{d×k}, μ ∈ ℝ^d"
+    codomain: "X̂ ∈ ℝ^{n×d}"
+    invariants:
+      - "||X - X̂|| decreases as k increases"
+      - "k = d ⟹ X̂ = X (perfect reconstruction)"
+
+proof_obligations:
+  - type: invariant
+    property: "Dimensionality reduction"
+    formal: "PCA(X, k).shape = (n, k)"
+    applies_to: all
+  - type: bound
+    property: "Explained variance bounded"
+    formal: "Each explained_ratio ∈ [0, 1]"
+    applies_to: all
+  - type: invariant
+    property: "Explained variance sums to 1"
+    formal: "Σ explained_ratio = 1 (for all d components)"
+    applies_to: all
+  - type: invariant
+    property: "Perfect reconstruction at full rank"
+    formal: "k = d ⟹ ||X - reconstruct(PCA(X, d))|| < ε"
+    applies_to: all
+
+falsification_tests:
+  - id: FALSIFY-PCA-001
+    rule: "Dimensionality reduction"
+    prediction: "transformed shape = (n_samples, n_components)"
+    test: "proptest: fit PCA with k < d, check output shape"
+    if_fails: "Component selection or projection error"
+  - id: FALSIFY-PCA-002
+    rule: "Explained variance bounded"
+    prediction: "each ratio ∈ [0, 1] and sum ≈ 1"
+    test: "proptest: fit PCA, check explained_variance_ratio"
+    if_fails: "Eigenvalue normalization error"
+  - id: FALSIFY-PCA-003
+    rule: "Variance ordering"
+    prediction: "explained_variance_ratio is non-increasing"
+    test: "proptest: fit PCA, check ordering"
+    if_fails: "Eigenvalues not sorted descending"
+  - id: FALSIFY-PCA-004
+    rule: "Deterministic transform"
+    prediction: "transform(X) = transform(X) for same X"
+    test: "proptest: transform twice, compare"
+    if_fails: "Non-deterministic random state"
+
+enforcement:
+  bounded:
+    description: "Explained variance ratios must be in [0, 1]"
+    check: "contract_tests::FALSIFY-PCA-002"
+    severity: "ERROR"
+
+qa_gate:
+  id: F-PCA-001
+  name: "PCA Contract"
+  description: "PCA correctness quality gate"
+  checks:
+    - "dim_reduction"
+    - "variance_bounded"
+    - "variance_ordering"
+    - "deterministic"
+  pass_criteria: "All 4 falsification tests pass"
+  falsification: "Sort eigenvalues ascending instead of descending"
