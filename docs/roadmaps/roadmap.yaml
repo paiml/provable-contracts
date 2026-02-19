@@ -949,11 +949,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Linear projection kernel (GH-5)
-  status: planned
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-02-19T14:37:55Z
-  updated: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T15:23:56.152649471+00:00
   spec: null
   acceptance_criteria:
   - Create linear-projection-v1.yaml + linear.rs for all architectures
