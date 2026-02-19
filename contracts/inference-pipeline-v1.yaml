@@ -151,5 +151,5 @@ qa_gate:
     - "layer_composition"
     - "hybrid_layer_schedule"
     - "kv_cache_growth"
-  pass_criteria: "All 6 falsification tests pass"
+  pass_criteria: "All 7 falsification tests pass"
   falsification: "Remove residual connection in layer 0 to break dimension"

@@ -103,5 +103,5 @@ qa_gate:
     - "element_count"
     - "identity_1d"
     - "roundtrip"
-  pass_criteria: "3 wired tests pass + 2 ignored"
+  pass_criteria: "All 5 falsification tests pass"
   falsification: "Swap shape elements in wrong order"

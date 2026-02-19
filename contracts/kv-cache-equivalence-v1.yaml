@@ -93,5 +93,5 @@ qa_gate:
     - "page_shape"
     - "batched_serial"
     - "fused_kernel"
-  pass_criteria: "1 wired (page_shape) + 3 ignored (require API)"
+  pass_criteria: "All 4 falsification tests pass"
   falsification: "Corrupt one KV cache entry to break equivalence"

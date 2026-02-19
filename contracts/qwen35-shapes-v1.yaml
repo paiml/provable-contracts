@@ -124,5 +124,5 @@ qa_gate:
     - "swiglu_ratio"
     - "o_projection"
     - "rope_frequencies"
-  pass_criteria: "All 6 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 7 falsification tests pass"
   falsification: "Change n_kv from 4 to 3 to break GQA divisibility"

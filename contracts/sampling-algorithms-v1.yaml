@@ -104,5 +104,5 @@ qa_gate:
     - "top_k_cardinality"
     - "top_p_cumulative"
     - "temperature_identity"
-  pass_criteria: "All 4 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 5 falsification tests pass"
   falsification: "Set K=0 to observe empty filtered set"

@@ -102,5 +102,5 @@ qa_gate:
     - "alpha_scaling"
     - "dropout_expectation"
     - "concrete_sizes"
-  pass_criteria: "All 4 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 5 falsification tests pass"
   falsification: "Swap Q6K and Q8_0 block sizes to break ordering"

@@ -119,5 +119,5 @@ qa_gate:
     - "parameter_decomposition"
     - "tied_embeddings"
     - "quantization_ordering"
-  pass_criteria: "All 5 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 6 falsification tests pass"
   falsification: "Omit a bias tensor to break count formula"

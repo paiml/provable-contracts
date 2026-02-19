@@ -98,5 +98,5 @@ qa_gate:
     - "garbage_oracle"
     - "qk_norm_bound"
     - "bpe_roundtrip"
-  pass_criteria: "3 pass + 1 SIMD ignored + 1 BPE ignored (requires API)"
+  pass_criteria: "All 5 falsification tests pass"
   falsification: "Pass element count just below threshold to test boundary"

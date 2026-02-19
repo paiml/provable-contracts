@@ -97,5 +97,5 @@ qa_gate:
     - "weight_normalization"
     - "output_convexity"
     - "scaling_factor"
-  pass_criteria: "All 4 falsification tests pass"
+  pass_criteria: "All 5 falsification tests pass"
   falsification: "Use 1/d_k instead of 1/√d_k for scaling"

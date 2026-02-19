@@ -96,5 +96,5 @@ qa_gate:
     - "ollama_monotonic"
     - "efficiency_monotonic"
     - "concrete_bound"
-  pass_criteria: "All 4 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 5 falsification tests pass"
   falsification: "Insert gap between C and B boundaries"

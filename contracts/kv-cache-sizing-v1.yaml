@@ -116,5 +116,5 @@ qa_gate:
     - "hybrid_accounting"
     - "bias_absence"
     - "zero_input_identity"
-  pass_criteria: "All 5 falsification tests pass + 1 SIMD ignored"
+  pass_criteria: "All 6 falsification tests pass"
   falsification: "Forget factor of 2 to halve KV cache estimate"
