@@ -98,54 +98,80 @@ pub fn flash_attention_scalar(
         let mut tile_start = 0;
         while tile_start < n {
             let tile_end = (tile_start + tile_size).min(n);
-            let tile_len = tile_end - tile_start;
-
-            // Compute scores for this tile: Q[i] . K[j] / sqrt(d) for j in tile
-            let mut tile_scores = vec![0.0f32; tile_len];
-            for (tj, j) in (tile_start..tile_end).enumerate() {
-                let mut dot = 0.0f32;
-                for kk in 0..d {
-                    dot += q[i * d + kk] * k[j * d + kk];
-                }
-                tile_scores[tj] = dot * scale;
-            }
-
-            // Find max of this tile
-            let tile_max = tile_scores
-                .iter()
-                .copied()
-                .fold(f32::NEG_INFINITY, f32::max);
-            let new_max = running_max.max(tile_max);
-
-            // Correction factor: rescale previous accumulation
-            let correction = (running_max - new_max).exp();
-            for a in acc.iter_mut() {
-                *a *= correction;
-            }
-            running_sum *= correction;
-
-            // Accumulate this tile
-            for (tj, j) in (tile_start..tile_end).enumerate() {
-                let w = (tile_scores[tj] - new_max).exp();
-                for dd in 0..d {
-                    acc[dd] += w * v[j * d + dd];
-                }
-                running_sum += w;
-            }
-
-            running_max = new_max;
+            process_tile(
+                q, k, v, i, d, scale, tile_start, tile_end,
+                &mut running_max, &mut running_sum, &mut acc,
+            );
             tile_start = tile_end;
         }
 
         // Normalize
-        if running_sum > 0.0 {
-            for dd in 0..d {
-                output[i * d + dd] = acc[dd] / running_sum;
-            }
-        } else {
-            for dd in 0..d {
-                output[i * d + dd] = 0.0;
-            }
+        normalize_row(&acc, running_sum, &mut output[i * d..(i + 1) * d]);
+    }
+}
+
+/// Process a single tile of KV for one query row, updating online softmax state.
+#[allow(clippy::too_many_arguments)]
+fn process_tile(
+    q: &[f32],
+    k: &[f32],
+    v: &[f32],
+    i: usize,
+    d: usize,
+    scale: f32,
+    tile_start: usize,
+    tile_end: usize,
+    running_max: &mut f32,
+    running_sum: &mut f32,
+    acc: &mut [f32],
+) {
+    let tile_len = tile_end - tile_start;
+
+    // Compute scores for this tile: Q[i] . K[j] / sqrt(d)
+    let mut tile_scores = vec![0.0f32; tile_len];
+    for (tj, j) in (tile_start..tile_end).enumerate() {
+        let mut dot = 0.0f32;
+        for kk in 0..d {
+            dot += q[i * d + kk] * k[j * d + kk];
+        }
+        tile_scores[tj] = dot * scale;
+    }
+
+    // Find max of this tile
+    let tile_max = tile_scores
+        .iter()
+        .copied()
+        .fold(f32::NEG_INFINITY, f32::max);
+    let new_max = running_max.max(tile_max);
+
+    // Correction factor: rescale previous accumulation
+    let correction = (*running_max - new_max).exp();
+    for a in acc.iter_mut() {
+        *a *= correction;
+    }
+    *running_sum *= correction;
+
+    // Accumulate this tile
+    for (tj, j) in (tile_start..tile_end).enumerate() {
+        let w = (tile_scores[tj] - new_max).exp();
+        for dd in 0..d {
+            acc[dd] += w * v[j * d + dd];
+        }
+        *running_sum += w;
+    }
+
+    *running_max = new_max;
+}
+
+/// Normalize accumulated attention output by the softmax denominator.
+fn normalize_row(acc: &[f32], running_sum: f32, output: &mut [f32]) {
+    if running_sum > 0.0 {
+        for (o, a) in output.iter_mut().zip(acc.iter()) {
+            *o = a / running_sum;
+        }
+    } else {
+        for o in output.iter_mut() {
+            *o = 0.0;
         }
     }
 }

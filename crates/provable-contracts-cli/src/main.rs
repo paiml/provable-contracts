@@ -242,4 +242,31 @@ mod tests {
         });
         assert!(result.is_ok());
     }
+
+    #[test]
+    fn dispatch_lean() {
+        let result = run_command(Commands::Lean {
+            contract: test_contract(),
+            output_dir: None,
+        });
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn dispatch_lean_status() {
+        let result = run_command(Commands::LeanStatus {
+            path: test_contract(),
+        });
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn dispatch_lean_status_directory() {
+        let contracts_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../contracts");
+        let result = run_command(Commands::LeanStatus {
+            path: contracts_dir,
+        });
+        assert!(result.is_ok());
+    }
 }
