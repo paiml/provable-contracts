@@ -45,7 +45,7 @@ proof_obligations:
   - type: equivalence
     property: "GPU kernel matches CPU reference"
     tolerance: 1.0e-3
-    applies_to: gpu
+    applies_to: simd
   - type: invariant
     property: "Per-head independence"
     formal: "RMSNorm([h1;h2;...]) = [RMSNorm(h1); RMSNorm(h2); ...]"
