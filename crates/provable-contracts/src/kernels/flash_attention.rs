@@ -19,28 +19,10 @@ use super::ops;
 /// Q, K, V are all n x d. Output is n x d.
 #[cfg(test)]
 fn naive_attention(q: &[f32], k: &[f32], v: &[f32], n: usize, d: usize, output: &mut [f32]) {
-    for i in 0..n {
-        // Compute scores: Q[i] . K[j] / sqrt(d) for all j
-        let mut scores = vec![0.0f32; n];
-        let q_row = &q[i * d..(i + 1) * d];
-        for j in 0..n {
-            scores[j] = ops::dot(q_row, &k[j * d..(j + 1) * d]);
-        }
-        let scale = 1.0 / (d as f32).sqrt();
-        for s in &mut scores {
-            *s *= scale;
-        }
-
-        // Softmax
-        ops::softmax_row(&mut scores);
-
-        // Weighted sum of V
-        let out_row = &mut output[i * d..(i + 1) * d];
-        out_row.fill(0.0);
-        for j in 0..n {
-            ops::weighted_accumulate(out_row, scores[j], &v[j * d..(j + 1) * d]);
-        }
-    }
+    let mut scores = vec![0.0f32; n * n];
+    ops::score_matrix(q, k, n, n, d, &mut scores);
+    ops::softmax_rows(&mut scores, n, n);
+    ops::matmul_sv(&scores, v, n, n, d, output);
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -418,6 +400,7 @@ EXIT:
 mod tests {
     use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::super::ops::{sequential_floats, patterned_floats};
     use proptest::prelude::*;
 
     // ── Flash attention matches naive attention ─────────────────────────
@@ -428,9 +411,9 @@ mod tests {
         let d = 3;
         let tile_size = 2;
 
-        let q: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.1).collect();
-        let k: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.15).collect();
-        let v: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.2).collect();
+        let q = sequential_floats(n * d, 0.1);
+        let k = sequential_floats(n * d, 0.15);
+        let v = sequential_floats(n * d, 0.2);
 
         let mut flash_out = vec![0.0f32; n * d];
         let mut naive_out = vec![0.0f32; n * d];
@@ -453,9 +436,9 @@ mod tests {
         let d = 4;
         let tile_size = 3;
 
-        let q: Vec<f32> = (0..n * d).map(|i| ((i % 7) as f32 - 3.0) * 0.5).collect();
-        let k: Vec<f32> = (0..n * d).map(|i| ((i % 5) as f32 - 2.0) * 0.3).collect();
-        let v: Vec<f32> = (0..n * d).map(|i| ((i % 11) as f32 - 5.0) * 0.2).collect();
+        let q = patterned_floats(n * d, 7, 3.0, 0.5);
+        let k = patterned_floats(n * d, 5, 2.0, 0.3);
+        let v = patterned_floats(n * d, 11, 5.0, 0.2);
 
         let mut flash_out = vec![0.0f32; n * d];
         let mut naive_out = vec![0.0f32; n * d];
@@ -482,9 +465,9 @@ mod tests {
         let d = 3;
         let tile_size = n + 10; // larger than n
 
-        let q: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.1).collect();
-        let k: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.15).collect();
-        let v: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.2).collect();
+        let q = sequential_floats(n * d, 0.1);
+        let k = sequential_floats(n * d, 0.15);
+        let v = sequential_floats(n * d, 0.2);
 
         let mut flash_out = vec![0.0f32; n * d];
         let mut naive_out = vec![0.0f32; n * d];
@@ -508,9 +491,9 @@ mod tests {
         let d = 2;
         let tile_size = 1;
 
-        let q: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.1).collect();
-        let k: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.2).collect();
-        let v: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.15).collect();
+        let q = sequential_floats(n * d, 0.1);
+        let k = sequential_floats(n * d, 0.2);
+        let v = sequential_floats(n * d, 0.15);
 
         let mut flash_out = vec![0.0f32; n * d];
         let mut naive_out = vec![0.0f32; n * d];
@@ -570,9 +553,9 @@ mod tests {
             d in 1usize..5,
             tile_size in 1usize..8,
         ) {
-            let q: Vec<f32> = (0..n*d).map(|i| ((i % 7) as f32 - 3.0) * 0.3).collect();
-            let k: Vec<f32> = (0..n*d).map(|i| ((i % 5) as f32 - 2.0) * 0.2).collect();
-            let v: Vec<f32> = (0..n*d).map(|i| ((i % 11) as f32 - 5.0) * 0.15).collect();
+            let q = patterned_floats(n*d, 7, 3.0, 0.3);
+            let k = patterned_floats(n*d, 5, 2.0, 0.2);
+            let v = patterned_floats(n*d, 11, 5.0, 0.15);
 
             let mut flash_out = vec![0.0f32; n * d];
             let mut naive_out = vec![0.0f32; n * d];
@@ -596,9 +579,9 @@ mod tests {
             d in 1usize..4,
             tile_size in 1usize..6,
         ) {
-            let q: Vec<f32> = (0..n*d).map(|i| (i as f32) * 0.1).collect();
-            let k: Vec<f32> = (0..n*d).map(|i| (i as f32) * 0.1).collect();
-            let v: Vec<f32> = (0..n*d).map(|i| (i as f32) * 0.1).collect();
+            let q = sequential_floats(n*d, 0.1);
+            let k = sequential_floats(n*d, 0.1);
+            let v = sequential_floats(n*d, 0.1);
             let mut output = vec![0.0f32; n * d];
 
             flash_attention_scalar(&q, &k, &v, n, d, tile_size, &mut output);
@@ -636,9 +619,9 @@ mod tests {
         let d = 4;
         let tile_size = 2;
 
-        let q: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.1).collect();
-        let k: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.15).collect();
-        let v: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.2).collect();
+        let q = sequential_floats(n * d, 0.1);
+        let k = sequential_floats(n * d, 0.15);
+        let v = sequential_floats(n * d, 0.2);
 
         let mut scalar_out = vec![0.0f32; n * d];
         let mut avx2_out = vec![0.0f32; n * d];
@@ -680,9 +663,9 @@ mod tests {
         let n = 6;
         let d = 3;
 
-        let q: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.1).collect();
-        let k: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.15).collect();
-        let v: Vec<f32> = (0..n * d).map(|i| (i as f32) * 0.2).collect();
+        let q = sequential_floats(n * d, 0.1);
+        let k = sequential_floats(n * d, 0.15);
+        let v = sequential_floats(n * d, 0.2);
 
         let mut out_t1 = vec![0.0f32; n * d];
         let mut out_t2 = vec![0.0f32; n * d];

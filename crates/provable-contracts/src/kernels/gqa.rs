@@ -29,20 +29,10 @@ fn single_head_attention(
     ops::score_matrix(q_head, k_head, seq_len, seq_len, d_k, &mut scores);
 
     // Softmax each row
-    for i in 0..seq_len {
-        ops::softmax_row(&mut scores[i * seq_len..(i + 1) * seq_len]);
-    }
+    ops::softmax_rows(&mut scores, seq_len, seq_len);
 
     // output = scores * V_head, shape seq_len x d_v
-    for i in 0..seq_len {
-        for j in 0..d_v {
-            let mut sum = 0.0f32;
-            for jj in 0..seq_len {
-                sum += scores[i * seq_len + jj] * v_head[jj * d_v + j];
-            }
-            output[i * d_v + j] = sum;
-        }
-    }
+    ops::matmul_sv(&scores, v_head, seq_len, seq_len, d_v, output);
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -366,6 +356,7 @@ EXIT:
 mod tests {
     use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::super::ops::{sequential_floats, patterned_floats};
     use proptest::prelude::*;
 
     // ── MHA equivalence (num_heads == num_kv_heads) ─────────────────────
@@ -380,15 +371,9 @@ mod tests {
         let num_heads = 2;
         let num_kv_heads = 2;
 
-        let q: Vec<f32> = (0..num_heads * seq_len * d_k)
-            .map(|i| (i as f32) * 0.1)
-            .collect();
-        let k: Vec<f32> = (0..num_kv_heads * seq_len * d_k)
-            .map(|i| (i as f32) * 0.15)
-            .collect();
-        let v: Vec<f32> = (0..num_kv_heads * seq_len * d_v)
-            .map(|i| (i as f32) * 0.2)
-            .collect();
+        let q = sequential_floats(num_heads * seq_len * d_k, 0.1);
+        let k = sequential_floats(num_kv_heads * seq_len * d_k, 0.15);
+        let v = sequential_floats(num_kv_heads * seq_len * d_v, 0.2);
         let mut output = vec![0.0f32; num_heads * seq_len * d_v];
 
         gqa_scalar(&q, &k, &v, seq_len, d_k, d_v, num_heads, num_kv_heads, &mut output);
@@ -430,15 +415,9 @@ mod tests {
         let num_heads = 4;
         let num_kv_heads = 2;
 
-        let q: Vec<f32> = (0..num_heads * seq_len * d_k)
-            .map(|i| (i as f32) * 0.1)
-            .collect();
-        let k: Vec<f32> = (0..num_kv_heads * seq_len * d_k)
-            .map(|i| (i as f32) * 0.2)
-            .collect();
-        let v: Vec<f32> = (0..num_kv_heads * seq_len * d_v)
-            .map(|i| (i as f32) * 0.15)
-            .collect();
+        let q = sequential_floats(num_heads * seq_len * d_k, 0.1);
+        let k = sequential_floats(num_kv_heads * seq_len * d_k, 0.2);
+        let v = sequential_floats(num_kv_heads * seq_len * d_v, 0.15);
         let mut output = vec![0.0f32; num_heads * seq_len * d_v];
 
         gqa_scalar(&q, &k, &v, seq_len, d_k, d_v, num_heads, num_kv_heads, &mut output);
@@ -549,15 +528,9 @@ mod tests {
             let num_heads = 4usize;
             let num_kv_heads = 2usize;
 
-            let q: Vec<f32> = (0..num_heads * seq_len * d_k)
-                .map(|i| (i as f32) * 0.1)
-                .collect();
-            let k: Vec<f32> = (0..num_kv_heads * seq_len * d_k)
-                .map(|i| (i as f32) * 0.1)
-                .collect();
-            let v: Vec<f32> = (0..num_kv_heads * seq_len * d_v)
-                .map(|i| (i as f32) * 0.1)
-                .collect();
+            let q = sequential_floats(num_heads * seq_len * d_k, 0.1);
+            let k = sequential_floats(num_kv_heads * seq_len * d_k, 0.1);
+            let v = sequential_floats(num_kv_heads * seq_len * d_v, 0.1);
             let mut output = vec![0.0f32; num_heads * seq_len * d_v];
 
             gqa_scalar(&q, &k, &v, seq_len, d_k, d_v, num_heads, num_kv_heads, &mut output);
@@ -576,15 +549,9 @@ mod tests {
         ) {
             // When num_heads == num_kv_heads, each head is independent
             let num_kv_heads = num_heads;
-            let q: Vec<f32> = (0..num_heads * seq_len * d_k)
-                .map(|i| (i as f32) * 0.1)
-                .collect();
-            let k: Vec<f32> = (0..num_kv_heads * seq_len * d_k)
-                .map(|i| (i as f32) * 0.15)
-                .collect();
-            let v: Vec<f32> = (0..num_kv_heads * seq_len * d_v)
-                .map(|i| (i as f32) * 0.2)
-                .collect();
+            let q = sequential_floats(num_heads * seq_len * d_k, 0.1);
+            let k = sequential_floats(num_kv_heads * seq_len * d_k, 0.15);
+            let v = sequential_floats(num_kv_heads * seq_len * d_v, 0.2);
             let mut output = vec![0.0f32; num_heads * seq_len * d_v];
 
             gqa_scalar(&q, &k, &v, seq_len, d_k, d_v, num_heads, num_kv_heads, &mut output);
@@ -631,15 +598,9 @@ mod tests {
         let num_heads = 4;
         let num_kv_heads = 2;
 
-        let q: Vec<f32> = (0..num_heads * seq_len * d_k)
-            .map(|i| (i as f32) * 0.1)
-            .collect();
-        let k: Vec<f32> = (0..num_kv_heads * seq_len * d_k)
-            .map(|i| (i as f32) * 0.2)
-            .collect();
-        let v: Vec<f32> = (0..num_kv_heads * seq_len * d_v)
-            .map(|i| (i as f32) * 0.15)
-            .collect();
+        let q = sequential_floats(num_heads * seq_len * d_k, 0.1);
+        let k = sequential_floats(num_kv_heads * seq_len * d_k, 0.2);
+        let v = sequential_floats(num_kv_heads * seq_len * d_v, 0.15);
 
         let mut scalar_out = vec![0.0f32; num_heads * seq_len * d_v];
         let mut avx2_out = vec![0.0f32; num_heads * seq_len * d_v];

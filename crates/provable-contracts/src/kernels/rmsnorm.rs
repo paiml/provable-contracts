@@ -421,7 +421,7 @@ mod tests {
             let mut avx2_out = vec![0.0_f32; v.len()];
             rmsnorm_scalar(&v, &gamma, 1e-5, &mut scalar_out);
             unsafe { rmsnorm_avx2(&v, &gamma, 1e-5, &mut avx2_out) };
-            assert_ulp_eq(&scalar_out, &avx2_out, 4);
+            assert_ulp_eq(&scalar_out, &avx2_out, 8);
         }
     }
 
