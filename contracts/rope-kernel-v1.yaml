@@ -84,3 +84,9 @@ qa_gate:
     - "relative_position"
   pass_criteria: "All 4 falsification tests pass"
   falsification: "Swap sin and cos in rotation matrix"
+
+simd_dispatch:
+  rope:
+    scalar: rope_scalar
+    avx2: rope_avx2
+    ptx: rope_ptx

@@ -69,6 +69,7 @@ simd_dispatch:
   cross_entropy:
     scalar: cross_entropy_scalar
     avx2: cross_entropy_avx2
+    ptx: cross_entropy_ptx
 
 enforcement:
   non_negativity:

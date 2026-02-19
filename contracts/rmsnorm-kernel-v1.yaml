@@ -54,6 +54,7 @@ simd_dispatch:
   rmsnorm:
     scalar: rmsnorm_scalar
     avx2: rmsnorm_avx2
+    ptx: rmsnorm_ptx
 
 enforcement:
   finiteness:

@@ -119,3 +119,9 @@ qa_gate:
     - "l2_direction"
   pass_criteria: "All 5 falsification tests pass"
   falsification: "Set A_log to extreme value to trigger sigmoid saturation"
+
+simd_dispatch:
+  gated_delta_net:
+    scalar: gdn_recurrence_scalar
+    avx2: gdn_recurrence_avx2
+    ptx: gated_delta_net_ptx

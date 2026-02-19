@@ -103,3 +103,9 @@ qa_gate:
     - "simd_equivalence"
   pass_criteria: "All 5 falsification tests pass"
   falsification: "Swap row/column indices in inner loop"
+
+simd_dispatch:
+  matmul:
+    scalar: matmul_scalar
+    avx2: matmul_avx2
+    ptx: matmul_ptx

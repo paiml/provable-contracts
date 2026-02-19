@@ -1463,3 +1463,199 @@ bindings:
     signature: "fn enforce_architecture_completeness(tensor_names: &[&str], architecture: &str, num_layers: usize) -> Result<(), ContractError>"
     status: implemented
     notes: "Import/export boundary check — rejects incomplete models before writing APR file"
+
+  # --- Kernel reference implementations (provable-contracts::kernels) ---
+  # These map each compute kernel contract to its scalar/AVX2/PTX reference
+  # implementation in the provable-contracts crate's kernels module.
+
+  - contract: activation-kernel-v1.yaml
+    equation: relu
+    module_path: "provable_contracts::kernels::activation"
+    function: relu_scalar
+    signature: "fn relu_scalar(input: &[f32], output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: activation-kernel-v1.yaml
+    equation: gelu
+    module_path: "provable_contracts::kernels::activation"
+    function: gelu_scalar
+    signature: "fn gelu_scalar(input: &[f32], output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: activation-kernel-v1.yaml
+    equation: silu
+    module_path: "provable_contracts::kernels::activation"
+    function: silu_scalar
+    signature: "fn silu_scalar(input: &[f32], output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: silu-kernel-v1.yaml
+    equation: silu
+    module_path: "provable_contracts::kernels::silu_standalone"
+    function: silu_standalone_scalar
+    signature: "fn silu_standalone_scalar(input: &[f32], output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: silu-kernel-v1.yaml
+    equation: sigmoid
+    module_path: "provable_contracts::kernels::silu_standalone"
+    function: sigmoid_scalar
+    signature: "fn sigmoid_scalar(input: &[f32], output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: softmax-kernel-v1.yaml
+    equation: softmax
+    module_path: "provable_contracts::kernels::softmax"
+    function: softmax_scalar
+    signature: "fn softmax_scalar(input: &[f32], output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: rmsnorm-kernel-v1.yaml
+    equation: rmsnorm
+    module_path: "provable_contracts::kernels::rmsnorm"
+    function: rmsnorm_scalar
+    signature: "fn rmsnorm_scalar(input: &[f32], gamma: &[f32], eps: f32, output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: layernorm-kernel-v1.yaml
+    equation: layernorm
+    module_path: "provable_contracts::kernels::layernorm"
+    function: layernorm_scalar
+    signature: "fn layernorm_scalar(input: &[f32], gamma: &[f32], beta: &[f32], eps: f32, output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: batchnorm-kernel-v1.yaml
+    equation: batchnorm_train
+    module_path: "provable_contracts::kernels::batchnorm"
+    function: batchnorm_scalar
+    signature: "fn batchnorm_scalar(input: &[f32], n: usize, c: usize, gamma: &[f32], beta: &[f32], eps: f32, output: &mut [f32], mean: &mut [f32], var: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: swiglu-kernel-v1.yaml
+    equation: swiglu
+    module_path: "provable_contracts::kernels::swiglu"
+    function: swiglu_scalar
+    signature: "fn swiglu_scalar(gate: &[f32], value: &[f32], output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: cross-entropy-kernel-v1.yaml
+    equation: cross_entropy
+    module_path: "provable_contracts::kernels::cross_entropy"
+    function: cross_entropy_scalar
+    signature: "fn cross_entropy_scalar(targets: &[f32], logits: &[f32], num_classes: usize) -> f32"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: rope-kernel-v1.yaml
+    equation: rope
+    module_path: "provable_contracts::kernels::rope"
+    function: rope_scalar
+    signature: "fn rope_scalar(x: &[f32], position: usize, dim: usize, base: f32, output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    module_path: "provable_contracts::kernels::matmul"
+    function: matmul_scalar
+    signature: "fn matmul_scalar(a: &[f32], b: &[f32], m: usize, p: usize, n: usize, c: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: attention-kernel-v1.yaml
+    equation: attention
+    module_path: "provable_contracts::kernels::attention"
+    function: attention_scalar
+    signature: "fn attention_scalar(q: &[f32], k: &[f32], v: &[f32], n: usize, m: usize, d_k: usize, d_v: usize, output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: gqa-kernel-v1.yaml
+    equation: gqa
+    module_path: "provable_contracts::kernels::gqa"
+    function: gqa_scalar
+    signature: "fn gqa_scalar(q: &[f32], k: &[f32], v: &[f32], n: usize, d_k: usize, d_v: usize, num_heads: usize, num_kv_heads: usize, output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: flash-attention-v1.yaml
+    equation: flash_attention
+    module_path: "provable_contracts::kernels::flash_attention"
+    function: flash_attention_scalar
+    signature: "fn flash_attention_scalar(q: &[f32], k: &[f32], v: &[f32], n: usize, d: usize, tile_size: usize, output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: adamw-kernel-v1.yaml
+    equation: weight_update
+    module_path: "provable_contracts::kernels::adamw"
+    function: adamw_step_scalar
+    signature: "fn adamw_step_scalar(params: &mut [f32], grads: &[f32], m: &mut [f32], v: &mut [f32], lr: f32, beta1: f32, beta2: f32, eps: f32, wd: f32, t: u32)"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: conv1d-kernel-v1.yaml
+    equation: conv1d
+    module_path: "provable_contracts::kernels::conv1d"
+    function: conv1d_scalar
+    signature: "fn conv1d_scalar(input: &[f32], weight: &[f32], bias: Option<&[f32]>, c_in: usize, c_out: usize, l: usize, k: usize, stride: usize, pad: usize, output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: ssm-kernel-v1.yaml
+    equation: ssm_scan
+    module_path: "provable_contracts::kernels::ssm"
+    function: ssm_scan_scalar
+    signature: "fn ssm_scan_scalar(a_bar: &[f32], b_bar: &[f32], c: &[f32], x: &[f32], n: usize, l: usize, output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: assignment
+    module_path: "provable_contracts::kernels::kmeans"
+    function: kmeans_assign_scalar
+    signature: "fn kmeans_assign_scalar(points: &[f32], centroids: &[f32], n: usize, k: usize, d: usize, assignments: &mut [u32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: pagerank-kernel-v1.yaml
+    equation: pagerank
+    module_path: "provable_contracts::kernels::pagerank"
+    function: pagerank_iterate_scalar
+    signature: "fn pagerank_iterate_scalar(transition: &[f32], rank: &[f32], n: usize, damping: f32, output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: lbfgs-kernel-v1.yaml
+    equation: two_loop_recursion
+    module_path: "provable_contracts::kernels::lbfgs"
+    function: lbfgs_direction_scalar
+    signature: "fn lbfgs_direction_scalar(gradient: &[f32], s_history: &[Vec<f32>], y_history: &[Vec<f32>], direction: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    module_path: "provable_contracts::kernels::cma_es"
+    function: cma_sample_scalar
+    signature: "fn cma_sample_scalar(mean: &[f32], sigma: f32, cholesky_l: &[f32], d: usize, z: &[f32], output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"
+
+  - contract: gated-delta-net-v1.yaml
+    equation: write
+    module_path: "provable_contracts::kernels::gated_delta_net"
+    function: gdn_recurrence_scalar
+    signature: "fn gdn_recurrence_scalar(state: &mut [f32], k: &[f32], v: &[f32], q: &[f32], z: &[f32], alpha: f32, beta: f32, k_dim: usize, v_dim: usize, output: &mut [f32])"
+    status: implemented
+    notes: "Scalar + AVX2 + PTX backends"

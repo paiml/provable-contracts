@@ -783,11 +783,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Add match arm test coverage for CLI command dispatch
-  status: planned
+  status: completed
   priority: low
   assigned_to: null
   created: 2026-02-19T09:14:07Z
-  updated: 2026-02-19T09:14:07Z
+  updated: 2026-02-19T09:28:44Z
   spec: null
   acceptance_criteria:
   - Pre-existing untested match arms in equations.rs::from_str other, graph.rs::from_str other, and main.rs CLI dispatch variants

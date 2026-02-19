@@ -60,6 +60,7 @@ simd_dispatch:
   silu:
     scalar: silu_scalar
     avx2: silu_avx2
+    ptx: silu_ptx
 
 enforcement:
   zero_preservation:
