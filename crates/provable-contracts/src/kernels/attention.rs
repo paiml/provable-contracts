@@ -8,26 +8,7 @@
 //! - `unsafe fn attention_avx2(...)` -- AVX2 SIMD implementation
 //! - `fn attention_ptx() -> &'static str` -- PTX assembly source string
 
-// ────────────────────────────────────────────────────────────────────────────
-// Helper: row-wise softmax
-// ────────────────────────────────────────────────────────────────────────────
-
-/// In-place softmax over a contiguous row of length `len`.
-///
-/// Uses the numerically stable formulation: subtract max, exponentiate, normalize.
-fn softmax_row(row: &mut [f32]) {
-    let max_val = row.iter().copied().fold(f32::NEG_INFINITY, f32::max);
-    let mut sum = 0.0f32;
-    for v in row.iter_mut() {
-        *v = (*v - max_val).exp();
-        sum += *v;
-    }
-    if sum > 0.0 {
-        for v in row.iter_mut() {
-            *v /= sum;
-        }
-    }
-}
+use super::ops;
 
 // ────────────────────────────────────────────────────────────────────────────
 // Scalar implementation
@@ -64,23 +45,13 @@ pub fn attention_scalar(
         output.len()
     );
 
-    let scale = 1.0 / (d_k as f32).sqrt();
-
     // Step 1: Compute scores = Q * K^T / sqrt(d_k), shape n x m
     let mut scores = vec![0.0f32; n * m];
-    for i in 0..n {
-        for j in 0..m {
-            let mut dot = 0.0f32;
-            for kk in 0..d_k {
-                dot += q[i * d_k + kk] * k[j * d_k + kk];
-            }
-            scores[i * m + j] = dot * scale;
-        }
-    }
+    ops::score_matrix(q, k, n, m, d_k, &mut scores);
 
     // Step 2: Softmax each row
     for i in 0..n {
-        softmax_row(&mut scores[i * m..(i + 1) * m]);
+        ops::softmax_row(&mut scores[i * m..(i + 1) * m]);
     }
 
     // Step 3: output = scores * V, shape n x d_v
@@ -532,7 +503,7 @@ mod tests {
     #[test]
     fn test_softmax_row_uniform() {
         let mut row = vec![1.0, 1.0, 1.0, 1.0];
-        softmax_row(&mut row);
+        ops::softmax_row(&mut row);
         for &v in &row {
             assert!((v - 0.25).abs() < 1e-6, "uniform input should give 0.25, got {v}");
         }
@@ -541,14 +512,14 @@ mod tests {
     #[test]
     fn test_softmax_row_single() {
         let mut row = vec![42.0];
-        softmax_row(&mut row);
+        ops::softmax_row(&mut row);
         assert!((row[0] - 1.0).abs() < 1e-6, "single element softmax should be 1.0");
     }
 
     #[test]
     fn test_softmax_row_sums_to_one() {
         let mut row = vec![1.0, 2.0, 3.0, 4.0, 5.0];
-        softmax_row(&mut row);
+        ops::softmax_row(&mut row);
         let sum: f32 = row.iter().sum();
         assert!((sum - 1.0).abs() < 1e-6, "softmax should sum to 1.0, got {sum}");
     }
@@ -556,7 +527,7 @@ mod tests {
     #[test]
     fn test_softmax_row_monotonic() {
         let mut row = vec![1.0, 2.0, 3.0];
-        softmax_row(&mut row);
+        ops::softmax_row(&mut row);
         assert!(row[0] < row[1], "softmax should preserve order");
         assert!(row[1] < row[2], "softmax should preserve order");
     }

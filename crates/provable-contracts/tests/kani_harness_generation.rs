@@ -158,6 +158,10 @@ fn all_contracts_generate_valid_kani_output() {
     for path in &paths {
         let code = load_and_generate(path);
         let name = path.file_name().unwrap().to_str().unwrap();
+        // Contracts without kani_harnesses produce a comment instead
+        if code.starts_with("// No Kani") {
+            continue;
+        }
         assert!(
             code.starts_with("#[cfg(kani)]"),
             "{name} should generate cfg(kani) module"

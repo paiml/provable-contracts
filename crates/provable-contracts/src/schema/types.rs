@@ -116,13 +116,16 @@ impl std::fmt::Display for ObligationType {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum AppliesTo {
     All,
     Scalar,
     Simd,
     Converter,
+    /// Algorithm-specific target (e.g., "degree", "bce", "huber").
+    #[serde(untagged)]
+    Other(String),
 }
 
 /// Kernel phase decomposition.

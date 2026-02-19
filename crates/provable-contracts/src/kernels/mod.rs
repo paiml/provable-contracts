@@ -26,6 +26,7 @@
 )]
 
 pub mod ulp;
+pub mod ops;
 
 // Group A — Elementwise
 pub mod activation;

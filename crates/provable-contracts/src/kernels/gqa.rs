@@ -8,24 +8,7 @@
 //! - `unsafe fn gqa_avx2(...)` -- AVX2 SIMD implementation
 //! - `fn gqa_ptx() -> &'static str` -- PTX assembly source string
 
-// ────────────────────────────────────────────────────────────────────────────
-// Helper: row-wise softmax (same as attention module)
-// ────────────────────────────────────────────────────────────────────────────
-
-/// In-place softmax over a contiguous row of length `len`.
-fn softmax_row(row: &mut [f32]) {
-    let max_val = row.iter().copied().fold(f32::NEG_INFINITY, f32::max);
-    let mut sum = 0.0f32;
-    for v in row.iter_mut() {
-        *v = (*v - max_val).exp();
-        sum += *v;
-    }
-    if sum > 0.0 {
-        for v in row.iter_mut() {
-            *v /= sum;
-        }
-    }
-}
+use super::ops;
 
 /// Single-head attention helper: computes attention for one query sequence
 /// against one KV head.
@@ -41,23 +24,13 @@ fn single_head_attention(
     d_v: usize,
     output: &mut [f32],
 ) {
-    let scale = 1.0 / (d_k as f32).sqrt();
-
     // scores = Q_head * K_head^T / sqrt(d_k), shape seq_len x seq_len
     let mut scores = vec![0.0f32; seq_len * seq_len];
-    for i in 0..seq_len {
-        for j in 0..seq_len {
-            let mut dot = 0.0f32;
-            for kk in 0..d_k {
-                dot += q_head[i * d_k + kk] * k_head[j * d_k + kk];
-            }
-            scores[i * seq_len + j] = dot * scale;
-        }
-    }
+    ops::score_matrix(q_head, k_head, seq_len, seq_len, d_k, &mut scores);
 
     // Softmax each row
     for i in 0..seq_len {
-        softmax_row(&mut scores[i * seq_len..(i + 1) * seq_len]);
+        ops::softmax_row(&mut scores[i * seq_len..(i + 1) * seq_len]);
     }
 
     // output = scores * V_head, shape seq_len x d_v
