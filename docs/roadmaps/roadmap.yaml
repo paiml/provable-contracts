@@ -320,11 +320,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Publish provable-contracts to crates.io
-  status: planned
+  status: completed
   priority: low
   assigned_to: null
   created: 2026-02-18T13:27:31Z
-  updated: 2026-02-18T13:27:31Z
+  updated: 2026-02-19T09:15:50Z
   spec: null
   acceptance_criteria:
   - Prepare for crates.io publication. Add proper metadata (description, license, repository, keywords, categories). Ensure lib.rs has public API docs. Version 0.1.0 with lib + CLI.
@@ -747,11 +747,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Add pv equations --format ptx for PTX/CUDA kernel codegen
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-02-19T08:13:29Z
-  updated: 2026-02-19T08:13:34.149033890+00:00
+  updated: 2026-02-19T09:15:11Z
   spec: null
   acceptance_criteria: []
   phases: []
@@ -763,11 +763,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Add pv book command with KaTeX + Mermaid mdBook pages for all contracts
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-02-19T09:12:50Z
-  updated: 2026-02-19T09:12:54.720744352+00:00
+  updated: 2026-02-19T09:15:15Z
   spec: null
   acceptance_criteria:
   - Move math_to_latex to library crate, create book_gen module with page generator and SUMMARY.md updater, add pv book CLI subcommand, configure book.toml with katex+mermaid preprocessors, add enforcement test, integrate book page generation into generate command
