@@ -2385,3 +2385,111 @@ bindings:
     signature: "fn fit(&mut self, x: &Matrix<f32>, y: &[usize]) -> Result<()>"
     status: implemented
     notes: "Number of trees matches n_estimators configuration"
+
+  # ────────────────────────────────────────────────────────
+  # P4 Algorithm Contracts: Active Learning
+  # ────────────────────────────────────────────────────────
+
+  - contract: active-learning-v1.yaml
+    equation: uncertainty_score
+    module_path: "aprender::active_learning"
+    function: "UncertaintySampling::score"
+    signature: "fn score(&self, predictions: &[Vector<f32>]) -> Vec<f32>"
+    status: implemented
+    notes: "Uncertainty = 1 - max(p_i) for each sample"
+
+  - contract: active-learning-v1.yaml
+    equation: margin_score
+    module_path: "aprender::active_learning"
+    function: "MarginSampling::score"
+    signature: "fn score(&self, predictions: &[Vector<f32>]) -> Vec<f32>"
+    status: implemented
+    notes: "Margin = 1 - (p1 - p2) for top-2 probabilities"
+
+  - contract: active-learning-v1.yaml
+    equation: entropy_score
+    module_path: "aprender::active_learning"
+    function: "EntropySampling::score"
+    signature: "fn score(&self, predictions: &[Vector<f32>]) -> Vec<f32>"
+    status: implemented
+    notes: "Shannon entropy H = -Σ p·ln(p)"
+
+  - contract: active-learning-v1.yaml
+    equation: qbc_score
+    module_path: "aprender::active_learning"
+    function: "QueryByCommittee::score_committee"
+    signature: "fn score_committee(&self, committee_preds: &[Vec<Vector<f32>>]) -> Vec<f32>"
+    status: implemented
+    notes: "Vote entropy across committee members"
+
+  # ────────────────────────────────────────────────────────
+  # P4 Algorithm Contracts: Graph Neural Networks
+  # ────────────────────────────────────────────────────────
+
+  - contract: gnn-v1.yaml
+    equation: gcn_aggregate
+    module_path: "aprender::nn::gnn"
+    function: "GCNConv::forward"
+    signature: "fn forward(&self, x: &Tensor, adj: &AdjacencyMatrix) -> Tensor"
+    status: implemented
+    notes: "GCN normalized adjacency propagation"
+
+  - contract: gnn-v1.yaml
+    equation: message_passing
+    module_path: "aprender::nn::gnn"
+    function: "MessagePassing::propagate"
+    signature: "fn propagate(&self, x: &Tensor, edge_index: &AdjacencyMatrix) -> Tensor"
+    status: implemented
+    notes: "Generic message → aggregate → update framework"
+
+  - contract: gnn-v1.yaml
+    equation: global_mean_pool
+    module_path: "aprender::gnn"
+    function: "global_mean_pool"
+    signature: "fn global_mean_pool(node_features: &[Vec<f32>], batch: &[usize]) -> Vec<Vec<f32>>"
+    status: implemented
+    notes: "Mean aggregation of node features per graph"
+
+  - contract: gnn-v1.yaml
+    equation: global_max_pool
+    module_path: "aprender::gnn"
+    function: "global_max_pool"
+    signature: "fn global_max_pool(node_features: &[Vec<f32>], batch: &[usize]) -> Vec<Vec<f32>>"
+    status: implemented
+    notes: "Max aggregation of node features per graph"
+
+  # ────────────────────────────────────────────────────────
+  # P4 Algorithm Contracts: Metaheuristics
+  # ────────────────────────────────────────────────────────
+
+  - contract: metaheuristics-v1.yaml
+    equation: sa_acceptance
+    module_path: "aprender::metaheuristics::sa"
+    function: "SimulatedAnnealing::optimize"
+    signature: "fn optimize(&mut self, objective: &dyn Fn(&[f64]) -> f64, space: &SearchSpace, budget: &Budget) -> OptimizationResult"
+    status: implemented
+    notes: "Metropolis acceptance criterion with exponential cooling"
+
+  - contract: metaheuristics-v1.yaml
+    equation: ga_crossover
+    module_path: "aprender::metaheuristics::ga"
+    function: "GeneticAlgorithm::optimize"
+    signature: "fn optimize(&mut self, objective: &dyn Fn(&[f64]) -> f64, space: &SearchSpace, budget: &Budget) -> OptimizationResult"
+    status: implemented
+    notes: "SBX crossover + polynomial mutation + tournament selection"
+
+  - contract: metaheuristics-v1.yaml
+    equation: pso_velocity
+    module_path: "aprender::metaheuristics::pso"
+    function: "ParticleSwarm::optimize"
+    signature: "fn optimize(&mut self, objective: &dyn Fn(&[f64]) -> f64, space: &SearchSpace, budget: &Budget) -> OptimizationResult"
+    status: implemented
+    notes: "Velocity update with inertia, cognitive, social components"
+
+  - contract: metaheuristics-v1.yaml
+    equation: best_monotone
+    module_path: "aprender::metaheuristics"
+    function: "PerturbativeMetaheuristic::optimize"
+    signature: "fn optimize(&mut self, objective: &dyn Fn(&[f64]) -> f64, space: &SearchSpace, budget: &Budget) -> OptimizationResult"
+    status: implemented
+    notes: "Best-so-far value is monotone non-increasing across all metaheuristics"
