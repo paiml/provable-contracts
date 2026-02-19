@@ -1047,3 +1047,20 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-059
+  github_issue: null
+  item_type: task
+  title: 'Pre-existing: deny/lint cache staleness and match-arm coverage detection'
+  status: planned
+  priority: low
+  assigned_to: null
+  created: 2026-02-19T16:37:00Z
+  updated: 2026-02-19T16:37:00Z
+  spec: null
+  acceptance_criteria:
+  - 'pmat work complete falsification checks #8, #17, #18 have limitations: deny/lint cache ages against contract start time, and match arm coverage detection doesn''t find tests in the same file''s #[cfg(test)] module. All tests exist (dispatch_validate, dispatch_scaffold, etc.). All 6 CLI command dispatch arms are covered.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
