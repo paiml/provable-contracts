@@ -1865,3 +1865,139 @@ bindings:
     signature: "fn harmonic_centrality(&self) -> HashMap<NodeId, f64>"
     status: implemented
     notes: "Boldi & Vigna (2014), handles disconnected graphs"
+
+  # ────────────────────────────────────────────────────────
+  # P1 Algorithm Contracts: Calibration
+  # ────────────────────────────────────────────────────────
+
+  - contract: calibration-v1.yaml
+    equation: expected_calibration_error
+    module_path: "aprender::calibration"
+    function: "expected_calibration_error"
+    signature: "fn expected_calibration_error(predictions: &[f32], labels: &[bool], n_bins: usize) -> f32"
+    status: implemented
+    notes: "ECE with uniform-width binning"
+
+  - contract: calibration-v1.yaml
+    equation: maximum_calibration_error
+    module_path: "aprender::calibration"
+    function: "maximum_calibration_error"
+    signature: "fn maximum_calibration_error(predictions: &[f32], labels: &[bool], n_bins: usize) -> f32"
+    status: implemented
+    notes: "MCE — worst-case bin calibration error"
+
+  - contract: calibration-v1.yaml
+    equation: platt_scaling
+    module_path: "aprender::calibration"
+    function: "PlattScaling::fit"
+    signature: "fn fit(logits: &[f32], labels: &[bool]) -> Self"
+    status: implemented
+    notes: "Sigmoid calibration via log-loss minimization"
+
+  - contract: calibration-v1.yaml
+    equation: isotonic_regression
+    module_path: "aprender::calibration"
+    function: "IsotonicRegression::fit"
+    signature: "fn fit(&mut self, predictions: &[f32], labels: &[bool]) -> Result<()>"
+    status: implemented
+    notes: "Pool Adjacent Violators (PAV) algorithm"
+
+  - contract: calibration-v1.yaml
+    equation: reliability_diagram
+    module_path: "aprender::calibration"
+    function: "reliability_diagram"
+    signature: "fn reliability_diagram(predictions: &[f32], labels: &[bool], n_bins: usize) -> Vec<(f32, f32, usize)>"
+    status: implemented
+    notes: "Bin-level (confidence, accuracy, count) tuples"
+
+  # ────────────────────────────────────────────────────────
+  # P1 Algorithm Contracts: Preprocessing Normalization
+  # ────────────────────────────────────────────────────────
+
+  - contract: preprocessing-normalization-v1.yaml
+    equation: standard_scaler
+    module_path: "aprender::preprocessing"
+    function: "StandardScaler::fit + StandardScaler::transform"
+    signature: "fn fit(&mut self, x: &Matrix<f32>) -> Result<()>, fn transform(&self, x: &Matrix<f32>) -> Result<Matrix<f32>>"
+    status: implemented
+    notes: "Zero-mean unit-variance standardization"
+
+  - contract: preprocessing-normalization-v1.yaml
+    equation: minmax_scaler
+    module_path: "aprender::preprocessing"
+    function: "MinMaxScaler::fit + MinMaxScaler::transform"
+    signature: "fn fit(&mut self, x: &Matrix<f32>) -> Result<()>, fn transform(&self, x: &Matrix<f32>) -> Result<Matrix<f32>>"
+    status: implemented
+    notes: "Feature scaling to [min, max] range"
+
+  - contract: preprocessing-normalization-v1.yaml
+    equation: robust_scaler
+    module_path: "aprender::preprocessing"
+    function: "RobustScaler::fit + RobustScaler::transform"
+    signature: "fn fit(&mut self, x: &Matrix<f32>) -> Result<()>, fn transform(&self, x: &Matrix<f32>) -> Result<Matrix<f32>>"
+    status: not_implemented
+    notes: "Robust scaling with median/IQR — not yet implemented"
+
+  # ────────────────────────────────────────────────────────
+  # P1 Algorithm Contracts: Decision Tree
+  # ────────────────────────────────────────────────────────
+
+  - contract: decision-tree-v1.yaml
+    equation: gini_impurity
+    module_path: "aprender::tree::helpers"
+    function: "gini_impurity"
+    signature: "fn gini_impurity(labels: &[usize]) -> f32"
+    status: implemented
+    notes: "Gini impurity for CART splitting criterion"
+
+  - contract: decision-tree-v1.yaml
+    equation: gini_split
+    module_path: "aprender::tree::helpers"
+    function: "gini_split"
+    signature: "fn gini_split(left_labels: &[usize], right_labels: &[usize]) -> f32"
+    status: implemented
+    notes: "Weighted Gini impurity for binary split"
+
+  - contract: decision-tree-v1.yaml
+    equation: mse_split
+    module_path: "aprender::tree::helpers"
+    function: "mse_impurity"
+    signature: "fn mse_impurity(targets: &[f32]) -> f32"
+    status: not_implemented
+    notes: "MSE impurity for regression trees"
+
+  - contract: decision-tree-v1.yaml
+    equation: prediction
+    module_path: "aprender::tree::classifier"
+    function: "DecisionTreeClassifier::predict"
+    signature: "fn predict(&self, x: &Matrix<f32>) -> Result<Vec<usize>>"
+    status: implemented
+    notes: "CART classifier prediction via tree traversal"
+
+  # ────────────────────────────────────────────────────────
+  # P1 Algorithm Contracts: Naive Bayes
+  # ────────────────────────────────────────────────────────
+
+  - contract: naive-bayes-v1.yaml
+    equation: class_prior
+    module_path: "aprender::classification"
+    function: "GaussianNB::fit"
+    signature: "fn fit(&mut self, x: &Matrix<f32>, y: &[usize]) -> Result<()>"
+    status: implemented
+    notes: "Computes class priors, means, variances during fit"
+
+  - contract: naive-bayes-v1.yaml
+    equation: gaussian_likelihood
+    module_path: "aprender::classification"
+    function: "GaussianNB::predict_proba"
+    signature: "fn predict_proba(&self, x: &Matrix<f32>) -> Result<Vec<Vec<f32>>>"
+    status: implemented
+    notes: "Gaussian PDF evaluation per class per feature"
+
+  - contract: naive-bayes-v1.yaml
+    equation: log_posterior
+    module_path: "aprender::classification"
+    function: "GaussianNB::predict"
+    signature: "fn predict(&self, x: &Matrix<f32>) -> Result<Vec<usize>>"
+    status: implemented
+    notes: "Argmax of log-posteriors for classification"
