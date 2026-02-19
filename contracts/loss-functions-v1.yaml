@@ -117,6 +117,21 @@ falsification_tests:
     prediction: "L1(y, ŷ) = L1(ŷ, y) for random inputs"
     test: "proptest comparing both argument orders"
     if_fails: "Argument-order dependence"
+  - id: FALSIFY-LF-006
+    rule: "NLL lower bound"
+    prediction: "NLL ≥ 0 for random logits and valid class indices"
+    test: "proptest with random logits and uniform class labels"
+    if_fails: "Softmax normalization error or log of non-positive value"
+
+kani_harnesses:
+  - id: KANI-LF-001
+    obligation: "1"
+    bound: 4
+    strategy: stub_float
+  - id: KANI-LF-002
+    obligation: "2"
+    bound: 4
+    strategy: stub_float
 
 enforcement:
   non_negativity:
@@ -138,5 +153,6 @@ qa_gate:
     - "bce_non_negativity"
     - "huber_continuity"
     - "l1_symmetry"
-  pass_criteria: "All 5 falsification tests pass"
+    - "nll_lower_bound"
+  pass_criteria: "All 6 falsification tests pass"
   falsification: "Remove log-sum-exp trick from BCE"

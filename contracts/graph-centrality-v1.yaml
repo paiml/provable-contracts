@@ -130,6 +130,33 @@ falsification_tests:
     prediction: "C_H ∈ [0, 1] for all graphs"
     test: "proptest with random graphs including disconnected"
     if_fails: "Disconnected component handling (1/∞)"
+  - id: FALSIFY-GC-007
+    rule: "Closeness positive for connected"
+    prediction: "C_C > 0 for all nodes in connected graphs"
+    test: "proptest with random connected graphs, n=3..20"
+    if_fails: "Distance sum overflow or zero-division in closeness formula"
+  - id: FALSIFY-GC-008
+    rule: "Katz strictly positive"
+    prediction: "x_v > 0 for all v when β > 0 and α < 1/λ_max"
+    test: "proptest with random graphs, α drawn below spectral radius inverse"
+    if_fails: "Attenuation factor α too large or β=0 edge case"
+
+kani_harnesses:
+  - id: KANI-GC-001
+    obligation: "1"
+    bound: 4
+    strategy: exhaustive
+    description: "Exhaustive check that degree centrality stays in [0,1] for graphs up to 4 nodes"
+  - id: KANI-GC-002
+    obligation: "2"
+    bound: 4
+    strategy: exhaustive
+    description: "Exhaustive check that betweenness centrality is non-negative for graphs up to 4 nodes"
+  - id: KANI-GC-003
+    obligation: "6"
+    bound: 4
+    strategy: exhaustive
+    description: "Exhaustive check that harmonic centrality stays in [0,1] for graphs up to 4 nodes"
 
 enforcement:
   bounded:
@@ -152,5 +179,5 @@ qa_gate:
     - "complete_graph_symmetry"
     - "star_graph_degree"
     - "harmonic_bounded"
-  pass_criteria: "All 6 falsification tests pass"
+  pass_criteria: "All 8 falsification tests pass"
   falsification: "Skip normalization in degree centrality"

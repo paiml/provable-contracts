@@ -101,6 +101,26 @@ falsification_tests:
     prediction: "MSE(y, ŷ) = MSE(ŷ, y)"
     test: "proptest comparing MSE in both argument orders"
     if_fails: "Argument order dependence in implementation"
+  - id: FALSIFY-RM-006
+    rule: "MAE non-negativity"
+    prediction: "MAE ≥ 0 for all y, ŷ ∈ [-1000, 1000]ⁿ"
+    test: "proptest with 10000 random vector pairs, n=2..128"
+    if_fails: "Sign error or underflow in absolute difference accumulation"
+  - id: FALSIFY-RM-007
+    rule: "RMSE non-negativity"
+    prediction: "RMSE ≥ 0 for all y, ŷ ∈ [-1000, 1000]ⁿ"
+    test: "proptest with 10000 random vector pairs, n=2..128"
+    if_fails: "Negative value from sqrt or arithmetic overflow in squared sum"
+
+kani_harnesses:
+  - id: KANI-RM-001
+    obligation: "1"
+    bound: 4
+    strategy: stub_float
+  - id: KANI-RM-002
+    obligation: "2"
+    bound: 4
+    strategy: stub_float
 
 enforcement:
   upper_bound:
@@ -122,5 +142,5 @@ qa_gate:
     - "mae_rmse_ordering"
     - "perfect_prediction"
     - "mse_symmetry"
-  pass_criteria: "All 5 falsification tests pass"
+  pass_criteria: "All 7 falsification tests pass"
   falsification: "Swap numerator/denominator in R² formula"

@@ -119,6 +119,26 @@ falsification_tests:
     prediction: "micro_precision = micro_recall = accuracy"
     test: "proptest comparing micro-averaged precision/recall with accuracy"
     if_fails: "Micro-averaging aggregation error"
+  - id: FALSIFY-CM-007
+    rule: "Recall bounded"
+    prediction: "recall ∈ [0, 1] for all averaging modes"
+    test: "proptest testing Macro, Micro, Weighted modes with random class vectors, C=2..10, n=4..128"
+    if_fails: "TP/FN counting error or division error"
+  - id: FALSIFY-CM-008
+    rule: "F1 bounded"
+    prediction: "F1 ∈ [0, 1] for arbitrary precision and recall inputs"
+    test: "proptest with random class vectors verifying F1 stays in [0, 1] across all averaging modes"
+    if_fails: "Harmonic mean overflow or division by zero in F1 computation"
+
+kani_harnesses:
+  - id: KANI-CM-001
+    obligation: "1"
+    bound: 4
+    strategy: exhaustive
+  - id: KANI-CM-002
+    obligation: "2"
+    bound: 4
+    strategy: exhaustive
 
 enforcement:
   bounded:
@@ -141,5 +161,5 @@ qa_gate:
     - "confusion_matrix_conservation"
     - "perfect_classification"
     - "micro_average_identity"
-  pass_criteria: "All 6 falsification tests pass"
+  pass_criteria: "All 8 falsification tests pass"
   falsification: "Swap TP and FP in precision formula"

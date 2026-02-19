@@ -8,6 +8,8 @@
 //! - `unsafe fn flash_attention_avx2(...)` -- AVX2 SIMD implementation
 //! - `fn flash_attention_ptx() -> &'static str` -- PTX assembly source string
 
+use super::ops;
+
 // ────────────────────────────────────────────────────────────────────────────
 // Naive attention helper (for comparison in tests)
 // ────────────────────────────────────────────────────────────────────────────
@@ -17,37 +19,26 @@
 /// Q, K, V are all n x d. Output is n x d.
 #[cfg(test)]
 fn naive_attention(q: &[f32], k: &[f32], v: &[f32], n: usize, d: usize, output: &mut [f32]) {
-    let scale = 1.0 / (d as f32).sqrt();
-
     for i in 0..n {
         // Compute scores: Q[i] . K[j] / sqrt(d) for all j
         let mut scores = vec![0.0f32; n];
+        let q_row = &q[i * d..(i + 1) * d];
         for j in 0..n {
-            let mut dot = 0.0f32;
-            for kk in 0..d {
-                dot += q[i * d + kk] * k[j * d + kk];
-            }
-            scores[j] = dot * scale;
+            scores[j] = ops::dot(q_row, &k[j * d..(j + 1) * d]);
+        }
+        let scale = 1.0 / (d as f32).sqrt();
+        for s in &mut scores {
+            *s *= scale;
         }
 
         // Softmax
-        let max_val = scores.iter().copied().fold(f32::NEG_INFINITY, f32::max);
-        let mut sum = 0.0f32;
-        for s in &mut scores {
-            *s = (*s - max_val).exp();
-            sum += *s;
-        }
-        for s in &mut scores {
-            *s /= sum;
-        }
+        ops::softmax_row(&mut scores);
 
         // Weighted sum of V
-        for dd in 0..d {
-            let mut acc = 0.0f32;
-            for j in 0..n {
-                acc += scores[j] * v[j * d + dd];
-            }
-            output[i * d + dd] = acc;
+        let out_row = &mut output[i * d..(i + 1) * d];
+        out_row.fill(0.0);
+        for j in 0..n {
+            ops::weighted_accumulate(out_row, scores[j], &v[j * d..(j + 1) * d]);
         }
     }
 }
@@ -129,12 +120,9 @@ fn process_tile(
 
     // Compute scores for this tile: Q[i] . K[j] / sqrt(d)
     let mut tile_scores = vec![0.0f32; tile_len];
+    let q_row = &q[i * d..(i + 1) * d];
     for (tj, j) in (tile_start..tile_end).enumerate() {
-        let mut dot = 0.0f32;
-        for kk in 0..d {
-            dot += q[i * d + kk] * k[j * d + kk];
-        }
-        tile_scores[tj] = dot * scale;
+        tile_scores[tj] = ops::dot(q_row, &k[j * d..(j + 1) * d]) * scale;
     }
 
     // Find max of this tile
@@ -154,9 +142,7 @@ fn process_tile(
     // Accumulate this tile
     for (tj, j) in (tile_start..tile_end).enumerate() {
         let w = (tile_scores[tj] - new_max).exp();
-        for dd in 0..d {
-            acc[dd] += w * v[j * d + dd];
-        }
+        ops::weighted_accumulate(acc, w, &v[j * d..(j + 1) * d]);
         *running_sum += w;
     }
 

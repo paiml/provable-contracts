@@ -79,6 +79,21 @@ falsification_tests:
     prediction: "silhouette > 0.5 for well-separated clusters (gap >> cluster radius)"
     test: "proptest with widely separated Gaussians"
     if_fails: "Distance computation incorrect"
+  - id: FALSIFY-CL-005
+    rule: "Inertia zero at centroids"
+    prediction: "inertia = 0 when each point equals its assigned centroid"
+    test: "proptest with points set exactly to their centroids, K=2..5, n=4..32"
+    if_fails: "Residual floating-point error or centroid assignment mismatch"
+
+kani_harnesses:
+  - id: KANI-CL-001
+    obligation: "1"
+    bound: 4
+    strategy: stub_float
+  - id: KANI-CL-002
+    obligation: "2"
+    bound: 4
+    strategy: stub_float
 
 enforcement:
   bounded:
@@ -99,5 +114,6 @@ qa_gate:
     - "inertia_non_negative"
     - "silhouette_degenerate"
     - "well_separated"
-  pass_criteria: "All 4 falsification tests pass"
+    - "inertia_zero_at_centroids"
+  pass_criteria: "All 5 falsification tests pass"
   falsification: "Omit max(a,b) denominator normalization"
