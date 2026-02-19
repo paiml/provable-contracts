@@ -433,4 +433,3 @@ fn current_timestamp() -> String {
 mod tests {
     include!("proof_status_tests.rs");
 }
-
