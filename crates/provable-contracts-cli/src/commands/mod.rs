@@ -1,4 +1,5 @@
 pub mod audit;
+pub mod book;
 pub mod coverage;
 pub mod diff;
 pub mod equations;

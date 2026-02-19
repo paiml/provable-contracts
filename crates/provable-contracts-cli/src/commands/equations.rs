@@ -1,11 +1,14 @@
 use std::path::Path;
 
-use provable_contracts::schema::{parse_contract, Equation};
+use provable_contracts::latex::{latex_escape, math_to_latex};
+use provable_contracts::schema::{parse_contract, Contract, Equation};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OutputFormat {
     Text,
     Latex,
+    Ptx,
+    Asm,
 }
 
 impl OutputFormat {
@@ -13,8 +16,10 @@ impl OutputFormat {
         match s {
             "text" => Ok(Self::Text),
             "latex" => Ok(Self::Latex),
+            "ptx" => Ok(Self::Ptx),
+            "asm" => Ok(Self::Asm),
             other => Err(format!(
-                "unknown format '{other}', expected 'text' or 'latex'"
+                "unknown format '{other}', expected 'text', 'latex', 'ptx', or 'asm'"
             )),
         }
     }
@@ -30,6 +35,8 @@ pub fn run(path: &Path, format: OutputFormat) -> Result<(), Box<dyn std::error::
     match format {
         OutputFormat::Text => render_text(name, &contract.equations),
         OutputFormat::Latex => render_latex(name, &contract.equations),
+        OutputFormat::Ptx => render_ptx(name, &contract),
+        OutputFormat::Asm => render_asm(name, &contract),
     }
 
     Ok(())
@@ -105,156 +112,127 @@ fn render_latex(name: &str, equations: &std::collections::BTreeMap<String, Equat
     }
 }
 
-/// Escape special LaTeX characters in plain text.
-fn latex_escape(s: &str) -> String {
-    s.replace('\\', "\\textbackslash{}")
-        .replace('&', "\\&")
-        .replace('%', "\\%")
-        .replace('$', "\\$")
-        .replace('#', "\\#")
-        .replace('_', "\\_")
-        .replace('{', "\\{")
-        .replace('}', "\\}")
-        .replace('~', "\\textasciitilde{}")
-        .replace('^', "\\textasciicircum{}")
+fn render_ptx(name: &str, contract: &Contract) {
+    let kernel = kernel_name(name);
+    render_header_comment("PTX kernel stub", name, contract);
+    println!(".version 8.5");
+    println!(".target sm_90");
+    println!(".address_size 64");
+    println!();
+    println!(".visible .entry {kernel}(");
+    println!("    .param .u64 input,");
+    println!("    .param .u64 output,");
+    println!("    .param .u32 n");
+    println!(")");
+    println!("{{");
+    println!("    .reg .u32 %tid, %n;");
+    println!("    .reg .u64 %in_ptr, %out_ptr;");
+    println!("    .reg .f32 %val, %acc;");
+    println!();
+    println!("    ld.param.u64 %in_ptr, [input];");
+    println!("    ld.param.u64 %out_ptr, [output];");
+    println!("    ld.param.u32 %n, [n];");
+    println!();
+    println!("    mov.u32 %tid, %ctaid.x;");
+    println!("    mad.lo.u32 %tid, %tid, %ntid.x, %tid.x;");
+    println!();
+    render_body_comments(contract);
+    println!("    ret;");
+    println!("}}");
 }
 
-/// Convert contract math notation to LaTeX math mode.
-///
-/// Handles common patterns found in our YAML contracts:
-/// - Greek letters (ε, σ, α, etc.)
-/// - Subscripts (`x_i`, `A_{ij}`)
-/// - Superscripts (x^T, ℝ^n)
-/// - Operators (Σ, ∈, ≈, ≤, ≥, ∀, →)
-/// - Special sets (ℝ, ℤ)
-/// - Functions (sqrt, exp, log, softmax, etc.)
-fn math_to_latex(s: &str) -> String {
-    let mut out = s.to_string();
-
-    // Unicode → LaTeX replacements. Each entry: (unicode, latex_cmd, is_command).
-    // When is_command is true, a trailing space is inserted before the next
-    // alphabetic character to prevent `\foralli` instead of `\forall i`.
-    let replacements: &[(&str, &str, bool)] = &[
-        // Greek letters
-        ("α", "\\alpha", true),
-        ("β", "\\beta", true),
-        ("γ", "\\gamma", true),
-        ("δ", "\\delta", true),
-        ("ε", "\\varepsilon", true),
-        ("θ", "\\theta", true),
-        ("λ", "\\lambda", true),
-        ("σ", "\\sigma", true),
-        ("τ", "\\tau", true),
-        ("Σ", "\\sum", true),
-        ("Φ", "\\Phi", true),
-        ("π", "\\pi", true),
-        // Operators
-        ("∈", "\\in", true),
-        ("∉", "\\notin", true),
-        ("≈", "\\approx", true),
-        ("≤", "\\leq", true),
-        ("≥", "\\geq", true),
-        ("≠", "\\neq", true),
-        ("∀", "\\forall", true),
-        ("∃", "\\exists", true),
-        ("→", "\\to", true),
-        ("←", "\\leftarrow", true),
-        ("⊗", "\\otimes", true),
-        ("⁺", "^{+}", false),
-        // Special sets
-        ("ℝ", "\\mathbb{R}", false),
-        ("ℤ", "\\mathbb{Z}", false),
-    ];
-    for &(uni, tex, is_cmd) in replacements {
-        if is_cmd {
-            out = replace_unicode_cmd(&out, uni, tex);
-        } else {
-            out = out.replace(uni, tex);
+fn render_asm(name: &str, contract: &Contract) {
+    let kernel = kernel_name(name);
+    let isa = detect_simd_isa(contract);
+    render_header_comment(&format!("x86-64 {} stub", isa.label), name, contract);
+    println!(".intel_syntax noprefix");
+    println!(".text");
+    println!(".globl {kernel}_{}", isa.suffix);
+    println!(".p2align 4");
+    println!();
+    println!("{kernel}_{}:", isa.suffix);
+    println!("    push rbp");
+    println!("    mov rbp, rsp");
+    println!("    // rdi = input ptr, rsi = output ptr, edx = n");
+    println!();
+    if isa.width > 0 {
+        let r = isa.reg_prefix;
+        println!("    // {} registers: {r} x {}", isa.label, isa.reg_count);
+        for i in 0..std::cmp::min(isa.reg_count, 4) {
+            println!("    vxorps {r}{i}, {r}{i}, {r}{i}");
         }
+        println!();
     }
-
-    // sqrt(...) → \sqrt{...}
-    out = replace_func(&out, "sqrt", "\\sqrt");
-
-    // exp(...) → \exp(...)
-    out = out.replace("exp(", "\\exp(");
-
-    // log(...) → \log(...)
-    out = out.replace("log(", "\\log(");
-
-    // Escape underscores that aren't already subscripts
-    // But preserve x_i, x_{...} patterns
-    // This is tricky — leave underscores as-is since they're valid LaTeX subscripts
-
-    // Escape % and # in formulas
-    out = out.replace('%', "\\%");
-    out = out.replace('#', "\\#");
-
-    out
+    render_body_comments(contract);
+    println!("    pop rbp");
+    println!("    ret");
 }
 
-/// Replace a Unicode symbol with a LaTeX command, inserting a trailing
-/// space when the next character is alphabetic (prevents `\foralli`).
-fn replace_unicode_cmd(s: &str, uni: &str, tex: &str) -> String {
-    let mut result = String::with_capacity(s.len());
-    let mut rest = s;
-    while let Some(pos) = rest.find(uni) {
-        result.push_str(&rest[..pos]);
-        result.push_str(tex);
-        let after = &rest[pos + uni.len()..];
-        // Insert space before next alphabetic char to keep LaTeX happy
-        if after.starts_with(|c: char| c.is_ascii_alphabetic()) {
-            result.push(' ');
-        }
-        rest = after;
+fn render_header_comment(label: &str, name: &str, contract: &Contract) {
+    println!("//");
+    println!("// {label}: {name}");
+    println!("// {}", contract.metadata.description);
+    for (id, eq) in &contract.equations {
+        println!("// Equation {id}: {}", eq.formula);
     }
-    result.push_str(rest);
-    result
+    println!("//");
+    println!();
 }
 
-/// Replace `func(...)` with `\cmd{...}` handling nested parens.
-/// Applies recursively so `sqrt(a + sqrt(b))` becomes `\sqrt{a + \sqrt{b}}`.
-fn replace_func(s: &str, func: &str, cmd: &str) -> String {
-    let pattern = format!("{func}(");
-    let mut result = String::with_capacity(s.len());
-    let mut rest = s;
-
-    while let Some(pos) = rest.find(&pattern) {
-        result.push_str(&rest[..pos]);
-        let after = &rest[pos + pattern.len()..];
-
-        // Find matching closing paren
-        let mut depth = 1;
-        let mut end = 0;
-        for (i, ch) in after.char_indices() {
-            match ch {
-                '(' => depth += 1,
-                ')' => {
-                    depth -= 1;
-                    if depth == 0 {
-                        end = i;
-                        break;
-                    }
-                }
-                _ => {}
+fn render_body_comments(contract: &Contract) {
+    if let Some(ref ks) = contract.kernel_structure {
+        for (i, phase) in ks.phases.iter().enumerate() {
+            println!("    // Phase {}: {}", i + 1, phase.name);
+            println!("    // {}", phase.description);
+            if let Some(ref inv) = phase.invariant {
+                println!("    // Invariant: {inv}");
             }
+            println!();
         }
-
-        if depth == 0 {
-            let inner = &after[..end];
-            // Recurse to handle nested calls like sqrt(a + sqrt(b))
-            let inner_replaced = replace_func(inner, func, cmd);
-            result.push_str(&format!("{cmd}{{{inner_replaced}}}"));
-            rest = &after[end + 1..];
-        } else {
-            // Unmatched paren — emit as-is
-            result.push_str(&pattern);
-            rest = after;
+    } else {
+        for (id, eq) in &contract.equations {
+            println!("    // Equation: {id}");
+            println!("    // {}", eq.formula);
+            println!();
         }
     }
+    if !contract.proof_obligations.is_empty() {
+        println!("    // Proof obligations:");
+        for ob in &contract.proof_obligations {
+            println!("    //   [{}] {}", ob.obligation_type, ob.property);
+        }
+        println!();
+    }
+}
 
-    result.push_str(rest);
-    result
+struct SimdIsa { label: &'static str, suffix: &'static str, reg_prefix: &'static str, reg_count: u32, width: u32 }
+
+fn detect_simd_isa(contract: &Contract) -> SimdIsa {
+    let has = |pat: &str| contract.simd_dispatch.values().any(|m| m.keys().any(|k| k.contains(pat)));
+    if has("avx512") || has("512") {
+        SimdIsa { label: "AVX-512", suffix: "avx512", reg_prefix: "zmm", reg_count: 32, width: 512 }
+    } else if has("avx2") {
+        SimdIsa { label: "AVX2", suffix: "avx2", reg_prefix: "ymm", reg_count: 16, width: 256 }
+    } else if !contract.simd_dispatch.is_empty() {
+        SimdIsa { label: "SSE4.1", suffix: "sse41", reg_prefix: "xmm", reg_count: 16, width: 128 }
+    } else {
+        SimdIsa { label: "scalar", suffix: "scalar", reg_prefix: "xmm", reg_count: 0, width: 0 }
+    }
+}
+
+/// Derive a kernel function name from the contract stem.
+/// Strips version suffix and `-kernel`, converts hyphens to underscores.
+fn kernel_name(contract_name: &str) -> String {
+    let mut s = contract_name.to_string();
+    if let Some(pos) = s.rfind("-v") {
+        if s[pos + 2..].chars().all(|c| c.is_ascii_digit()) {
+            s.truncate(pos);
+        }
+    }
+    if let Some(stripped) = s.strip_suffix("-kernel") {
+        s = stripped.to_string();
+    }
+    s.replace('-', "_")
 }
 
 #[cfg(test)]
@@ -262,52 +240,32 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_math_to_latex_greek() {
-        assert_eq!(math_to_latex("ε > 0"), "\\varepsilon > 0");
-        assert_eq!(math_to_latex("α_t"), "\\alpha_t");
-    }
-
-    #[test]
-    fn test_math_to_latex_operators() {
-        assert_eq!(math_to_latex("x ∈ ℝ^n"), "x \\in \\mathbb{R}^n");
-        assert_eq!(math_to_latex("a ≈ b"), "a \\approx b");
-        assert_eq!(math_to_latex("∀i: x_i ≥ 0"), "\\forall i: x_i \\geq 0");
-    }
-
-    #[test]
-    fn test_math_to_latex_sqrt() {
-        assert_eq!(
-            math_to_latex("Q / sqrt(mean(Q²) + ε)"),
-            "Q / \\sqrt{mean(Q²) + \\varepsilon}"
-        );
-    }
-
-    #[test]
-    fn test_math_to_latex_exp() {
-        assert_eq!(
-            math_to_latex("exp(x_i - max(x))"),
-            "\\exp(x_i - max(x))"
-        );
-    }
-
-    #[test]
-    fn test_replace_func_nested() {
-        assert_eq!(
-            replace_func("sqrt(a + sqrt(b))", "sqrt", "\\sqrt"),
-            "\\sqrt{a + \\sqrt{b}}"
-        );
-    }
-
-    #[test]
-    fn test_latex_escape() {
-        assert_eq!(latex_escape("a_b"), "a\\_b");
-        assert_eq!(latex_escape("100%"), "100\\%");
-    }
-
-    #[test]
     fn test_output_format_from_str() {
         assert_eq!(OutputFormat::from_str("text").unwrap(), OutputFormat::Text);
         assert_eq!(OutputFormat::from_str("latex").unwrap(), OutputFormat::Latex);
+        assert_eq!(OutputFormat::from_str("ptx").unwrap(), OutputFormat::Ptx);
+        assert_eq!(OutputFormat::from_str("asm").unwrap(), OutputFormat::Asm);
         assert!(OutputFormat::from_str("json").is_err());
+    }
+
+    #[test]
+    fn test_kernel_name() {
+        assert_eq!(kernel_name("softmax-kernel-v1"), "softmax");
+        assert_eq!(kernel_name("rmsnorm-kernel-v1"), "rmsnorm");
+        assert_eq!(kernel_name("flash-attention-v1"), "flash_attention");
+        assert_eq!(kernel_name("model-config-algebra-v1"), "model_config_algebra");
+        assert_eq!(kernel_name("silu-kernel-v2"), "silu");
+    }
+
+    #[test]
+    fn test_detect_simd_isa_avx2() {
+        use provable_contracts::schema::parse_contract_str;
+        let yaml = "metadata:\n  version: '1.0'\n  description: test\n\
+                     equations:\n  eq1:\n    formula: 'y = x'\n\
+                     simd_dispatch:\n  k:\n    scalar: s\n    avx2: a\n";
+        let contract = parse_contract_str(yaml).unwrap();
+        let isa = detect_simd_isa(&contract);
+        assert_eq!(isa.suffix, "avx2");
+        assert_eq!(isa.width, 256);
     }
 }

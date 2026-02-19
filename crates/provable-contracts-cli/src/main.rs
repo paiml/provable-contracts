@@ -86,14 +86,32 @@ enum Commands {
         /// Directory containing contract YAML files
         #[arg(default_value = "contracts")]
         contract_dir: PathBuf,
+        /// Output format: text (default), dot, json, or mermaid
+        #[arg(long, default_value = "text")]
+        format: String,
     },
     /// Display equations from a contract
     Equations {
         /// Path to the contract YAML file
         contract: PathBuf,
-        /// Output format: text (default) or latex
+        /// Output format: text (default), latex, ptx, or asm
         #[arg(long, default_value = "text")]
         format: String,
+    },
+    /// Generate mdBook pages for contracts
+    Book {
+        /// Directory containing contract YAML files
+        #[arg(default_value = "contracts")]
+        contract_dir: PathBuf,
+        /// Output directory for generated pages
+        #[arg(short, long, default_value = "book/src/contracts")]
+        output: PathBuf,
+        /// Also update book/src/SUMMARY.md with contract links
+        #[arg(long)]
+        update_summary: bool,
+        /// Path to SUMMARY.md (default: book/src/SUMMARY.md)
+        #[arg(long)]
+        summary_path: Option<PathBuf>,
     },
 }
 
@@ -121,13 +139,30 @@ fn main() {
             output,
             binding,
         } => commands::generate::run(&contract, &output, binding.as_deref()),
-        Commands::Graph { contract_dir } => commands::graph::run(&contract_dir),
+        Commands::Graph {
+            contract_dir,
+            format,
+        } => match commands::graph::GraphFormat::from_str(&format) {
+            Ok(fmt) => commands::graph::run(&contract_dir, fmt),
+            Err(e) => Err(e.into()),
+        },
         Commands::Equations { contract, format } => {
             match commands::equations::OutputFormat::from_str(&format) {
                 Ok(fmt) => commands::equations::run(&contract, fmt),
                 Err(e) => Err(e.into()),
             }
         }
+        Commands::Book {
+            contract_dir,
+            output,
+            update_summary,
+            summary_path,
+        } => commands::book::run(
+            &contract_dir,
+            &output,
+            update_summary,
+            summary_path.as_deref(),
+        ),
     };
 
     if let Err(e) = result {

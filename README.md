@@ -129,14 +129,29 @@ pv coverage contracts/ --binding contracts/aprender/binding.yaml
 # End-to-end codegen (scaffold + kani + probar)
 pv generate contracts/softmax-kernel-v1.yaml -o generated/
 
-# Dependency graph with topological order
+# Dependency graph (text)
 pv graph contracts/
+
+# Dependency graph (Graphviz DOT)
+pv graph contracts/ --format dot
+
+# Dependency graph (JSON)
+pv graph contracts/ --format json
+
+# Dependency graph (Mermaid)
+pv graph contracts/ --format mermaid
 
 # Display equations (text)
 pv equations contracts/softmax-kernel-v1.yaml
 
 # Display equations (LaTeX)
 pv equations contracts/softmax-kernel-v1.yaml --format latex
+
+# Generate PTX kernel stub
+pv equations contracts/softmax-kernel-v1.yaml --format ptx
+
+# Generate x86-64 SIMD assembly stub
+pv equations contracts/softmax-kernel-v1.yaml --format asm
 ```
 
 ## CLI Reference
@@ -152,8 +167,8 @@ pv equations contracts/softmax-kernel-v1.yaml --format latex
 | `diff`     | Compare two contract versions, suggest semver bump   |
 | `coverage` | Cross-contract obligation coverage report            |
 | `generate` | End-to-end codegen (scaffold + kani + probar)        |
-| `graph`    | Dependency DAG with cycle detection + topo order     |
-| `equations`| Display equations (text or `--format latex`)         |
+| `graph`    | Dependency DAG (`text`, `dot`, `json`, `mermaid`)    |
+| `equations`| Display equations (`text`, `latex`, `ptx`, `asm`)    |
 
 ## Contract Registry
 

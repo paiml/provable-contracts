@@ -743,3 +743,39 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-042
+  github_issue: null
+  item_type: task
+  title: Add pv equations --format ptx for PTX/CUDA kernel codegen
+  status: inprogress
+  priority: high
+  assigned_to: null
+  created: 2026-02-19T08:13:29Z
+  updated: 2026-02-19T08:13:34.149033890+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-043
+  github_issue: null
+  item_type: task
+  title: Add pv book command with KaTeX + Mermaid mdBook pages for all contracts
+  status: inprogress
+  priority: high
+  assigned_to: null
+  created: 2026-02-19T09:12:50Z
+  updated: 2026-02-19T09:12:54.720744352+00:00
+  spec: null
+  acceptance_criteria:
+  - Move math_to_latex to library crate, create book_gen module with page generator and SUMMARY.md updater, add pv book CLI subcommand, configure book.toml with katex+mermaid preprocessors, add enforcement test, integrate book page generation into generate command
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - cli
+  - documentation
+  - book
+  notes: null

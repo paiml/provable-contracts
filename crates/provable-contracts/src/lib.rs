@@ -18,15 +18,19 @@
 //! - [`coverage`] — Cross-contract obligation coverage report
 //! - [`generate`] — End-to-end codegen to disk
 //! - [`graph`] — Contract dependency graph and cycle detection
+//! - [`latex`] — LaTeX conversion for contract math notation
+//! - [`book_gen`] — mdBook page generation for contracts
 
 pub mod audit;
 pub mod binding;
+pub mod book_gen;
 pub mod coverage;
 pub mod diff;
 pub mod error;
 pub mod generate;
 pub mod graph;
 pub mod kani_gen;
+pub mod latex;
 pub mod probar_gen;
 pub mod scaffold;
 pub mod schema;
