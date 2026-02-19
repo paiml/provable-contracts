@@ -1659,3 +1659,209 @@ bindings:
     signature: "fn gdn_recurrence_scalar(state: &mut [f32], k: &[f32], v: &[f32], q: &[f32], z: &[f32], alpha: f32, beta: f32, k_dim: usize, v_dim: usize, output: &mut [f32])"
     status: implemented
     notes: "Scalar + AVX2 + PTX backends"
+
+  # ============================================================
+  # Algorithm Contracts (Phase 6 — UCBD v2.0.0 §14-15)
+  # ============================================================
+
+  # --- metrics-regression-v1 ---
+
+  - contract: metrics-regression-v1.yaml
+    equation: r_squared
+    module_path: "aprender::metrics"
+    function: r_squared
+    signature: "fn r_squared(y_pred: &Vector<f32>, y_true: &Vector<f32>) -> f32"
+    status: implemented
+    notes: "R² = 1 - SS_res/SS_tot"
+
+  - contract: metrics-regression-v1.yaml
+    equation: mse
+    module_path: "aprender::metrics"
+    function: mse
+    signature: "fn mse(y_pred: &Vector<f32>, y_true: &Vector<f32>) -> f32"
+    status: implemented
+    notes: "Mean Squared Error"
+
+  - contract: metrics-regression-v1.yaml
+    equation: mae
+    module_path: "aprender::metrics"
+    function: mae
+    signature: "fn mae(y_pred: &Vector<f32>, y_true: &Vector<f32>) -> f32"
+    status: implemented
+    notes: "Mean Absolute Error"
+
+  - contract: metrics-regression-v1.yaml
+    equation: rmse
+    module_path: "aprender::metrics"
+    function: rmse
+    signature: "fn rmse(y_pred: &Vector<f32>, y_true: &Vector<f32>) -> f32"
+    status: implemented
+    notes: "Root Mean Squared Error = sqrt(MSE)"
+
+  # --- metrics-classification-v1 ---
+
+  - contract: metrics-classification-v1.yaml
+    equation: accuracy
+    module_path: "aprender::metrics::classification"
+    function: accuracy
+    signature: "fn accuracy(y_pred: &[usize], y_true: &[usize]) -> f32"
+    status: implemented
+    notes: "Classification accuracy = correct/total"
+
+  - contract: metrics-classification-v1.yaml
+    equation: precision
+    module_path: "aprender::metrics::classification"
+    function: precision
+    signature: "fn precision(y_pred: &[usize], y_true: &[usize], average: Average) -> f32"
+    status: implemented
+    notes: "TP / (TP + FP), supports Macro/Micro/Weighted"
+
+  - contract: metrics-classification-v1.yaml
+    equation: recall
+    module_path: "aprender::metrics::classification"
+    function: recall
+    signature: "fn recall(y_pred: &[usize], y_true: &[usize], average: Average) -> f32"
+    status: implemented
+    notes: "TP / (TP + FN), supports Macro/Micro/Weighted"
+
+  - contract: metrics-classification-v1.yaml
+    equation: f1_score
+    module_path: "aprender::metrics::classification"
+    function: f1_score
+    signature: "fn f1_score(y_pred: &[usize], y_true: &[usize], average: Average) -> f32"
+    status: implemented
+    notes: "Harmonic mean of precision and recall"
+
+  - contract: metrics-classification-v1.yaml
+    equation: confusion_matrix
+    module_path: "aprender::metrics::classification"
+    function: confusion_matrix
+    signature: "fn confusion_matrix(y_pred: &[usize], y_true: &[usize]) -> Matrix<f32>"
+    status: implemented
+    notes: "CM[i,j] = count of true=i, pred=j"
+
+  # --- metrics-clustering-v1 ---
+
+  - contract: metrics-clustering-v1.yaml
+    equation: silhouette_score
+    module_path: "aprender::metrics"
+    function: silhouette_score
+    signature: "fn silhouette_score(data: &Matrix<f32>, labels: &[usize]) -> f32"
+    status: implemented
+    notes: "Mean silhouette coefficient across all samples"
+
+  - contract: metrics-clustering-v1.yaml
+    equation: inertia
+    module_path: "aprender::metrics"
+    function: inertia
+    signature: "fn inertia(data: &Matrix<f32>, centroids: &Matrix<f32>, labels: &[usize]) -> f32"
+    status: implemented
+    notes: "Within-cluster sum of squares"
+
+  - contract: metrics-clustering-v1.yaml
+    equation: silhouette_coefficient
+    module_path: "aprender::metrics"
+    function: silhouette_coefficient
+    signature: "fn silhouette_coefficient(a_i: f32, b_i: f32) -> f32"
+    status: implemented
+    notes: "Private helper — per-point silhouette"
+
+  # --- loss-functions-v1 ---
+
+  - contract: loss-functions-v1.yaml
+    equation: mse_loss
+    module_path: "aprender::nn::loss::MSELoss"
+    function: "MSELoss::forward"
+    signature: "fn forward(&self, predictions: &Tensor, targets: &Tensor) -> Tensor"
+    status: implemented
+    notes: "MSE loss with autograd support"
+
+  - contract: loss-functions-v1.yaml
+    equation: l1_loss
+    module_path: "aprender::nn::loss::L1Loss"
+    function: "L1Loss::forward"
+    signature: "fn forward(&self, predictions: &Tensor, targets: &Tensor) -> Tensor"
+    status: implemented
+    notes: "L1/MAE loss with autograd support"
+
+  - contract: loss-functions-v1.yaml
+    equation: smooth_l1
+    module_path: "aprender::nn::loss::SmoothL1Loss"
+    function: "SmoothL1Loss::forward"
+    signature: "fn forward(&self, predictions: &Tensor, targets: &Tensor) -> Tensor"
+    status: implemented
+    notes: "Smooth L1 loss (Huber-like)"
+
+  - contract: loss-functions-v1.yaml
+    equation: bce
+    module_path: "aprender::nn::loss::BCELoss"
+    function: "BCELoss::forward"
+    signature: "fn forward(&self, predictions: &Tensor, targets: &Tensor) -> Tensor"
+    status: implemented
+    notes: "Binary Cross-Entropy loss"
+
+  - contract: loss-functions-v1.yaml
+    equation: nll
+    module_path: "aprender::nn::loss::NLLLoss"
+    function: "NLLLoss::forward"
+    signature: "fn forward(&self, predictions: &Tensor, targets: &Tensor) -> Tensor"
+    status: implemented
+    notes: "Negative Log-Likelihood loss"
+
+  - contract: loss-functions-v1.yaml
+    equation: huber
+    module_path: "aprender::nn::loss::HuberLoss"
+    function: "HuberLoss::forward"
+    signature: "fn forward(&self, predictions: &Tensor, targets: &Tensor) -> Tensor"
+    status: implemented
+    notes: "Huber loss with configurable delta"
+
+  # --- graph-centrality-v1 ---
+
+  - contract: graph-centrality-v1.yaml
+    equation: degree
+    module_path: "aprender::graph::centrality"
+    function: "Graph::degree_centrality"
+    signature: "fn degree_centrality(&self) -> HashMap<NodeId, f64>"
+    status: implemented
+    notes: "Freeman's normalization: deg(v)/(n-1)"
+
+  - contract: graph-centrality-v1.yaml
+    equation: betweenness
+    module_path: "aprender::graph::centrality"
+    function: "Graph::betweenness_centrality"
+    signature: "fn betweenness_centrality(&self) -> HashMap<NodeId, f64>"
+    status: implemented
+    notes: "Brandes algorithm"
+
+  - contract: graph-centrality-v1.yaml
+    equation: closeness
+    module_path: "aprender::graph::centrality"
+    function: "Graph::closeness_centrality"
+    signature: "fn closeness_centrality(&self) -> HashMap<NodeId, f64>"
+    status: implemented
+    notes: "Geodesic distance based"
+
+  - contract: graph-centrality-v1.yaml
+    equation: eigenvector
+    module_path: "aprender::graph::centrality"
+    function: "Graph::eigenvector_centrality"
+    signature: "fn eigenvector_centrality(&self, max_iter: usize, tol: f64) -> Result<HashMap<NodeId, f64>, &'static str>"
+    status: implemented
+    notes: "Power iteration for dominant eigenvector"
+
+  - contract: graph-centrality-v1.yaml
+    equation: katz
+    module_path: "aprender::graph::centrality"
+    function: "Graph::katz_centrality"
+    signature: "fn katz_centrality(&self, alpha: f64, beta: f64, max_iter: usize, tol: f64) -> Result<HashMap<NodeId, f64>, &'static str>"
+    status: implemented
+    notes: "Katz centrality with attenuation factor"
+
+  - contract: graph-centrality-v1.yaml
+    equation: harmonic
+    module_path: "aprender::graph::centrality"
+    function: "Graph::harmonic_centrality"
+    signature: "fn harmonic_centrality(&self) -> HashMap<NodeId, f64>"
+    status: implemented
+    notes: "Boldi & Vigna (2014), handles disconnected graphs"
