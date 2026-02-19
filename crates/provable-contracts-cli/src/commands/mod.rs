@@ -9,6 +9,7 @@ pub mod kani;
 pub mod lean;
 pub mod lean_status;
 pub mod probar;
+pub mod proof_status;
 pub mod scaffold;
 pub mod status;
 pub mod validate;

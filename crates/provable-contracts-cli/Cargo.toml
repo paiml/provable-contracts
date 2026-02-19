@@ -15,6 +15,7 @@ path = "src/main.rs"
 [dependencies]
 provable-contracts = { workspace = true }
 clap = { workspace = true }
+serde_json = { workspace = true }
 serde_yaml = { workspace = true }
 
 [dev-dependencies]
