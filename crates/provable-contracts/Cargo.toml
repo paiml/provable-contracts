@@ -11,6 +11,10 @@ keywords = ["verification", "formal-methods", "kani", "contracts", "ml-kernels"]
 categories = ["development-tools::testing", "mathematics"]
 exclude = ["tests/", "benches/"]
 
+[features]
+default = []
+kani = []
+
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }
