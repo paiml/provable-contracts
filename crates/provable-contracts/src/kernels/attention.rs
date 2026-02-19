@@ -50,20 +50,10 @@ pub fn attention_scalar(
     ops::score_matrix(q, k, n, m, d_k, &mut scores);
 
     // Step 2: Softmax each row
-    for i in 0..n {
-        ops::softmax_row(&mut scores[i * m..(i + 1) * m]);
-    }
+    ops::softmax_rows(&mut scores, n, m);
 
     // Step 3: output = scores * V, shape n x d_v
-    for i in 0..n {
-        for j in 0..d_v {
-            let mut sum = 0.0f32;
-            for jj in 0..m {
-                sum += scores[i * m + jj] * v[jj * d_v + j];
-            }
-            output[i * d_v + j] = sum;
-        }
-    }
+    ops::matmul_sv(&scores, v, n, m, d_v, output);
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -293,6 +283,7 @@ OUT_DONE:
 mod tests {
     use super::*;
     use super::super::ulp::assert_ulp_eq;
+    use super::super::ops::sequential_floats;
     use proptest::prelude::*;
 
     // ── Single query, single key ────────────────────────────────────────
@@ -402,9 +393,9 @@ mod tests {
             d_k in 1usize..4,
             d_v in 1usize..4,
         ) {
-            let q: Vec<f32> = (0..n*d_k).map(|i| (i as f32) * 0.1).collect();
-            let k: Vec<f32> = (0..m*d_k).map(|i| (i as f32) * 0.1).collect();
-            let v: Vec<f32> = (0..m*d_v).map(|i| (i as f32) * 0.1).collect();
+            let q = sequential_floats(n*d_k, 0.1);
+            let k = sequential_floats(m*d_k, 0.1);
+            let v = sequential_floats(m*d_v, 0.1);
             let mut output = vec![0.0f32; n * d_v];
 
             attention_scalar(&q, &k, &v, n, m, d_k, d_v, &mut output);
@@ -431,8 +422,8 @@ mod tests {
             d_k in 1usize..4,
         ) {
             let d_v = 1; // use d_v=1 so output = softmax weights * V column
-            let q: Vec<f32> = (0..n*d_k).map(|i| (i as f32) * 0.1).collect();
-            let k: Vec<f32> = (0..m*d_k).map(|i| (i as f32) * 0.1).collect();
+            let q = sequential_floats(n*d_k, 0.1);
+            let k = sequential_floats(m*d_k, 0.1);
             // V = all ones => output[i] = sum of softmax weights = 1.0
             let v = vec![1.0f32; m * d_v];
             let mut output = vec![0.0f32; n * d_v];
@@ -461,9 +452,9 @@ mod tests {
         let m = 4;
         let d_k = 5;
         let d_v = 6;
-        let q: Vec<f32> = (0..n * d_k).map(|i| (i as f32) * 0.1).collect();
-        let k: Vec<f32> = (0..m * d_k).map(|i| (i as f32) * 0.2).collect();
-        let v: Vec<f32> = (0..m * d_v).map(|i| (i as f32) * 0.15).collect();
+        let q = sequential_floats(n * d_k, 0.1);
+        let k = sequential_floats(m * d_k, 0.2);
+        let v = sequential_floats(m * d_v, 0.15);
 
         let mut scalar_out = vec![0.0f32; n * d_v];
         let mut avx2_out = vec![0.0f32; n * d_v];
