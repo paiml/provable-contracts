@@ -915,11 +915,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Absolute position embeddings kernel (GH-3)
-  status: planned
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-02-19T14:37:55Z
-  updated: 2026-02-19T14:37:55Z
+  updated: 2026-02-19T15:23:43.755137004+00:00
   spec: null
   acceptance_criteria:
   - Create absolute-position-v1.yaml + absolute_position.rs for GPT-2/Phi
