@@ -130,9 +130,8 @@ pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
         "_CONTRACT_CHECK_{}_{}",
         args.contract_name
             .to_uppercase()
-            .replace('-', "_")
-            .replace('.', "_"),
-        args.equation_name.to_uppercase().replace('-', "_")
+            .replace(['-', '.'], "_"),
+        args.equation_name.to_uppercase().replace(['-', '.'], "_")
     );
 
     let contract_name = &args.contract_name;
@@ -144,28 +143,39 @@ pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
         "_CONTRACT_BINDING_{}_{}",
         args.contract_name
             .to_uppercase()
-            .replace('-', "_")
-            .replace('.', "_"),
-        args.equation_name.to_uppercase().replace('-', "_")
+            .replace(['-', '.'], "_"),
+        args.equation_name.to_uppercase().replace(['-', '.'], "_")
     );
 
+    // Place const assertions inside the function body so the macro works
+    // in all contexts: free functions, inherent methods, AND trait impl methods.
+    // Trait impls forbid associated consts not declared by the trait, but
+    // consts inside a function body are always legal.
+    let fn_attrs = &input_fn.attrs;
+    let fn_vis = &input_fn.vis;
+    let fn_sig = &input_fn.sig;
+    let fn_stmts = &input_fn.block.stmts;
+
     let expanded = quote! {
-        // 1. Compile-time contract existence check.
-        //    build.rs must set this env var. Missing = compile error.
-        const #const_name: &str = env!(#env_key);
+        #(#fn_attrs)*
+        #fn_vis #fn_sig {
+            // 1. Compile-time contract existence check.
+            //    build.rs must set this env var. Missing = compile error.
+            const #const_name: &str = env!(#env_key);
 
-        // 2. Binding registration for audit/traceability.
-        //    Encodes contract, equation, module, and function name.
-        #[allow(dead_code)]
-        const #binding_const_name: &str = concat!(
-            "contract=", #contract_name,
-            ",equation=", #equation_name,
-            ",module=", module_path!(),
-            ",function=", #fn_name_str,
-        );
+            // 2. Binding registration for audit/traceability.
+            //    Encodes contract, equation, module, and function name.
+            #[allow(dead_code)]
+            const #binding_const_name: &str = concat!(
+                "contract=", #contract_name,
+                ",equation=", #equation_name,
+                ",module=", module_path!(),
+                ",function=", #fn_name_str,
+            );
 
-        // 3. The original function, unchanged.
-        #input_fn
+            // 3. The original function body.
+            #(#fn_stmts)*
+        }
     };
 
     TokenStream::from(expanded)
@@ -180,12 +190,10 @@ pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
 fn make_env_key(contract: &str, equation: &str) -> String {
     let contract_part = contract
         .to_uppercase()
-        .replace('-', "_")
-        .replace('.', "_");
+        .replace(['-', '.'], "_");
     let equation_part = equation
         .to_uppercase()
-        .replace('-', "_")
-        .replace('.', "_");
+        .replace(['-', '.'], "_");
     format!("CONTRACT_{contract_part}_{equation_part}")
 }
 

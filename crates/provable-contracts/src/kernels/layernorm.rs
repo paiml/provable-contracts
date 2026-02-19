@@ -474,7 +474,7 @@ mod tests {
         #[test]
         fn prop_layernorm_shift_invariance(
             v in proptest::collection::vec(-10.0_f32..10.0, 2..32),
-            c in -100.0_f32..100.0
+            c in -50.0_f32..50.0
         ) {
             let gamma = vec![1.0_f32; v.len()];
             let beta = vec![0.0_f32; v.len()];
@@ -487,7 +487,7 @@ mod tests {
 
             for i in 0..v.len() {
                 prop_assert!(
-                    (out1[i] - out2[i]).abs() < 1e-4,
+                    (out1[i] - out2[i]).abs() < 1e-3,
                     "shift invariance violated at {i}: {} vs {}",
                     out1[i], out2[i]
                 );

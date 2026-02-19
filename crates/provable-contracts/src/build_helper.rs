@@ -179,12 +179,10 @@ pub fn verify_bindings(binding_yaml_path: &str, policy: BindingPolicy) -> Verify
 fn make_env_key(contract: &str, equation: &str) -> String {
     let contract_part = contract
         .to_uppercase()
-        .replace('-', "_")
-        .replace('.', "_");
+        .replace(['-', '.'], "_");
     let equation_part = equation
         .to_uppercase()
-        .replace('-', "_")
-        .replace('.', "_");
+        .replace(['-', '.'], "_");
     format!("CONTRACT_{contract_part}_{equation_part}")
 }
 
