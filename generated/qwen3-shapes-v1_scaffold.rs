@@ -14,7 +14,7 @@ pub trait KernelContract {
     /// INVARIANT (RoPE frequency vector length): len(freqs) == d_k / 2 = 64
     /// MONOTONICITY (RoPE frequency decreasing): freq_i > freq_{i+1} for all i
     /// INVARIANT (Head dimension consistency): 4096 / 32 = 128 and matches explicit head_dim
-    /// EQUIVALENCE (SIMD shape equivalence): 
+    /// EQUIVALENCE (SIMD shape equivalence):
     fn head_dim_consistency(&self, input: &[f32], output: &mut [f32]);
     /// [n_kv * d_k, hidden] = [8*128, 4096] = [1024, 4096]
     /// Domain: Qwen3-8B config: n_kv=8, d_k=128
@@ -27,7 +27,7 @@ pub trait KernelContract {
     /// INVARIANT (RoPE frequency vector length): len(freqs) == d_k / 2 = 64
     /// MONOTONICITY (RoPE frequency decreasing): freq_i > freq_{i+1} for all i
     /// INVARIANT (Head dimension consistency): 4096 / 32 = 128 and matches explicit head_dim
-    /// EQUIVALENCE (SIMD shape equivalence): 
+    /// EQUIVALENCE (SIMD shape equivalence):
     fn kv_projection_shape(&self, input: &[f32], output: &mut [f32]);
     /// shape(o_proj) == transpose(shape(q_proj)) = [hidden, n_h * d_k]
     /// Domain: Standard transformer
@@ -41,7 +41,7 @@ pub trait KernelContract {
     /// INVARIANT (RoPE frequency vector length): len(freqs) == d_k / 2 = 64
     /// MONOTONICITY (RoPE frequency decreasing): freq_i > freq_{i+1} for all i
     /// INVARIANT (Head dimension consistency): 4096 / 32 = 128 and matches explicit head_dim
-    /// EQUIVALENCE (SIMD shape equivalence): 
+    /// EQUIVALENCE (SIMD shape equivalence):
     fn o_projection_transpose(&self, input: &[f32], output: &mut [f32]);
     /// [n_h * d_k, hidden] = [32*128, 4096] = [4096, 4096]
     /// Domain: Qwen3-8B config: n_h=32, d_k=128, hidden=4096
@@ -54,7 +54,7 @@ pub trait KernelContract {
     /// INVARIANT (RoPE frequency vector length): len(freqs) == d_k / 2 = 64
     /// MONOTONICITY (RoPE frequency decreasing): freq_i > freq_{i+1} for all i
     /// INVARIANT (Head dimension consistency): 4096 / 32 = 128 and matches explicit head_dim
-    /// EQUIVALENCE (SIMD shape equivalence): 
+    /// EQUIVALENCE (SIMD shape equivalence):
     fn q_projection_shape(&self, input: &[f32], output: &mut [f32]);
     /// freq_i = base^(-2i/d_k) for i in [0, d_k/2)
     /// Domain: base = 1000000, d_k = 128
@@ -69,7 +69,7 @@ pub trait KernelContract {
     /// INVARIANT (RoPE frequency vector length): len(freqs) == d_k / 2 = 64
     /// MONOTONICITY (RoPE frequency decreasing): freq_i > freq_{i+1} for all i
     /// INVARIANT (Head dimension consistency): 4096 / 32 = 128 and matches explicit head_dim
-    /// EQUIVALENCE (SIMD shape equivalence): 
+    /// EQUIVALENCE (SIMD shape equivalence):
     fn rope_frequency(&self, input: &[f32], output: &mut [f32]);
     /// intermediate / hidden = 12288 / 4096 = 3.0
     /// Domain: Qwen3-8B config
@@ -84,6 +84,67 @@ pub trait KernelContract {
     /// INVARIANT (RoPE frequency vector length): len(freqs) == d_k / 2 = 64
     /// MONOTONICITY (RoPE frequency decreasing): freq_i > freq_{i+1} for all i
     /// INVARIANT (Head dimension consistency): 4096 / 32 = 128 and matches explicit head_dim
-    /// EQUIVALENCE (SIMD shape equivalence): 
+    /// EQUIVALENCE (SIMD shape equivalence):
     fn swiglu_ratio(&self, input: &[f32], output: &mut [f32]);
+}
+
+// Qwen3-8B config constants
+const HIDDEN: usize = 4096;
+const N_HEADS: usize = 32;
+const N_KV_HEADS: usize = 8;
+const D_K: usize = 128;
+const INTERMEDIATE: usize = 12288;
+const ROPE_THETA: f64 = 1_000_000.0;
+
+/// Concrete verifier implementing the Qwen3-8B shape contract
+pub struct Qwen3ShapesVerifier;
+
+impl KernelContract for Qwen3ShapesVerifier {
+    fn head_dim_consistency(&self, _input: &[f32], output: &mut [f32]) {
+        assert!(output.len() >= 3);
+        assert_eq!(HIDDEN % N_HEADS, 0);
+        let d_k = HIDDEN / N_HEADS;
+        assert_eq!(d_k, D_K);
+        output[0] = HIDDEN as f32;
+        output[1] = N_HEADS as f32;
+        output[2] = d_k as f32;
+    }
+
+    fn kv_projection_shape(&self, _input: &[f32], output: &mut [f32]) {
+        assert!(output.len() >= 2);
+        let kv_dim = N_KV_HEADS * D_K;
+        output[0] = kv_dim as f32;
+        output[1] = HIDDEN as f32;
+    }
+
+    fn o_projection_transpose(&self, _input: &[f32], output: &mut [f32]) {
+        assert!(output.len() >= 2);
+        // O projection shape is transpose of Q: [hidden, n_h * d_k]
+        output[0] = HIDDEN as f32;
+        output[1] = (N_HEADS * D_K) as f32;
+    }
+
+    fn q_projection_shape(&self, _input: &[f32], output: &mut [f32]) {
+        assert!(output.len() >= 2);
+        // Q projection: [n_h * d_k, hidden]
+        output[0] = (N_HEADS * D_K) as f32;
+        output[1] = HIDDEN as f32;
+    }
+
+    fn rope_frequency(&self, _input: &[f32], output: &mut [f32]) {
+        let n_freqs = D_K / 2;
+        assert!(output.len() >= n_freqs);
+        for i in 0..n_freqs {
+            output[i] = ROPE_THETA.powf(-2.0 * i as f64 / D_K as f64) as f32;
+        }
+    }
+
+    fn swiglu_ratio(&self, _input: &[f32], output: &mut [f32]) {
+        assert!(output.len() >= 3);
+        // gate/up shape: [intermediate, hidden]
+        output[0] = INTERMEDIATE as f32;
+        output[1] = HIDDEN as f32;
+        // expansion ratio
+        output[2] = (INTERMEDIATE as f64 / HIDDEN as f64) as f32;
+    }
 }
