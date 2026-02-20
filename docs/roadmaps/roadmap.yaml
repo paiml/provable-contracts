@@ -1,6 +1,34 @@
+# =============================================================================
+# provable-contracts Work Tracking Roadmap v1.0
+# =============================================================================
+#
+# Comprehensive work tracking file for the provable-contracts project.
+# Managed via `pmat work` CLI commands (list, start, complete).
+#
+# Structure:
+#   - Each item has an ID (PMAT-NNN), title, status, priority, and labels
+#   - Statuses: planned, in_progress, completed
+#   - Priorities: critical, high, medium, low
+#   - Labels categorize work: contract, kernel, cli, testing, phase7, etc.
+#
+# Work phases covered:
+#   - PMAT-001 to PMAT-005: Infrastructure (crate init, schema, scaffold, CLI)
+#   - PMAT-006 to PMAT-012: Tier 1/2 kernel contracts (softmax, rmsnorm, rope, etc.)
+#   - PMAT-013 to PMAT-017: Quality, migration, Kani, probar, crates.io publish
+#   - PMAT-019 to PMAT-033: Extended kernel contracts (SwiGLU, GQA, etc.)
+#   - PMAT-034 to PMAT-044: CLI commands (diff, coverage, generate, graph, book)
+#   - PMAT-045 to PMAT-048: Phase 7 Lean 4 integration
+#   - PMAT-049 to PMAT-058: Kernel implementations + proof status module
+#   - PMAT-059 to PMAT-060: Planned future work
+#
+# GitHub repo: paiml/provable-contracts
+# =============================================================================
+
 roadmap_version: '1.0'
 github_enabled: true
 github_repo: paiml/provable-contracts
+
+# Work items ordered by ID (chronological creation order)
 roadmap:
 - id: PMAT-001
   github_issue: null

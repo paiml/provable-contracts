@@ -1,3 +1,31 @@
+# =============================================================================
+# Metaheuristic Optimization Contract v1.0.0
+# =============================================================================
+#
+# Specifies three classical metaheuristic optimization algorithms:
+# Simulated Annealing (SA), Genetic Algorithm (GA), and Particle Swarm
+# Optimization (PSO).
+#
+# Key equations:
+#   - SA acceptance: P(accept) = 1 if dE < 0, else exp(-dE/T)
+#   - GA crossover (SBX): child = 0.5 * [(1+beta)*p1 + (1-beta)*p2]
+#   - PSO velocity: v' = w*v + c1*r1*(p_best-x) + c2*r2*(g_best-x)
+#   - Best monotone: f(x*_{t+1}) <= f(x*_t) (minimization)
+#
+# Key properties:
+#   - Best-so-far objective is monotone non-increasing across all algorithms
+#   - SA acceptance probability is always in (0, 1]
+#   - PSO velocity is clamped to [-v_max, v_max] per dimension
+#   - GA crossover children are clamped to search space bounds
+#
+# References:
+#   - Kirkpatrick et al. (1983) "Optimization by Simulated Annealing"
+#   - Deb & Agrawal (1995) "Simulated Binary Crossover"
+#   - Kennedy & Eberhart (1995) "Particle Swarm Optimization"
+#
+# ENFORCEMENT: contract_tests::FALSIFY-MH-001 through FALSIFY-MH-007
+# =============================================================================
+
 metadata:
   version: "1.0.0"
   created: "2026-02-19"
@@ -8,6 +36,7 @@ metadata:
     - "Deb & Agrawal (1995) Simulated Binary Crossover for Continuous Search Space"
     - "Kennedy & Eberhart (1995) Particle Swarm Optimization"
 
+# Mathematical equations: SA acceptance, GA crossover (SBX), PSO velocity, best monotone
 equations:
   sa_acceptance:
     formula: "P(accept) = 1 if Delta_E < 0, else exp(-Delta_E / T)"
@@ -45,6 +74,7 @@ equations:
       - "Applies to SA, GA, and PSO independently"
       - "Holds regardless of algorithm parameters"
 
+# Proof obligations: convergence and bound properties for all three algorithms
 proof_obligations:
   - type: invariant
     property: "Best objective non-increasing across iterations"
@@ -67,6 +97,7 @@ proof_obligations:
     formal: "forall Delta_E, T > 0: 0 < P(accept) <= 1"
     applies_to: all
 
+# Falsification tests: Popperian predictions for SA, GA, and PSO correctness
 falsification_tests:
   - id: FALSIFY-MH-001
     rule: "Best objective monotonicity"
@@ -104,6 +135,7 @@ falsification_tests:
     test: "proptest: generate random parents within bounds, apply SBX, check children within bounds"
     if_fails: "SBX crossover produces out-of-bounds children without clamping"
 
+# Enforcement rules: critical invariants that gate deployment
 enforcement:
   best_monotone:
     description: "Best-so-far objective must never increase"
@@ -118,6 +150,7 @@ enforcement:
     check: "contract_tests::FALSIFY-MH-006"
     severity: "ERROR"
 
+# Kani bounded model checking harnesses for formal verification
 kani_harnesses:
   - id: KANI-MH-001
     obligation: MH-INV-001
@@ -141,6 +174,7 @@ kani_harnesses:
     solver: cadical
     harness: verify_pso_velocity_clamped
 
+# QA gate: all 7 falsification tests + Kani harnesses must pass
 qa_gate:
   id: F-MH-001
   name: "Metaheuristics Contract"

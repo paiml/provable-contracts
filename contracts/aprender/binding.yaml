@@ -1,18 +1,41 @@
 # Binding Registry: provable-contracts <-> aprender
 #
-# Maps each kernel contract equation to the aprender function
-# that implements it. Used by `pv audit --binding` and
-# `pv probar --binding` to generate wired property tests.
+# Maps each kernel contract equation to the aprender function that
+# implements it. Used by `pv audit --binding` and `pv probar --binding`
+# to generate wired property tests.
 #
-# Status values:
-#   implemented   — function exists and matches contract semantics
-#   partial       — function exists but does not cover all obligations
-#   not_implemented — no public function available
+# Schema Fields:
+#   contract        — YAML contract filename in contracts/ directory
+#   equation        — Named equation within that contract
+#   module_path     — Rust module path (e.g. aprender::nn::functional::softmax)
+#   function        — Public function or method name
+#   signature       — Rust type signature
+#   status          — Implementation status (see below)
+#   notes           — Additional context or known limitations
+#
+# Status Values:
+#   implemented       — Function exists and matches contract semantics
+#   partial           — Function exists but does not cover all obligations
+#   not_implemented   — No public function available
+#
+# Kernel Class Coverage:
+#   Class A (GQA+RMSNorm+SiLU+SwiGLU+RoPE): All bound
+#   Class B (MHA+LayerNorm+GELU+AbsPos):     All bound
+#   Class C (LayerNorm+GELU+ALiBi):           All bound
+#   Class D (LayerNorm+GELU+SiLU+GQA):        All bound
+#   Class E (RMSNorm+SwiGLU+GQA):             All bound
+#
+# Statistics:
+#   Total bindings: 284
+#   Implemented: 277 (97.5%)
+#   Partial: 3
+#   Not implemented: 4
 
 version: "1.0.0"
 target_crate: aprender
 
 bindings:
+  # --- softmax-kernel-v1: Numerically stable softmax ---
   - contract: softmax-kernel-v1.yaml
     equation: softmax
     module_path: "aprender::nn::functional::softmax"
@@ -21,6 +44,7 @@ bindings:
     status: implemented
     notes: "2D tensors only; dim parameter currently unused"
 
+  # --- rmsnorm-kernel-v1: Root mean square normalization ---
   - contract: rmsnorm-kernel-v1.yaml
     equation: rmsnorm
     module_path: "aprender::nn::RMSNorm"
@@ -29,6 +53,7 @@ bindings:
     status: implemented
     notes: "Struct-based; requires RMSNorm::new(shape) then .forward()"
 
+  # --- rope-kernel-v1: Rotary position embeddings ---
   - contract: rope-kernel-v1.yaml
     equation: rope
     module_path: "aprender::nn::RotaryPositionEmbedding"
@@ -37,6 +62,7 @@ bindings:
     status: implemented
     notes: "4D tensor [batch, seq, heads, head_dim]; head_dim must be even"
 
+  # --- attention-kernel-v1: Multi-head attention ---
   - contract: attention-kernel-v1.yaml
     equation: attention
     module_path: "aprender::nn::transformer"
@@ -45,6 +71,7 @@ bindings:
     status: implemented
     notes: "Module-private in aprender; full public impl in realizar::gpu::scheduler::ops::gqa_multihead_attention"
 
+  # --- activation-kernel-v1: Activation functions (ReLU, GELU, SiLU) ---
   - contract: activation-kernel-v1.yaml
     equation: gelu
     module_path: "aprender::nn::functional::gelu"
@@ -67,6 +94,7 @@ bindings:
     status: implemented
     notes: "Scalar, AVX2, and PTX implementations in provable-contracts kernels"
 
+  # --- matmul-kernel-v1: Matrix multiplication ---
   - contract: matmul-kernel-v1.yaml
     equation: matmul
     module_path: "aprender::autograd::Tensor"
@@ -83,6 +111,7 @@ bindings:
     status: implemented
     notes: "Scalar, AVX2, AVX-512 VNNI variants; also Q6K, Q8_0 in realizar::gpu"
 
+  # --- flash-attention-v1: Flash attention (IO-aware) ---
   - contract: flash-attention-v1.yaml
     equation: flash_attention
     module_path: "realizar::gguf::inference::attention_part_02"
@@ -93,6 +122,7 @@ bindings:
 
   # --- New contracts (Tier 1/2) ---
 
+  # --- swiglu-kernel-v1: SwiGLU gated activation ---
   - contract: swiglu-kernel-v1.yaml
     equation: swiglu
     module_path: "aprender::models::qwen2"
@@ -109,6 +139,7 @@ bindings:
     status: implemented
     notes: "SiLU component shared with silu-kernel-v1; scalar/AVX2/PTX in provable-contracts"
 
+  # --- gqa-kernel-v1: Grouped query attention ---
   - contract: gqa-kernel-v1.yaml
     equation: gqa
     module_path: "aprender::nn::transformer"
@@ -117,6 +148,7 @@ bindings:
     status: implemented
     notes: "Embedded in aprender MHA; standalone pub impl in realizar::gpu::scheduler::ops::gqa_multihead_attention with SIMD"
 
+  # --- layernorm-kernel-v1: Layer normalization ---
   - contract: layernorm-kernel-v1.yaml
     equation: layernorm
     module_path: "aprender::nn::LayerNorm"
@@ -133,6 +165,7 @@ bindings:
     status: implemented
     notes: "Mean and variance computed internally within forward()"
 
+  # --- silu-kernel-v1: SiLU/Swish activation ---
   - contract: silu-kernel-v1.yaml
     equation: silu
     module_path: "provable_contracts::kernels::silu_standalone"
@@ -149,6 +182,7 @@ bindings:
     status: implemented
     notes: "Scalar, AVX2, PTX variants; also in trueno backends (all 6 architectures)"
 
+  # --- cross-entropy-kernel-v1: Cross-entropy loss ---
   - contract: cross-entropy-kernel-v1.yaml
     equation: cross_entropy
     module_path: "aprender::nn::CrossEntropyLoss"
@@ -165,6 +199,7 @@ bindings:
     status: implemented
     notes: "Scalar and AVX2 variants in provable-contracts; used internally by CrossEntropyLoss"
 
+  # --- adamw-kernel-v1: AdamW optimizer ---
   - contract: adamw-kernel-v1.yaml
     equation: adam_moments
     module_path: "aprender::nn::optim::AdamW"
@@ -199,6 +234,7 @@ bindings:
 
   # --- Tier 3 contracts (not yet implemented in aprender) ---
 
+  # --- ssm-kernel-v1: State space model (Mamba) ---
   - contract: ssm-kernel-v1.yaml
     equation: ssm_discretize
     module_path: ~
@@ -223,6 +259,7 @@ bindings:
     status: not_implemented
     notes: "SSM/Mamba not yet implemented in aprender"
 
+  # --- conv1d-kernel-v1: 1D convolution ---
   - contract: conv1d-kernel-v1.yaml
     equation: conv1d
     module_path: "aprender::nn::Conv1d"
@@ -231,6 +268,7 @@ bindings:
     status: implemented
     notes: "Standard 1D convolution; used in Whisper encoder"
 
+  # --- batchnorm-kernel-v1: Batch normalization ---
   - contract: batchnorm-kernel-v1.yaml
     equation: batchnorm_train
     module_path: "aprender::nn::BatchNorm1d"
@@ -255,6 +293,7 @@ bindings:
     status: implemented
     notes: "Eval mode uses running stats; controlled by .eval() flag"
 
+  # --- kmeans-kernel-v1: K-Means clustering ---
   - contract: kmeans-kernel-v1.yaml
     equation: assignment
     module_path: "aprender::cluster::KMeans"
@@ -279,6 +318,7 @@ bindings:
     status: implemented
     notes: "Sum of squared distances to centroids"
 
+  # --- pagerank-kernel-v1: PageRank graph algorithm ---
   - contract: pagerank-kernel-v1.yaml
     equation: pagerank
     module_path: "aprender::graph::pagerank"
@@ -295,6 +335,7 @@ bindings:
     status: implemented
     notes: "Iteration loop inside pagerank()"
 
+  # --- lbfgs-kernel-v1: L-BFGS optimizer ---
   - contract: lbfgs-kernel-v1.yaml
     equation: two_loop_recursion
     module_path: "aprender::optim::LBFGS"
@@ -319,6 +360,7 @@ bindings:
     status: implemented
     notes: "Strong Wolfe line search inside step()"
 
+  # --- cma-es-kernel-v1: CMA-ES evolution strategy ---
   - contract: cma-es-kernel-v1.yaml
     equation: sample
     module_path: "aprender::metaheuristics::CmaEs"
@@ -345,6 +387,7 @@ bindings:
 
   # --- Model-architecture contracts (Qwen showcase + Qwen3 specs) ---
 
+  # --- model-config-algebra-v1: Model configuration algebra ---
   - contract: model-config-algebra-v1.yaml
     equation: divisibility
     module_path: ~
@@ -369,6 +412,7 @@ bindings:
     status: implemented
     notes: "Float parameter constraints (rope_theta, eps)"
 
+  # --- qk-norm-v1: QK normalization for attention ---
   - contract: qk-norm-v1.yaml
     equation: qk_rmsnorm
     module_path: "aprender::nn::RMSNorm"
@@ -388,6 +432,7 @@ bindings:
       Launched via realizar::per_head_rmsnorm_into(). Cross-backend equivalence
       tested by FALSIFY-QKN-005 (GPU reference simulation vs CPU RMSNorm::forward).
 
+  # --- tensor-shape-flow-v1: Tensor shape propagation ---
   - contract: tensor-shape-flow-v1.yaml
     equation: qkv_projection
     module_path: ~
@@ -412,6 +457,7 @@ bindings:
     status: implemented
     notes: "SwiGLU dimension chain verified algebraically"
 
+  # --- roofline-model-v1: Roofline performance model ---
   - contract: roofline-model-v1.yaml
     equation: bandwidth_ceiling
     module_path: ~
@@ -428,6 +474,7 @@ bindings:
     status: implemented
     notes: "Throughput bounded by min(bw_ceiling, compute_ceiling)"
 
+  # --- gated-delta-net-v1: Gated delta network (linear attention) ---
   - contract: gated-delta-net-v1.yaml
     equation: decay
     module_path: "realizar::gpu::scheduler::linear_attn"
@@ -452,6 +499,7 @@ bindings:
     status: implemented
     notes: "Output in gated_delta_rule_step(): o = S^T @ q, then rms_norm_gated (line 682-694 of linear_attn.rs)"
 
+  # --- format-parity-v1: Format parity (transpose invariants) ---
   - contract: format-parity-v1.yaml
     equation: transpose_involution
     module_path: ~
@@ -478,6 +526,7 @@ bindings:
 
   # --- Batch 2 contracts (GH-288/290/291/292/293/295/298) ---
 
+  # --- shannon-entropy-v1: Shannon entropy ---
   - contract: shannon-entropy-v1.yaml
     equation: entropy
     module_path: ~
@@ -494,6 +543,7 @@ bindings:
     status: implemented
     notes: "Uniform entropy monotonicity tested via proptest"
 
+  # --- f16-conversion-v1: F16 half-precision conversion ---
   - contract: f16-conversion-v1.yaml
     equation: f16_to_f32_bias
     module_path: ~
@@ -510,6 +560,7 @@ bindings:
     status: implemented
     notes: "f16→f32→f16 roundtrip tested for normal bit patterns"
 
+  # --- kernel-launch-budget-v1: Kernel launch budget ---
   - contract: kernel-launch-budget-v1.yaml
     equation: per_token_launches
     module_path: ~
@@ -534,6 +585,7 @@ bindings:
     status: implemented
     notes: "Launch count monotonicity tested via proptest"
 
+  # --- tensor-inventory-v1: Tensor inventory accounting ---
   - contract: tensor-inventory-v1.yaml
     equation: tensor_count
     module_path: ~
@@ -566,6 +618,7 @@ bindings:
     status: implemented
     notes: "Quantization size ordering: Q4K < Q6K < Q8 < F16 < F32"
 
+  # --- performance-grading-v1: Performance grading (tok/s) ---
   - contract: performance-grading-v1.yaml
     equation: ollama_parity
     module_path: ~
@@ -590,6 +643,7 @@ bindings:
     status: implemented
     notes: "DDR4 33 GB/s, 4.19 GB model => ~7.9 tok/s verified"
 
+  # --- lora-algebra-v1: LoRA adapter algebra ---
   - contract: lora-algebra-v1.yaml
     equation: task_vector
     module_path: ~
@@ -630,6 +684,7 @@ bindings:
     status: implemented
     notes: "Merge preserves base tensor shapes"
 
+  # --- quantization-ordering-v1: Quantization size ordering ---
   - contract: quantization-ordering-v1.yaml
     equation: size_ordering
     module_path: ~
@@ -664,6 +719,7 @@ bindings:
 
   # --- Batch 3 contracts (GH-286/287/289/294/296/297/299/300) ---
 
+  # --- q4k-q6k-superblock-v1: Q4K/Q6K superblock layout ---
   - contract: q4k-q6k-superblock-v1.yaml
     equation: q4k_superblock
     module_path: ~
@@ -704,6 +760,7 @@ bindings:
     status: implemented
     notes: "bsum depends only on quantized values, not scales"
 
+  # --- sampling-algorithms-v1: Sampling algorithms (top-k, top-p) ---
   - contract: sampling-algorithms-v1.yaml
     equation: greedy
     module_path: ~
@@ -736,6 +793,7 @@ bindings:
     status: implemented
     notes: "T=1 identity: softmax(l/1) == softmax(l)"
 
+  # --- validated-tensor-v1: Validated tensor guards ---
   - contract: validated-tensor-v1.yaml
     equation: density_gate
     module_path: ~
@@ -760,6 +818,7 @@ bindings:
     status: implemented
     notes: "Zero rows detected, non-zero rows pass"
 
+  # --- hybrid-layer-dispatch-v1: Hybrid layer dispatch ---
   - contract: hybrid-layer-dispatch-v1.yaml
     equation: hybrid_dispatch
     module_path: ~
@@ -792,6 +851,7 @@ bindings:
     status: implemented
     notes: "Causal conv1d output length == input length"
 
+  # --- qwen35-shapes-v1: Qwen3.5 tensor shapes ---
   - contract: qwen35-shapes-v1.yaml
     equation: q_projection_shape
     module_path: ~
@@ -824,6 +884,7 @@ bindings:
     status: implemented
     notes: "RoPE frequencies strictly decreasing, freq_0 = 1.0"
 
+  # --- kv-cache-sizing-v1: KV cache memory sizing ---
   - contract: kv-cache-sizing-v1.yaml
     equation: per_token_per_layer
     module_path: ~
@@ -856,6 +917,7 @@ bindings:
     status: implemented
     notes: "W @ zeros = zeros when no bias"
 
+  # --- backend-dispatch-v1: Backend dispatch (CPU/GPU) ---
   - contract: backend-dispatch-v1.yaml
     equation: gpu_threshold
     module_path: ~
@@ -880,6 +942,7 @@ bindings:
     status: implemented
     notes: "Dot product of unit vectors bounded by sqrt(d)"
 
+  # --- kv-cache-equivalence-v1: KV cache equivalence proofs ---
   - contract: kv-cache-equivalence-v1.yaml
     equation: prefill_incremental
     module_path: "realizar::gguf::inference::forward::batch_part_02_part_03"
@@ -914,6 +977,7 @@ bindings:
 
   # --- Qwen 3.5 extended contracts ---
 
+  # --- sliding-window-attention-v1: Sliding window attention ---
   - contract: sliding-window-attention-v1.yaml
     equation: window_mask
     module_path: ~
@@ -954,6 +1018,7 @@ bindings:
     status: implemented
     notes: "Pure math — receptive field linear growth tested"
 
+  # --- rope-extrapolation-v1: RoPE extrapolation (NTK, YaRN) ---
   - contract: rope-extrapolation-v1.yaml
     equation: base_frequency
     module_path: "aprender::nn::RotaryPositionEmbedding"
@@ -1002,6 +1067,7 @@ bindings:
     status: implemented
     notes: "Rotation applied per-head; orthogonality is intrinsic to cos/sin construction"
 
+  # --- embedding-algebra-v1: Embedding lookup algebra ---
   - contract: embedding-algebra-v1.yaml
     equation: embedding_lookup
     module_path: "aprender::nn::Embedding"
@@ -1050,6 +1116,7 @@ bindings:
     status: implemented
     notes: "Pure math — temperature scaling tested inline"
 
+  # --- inference-pipeline-v1: Inference pipeline (prefill/decode) ---
   - contract: inference-pipeline-v1.yaml
     equation: prefill_phase
     module_path: "realizar::gguf::inference::forward::batch_part_02_part_03"
@@ -1098,6 +1165,7 @@ bindings:
     status: implemented
     notes: "Pure math — linear growth in t tested via proptest"
 
+  # --- qwen35-hybrid-forward-v1: Qwen3.5 hybrid forward pass ---
   - contract: qwen35-hybrid-forward-v1.yaml
     equation: attention_sublayer
     module_path: ~
@@ -1146,6 +1214,7 @@ bindings:
     status: implemented
     notes: "Pure math — residual identity Jacobian verified"
 
+  # --- attention-scaling-v1: Attention scaling and stability ---
   - contract: attention-scaling-v1.yaml
     equation: scaled_dot_product
     module_path: "aprender::nn::transformer"
@@ -1194,6 +1263,7 @@ bindings:
     status: implemented
     notes: "Max-subtraction trick implemented in softmax"
 
+  # --- qwen35-e2e-verification-v1: Qwen3.5 end-to-end verification ---
   - contract: qwen35-e2e-verification-v1.yaml
     equation: model_parameter_count
     module_path: ~
@@ -1432,6 +1502,7 @@ bindings:
 
   # --- GH-279: Architecture Requirements (Weight Loading Validation) ---
 
+  # --- architecture-requirements-v1: Architecture requirements (weight loading) ---
   - contract: architecture-requirements-v1.yaml
     equation: gguf_loader_validation
     module_path: "realizar::cuda::executor::weights"
@@ -1664,7 +1735,7 @@ bindings:
   # Algorithm Contracts (Phase 6 — UCBD v2.0.0 §14-15)
   # ============================================================
 
-  # --- metrics-regression-v1 ---
+  # --- metrics-regression-v1: Regression metrics (R-squared, MSE, MAE) ---
 
   - contract: metrics-regression-v1.yaml
     equation: r_squared
@@ -1698,7 +1769,7 @@ bindings:
     status: implemented
     notes: "Root Mean Squared Error = sqrt(MSE)"
 
-  # --- metrics-classification-v1 ---
+  # --- metrics-classification-v1: Classification metrics (precision, recall, F1) ---
 
   - contract: metrics-classification-v1.yaml
     equation: accuracy
@@ -1740,7 +1811,7 @@ bindings:
     status: implemented
     notes: "CM[i,j] = count of true=i, pred=j"
 
-  # --- metrics-clustering-v1 ---
+  # --- metrics-clustering-v1: Clustering metrics (silhouette, inertia) ---
 
   - contract: metrics-clustering-v1.yaml
     equation: silhouette_score
@@ -1766,7 +1837,7 @@ bindings:
     status: implemented
     notes: "Private helper — per-point silhouette"
 
-  # --- loss-functions-v1 ---
+  # --- loss-functions-v1: Loss functions (MSE, L1, BCE, Huber) ---
 
   - contract: loss-functions-v1.yaml
     equation: mse_loss
@@ -1816,7 +1887,7 @@ bindings:
     status: implemented
     notes: "Huber loss with configurable delta"
 
-  # --- graph-centrality-v1 ---
+  # --- graph-centrality-v1: Graph centrality measures ---
 
   - contract: graph-centrality-v1.yaml
     equation: degree
@@ -1870,6 +1941,7 @@ bindings:
   # P1 Algorithm Contracts: Calibration
   # ────────────────────────────────────────────────────────
 
+  # --- calibration-v1: Probability calibration (ECE, Platt, isotonic) ---
   - contract: calibration-v1.yaml
     equation: expected_calibration_error
     module_path: "aprender::calibration"
@@ -1914,6 +1986,7 @@ bindings:
   # P1 Algorithm Contracts: Preprocessing Normalization
   # ────────────────────────────────────────────────────────
 
+  # --- preprocessing-normalization-v1: Preprocessing normalization (standard, minmax) ---
   - contract: preprocessing-normalization-v1.yaml
     equation: standard_scaler
     module_path: "aprender::preprocessing"
@@ -1942,6 +2015,7 @@ bindings:
   # P1 Algorithm Contracts: Decision Tree
   # ────────────────────────────────────────────────────────
 
+  # --- decision-tree-v1: Decision tree (CART) ---
   - contract: decision-tree-v1.yaml
     equation: gini_impurity
     module_path: "aprender::tree::helpers"
@@ -1978,6 +2052,7 @@ bindings:
   # P1 Algorithm Contracts: Naive Bayes
   # ────────────────────────────────────────────────────────
 
+  # --- naive-bayes-v1: Naive Bayes classifier ---
   - contract: naive-bayes-v1.yaml
     equation: class_prior
     module_path: "aprender::classification"
@@ -2006,6 +2081,7 @@ bindings:
   # P2 Algorithm Contracts: Linear Models
   # ────────────────────────────────────────────────────────
 
+  # --- linear-models-v1: Linear models (OLS, logistic) ---
   - contract: linear-models-v1.yaml
     equation: ols_fit
     module_path: "aprender::linear_model"
@@ -2042,6 +2118,7 @@ bindings:
   # P2 Algorithm Contracts: SVM
   # ────────────────────────────────────────────────────────
 
+  # --- svm-v1: Support vector machine ---
   - contract: svm-v1.yaml
     equation: hinge_loss
     module_path: "aprender::classification"
@@ -2070,6 +2147,7 @@ bindings:
   # P2 Algorithm Contracts: PCA
   # ────────────────────────────────────────────────────────
 
+  # --- pca-v1: Principal component analysis ---
   - contract: pca-v1.yaml
     equation: pca_transform
     module_path: "aprender::preprocessing"
@@ -2090,6 +2168,7 @@ bindings:
   # P2 Algorithm Contracts: ICA
   # ────────────────────────────────────────────────────────
 
+  # --- ica-v1: Independent component analysis (FastICA) ---
   - contract: ica-v1.yaml
     equation: fastica
     module_path: "aprender::decomposition"
@@ -2110,6 +2189,7 @@ bindings:
   # P3 Algorithm Contracts: ARIMA
   # ────────────────────────────────────────────────────────
 
+  # --- arima-v1: ARIMA time series forecasting ---
   - contract: arima-v1.yaml
     equation: ar_forecast
     module_path: "aprender::time_series"
@@ -2146,6 +2226,7 @@ bindings:
   # P3 Algorithm Contracts: Bayesian
   # ────────────────────────────────────────────────────────
 
+  # --- bayesian-v1: Bayesian inference (conjugate, BLR) ---
   - contract: bayesian-v1.yaml
     equation: conjugate_update
     module_path: "aprender::bayesian::conjugate"
@@ -2182,6 +2263,7 @@ bindings:
   # P3 Algorithm Contracts: GLM
   # ────────────────────────────────────────────────────────
 
+  # --- glm-v1: Generalized linear models (Poisson, Gamma) ---
   - contract: glm-v1.yaml
     equation: poisson_link
     module_path: "aprender::glm"
@@ -2218,6 +2300,7 @@ bindings:
   # P3 Algorithm Contracts: Drift Detection
   # ────────────────────────────────────────────────────────
 
+  # --- drift-detection-v1: Drift detection (univariate, performance) ---
   - contract: drift-detection-v1.yaml
     equation: univariate_drift
     module_path: "aprender::metrics::drift"
@@ -2254,6 +2337,7 @@ bindings:
   # P3 Algorithm Contracts: Ranking Metrics
   # ────────────────────────────────────────────────────────
 
+  # --- metrics-ranking-v1: Ranking metrics (MRR, NDCG, hit@k) ---
   - contract: metrics-ranking-v1.yaml
     equation: hit_at_k
     module_path: "aprender::metrics::ranking"
@@ -2290,6 +2374,7 @@ bindings:
   # P3 Algorithm Contracts: GBM
   # ────────────────────────────────────────────────────────
 
+  # --- gbm-v1: Gradient boosted machines ---
   - contract: gbm-v1.yaml
     equation: gradient_boost
     module_path: "aprender::tree::gradient_boosting"
@@ -2326,6 +2411,7 @@ bindings:
   # P3 Algorithm Contracts: Optimization
   # ────────────────────────────────────────────────────────
 
+  # --- optimization-v1: Optimization (conjugate gradient) ---
   - contract: optimization-v1.yaml
     equation: cg_minimize
     module_path: "aprender::optim::conjugate_gradient"
@@ -2354,6 +2440,7 @@ bindings:
   # P3 Algorithm Contracts: Random Forest
   # ────────────────────────────────────────────────────────
 
+  # --- random-forest-v1: Random forest ensemble ---
   - contract: random-forest-v1.yaml
     equation: bootstrap_sample
     module_path: "aprender::tree::random_forest"
@@ -2390,6 +2477,7 @@ bindings:
   # P4 Algorithm Contracts: Active Learning
   # ────────────────────────────────────────────────────────
 
+  # --- active-learning-v1: Active learning (uncertainty, margin, QBC) ---
   - contract: active-learning-v1.yaml
     equation: uncertainty_score
     module_path: "aprender::active_learning"
@@ -2426,6 +2514,7 @@ bindings:
   # P4 Algorithm Contracts: Graph Neural Networks
   # ────────────────────────────────────────────────────────
 
+  # --- gnn-v1: Graph neural networks (GCN, pooling) ---
   - contract: gnn-v1.yaml
     equation: gcn_aggregate
     module_path: "aprender::nn::gnn"
@@ -2462,6 +2551,7 @@ bindings:
   # P4 Algorithm Contracts: Metaheuristics
   # ────────────────────────────────────────────────────────
 
+  # --- metaheuristics-v1: Metaheuristics (SA, GA, PSO) ---
   - contract: metaheuristics-v1.yaml
     equation: sa_acceptance
     module_path: "aprender::metaheuristics::sa"

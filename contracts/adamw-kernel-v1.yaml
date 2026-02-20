@@ -1,3 +1,30 @@
+# =============================================================================
+# AdamW Kernel Contract v1.0.0
+# =============================================================================
+#
+# Specifies the AdamW optimizer: Adam with decoupled weight decay.
+# The key distinction from L2 regularization is that weight decay is applied
+# AFTER the Adam update, not inside the gradient computation.
+#
+# Key equations:
+#   - First moment:  m_t = beta1 * m_{t-1} + (1-beta1) * g_t
+#   - Second moment: v_t = beta2 * v_{t-1} + (1-beta2) * g_t^2
+#   - Bias correction: m_hat = m/(1-beta1^t), v_hat = v/(1-beta2^t)
+#   - Update: theta -= lr * (m_hat / (sqrt(v_hat)+eps) + lambda*theta)
+#
+# Key properties:
+#   - Weight decay is decoupled (applied to theta, not gradient)
+#   - Second moment v_t >= 0 for all t (non-negative)
+#   - Bias correction factor > 1 for all t >= 1
+#   - Update is finite when inputs are finite and eps > 0
+#
+# References:
+#   - Loshchilov & Hutter (2017) "Decoupled Weight Decay Regularization"
+#   - Kingma & Ba (2014) "Adam: A Method for Stochastic Optimization"
+#
+# ENFORCEMENT: contract_tests::FALSIFY-AW-001 through FALSIFY-AW-006
+# =============================================================================
+
 metadata:
   version: "1.0.0"
   created: "2026-02-18"
@@ -7,6 +34,7 @@ metadata:
     - "Loshchilov & Hutter (2017) Decoupled Weight Decay Regularization"
     - "Kingma & Ba (2014) Adam: A Method for Stochastic Optimization"
 
+# Mathematical equations: moment updates, bias correction, and decoupled weight decay
 equations:
   adam_moments:
     formula: "m_t = beta1 * m_{t-1} + (1 - beta1) * g_t"
@@ -37,6 +65,7 @@ equations:
       - "Weight decay applied AFTER Adam update (decoupled)"
       - "Update finite when inputs finite and eps > 0"
 
+# Proof obligations: decoupling, non-negativity, finiteness, and SIMD equivalence
 proof_obligations:
   - type: invariant
     property: "Decoupled weight decay"
@@ -59,6 +88,7 @@ proof_obligations:
     tolerance: 8.0
     applies_to: simd
 
+# Kernel computation phases: moment update -> bias correct -> adam step -> decay
 kernel_structure:
   phases:
     - name: update_first_moment
@@ -77,12 +107,14 @@ kernel_structure:
       description: "Subtract lr * lambda * theta (decoupled)"
       invariant: "Decay applied to theta, not gradient"
 
+# SIMD dispatch: (adamw x ISA) -> kernel mapping
 simd_dispatch:
   adamw:
     scalar: adamw_step_scalar
     avx2: adamw_step_avx2
     ptx: adamw_ptx
 
+# Enforcement rules: critical invariants that gate optimizer deployment
 enforcement:
   decoupled_decay:
     description: "Weight decay must be decoupled from gradient update"
@@ -93,6 +125,7 @@ enforcement:
     check: "contract_tests::FALSIFY-AW-002"
     severity: "ERROR"
 
+# Falsification tests: Popperian predictions for AdamW correctness
 falsification_tests:
   - id: FALSIFY-AW-001
     rule: "Decoupled weight decay"
@@ -125,6 +158,7 @@ falsification_tests:
     test: "proptest with zero gradient, nonzero lambda"
     if_fails: "Bias correction or moment update incorrect at zero"
 
+# Kani bounded model checking harnesses for formal AdamW verification
 kani_harnesses:
   - id: KANI-AW-001
     obligation: AW-INV-001
@@ -148,6 +182,7 @@ kani_harnesses:
     solver: cadical
     harness: verify_adamw_finite_update
 
+# QA gate: all 6 falsification tests + Kani harnesses must pass
 qa_gate:
   id: F-AW-001
   name: "AdamW Contract"

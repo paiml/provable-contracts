@@ -114,7 +114,7 @@ type_enforcement:
 
     This is Poka-Yoke: the mistake (using unvalidated data) is physically impossible.
 
-# Format conventions
+# Format conventions: GGUF (col-major), APR (row-major), SafeTensors (row-major)
 formats:
   gguf:
     layout: column-major
@@ -235,9 +235,13 @@ quant_dispatch:
         - name: "LM head"
           must_handle: [Q4_K, Q6_K]
 
-# Per-tensor specifications
-# Key: tensor logical name
-# Values: gguf_name, apr_name, shapes, transpose rule, kernel info
+# =============================================================================
+# PER-TENSOR SPECIFICATIONS
+# =============================================================================
+#
+# Each tensor entry defines the GGUF->APR shape mapping, transpose rule,
+# and kernel signature. This is the canonical reference for shape correctness.
+# When in doubt, trust this contract over code comments.
 tensors:
   embedding:
     gguf_name: "token_embd.weight"
@@ -355,8 +359,12 @@ tensors:
     transpose: "false"
     kernel: "element-wise multiply"
 
-# Validation rules for automated testing
-# These generate tests in apr-model-qa-playbook
+# =============================================================================
+# STRUCTURAL VALIDATION RULES
+# =============================================================================
+#
+# These rules generate tests in apr-model-qa-playbook. They verify shape
+# correctness, transpose consistency, and byte-level layout accuracy.
 validation_rules:
   - id: F-LAYOUT-CONTRACT-001
     name: "All 2D weights are transposed"
@@ -387,8 +395,12 @@ validation_rules:
     critical: "true"
     reference: "GH-202"
 
-# Semantic validation rules (PMAT-234)
+# =============================================================================
+# SEMANTIC VALIDATION RULES (PMAT-234)
+# =============================================================================
+#
 # These catch data that parses correctly but is semantically garbage.
+# Root cause: PMAT-234 SafeTensors had 94.5% zeros, passed all structural checks.
 # MUST be enforced by BOTH aprender (import) AND realizar (load).
 semantic_validation:
   # Density gates - reject tensors that are mostly zeros
@@ -416,6 +428,7 @@ semantic_validation:
     min_token_l2: 1.0e-6              # Each sampled token must have non-zero embedding
     note: "Catches offset bugs where data is shifted (e.g., first 94.5% zeros)"
 
+# Semantic validation test definitions with enforcement locations
 validation_rules_semantic:
   - id: F-DATA-QUALITY-001
     name: "Embedding density check"
@@ -596,7 +609,11 @@ falsification_tests:
       }
     if_test_fails: "Block format assumptions are wrong - Q4K and Q6K are more compatible than expected"
 
-# Toyota Way application notes
+# =============================================================================
+# TOYOTA WAY APPLICATION NOTES
+# =============================================================================
+#
+# Mapping Toyota Production System principles to software validation patterns.
 toyota_way_principles:
   jidoka: |
     "Automation with a human touch" - The validation stops the line immediately
