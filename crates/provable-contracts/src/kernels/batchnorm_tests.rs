@@ -4,6 +4,7 @@
 
     // ── Scalar known-answer tests ────────────────────────────────────────
 
+    /// Verify constant input produces output equal to beta during training
     #[test]
     fn test_batchnorm_constant_input_training() {
         // All inputs constant for one channel -> output = beta (when gamma=1)
@@ -36,6 +37,7 @@
         }
     }
 
+    /// Verify training mode updates running mean and variance with momentum
     #[test]
     fn test_batchnorm_training_updates_running_stats() {
         let input = [1.0_f32, 2.0, 3.0, 4.0]; // N=4, C=1
@@ -74,6 +76,7 @@
         );
     }
 
+    /// Verify inference mode uses running stats and leaves them unchanged
     #[test]
     fn test_batchnorm_inference_uses_running_stats() {
         let input = [1.0_f32, 2.0, 3.0, 4.0]; // N=4, C=1
@@ -114,6 +117,7 @@
         assert!((running_var[0] - 4.0).abs() < 1e-10);
     }
 
+    /// Verify training and inference outputs differ when running stats diverge from batch stats
     #[test]
     fn test_batchnorm_inference_differs_from_training() {
         let input = [1.0_f32, 2.0, 3.0, 4.0];
@@ -169,6 +173,7 @@
         );
     }
 
+    /// Verify batchnorm normalizes each channel independently with N=2, C=2
     #[test]
     fn test_batchnorm_multi_channel() {
         // N=2, C=2
@@ -205,6 +210,7 @@
         assert!((output[3] - 1.0).abs() < 1e-3);
     }
 
+    /// Verify batchnorm with batch size 1 produces output equal to beta
     #[test]
     fn test_batchnorm_single_sample() {
         // N=1 (batch size 1) -> var=0, output=beta when gamma=1
@@ -238,6 +244,7 @@
         );
     }
 
+    /// Verify batchnorm panics on input length mismatch
     #[test]
     #[should_panic(expected = "input length must be n * c")]
     fn test_batchnorm_input_length_mismatch() {
@@ -262,6 +269,7 @@
         );
     }
 
+    /// Verify batchnorm panics when batch size or channels is zero
     #[test]
     #[should_panic(expected = "batchnorm requires n > 0 and c > 0")]
     fn test_batchnorm_zero_batch() {

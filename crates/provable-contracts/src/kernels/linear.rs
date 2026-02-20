@@ -187,6 +187,7 @@ mod tests {
     use super::*;
     use proptest::prelude::*;
 
+    /// Verify linear projection with bias produces correct known-answer result
     #[test]
     fn test_linear_basic_with_bias() {
         // x = [[1, 2]], W = [[3, 4], [5, 6]], b = [10, 20]
@@ -201,6 +202,7 @@ mod tests {
         assert!((output[1] - 37.0).abs() < 1e-5);
     }
 
+    /// Verify linear projection works correctly with an empty bias slice
     #[test]
     fn test_linear_no_bias() {
         let x = [1.0, 0.0];
@@ -212,6 +214,7 @@ mod tests {
         assert!((output[1] - 0.0).abs() < 1e-5);
     }
 
+    /// Verify zero input produces output equal to bias
     #[test]
     fn test_linear_zero_input_returns_bias() {
         let x = [0.0, 0.0, 0.0];
@@ -224,6 +227,7 @@ mod tests {
         assert!((output[1] - 8.0).abs() < 1e-5);
     }
 
+    /// Verify linear projection handles batched inputs correctly
     #[test]
     fn test_linear_batch() {
         // batch=2, in=2, out=1, W=[[1,1]], no bias
@@ -236,6 +240,7 @@ mod tests {
         assert!((output[1] - 7.0).abs() < 1e-5); // 3+4
     }
 
+    /// Verify linear homogeneity: f(2x) = 2*f(x) when bias is absent
     #[test]
     fn test_linear_linearity() {
         // f(2x) = 2*f(x) when no bias
@@ -278,6 +283,7 @@ mod tests {
         }
     }
 
+    /// Verify linear PTX contains required entry point and instructions
     #[test]
     fn test_linear_ptx_structure() {
         let ptx = linear_ptx();
@@ -286,6 +292,7 @@ mod tests {
         assert!(ptx.contains("ret;"));
     }
 
+    /// Verify AVX2 linear projection produces identical results to scalar
     #[cfg(target_arch = "x86_64")]
     #[test]
     fn test_linear_avx2_parity() {

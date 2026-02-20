@@ -3,15 +3,21 @@ use std::path::Path;
 use provable_contracts::graph::{DependencyGraph, dependency_graph, graph_nodes};
 use provable_contracts::schema::parse_contract;
 
+/// Output format for the dependency graph rendering
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GraphFormat {
+    /// Human-readable text output.
     Text,
+    /// Graphviz DOT language output.
     Dot,
+    /// JSON structured output.
     Json,
+    /// Mermaid diagram syntax output.
     Mermaid,
 }
 
 impl GraphFormat {
+    /// Parse a format name string into a `GraphFormat` variant
     pub fn from_str(s: &str) -> Result<Self, String> {
         match s {
             "text" => Ok(Self::Text),
@@ -25,6 +31,7 @@ impl GraphFormat {
     }
 }
 
+/// Load contracts from a directory and render their dependency graph
 pub fn run(contract_dir: &Path, format: GraphFormat) -> Result<(), Box<dyn std::error::Error>> {
     let mut contracts = Vec::new();
     let entries = std::fs::read_dir(contract_dir)?;
@@ -66,6 +73,7 @@ pub fn run(contract_dir: &Path, format: GraphFormat) -> Result<(), Box<dyn std::
     Ok(())
 }
 
+/// Render the dependency graph as human-readable text to stdout
 fn render_text(graph: &DependencyGraph) {
     let nodes = graph_nodes(graph);
     println!("Contract Dependency Graph");
@@ -104,6 +112,7 @@ fn render_text(graph: &DependencyGraph) {
     }
 }
 
+/// Render the dependency graph in Graphviz DOT format to stdout
 fn render_dot(graph: &DependencyGraph) {
     println!("digraph contracts {{");
     println!("    rankdir=LR;");
@@ -143,6 +152,7 @@ fn render_dot(graph: &DependencyGraph) {
     println!("}}");
 }
 
+/// Render the dependency graph as a JSON object to stdout
 fn render_json(graph: &DependencyGraph) {
     println!("{{");
     // Nodes array
@@ -187,6 +197,7 @@ fn render_json(graph: &DependencyGraph) {
     println!("}}");
 }
 
+/// Render the dependency graph in Mermaid diagram syntax to stdout
 fn render_mermaid(graph: &DependencyGraph) {
     println!("graph TD");
 
@@ -217,6 +228,7 @@ fn mermaid_id(stem: &str) -> String {
     stem.replace('-', "_")
 }
 
+/// Check whether any other node in the graph depends on the given node
 fn is_depended_on(graph: &DependencyGraph, node: &str) -> bool {
     graph
         .edges

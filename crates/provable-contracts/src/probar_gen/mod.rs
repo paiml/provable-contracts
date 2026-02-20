@@ -67,6 +67,7 @@ pub fn generate_probar_tests(contract: &Contract) -> String {
     out
 }
 
+/// Emit a single property test derived from a proof obligation
 fn generate_obligation_test(out: &mut String, ob: &ProofObligation, index: usize) {
     let fn_name = obligation_fn_name(ob, index);
     let pattern = obligation_pattern(ob.obligation_type);
@@ -124,6 +125,7 @@ fn generate_obligation_test(out: &mut String, ob: &ProofObligation, index: usize
     out.push_str("    }\n\n");
 }
 
+/// Derive a test function name from the obligation property text
 fn obligation_fn_name(ob: &ProofObligation, index: usize) -> String {
     let base = ob
         .property
@@ -138,6 +140,7 @@ fn obligation_fn_name(ob: &ProofObligation, index: usize) -> String {
     }
 }
 
+/// Return a mathematical pattern description for the given obligation type
 fn obligation_pattern(ot: ObligationType) -> &'static str {
     match ot {
         ObligationType::Invariant => "∀x ∈ Domain: P(f(x)) — property holds for all inputs",
@@ -155,6 +158,7 @@ fn obligation_pattern(ot: ObligationType) -> &'static str {
     }
 }
 
+/// Emit an `unimplemented!()` test stub for a falsification test entry
 fn generate_falsification_stub(out: &mut String, test: &crate::schema::FalsificationTest) {
     // Doc comment
     out.push_str(&format!("    /// {}: {}\n", test.id, test.rule));

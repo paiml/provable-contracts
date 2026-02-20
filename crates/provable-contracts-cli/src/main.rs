@@ -5,6 +5,7 @@ use clap::{Parser, Subcommand};
 
 mod commands;
 
+/// Top-level CLI argument parser for the `pv` command
 #[derive(Parser)]
 #[command(
     name = "pv",
@@ -16,6 +17,7 @@ struct Cli {
     command: Commands,
 }
 
+/// Available subcommands for the `pv` CLI
 #[derive(Subcommand)]
 enum Commands {
     /// Validate a YAML kernel contract
@@ -141,6 +143,7 @@ enum Commands {
     },
 }
 
+/// Dispatch a parsed CLI subcommand to its handler
 fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
     match command {
         Commands::Validate { contract } => commands::validate::run(&contract),
@@ -200,6 +203,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
+/// Entry point: parse CLI arguments and run the selected subcommand
 fn main() {
     let cli = Cli::parse();
 
@@ -213,6 +217,7 @@ fn main() {
 mod tests {
     use super::*;
 
+    /// Return the path to the softmax contract fixture for testing
     fn test_contract() -> PathBuf {
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts/softmax-kernel-v1.yaml")
     }

@@ -34,6 +34,7 @@ pub struct SectionDiff {
     pub changed: Vec<String>,
 }
 
+/// Methods for querying a section diff
 impl SectionDiff {
     /// True if this section has no changes.
     pub fn is_empty(&self) -> bool {
@@ -54,6 +55,7 @@ pub enum SemverBump {
     Major,
 }
 
+/// Display the semver bump level as a lowercase string
 impl std::fmt::Display for SemverBump {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -158,6 +160,7 @@ pub fn diff_contracts(old: &Contract, new: &Contract) -> ContractDiff {
     }
 }
 
+/// Compute added and removed keys between two sorted sets
 fn diff_keys(
     _section: &str,
     old_keys: &BTreeSet<String>,
@@ -168,6 +171,7 @@ fn diff_keys(
     (added, removed)
 }
 
+/// Build a `SectionDiff` from the symmetric difference of two string sets
 fn diff_sets(section: &str, old: &BTreeSet<String>, new: &BTreeSet<String>) -> SectionDiff {
     let added: Vec<String> = new.difference(old).cloned().collect();
     let removed: Vec<String> = old.difference(new).cloned().collect();
@@ -179,6 +183,7 @@ fn diff_sets(section: &str, old: &BTreeSet<String>, new: &BTreeSet<String>) -> S
     }
 }
 
+/// Detect field-level changes in equations present in both old and new contracts
 fn diff_equation_changes(old: &Contract, new: &Contract) -> Vec<String> {
     let mut changed = Vec::new();
     for (name, old_eq) in &old.equations {
@@ -211,6 +216,7 @@ fn section_bump(section: &SectionDiff, on_break: SemverBump, on_add: SemverBump)
     }
 }
 
+/// Return the higher-priority semver bump between current and candidate
 fn bump_max(current: SemverBump, candidate: SemverBump) -> SemverBump {
     let rank = |b: SemverBump| match b {
         SemverBump::None => 0,

@@ -192,6 +192,7 @@ mod tests {
     // Scalar tests
     // ---------------------------------------------------------------
 
+    /// Verify zero input produces zero output for the SSM scan
     #[test]
     fn test_ssm_zero_input() {
         let state_dim = 3;
@@ -212,6 +213,7 @@ mod tests {
         }
     }
 
+    /// Verify SSM single-timestep output matches hand-computed h = B*x, y = C*h
     #[test]
     fn test_ssm_single_timestep() {
         // With h_0 = 0:
@@ -237,6 +239,7 @@ mod tests {
         );
     }
 
+    /// Verify SSM recurrence over two timesteps with state decay
     #[test]
     fn test_ssm_two_timesteps() {
         let state_dim = 1;
@@ -263,6 +266,7 @@ mod tests {
         );
     }
 
+    /// Verify SSM panics on a_bar length mismatch
     #[test]
     #[should_panic(expected = "a_bar length mismatch")]
     fn test_ssm_abar_mismatch() {
@@ -282,6 +286,7 @@ mod tests {
     // AVX2 tests
     // ---------------------------------------------------------------
 
+    /// Verify AVX2 SSM scan produces identical results to scalar
     #[cfg(target_arch = "x86_64")]
     #[test]
     fn test_ssm_avx2_parity() {
@@ -311,6 +316,7 @@ mod tests {
     // PTX structural tests
     // ---------------------------------------------------------------
 
+    /// Verify SSM PTX declares version 8.5
     #[test]
     fn test_ssm_ptx_version() {
         let ptx = ssm_scan_ptx();
@@ -320,12 +326,14 @@ mod tests {
         );
     }
 
+    /// Verify SSM PTX targets sm_90
     #[test]
     fn test_ssm_ptx_target() {
         let ptx = ssm_scan_ptx();
         assert!(ptx.contains(".target sm_90"), "PTX must target sm_90");
     }
 
+    /// Verify SSM PTX contains the kernel entry point
     #[test]
     fn test_ssm_ptx_entry() {
         let ptx = ssm_scan_ptx();
@@ -335,12 +343,14 @@ mod tests {
         );
     }
 
+    /// Verify SSM PTX contains a ret instruction
     #[test]
     fn test_ssm_ptx_ret() {
         let ptx = ssm_scan_ptx();
         assert!(ptx.contains("ret;"), "PTX must have ret;");
     }
 
+    /// Verify SSM PTX has balanced curly braces
     #[test]
     fn test_ssm_ptx_balanced_braces() {
         let ptx = ssm_scan_ptx();

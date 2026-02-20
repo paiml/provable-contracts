@@ -194,12 +194,14 @@ mod tests {
     use super::*;
     use proptest::prelude::*;
 
+    /// Verify f16 zero converts to f32 zero and back
     #[test]
     fn test_f16_zero() {
         assert_eq!(f16_to_f32_single(0x0000), 0.0);
         assert_eq!(f32_to_f16_single(0.0), 0x0000);
     }
 
+    /// Verify f16 negative zero preserves sign bit through conversion
     #[test]
     fn test_f16_negative_zero() {
         let neg_zero = f16_to_f32_single(0x8000);
@@ -207,6 +209,7 @@ mod tests {
         assert_eq!(neg_zero, -0.0);
     }
 
+    /// Verify f16 bit pattern 0x3C00 converts to f32 1.0
     #[test]
     fn test_f16_one() {
         // f16 1.0 = 0x3C00 (sign=0, exp=15, mant=0)
@@ -214,6 +217,7 @@ mod tests {
         assert!((val - 1.0).abs() < 1e-6);
     }
 
+    /// Verify f16 conversion for known values: 0.5, 2.0, and -1.0
     #[test]
     fn test_f16_known_values() {
         // f16 0.5 = 0x3800
@@ -224,6 +228,7 @@ mod tests {
         assert!((f16_to_f32_single(0xBC00) + 1.0).abs() < 1e-6);
     }
 
+    /// Verify f16-to-f32-to-f16 roundtrip is lossless for sampled normal values
     #[test]
     fn test_f16_roundtrip_normal() {
         // Test roundtrip for a selection of normal f16 values
@@ -238,6 +243,7 @@ mod tests {
         }
     }
 
+    /// Verify sign bit is preserved for all normal f16 exponents
     #[test]
     fn test_f16_sign_preservation() {
         // For every normal f16, sign should be preserved
@@ -249,6 +255,7 @@ mod tests {
         }
     }
 
+    /// Verify f16 positive and negative infinity convert correctly
     #[test]
     fn test_f16_inf() {
         let pos_inf = f16_to_f32_single(0x7C00);
@@ -257,12 +264,14 @@ mod tests {
         assert!(neg_inf.is_infinite() && neg_inf < 0.0);
     }
 
+    /// Verify f16 NaN bit pattern converts to f32 NaN
     #[test]
     fn test_f16_nan() {
         let nan = f16_to_f32_single(0x7C01);
         assert!(nan.is_nan());
     }
 
+    /// Verify batch f16-to-f32 conversion for multiple known values
     #[test]
     fn test_f16_batch_conversion() {
         let input = [0x3C00, 0x4000, 0x3800]; // 1.0, 2.0, 0.5
@@ -294,6 +303,7 @@ mod tests {
         }
     }
 
+    /// Verify f16 convert PTX contains entry point and hardware cvt instruction
     #[test]
     fn test_f16_ptx_structure() {
         let ptx = f16_convert_ptx();
@@ -302,6 +312,7 @@ mod tests {
         assert!(ptx.contains("ret;"));
     }
 
+    /// Verify AVX2 f16-to-f32 conversion matches scalar output
     #[cfg(target_arch = "x86_64")]
     #[test]
     fn test_f16_avx2_parity() {
