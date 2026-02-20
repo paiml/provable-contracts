@@ -1085,11 +1085,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Add Qwen2 and Qwen3 model-specific contracts
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-02-20T08:03:09Z
-  updated: 2026-02-20T08:03:26.670833270+00:00
+  updated: 2026-02-20T08:06:37.997684099+00:00
   spec: null
   acceptance_criteria:
   - Scaffold qwen2-shapes-v1, qwen2-e2e-verification-v1, qwen3-shapes-v1, qwen3-e2e-verification-v1 contracts to close coverage gaps for Qwen2.5 and Qwen3 model families
