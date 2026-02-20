@@ -1,5 +1,6 @@
     // ── AVX2 parity tests ────────────────────────────────────────────────
 
+    /// Verify AVX2 batchnorm matches scalar output during training
     #[cfg(target_arch = "x86_64")]
     #[test]
     fn test_batchnorm_avx2_parity_training() {
@@ -51,6 +52,7 @@
         assert_ulp_eq(&rv_scalar, &rv_avx2, 4);
     }
 
+    /// Verify AVX2 batchnorm matches scalar output during inference
     #[cfg(target_arch = "x86_64")]
     #[test]
     fn test_batchnorm_avx2_parity_inference() {
@@ -102,18 +104,21 @@
 
     // ── PTX structural tests ─────────────────────────────────────────────
 
+    /// Verify batchnorm PTX declares version 8.5
     #[test]
     fn test_batchnorm_ptx_version() {
         let ptx = batchnorm_ptx();
         assert!(ptx.contains(".version 8.5"), "missing PTX version");
     }
 
+    /// Verify batchnorm PTX targets sm_90
     #[test]
     fn test_batchnorm_ptx_target() {
         let ptx = batchnorm_ptx();
         assert!(ptx.contains(".target sm_90"), "missing PTX target");
     }
 
+    /// Verify batchnorm PTX contains the kernel entry point
     #[test]
     fn test_batchnorm_ptx_entry() {
         let ptx = batchnorm_ptx();
@@ -123,18 +128,21 @@
         );
     }
 
+    /// Verify batchnorm PTX contains a ret instruction
     #[test]
     fn test_batchnorm_ptx_ret() {
         let ptx = batchnorm_ptx();
         assert!(ptx.contains("ret;"), "missing ret instruction");
     }
 
+    /// Verify batchnorm PTX declares shared memory
     #[test]
     fn test_batchnorm_ptx_shared_memory() {
         let ptx = batchnorm_ptx();
         assert!(ptx.contains(".shared"), "missing shared memory declaration");
     }
 
+    /// Verify batchnorm PTX uses warp shuffle instructions for reduction
     #[test]
     fn test_batchnorm_ptx_warp_shuffle() {
         let ptx = batchnorm_ptx();
@@ -144,6 +152,7 @@
         );
     }
 
+    /// Verify batchnorm PTX contains bar.sync for block synchronization
     #[test]
     fn test_batchnorm_ptx_bar_sync() {
         let ptx = batchnorm_ptx();
@@ -153,6 +162,7 @@
         );
     }
 
+    /// Verify batchnorm PTX has balanced curly braces
     #[test]
     fn test_batchnorm_ptx_balanced_braces() {
         let ptx = batchnorm_ptx();

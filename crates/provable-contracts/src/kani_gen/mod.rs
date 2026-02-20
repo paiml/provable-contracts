@@ -40,6 +40,7 @@ pub fn generate_kani_harnesses(contract: &Contract) -> String {
     out
 }
 
+/// Emit a single `#[kani::proof]` function with attributes and strategy-specific body
 fn generate_single_harness(out: &mut String, harness: &KaniHarness) {
     let property_desc = harness.property.as_deref().unwrap_or(&harness.obligation);
 

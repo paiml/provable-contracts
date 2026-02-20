@@ -3,15 +3,21 @@ use std::path::Path;
 use provable_contracts::latex::{latex_escape, math_to_latex};
 use provable_contracts::schema::{Contract, Equation, parse_contract};
 
+/// Supported output formats for equation rendering
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OutputFormat {
+    /// Plain-text tabular output
     Text,
+    /// LaTeX document fragment with equation environments
     Latex,
+    /// NVIDIA PTX kernel stub with equation comments
     Ptx,
+    /// x86-64 assembly stub with SIMD register setup
     Asm,
 }
 
 impl OutputFormat {
+    /// Parse a format name string into an `OutputFormat` variant
     pub fn from_str(s: &str) -> Result<Self, String> {
         match s {
             "text" => Ok(Self::Text),
@@ -25,6 +31,7 @@ impl OutputFormat {
     }
 }
 
+/// Execute the equations command, rendering contract equations in the given format
 pub fn run(path: &Path, format: OutputFormat) -> Result<(), Box<dyn std::error::Error>> {
     let contract = parse_contract(path)?;
     let name = path
@@ -42,6 +49,7 @@ pub fn run(path: &Path, format: OutputFormat) -> Result<(), Box<dyn std::error::
     Ok(())
 }
 
+/// Render equations as human-readable plain text
 fn render_text(name: &str, equations: &std::collections::BTreeMap<String, Equation>) {
     println!("Equations for {name}");
     println!("{}", "=".repeat(40 + name.len()));
@@ -66,6 +74,7 @@ fn render_text(name: &str, equations: &std::collections::BTreeMap<String, Equati
     }
 }
 
+/// Render equations as LaTeX sections with math environments
 fn render_latex(name: &str, equations: &std::collections::BTreeMap<String, Equation>) {
     let escaped_name = latex_escape(name);
     println!("% Equations for {name}");
@@ -106,6 +115,7 @@ fn render_latex(name: &str, equations: &std::collections::BTreeMap<String, Equat
     }
 }
 
+/// Render a PTX kernel stub with equation header comments
 fn render_ptx(name: &str, contract: &Contract) {
     let kernel = kernel_name(name);
     render_header_comment("PTX kernel stub", name, contract);
@@ -135,6 +145,7 @@ fn render_ptx(name: &str, contract: &Contract) {
     println!("}}");
 }
 
+/// Render an x86-64 assembly stub with SIMD register initialization
 fn render_asm(name: &str, contract: &Contract) {
     let kernel = kernel_name(name);
     let isa = detect_simd_isa(contract);
@@ -162,6 +173,7 @@ fn render_asm(name: &str, contract: &Contract) {
     println!("    ret");
 }
 
+/// Emit a block comment with kernel description and equation summaries
 fn render_header_comment(label: &str, name: &str, contract: &Contract) {
     println!("//");
     println!("// {label}: {name}");
@@ -173,6 +185,7 @@ fn render_header_comment(label: &str, name: &str, contract: &Contract) {
     println!();
 }
 
+/// Emit inline comments for kernel phases or equation formulas
 fn render_body_comments(contract: &Contract) {
     if let Some(ref ks) = contract.kernel_structure {
         for (i, phase) in ks.phases.iter().enumerate() {
@@ -199,14 +212,21 @@ fn render_body_comments(contract: &Contract) {
     }
 }
 
+/// SIMD instruction set descriptor for assembly generation
 struct SimdIsa {
+    /// Human-readable ISA name (e.g. "AVX-512")
     label: &'static str,
+    /// Function name suffix (e.g. "avx512")
     suffix: &'static str,
+    /// Register prefix for the ISA (e.g. "zmm")
     reg_prefix: &'static str,
+    /// Number of available SIMD registers
     reg_count: u32,
+    /// Bit width of SIMD registers (0 for scalar)
     width: u32,
 }
 
+/// Detect the highest SIMD ISA level from the contract's `simd_dispatch` map
 fn detect_simd_isa(contract: &Contract) -> SimdIsa {
     let has = |pat: &str| {
         contract

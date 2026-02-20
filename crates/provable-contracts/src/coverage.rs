@@ -44,13 +44,21 @@ pub struct ContractCoverage {
 /// Aggregate totals across all contracts.
 #[derive(Debug, Clone)]
 pub struct CoverageTotals {
+    /// Number of contracts analyzed.
     pub contracts: usize,
+    /// Total equations across all contracts.
     pub equations: usize,
+    /// Total proof obligations across all contracts.
     pub obligations: usize,
+    /// Total falsification tests across all contracts.
     pub falsification_tests: usize,
+    /// Total Kani harnesses across all contracts.
     pub kani_harnesses: usize,
+    /// Equations with implemented bindings.
     pub binding_implemented: usize,
+    /// Equations with partial bindings.
     pub binding_partial: usize,
+    /// Equations with no binding entry.
     pub binding_missing: usize,
 }
 
@@ -130,6 +138,7 @@ pub fn coverage_report(
     }
 }
 
+/// Count implemented, partial, and missing bindings for a single contract
 fn count_binding_coverage(
     contract_file: &str,
     contract: &Contract,

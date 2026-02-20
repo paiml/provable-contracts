@@ -1,6 +1,7 @@
     use super::*;
     use crate::schema::parse_contract_str;
 
+    /// Build a minimal contract with configurable obligation, test, and harness counts
     fn minimal_contract(n_ob: usize, n_ft: usize, n_kani: usize) -> Contract {
         let mut yaml = String::from(
             r#"
@@ -34,6 +35,7 @@ proof_obligations:
         parse_contract_str(&yaml).unwrap()
     }
 
+    /// Build a contract with Lean verification summary for L4/L5 level testing
     fn contract_with_lean(total: u32, lean_proved: u32) -> Contract {
         let mut c = minimal_contract(total as usize, total as usize, total as usize);
         c.verification_summary = Some(crate::schema::VerificationSummary {

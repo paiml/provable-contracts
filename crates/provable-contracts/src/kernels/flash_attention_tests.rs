@@ -5,6 +5,7 @@
 
     // ── Flash attention matches naive attention ─────────────────────────
 
+    /// Verify flash attention matches naive attention on a small 4x3 input
     #[test]
     fn test_flash_matches_naive_small() {
         let n = 4;
@@ -30,6 +31,7 @@
         }
     }
 
+    /// Verify flash attention matches naive attention on a larger 8x4 patterned input
     #[test]
     fn test_flash_matches_naive_larger() {
         let n = 8;
@@ -57,6 +59,7 @@
 
     // ── Single tile degrades to standard attention ──────────────────────
 
+    /// Verify flash attention degrades to standard attention when tile covers all keys
     #[test]
     fn test_flash_single_tile() {
         let n = 4;
@@ -83,6 +86,7 @@
 
     // ── Tile size = 1 (extreme tiling) ──────────────────────────────────
 
+    /// Verify flash attention correctness with tile_size=1 (extreme tiling)
     #[test]
     fn test_flash_tile_size_one() {
         let n = 5;
@@ -109,6 +113,7 @@
 
     // ── Single element ──────────────────────────────────────────────────
 
+    /// Verify flash attention on a single element returns the value vector unchanged
     #[test]
     fn test_flash_single_element() {
         let n = 1;
@@ -126,6 +131,7 @@
 
     // ── Dimension assertions ────────────────────────────────────────────
 
+    /// Verify flash attention panics on Q dimension mismatch
     #[test]
     #[should_panic(expected = "Q dimension mismatch")]
     fn test_flash_bad_q_dim() {
@@ -133,6 +139,7 @@
         flash_attention_scalar(&[1.0], &[1.0; 4], &[1.0; 4], 2, 2, 1, &mut output);
     }
 
+    /// Verify flash attention panics when tile_size is zero
     #[test]
     #[should_panic(expected = "tile_size must be > 0")]
     fn test_flash_zero_tile_size() {
@@ -203,6 +210,7 @@
 
     // ── AVX2 parity test ────────────────────────────────────────────────
 
+    /// Verify AVX2 flash attention produces identical results to scalar implementation
     #[cfg(target_arch = "x86_64")]
     #[test]
     fn test_flash_avx2_parity() {
@@ -228,6 +236,7 @@
 
     // ── PTX structural tests ────────────────────────────────────────────
 
+    /// Verify flash attention PTX contains required instructions and balanced braces
     #[test]
     fn test_flash_attention_ptx_structure() {
         let ptx = flash_attention_ptx();
@@ -254,6 +263,7 @@
         );
     }
 
+    /// Verify flash attention PTX output is non-empty
     #[test]
     fn test_flash_attention_ptx_nonempty() {
         assert!(!flash_attention_ptx().is_empty());
@@ -261,6 +271,7 @@
 
     // ── Different tile sizes produce same result ────────────────────────
 
+    /// Verify different tile sizes produce identical flash attention results
     #[test]
     fn test_flash_tile_size_invariance() {
         let n = 6;

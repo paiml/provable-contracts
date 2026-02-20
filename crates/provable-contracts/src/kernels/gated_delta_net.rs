@@ -182,6 +182,7 @@ mod tests {
     // Scalar tests
     // ---------------------------------------------------------------
 
+    /// Verify memoryless mode (alpha=0, beta=1) computes (q.k)*v at each step
     #[test]
     fn test_gdn_memoryless() {
         // alpha=0, beta=1 -> memoryless: S_t = k_t outer v_t
@@ -233,6 +234,7 @@ mod tests {
         assert!((output[5] - 7.0).abs() < 1e-6, "t=2,j=1: {}", output[5]);
     }
 
+    /// Verify frozen state (alpha=1, beta=0) produces all-zero output
     #[test]
     fn test_gdn_frozen_state() {
         // alpha=1, beta=0 -> state stays at zeros -> output all zeros
@@ -263,6 +265,7 @@ mod tests {
         }
     }
 
+    /// Verify single-step GDN recurrence against hand-computed outer product
     #[test]
     fn test_gdn_single_step() {
         let k_dim = 2;
@@ -283,6 +286,7 @@ mod tests {
         assert!((output[2] - 77.0).abs() < 1e-5, "output[2] = {}", output[2]);
     }
 
+    /// Verify GDN panics on query length mismatch
     #[test]
     #[should_panic(expected = "q length mismatch")]
     fn test_gdn_q_mismatch() {
@@ -304,6 +308,7 @@ mod tests {
     // AVX2 tests
     // ---------------------------------------------------------------
 
+    /// Verify AVX2 GDN recurrence produces identical results to scalar
     #[cfg(target_arch = "x86_64")]
     #[test]
     fn test_gdn_avx2_parity() {
@@ -357,6 +362,7 @@ mod tests {
     // PTX structural tests
     // ---------------------------------------------------------------
 
+    /// Verify GDN PTX declares version 8.5
     #[test]
     fn test_gdn_ptx_version() {
         let ptx = gdn_recurrence_ptx();
@@ -366,12 +372,14 @@ mod tests {
         );
     }
 
+    /// Verify GDN PTX targets sm_90
     #[test]
     fn test_gdn_ptx_target() {
         let ptx = gdn_recurrence_ptx();
         assert!(ptx.contains(".target sm_90"), "PTX must target sm_90");
     }
 
+    /// Verify GDN PTX contains the kernel entry point
     #[test]
     fn test_gdn_ptx_entry() {
         let ptx = gdn_recurrence_ptx();
@@ -381,12 +389,14 @@ mod tests {
         );
     }
 
+    /// Verify GDN PTX contains a ret instruction
     #[test]
     fn test_gdn_ptx_ret() {
         let ptx = gdn_recurrence_ptx();
         assert!(ptx.contains("ret;"), "PTX must have ret;");
     }
 
+    /// Verify GDN PTX has balanced curly braces
     #[test]
     fn test_gdn_ptx_balanced_braces() {
         let ptx = gdn_recurrence_ptx();

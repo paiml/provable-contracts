@@ -27,14 +27,20 @@ use crate::schema::Contract;
 /// - **L5** — L4 + all bindings verified as implemented
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum ProofLevel {
+    /// Contract YAML exists with equations
     L1,
+    /// Property tested via falsification tests
     L2,
+    /// Kani bounded-model-checked
     L3,
+    /// Lean 4 theorem proved
     L4,
+    /// Lean proved and all bindings verified
     L5,
 }
 
 impl fmt::Display for ProofLevel {
+    /// Format the proof level as its string label (L1 through L5)
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             Self::L1 => "L1",
@@ -52,13 +58,21 @@ impl fmt::Display for ProofLevel {
 /// Proof status for a single contract.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ContractProofStatus {
+    /// Contract file stem (e.g. "softmax-kernel-v1")
     pub stem: String,
+    /// Computed hierarchical proof level
     pub proof_level: ProofLevel,
+    /// Number of proof obligations in the contract
     pub obligations: u32,
+    /// Number of falsification tests defined
     pub falsification_tests: u32,
+    /// Number of Kani bounded-model-checking harnesses
     pub kani_harnesses: u32,
+    /// Number of obligations proved in Lean 4
     pub lean_proved: u32,
+    /// Number of bindings with `implemented` status
     pub bindings_implemented: u32,
+    /// Total number of equation bindings
     pub bindings_total: u32,
 }
 
@@ -67,10 +81,15 @@ pub struct ContractProofStatus {
 /// Summary of proof status for a kernel equivalence class.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct KernelClassSummary {
+    /// Kernel class identifier (A through E)
     pub label: String,
+    /// Human-readable description of the kernel combination
     pub description: String,
+    /// Contract stems belonging to this class
     pub contract_stems: Vec<String>,
+    /// Lowest proof level among class members
     pub min_proof_level: ProofLevel,
+    /// Whether all class members have full binding coverage
     pub all_bound: bool,
 }
 
@@ -79,22 +98,34 @@ pub struct KernelClassSummary {
 /// Top-level proof status report, serializable to JSON.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProofStatusReport {
+    /// Report schema version for forward compatibility
     pub schema_version: String,
+    /// Unix epoch timestamp when the report was generated
     pub timestamp: String,
+    /// Per-contract proof status entries
     pub contracts: Vec<ContractProofStatus>,
+    /// Kernel equivalence class summaries
     pub kernel_classes: Vec<KernelClassSummary>,
+    /// Aggregate totals across all contracts
     pub totals: ProofStatusTotals,
 }
 
 /// Aggregate totals across all contracts.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProofStatusTotals {
+    /// Total number of contracts analyzed
     pub contracts: u32,
+    /// Sum of proof obligations across all contracts
     pub obligations: u32,
+    /// Sum of falsification tests across all contracts
     pub falsification_tests: u32,
+    /// Sum of Kani harnesses across all contracts
     pub kani_harnesses: u32,
+    /// Sum of Lean-proved obligations across all contracts
     pub lean_proved: u32,
+    /// Sum of implemented bindings across all contracts
     pub bindings_implemented: u32,
+    /// Sum of total bindings across all contracts
     pub bindings_total: u32,
 }
 
@@ -370,6 +401,7 @@ pub fn format_text(report: &ProofStatusReport) -> String {
 
 // ── Internal helpers ──────────────────────────────────────────────
 
+/// Count implemented vs total bindings for a contract in the registry
 #[allow(clippy::cast_possible_truncation)]
 fn count_bindings(
     contract_file: &str,
@@ -385,6 +417,7 @@ fn count_bindings(
     (implemented, total)
 }
 
+/// Build kernel equivalence class summaries from per-contract statuses
 fn build_kernel_classes(statuses: &[ContractProofStatus]) -> Vec<KernelClassSummary> {
     let status_map: BTreeMap<&str, &ContractProofStatus> =
         statuses.iter().map(|s| (s.stem.as_str(), s)).collect();
@@ -423,10 +456,12 @@ fn build_kernel_classes(statuses: &[ContractProofStatus]) -> Vec<KernelClassSumm
         .collect()
 }
 
+/// Truncate a string to at most `max` bytes for column alignment
 fn truncate(s: &str, max: usize) -> &str {
     if s.len() > max { &s[..max] } else { s }
 }
 
+/// Generate an ISO-8601-style Unix epoch timestamp string
 fn current_timestamp() -> String {
     // Use a simple ISO-8601 timestamp without external deps.
     // In production this would use chrono or time crate.
