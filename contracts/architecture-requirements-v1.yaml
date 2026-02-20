@@ -1,3 +1,32 @@
+# =============================================================================
+# Architecture Requirements Contract v1.0.0
+# =============================================================================
+#
+# THE SOURCE OF TRUTH for per-architecture tensor weight role requirements.
+# Defines which weight roles (attention norms, projections, FFN layers, etc.)
+# are required vs optional for each supported transformer architecture.
+#
+# Key invariant: The (has_qk_norm, has_bias) boolean pair fully determines
+# which role sets are required. This 2x2 constraint matrix is exhaustive.
+#
+# Role cardinalities:
+#   - Base only (no QK norm, no bias):    9 roles
+#   - Base + QK norm:                    11 roles
+#   - Base + bias:                       12 roles
+#   - Base + QK norm + bias:             14 roles
+#
+# Supported architectures:
+#   LLaMA, Qwen2, Qwen3, Phi, Mistral, Gemma, Whisper
+#
+# References:
+#   - UCBD Spec v1.0.0 Section 7.3 (GH-279)
+#   - Vaswani et al. (2017) "Attention Is All You Need"
+#   - Touvron et al. (2023) "Llama 2", Yang et al. (2024) "Qwen2"
+#   - Qwen Team (2025) "Qwen3", Jiang et al. (2023) "Mistral 7B"
+#
+# ENFORCEMENT: contract_tests::FALSIFY-ARCH-001 through FALSIFY-ARCH-012
+# =============================================================================
+
 metadata:
   version: "1.0.0"
   created: "2026-02-19"

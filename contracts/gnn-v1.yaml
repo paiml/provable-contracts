@@ -1,3 +1,29 @@
+# =============================================================================
+# Graph Neural Network Contract v1.0.0
+# =============================================================================
+#
+# Specifies graph convolutional layers (GCN) and graph-level pooling operations
+# for neural message passing on graph-structured data.
+#
+# Key equations:
+#   - GCN aggregation: H' = sigma(D_hat^{-1/2} A_hat D_hat^{-1/2} H W)
+#   - Message passing: h_i' = U(h_i, aggregate_{j in N(i)} M(h_i, h_j))
+#   - Global mean pool: r = (1/|V|) * sum_{i in V} h_i
+#   - Global max pool:  r_j = max_{i in V} h_{ij}
+#
+# Key properties:
+#   - Node count preservation: GCN and message passing do not add/remove nodes
+#   - Permutation equivariance: output respects node reordering
+#   - Pooling finiteness: finite inputs produce finite graph-level embeddings
+#   - Pooling dimension: output feature dim equals input feature dim
+#
+# References:
+#   - Kipf & Welling (2017) "Semi-Supervised Classification with GCNs"
+#   - Gilmer et al. (2017) "Neural Message Passing for Quantum Chemistry"
+#
+# ENFORCEMENT: contract_tests::FALSIFY-GNN-001 through FALSIFY-GNN-006
+# =============================================================================
+
 metadata:
   version: "1.0.0"
   created: "2026-02-19"
@@ -7,6 +33,7 @@ metadata:
     - "Kipf & Welling (2017) Semi-Supervised Classification with Graph Convolutional Networks"
     - "Gilmer et al. (2017) Neural Message Passing for Quantum Chemistry"
 
+# Mathematical equations: GCN aggregation, message passing, and pooling operations
 equations:
   gcn_aggregate:
     formula: "H^{l+1} = sigma(D_hat^{-1/2} * A_hat * D_hat^{-1/2} * H^{l} * W^{l})"
@@ -44,6 +71,7 @@ equations:
       - "Output is bounded by maximum node feature value per dimension"
       - "r_j >= h_{ij} for all i (max is an upper bound)"
 
+# Proof obligations: structural and numerical properties for GNN correctness
 proof_obligations:
   - type: invariant
     property: "GCN preserves node count"
@@ -66,6 +94,7 @@ proof_obligations:
     formal: "pool(H).shape[1] == H.shape[1]"
     applies_to: all
 
+# Falsification tests: Popperian predictions for GCN and pooling correctness
 falsification_tests:
   - id: FALSIFY-GNN-001
     rule: "GCN node count preservation"
@@ -98,6 +127,7 @@ falsification_tests:
     test: "proptest: generate bounded random inputs and weights, apply GCN, check all outputs finite"
     if_fails: "Numerical instability in degree normalization or matmul"
 
+# Enforcement rules: map proof obligations to specific test IDs
 enforcement:
   node_count_gcn:
     description: "GCN must preserve node count"
@@ -112,6 +142,7 @@ enforcement:
     check: "contract_tests::FALSIFY-GNN-003"
     severity: "ERROR"
 
+# Kani bounded model checking harnesses for formal GNN property verification
 kani_harnesses:
   - id: KANI-GNN-001
     obligation: GNN-INV-001
@@ -135,6 +166,7 @@ kani_harnesses:
     solver: cadical
     harness: verify_max_pool_bounded
 
+# QA gate: all checks must pass before GNN layers are considered verified
 qa_gate:
   id: F-GNN-001
   name: "GNN Contract"

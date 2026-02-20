@@ -1,3 +1,22 @@
+# =============================================================================
+# GELU Kernel Contract v1.0.0
+# =============================================================================
+#
+# Specifies the Gaussian Error Linear Unit (GELU) activation function.
+# GELU(x) = x * Phi(x) where Phi is the standard Gaussian CDF.
+#
+# Key properties:
+#   - Zero preservation: GELU(0) = 0
+#   - Non-negative for positive inputs: x > 0 => GELU(x) >= 0
+#   - Asymptotic linearity: GELU(x) ~ x for large positive x
+#   - Tanh approximation within 0.005 of exact for all x
+#
+# Reference: Hendrycks & Gimpel (2016) "Gaussian Error Linear Units (GELUs)"
+# Approximation: 0.5 * x * (1 + tanh(sqrt(2/pi) * (x + 0.044715 * x^3)))
+#
+# ENFORCEMENT: contract_tests::FALSIFY-GE-001 through FALSIFY-GE-006
+# =============================================================================
+
 metadata:
   version: "1.0.0"
   created: "2026-02-19"
@@ -6,6 +25,7 @@ metadata:
   references:
     - "Hendrycks & Gimpel (2016) Gaussian Error Linear Units"
 
+# Mathematical equations: exact GELU via CDF and tanh approximation
 equations:
   gelu:
     formula: "GELU(x) = x * Phi(x) where Phi is the standard normal CDF"
@@ -25,6 +45,7 @@ equations:
       - "|GELU(x) - GELU_approx(x)| < 0.005 for all x"
       - "GELU_approx(0) = 0 (zero preservation)"
 
+# Proof obligations: formal properties that must hold for any correct implementation
 proof_obligations:
   - type: bound
     property: "Non-negativity for positive inputs"
@@ -47,6 +68,7 @@ proof_obligations:
     formal: "|GELU(x) - GELU_approx(x)| < 0.005 for all x"
     applies_to: all
 
+# Kernel computation phases: CDF evaluation followed by multiplication
 kernel_structure:
   phases:
     - name: compute_cdf
@@ -56,6 +78,7 @@ kernel_structure:
       description: "Compute x * Phi(x)"
       invariant: "result >= 0 for x > 0"
 
+# SIMD dispatch: (function x ISA) -> kernel mapping for scalar, AVX2, PTX
 simd_dispatch:
   gelu:
     scalar: gelu_scalar
@@ -66,6 +89,7 @@ simd_dispatch:
     avx2: gelu_tanh_approx_avx2
     ptx: gelu_tanh_approx_ptx
 
+# Enforcement rules: map proof obligations to specific test IDs
 enforcement:
   non_negativity:
     description: "GELU(x) >= 0 for positive x"
@@ -80,6 +104,7 @@ enforcement:
     check: "contract_tests::FALSIFY-GE-005"
     severity: "ERROR"
 
+# Falsification tests: Popperian predictions that would prove contract broken if violated
 falsification_tests:
   - id: FALSIFY-GE-001
     rule: "Non-negativity for positive inputs"
@@ -112,6 +137,7 @@ falsification_tests:
     test: "proptest with large magnitude x"
     if_fails: "Numerical overflow in exp or tanh for extreme inputs"
 
+# Kani bounded model checking harnesses for formal verification
 kani_harnesses:
   - id: KANI-GE-001
     obligation: GE-BND-001
@@ -128,6 +154,7 @@ kani_harnesses:
     solver: cadical
     harness: verify_gelu_approx_accuracy
 
+# QA gate: all checks must pass before kernel is considered verified
 qa_gate:
   id: F-GE-001
   name: "GELU Contract"
