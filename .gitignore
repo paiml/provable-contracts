@@ -36,3 +36,8 @@ lcov.info
 
 # mdBook build output
 book/html/
+
+# PMAT
+.pmat/backup/
+.pmat-qa/
+.pmat/workspace.idx/
