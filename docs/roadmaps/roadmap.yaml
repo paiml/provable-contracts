@@ -1114,3 +1114,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: Add Qwen3-235B-A22B MoE model-specific contracts and artifacts
+  github_issue: null
+  item_type: task
+  title: 'New task: Add Qwen3-235B-A22B MoE model-specific contracts and artifacts'
+  status: completed
+  priority: medium
+  assigned_to: null
+  created: 2026-02-21T14:46:06.255201426+00:00
+  updated: 2026-02-21T14:46:56.199370456+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
