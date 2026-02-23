@@ -1,0 +1,85 @@
+# model-metadata-bounds-v1.yaml
+#
+# Valid ranges for model configuration dimensions.
+# Source of truth for ValidatedModelConfig::validate() bounds checks
+# in realizar/src/gguf/config.rs.
+#
+# These bounds prevent corrupted/impossible configs from causing OOM,
+# panics, or garbage inference. They cover every known transformer
+# architecture as of 2026-02-23.
+
+metadata:
+  version: "1.0.0"
+  description: "Valid ranges for model configuration dimensions"
+  references:
+    - "enforce-provable-DbC.md Section 4 Gap 2"
+    - "realizar/src/gguf/config.rs ValidatedModelConfig::validate()"
+
+fields:
+  hidden_dim:
+    required: true
+    type: usize
+    min: 1
+    max: 65536
+    comment: "Must be divisible by num_heads (checked separately in validate())"
+
+  num_layers:
+    required: true
+    type: usize
+    min: 1
+    max: 256
+
+  num_heads:
+    required: true
+    type: usize
+    min: 1
+    max: 256
+
+  num_kv_heads:
+    required: true
+    type: usize
+    min: 1
+    max: 256
+    comment: "Must divide num_heads evenly (GQA ratio)"
+
+  vocab_size:
+    required: true
+    type: usize
+    min: 1
+    max: 1000000
+
+  intermediate_dim:
+    required: true
+    type: usize
+    min: 1
+    max: 262144
+
+  context_length:
+    required: false
+    type: usize
+    min: 0
+    max: 2097152
+    comment: "0 = unknown"
+
+  rope_theta:
+    required: false
+    type: f32
+    min: 1.0
+    max: 100000000.0
+    comment: "0.0 means not configured; when > 0, must be >= 1.0"
+    default_by_architecture:
+      qwen2: 1000000.0
+      qwen3: 1000000.0
+      llama: 10000.0
+      mistral: 10000.0
+      gemma: 10000.0
+      deepseek: 10000.0
+      phi: 10000.0
+
+  eps:
+    required: false
+    type: f32
+    min: 0.0000000001  # 1e-10
+    max: 0.01
+    default: 0.000001  # 1e-6
+    comment: "0.0 means not configured; when > 0, must be in [1e-10, 0.01]"
