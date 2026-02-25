@@ -26,8 +26,8 @@
 #   Class E (RMSNorm+SwiGLU+GQA):             All bound
 #
 # Statistics:
-#   Total bindings: 284
-#   Implemented: 277 (97.5%)
+#   Total bindings: 289
+#   Implemented: 282 (97.6%)
 #   Partial: 3
 #   Not implemented: 4
 
@@ -2583,3 +2583,45 @@ bindings:
     signature: "fn optimize(&mut self, objective: &dyn Fn(&[f64]) -> f64, space: &SearchSpace, budget: &Budget) -> OptimizationResult"
     status: implemented
     notes: "Best-so-far value is monotone non-increasing across all metaheuristics"
+
+  # --- classification-finetune-v1: Classification LoRA fine-tuning (Poka-Yoke types) ---
+
+  - contract: classification-finetune-v1.yaml
+    equation: logit_shape
+    module_path: "aprender::format::validated_classification"
+    function: "ValidatedClassLogits::new"
+    signature: "fn new(data: Vec<f32>, num_classes: usize) -> Result<Self, ContractValidationError>"
+    status: implemented
+    notes: "F-CLASS-001: Poka-Yoke — rejects data.len() != num_classes, num_classes < 2, NaN/Inf"
+
+  - contract: classification-finetune-v1.yaml
+    equation: label_bounds
+    module_path: "aprender::format::validated_classification"
+    function: "ValidatedSafetyLabel::new"
+    signature: "fn new(index: usize, num_classes: usize) -> Result<Self, ContractValidationError>"
+    status: implemented
+    notes: "F-CLASS-002: Poka-Yoke — rejects index >= num_classes"
+
+  - contract: classification-finetune-v1.yaml
+    equation: classifier_weight_shape
+    module_path: "aprender::format::validated_classification"
+    function: "ValidatedClassifierWeight::new"
+    signature: "fn new(data: Vec<f32>, hidden_size: usize, num_classes: usize) -> Result<Self, ContractValidationError>"
+    status: implemented
+    notes: "F-CLASS-004: Poka-Yoke — rejects data.len() != hidden_size * num_classes, NaN/Inf"
+
+  - contract: classification-finetune-v1.yaml
+    equation: softmax_sum
+    module_path: "aprender::format::validated_classification"
+    function: "ValidatedClassLogits::softmax"
+    signature: "fn softmax(&self) -> Vec<f32>"
+    status: implemented
+    notes: "F-CLASS-003: softmax output sums to 1.0 within epsilon=1e-5"
+
+  - contract: classification-finetune-v1.yaml
+    equation: config_factory
+    module_path: "entrenar::transformer::config"
+    function: "TransformerConfig::qwen3_5_9b"
+    signature: "fn qwen3_5_9b() -> Self"
+    status: implemented
+    notes: "Config factory matches qwen3_5.yaml contract; verified by FALSIFY-FT-QWEN35-001..007"
