@@ -127,7 +127,11 @@ formats:
   safetensors:
     layout: row-major
     shape_convention: "[rows, cols]"
-    note: "HuggingFace native format - same as APR"
+    note: |
+      HuggingFace native format - same layout as APR. CAUTION: layout parity
+      does NOT mean quantization is free. When converting SafeTensors F32→Q4K,
+      the quantizer MUST use matrix-aware packing (quantize_q4_k_matrix) to
+      align super-blocks to row boundaries. See F-LAYOUT-CONTRACT-006.
 
 # Kernel convention - THE source of truth for shapes
 # When in doubt, trust the kernel signature, not comments
@@ -395,6 +399,25 @@ validation_rules:
     critical: "true"
     reference: "GH-202"
 
+  - id: F-LAYOUT-CONTRACT-006
+    name: "Q4K quantization uses matrix-aware packing"
+    description: |
+      All 2D tensor Q4K quantization MUST use quantize_q4_k_matrix(data, shape),
+      never flat quantize_q4_k(data). Flat quantization treats the tensor as a 1D
+      stream, creating super-blocks that span row boundaries when in_dim is not a
+      multiple of 256. The kernel reads row-by-row, so cross-row blocks produce
+      garbage output. Matrix-aware quantization pads each row to 256-element
+      boundaries before packing.
+    severity: P0
+    critical: "true"
+    reference: "LAYOUT-002, GH-370"
+    enforcement:
+      - "aprender/src/format/converter/write.rs:dispatch_quantize() — uses quantize_q4_k_matrix"
+      - "aprender/src/format/converter/infer_q4k_config.rs — uses quantize_q4_k_matrix"
+      - "aprender/src/format/converter/export_include_01.rs — uses quantize_q4_k_matrix"
+      - "aprender/src/format/converter/fusion.rs — uses quantize_q4_k_matrix"
+    anti_pattern: "quantize_q4_k(data) on 2D tensors — produces cross-row blocks"
+
 # =============================================================================
 # SEMANTIC VALIDATION RULES (PMAT-234)
 # =============================================================================
@@ -608,6 +631,31 @@ falsification_tests:
           // This MUST produce garbage - if it doesn't, our block formats are wrong
       }
     if_test_fails: "Block format assumptions are wrong - Q4K and Q6K are more compatible than expected"
+
+  - id: FALSIFY-009
+    rule: "F-LAYOUT-CONTRACT-006 (SafeTensors→APR→inference correctness)"
+    prediction: |
+      SafeTensors imported to APR with Q4K quantization produces the same
+      inference output as direct SafeTensors F32 inference, when in_dim is
+      NOT a multiple of 256 (e.g., Qwen2.5-Coder-1.5B hidden_dim=1536).
+    falsification_test: |
+      #[test]
+      fn falsify_009_safetensors_apr_roundtrip() {
+          // 1. Import tiny SafeTensors model to APR with --quantize q4k
+          //    (model must have hidden_dim not multiple of 256)
+          // 2. Load APR model via realizar
+          // 3. Run inference on known prompt
+          // 4. Compare output to direct SafeTensors F32 inference
+          // 5. Assert output is coherent (not garbage like "olumbia+lsi")
+          //
+          // Key: use a model where hidden_dim % 256 != 0 to trigger
+          // the cross-row block boundary bug that flat quantize_q4_k causes.
+          //
+          // If flat quantize_q4_k is used instead of quantize_q4_k_matrix,
+          // this test MUST fail with garbage output.
+      }
+    if_test_fails: "LAYOUT-002 regression - quantize_q4_k_matrix not used in SafeTensors→APR path"
+    reference: "LAYOUT-002, GH-370"
 
 # =============================================================================
 # TOYOTA WAY APPLICATION NOTES
