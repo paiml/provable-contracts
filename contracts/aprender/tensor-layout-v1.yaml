@@ -418,6 +418,29 @@ validation_rules:
       - "aprender/src/format/converter/fusion.rs — uses quantize_q4_k_matrix"
     anti_pattern: "quantize_q4_k(data) on 2D tensors — produces cross-row blocks"
 
+  - id: F-APR-SELF-CONTAINED-001
+    name: "APR files embed tokenizer for standalone inference"
+    description: |
+      APR files converted from GGUF MUST embed tokenizer metadata (vocabulary,
+      BPE merges, BOS/EOS token IDs, chat template) so that apr serve can
+      tokenize input without requiring sibling tokenizer.json files. Without
+      embedded tokenizer, APR serve falls back to character-level tokenizer
+      which produces garbage input to the model.
+    severity: P0
+    critical: "true"
+    reference: "GH-86, LAYOUT-002"
+    enforcement:
+      - "realizar/src/convert/q4k_converter_helpers.rs:embed_tokenizer_metadata()"
+      - "aprender/src/format/converter/write_model_config.rs:write_apr_file_raw() — insert_tokenizer_metadata()"
+      - "aprender/src/format/converter/write.rs:write_apr_file() — insert_f32_tokenizer_metadata()"
+    anti_pattern: "Writing APR metadata without tokenizer — produces structurally valid but inference-broken files"
+    five_whys: |
+      1. APR serve produces garbage → character-level fallback tokenizer
+      2. Fallback used → no vocab/merges in APR metadata
+      3. No tokenizer in metadata → Q4K converter never extracts it from GGUF
+      4. Q4K converter skips tokenizer → separate code path from standard import
+      5. No contract rule → tensor-layout contract only validates tensors, not metadata completeness
+
 # =============================================================================
 # SEMANTIC VALIDATION RULES (PMAT-234)
 # =============================================================================
@@ -656,6 +679,28 @@ falsification_tests:
       }
     if_test_fails: "LAYOUT-002 regression - quantize_q4_k_matrix not used in SafeTensors→APR path"
     reference: "LAYOUT-002, GH-370"
+
+  - id: FALSIFY-010
+    rule: "F-APR-SELF-CONTAINED-001 (APR self-contained tokenizer)"
+    prediction: |
+      APR file created from GGUF with --preserve-q4k loads its embedded BPE
+      tokenizer without requiring sibling tokenizer.json. Inference with the
+      embedded tokenizer produces the same output as GGUF direct inference.
+    falsification_test: |
+      #[test]
+      fn falsify_010_apr_embedded_tokenizer() {
+          // 1. Convert GGUF to APR with --preserve-q4k
+          // 2. Load APR in an isolated directory (no sibling tokenizer.json)
+          // 3. Call load_embedded_bpe_tokenizer()
+          // 4. Assert returns Some(tokenizer) with vocab.len() > 0
+          // 5. Encode "What is 2+2?" and verify token count matches GGUF
+          // 6. Run inference and verify output is "4", not garbage
+          //
+          // If embed_tokenizer_metadata() is removed, this test MUST fail
+          // with None from load_embedded_bpe_tokenizer().
+      }
+    if_test_fails: "GH-86 regression - Q4K converter not embedding tokenizer in APR metadata"
+    reference: "GH-86, LAYOUT-002"
 
 # =============================================================================
 # TOYOTA WAY APPLICATION NOTES
