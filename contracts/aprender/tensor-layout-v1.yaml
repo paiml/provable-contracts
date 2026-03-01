@@ -441,6 +441,28 @@ validation_rules:
       4. Q4K converter skips tokenizer → separate code path from standard import
       5. No contract rule → tensor-layout contract only validates tensors, not metadata completeness
 
+  - id: F-KERNEL-DISPATCH-001
+    name: "APR GPU inference uses fused Q4K kernels (same as GGUF)"
+    description: |
+      APR GPU inference MUST use OwnedQuantizedModelCuda (fused Q4K/Q6K GEMV
+      kernels, 190+ tok/s) not AprV2ModelCuda (generic transformer, 0.5 tok/s).
+      The loading path is: MappedAprModel → OwnedQuantizedModel::from_apr() →
+      OwnedQuantizedModelCuda::new(). This ensures format-agnostic kernel
+      dispatch — the same fused kernels serve both GGUF and APR.
+    severity: P0
+    critical: "true"
+    reference: "GH-87, LAYOUT-002"
+    enforcement:
+      - "aprender/crates/apr-cli/src/commands/benchmark.rs:run_apr_cuda_benchmark() — OwnedQuantizedModelCuda"
+      - "aprender/crates/apr-cli/src/commands/serve/handlers_include_01.rs:start_apr_server_gpu() — OwnedQuantizedModelCuda"
+    anti_pattern: "AprV2ModelCuda for GPU inference — 380x slower than fused kernels"
+    five_whys: |
+      1. APR GPU is 380x slower than GGUF → uses generic transformer kernels
+      2. Generic kernels used → code creates AprV2ModelCuda directly
+      3. AprV2ModelCuda used → written before OwnedQuantizedModel::from_apr() existed
+      4. Never updated → no contract rule requiring format-agnostic kernel dispatch
+      5. No contract → original design assumed format determines kernel, not quantization type
+
 # =============================================================================
 # SEMANTIC VALIDATION RULES (PMAT-234)
 # =============================================================================
@@ -701,6 +723,26 @@ falsification_tests:
       }
     if_test_fails: "GH-86 regression - Q4K converter not embedding tokenizer in APR metadata"
     reference: "GH-86, LAYOUT-002"
+
+  - id: FALSIFY-011
+    rule: "F-KERNEL-DISPATCH-001 (APR GPU uses fused Q4K kernels)"
+    prediction: |
+      APR GPU benchmark achieves within 20% of GGUF GPU benchmark throughput
+      (both using same model, same hardware). The fused Q4K kernel path is
+      format-agnostic — APR and GGUF produce equivalent performance.
+    falsification_test: |
+      #[test]
+      fn falsify_011_apr_gpu_fused_kernels() {
+          // 1. Benchmark GGUF model: apr bench model.gguf → record tok/s
+          // 2. Convert to APR: apr import model.gguf model.apr --preserve-q4k
+          // 3. Benchmark APR model: apr bench model.apr → record tok/s
+          // 4. Assert APR tok/s >= GGUF tok/s * 0.8 (within 20%)
+          //
+          // If AprV2ModelCuda is used instead of OwnedQuantizedModelCuda,
+          // APR will be ~380x slower and this test MUST fail.
+      }
+    if_test_fails: "GH-87 regression - APR GPU not using fused Q4K kernel path"
+    reference: "GH-87, LAYOUT-002"
 
 # =============================================================================
 # TOYOTA WAY APPLICATION NOTES
