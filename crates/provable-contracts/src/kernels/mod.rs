@@ -54,6 +54,7 @@ pub mod gqa;
 pub mod linear;
 pub mod matmul;
 pub mod tied_embeddings;
+pub mod transpose;
 
 // Group E — Optimizer + Sequence + Classical ML + IO
 pub mod adamw;
