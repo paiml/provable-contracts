@@ -1,0 +1,117 @@
+# wgpu GPU-Resident FFN Weights Contract v1.0.0
+# THE SOURCE OF TRUTH for wgpu weight residency during classification training
+#
+# STATUS: Authoritative
+# TICKET: KAIZEN-015
+# CONSUMERS:
+#   - entrenar/src/transformer/wgpu_block.rs (WgpuForwardPass)
+#   - entrenar/src/finetune/classify_pipeline.rs (pipeline initialization)
+#   - trueno/src/backends/gpu/batch/mod.rs (GpuCommandBatch::import_buffer)
+#
+# ENFORCEMENT: Runtime log assertions, VRAM budget checks.
+
+metadata:
+  version: "1.0.0"
+  created: "2026-03-03"
+  author: "PAIML Engineering"
+  description: "GPU-resident FFN weights for wgpu training — zero H2D per forward pass"
+  references:
+    - "cuda-classify-training-v1.yaml (CUDA equivalent)"
+    - "KAIZEN-015: wgpu FFN weights re-uploaded every forward pass"
+  depends_on:
+    - "cuda-classify-training-v1"
+
+# =============================================================================
+# WEIGHT RESIDENCY INVARIANTS
+# =============================================================================
+
+weight_residency:
+  upload:
+    - id: C-WGPU-RESIDENT-001
+      name: "One-time weight upload"
+      description: |
+        WgpuForwardPass::with_resident_weights() uploads all FFN weights
+        (w_gate, w_up, w_down) for every transformer layer to GPU memory
+        exactly ONCE at construction. Subsequent forward passes reference
+        these GPU buffers via Arc<wgpu::Buffer> with zero H2D transfer.
+      severity: P0
+      critical: true
+
+    - id: C-WGPU-RESIDENT-002
+      name: "Frozen weight invariant"
+      description: |
+        GPU-resident FFN weights are frozen during LoRA fine-tuning.
+        Only LoRA adapters (CPU-resident) and the classifier head are
+        updated by the optimizer. The GPU buffers are read-only after
+        construction. This is correct because QLoRA freezes the base model.
+      severity: P0
+      critical: true
+
+    - id: C-WGPU-RESIDENT-003
+      name: "Graceful fallback"
+      description: |
+        If with_resident_weights() fails (e.g., insufficient GPU VRAM),
+        the pipeline falls back to new_default() which uploads per call.
+        If that also fails, falls back to CPU-only forward pass.
+        No panic at any stage — always degrades gracefully.
+      severity: P0
+      critical: true
+
+  buffer_management:
+    - id: C-BATCH-IMPORT-001
+      name: "Buffer import zero-copy"
+      description: |
+        GpuCommandBatch::import_buffer() registers a pre-existing
+        Arc<wgpu::Buffer> without any data transfer. The imported buffer
+        is marked as pre-existing (gpu_buffer: Some) so execute() skips
+        buffer creation. Arc ensures the buffer outlives the batch.
+      severity: P1
+      critical: true
+
+    - id: C-BATCH-IMPORT-002
+      name: "Execute skips imported buffers"
+      description: |
+        During GpuCommandBatch::execute(), the buffer creation loop
+        skips entries where gpu_buffer.is_some(). This preserves imported
+        buffers and avoids creating duplicate allocations.
+      severity: P1
+      critical: true
+
+  vram_budget:
+    - id: C-WGPU-VRAM-001
+      name: "VRAM budget for Qwen3-4B"
+      description: |
+        For Qwen3-4B (hidden=2560, intermediate=13824, 36 layers):
+        - w_gate: 2560 × 13824 × 4 = 135 MB per layer
+        - w_up: same = 135 MB
+        - w_down: 13824 × 2560 × 4 = 135 MB
+        - Per layer: 405 MB
+        - 36 layers: 14.6 GB total
+        Must fit within GPU VRAM (W5700X: 8 GB per GPU).
+        FAILS for Qwen3-4B fp32 on 8 GB GPU — requires quantization
+        or model sharding for 4B+ models.
+      severity: P1
+      critical: false
+
+# =============================================================================
+# PERFORMANCE CONTRACTS
+# =============================================================================
+
+performance:
+  - id: C-WGPU-PERF-001
+    name: "Zero H2D per forward"
+    description: |
+      When using with_resident_weights(), the forward_ffn_gpu() method
+      performs zero host-to-device transfers for weight data. Only the
+      input hidden states (seq_len × hidden_size × 4 bytes ≈ 1.2 MB for
+      batch_size=8, seq_len=128, hidden=2560) are uploaded per call.
+    measurement: "Count H2D transfers in wgpu trace"
+    target: "0 weight H2D transfers per forward pass"
+
+  - id: C-WGPU-PERF-002
+    name: "Construction upload amortization"
+    description: |
+      The one-time weight upload at construction amortizes over all
+      training steps. For 718 steps × 3 epochs = 2,154 forward passes,
+      amortized upload cost = construction_time / 2154.
+    target: "< 0.01 seconds amortized per forward pass"
