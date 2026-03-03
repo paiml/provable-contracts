@@ -1,0 +1,75 @@
+# Pipeline Cache Contract v1.0.0
+# THE SOURCE OF TRUTH for GPU pipeline caching in GpuCommandBatch
+#
+# STATUS: Authoritative
+# TICKET: KAIZEN-022
+# CONSUMERS:
+#   - trueno/src/backends/gpu/batch/execute/dispatch.rs (CachedPipeline, PipelineCache)
+#   - trueno/src/backends/gpu/batch/execute/operations.rs (encode_operation)
+#   - trueno/src/backends/gpu/batch/execute/mod.rs (execute with single encoder)
+#
+# ENFORCEMENT: GPU batch tests, integration tests.
+
+metadata:
+  version: "1.0.0"
+  created: "2026-03-03"
+  author: "PAIML Engineering"
+  description: "Pipeline cache + single encoder eliminates per-op shader compilation and queue submission"
+  references:
+    - "KAIZEN-022: Pipeline recreation per GPU op — 180 shader compilations per forward pass"
+    - "tiled-matmul-shader-v1.yaml (KAIZEN-021: tiled shader being cached)"
+
+# =============================================================================
+# CACHING INVARIANTS
+# =============================================================================
+
+caching:
+  - id: C-PIPELINE-CACHE-001
+    name: "Pipeline compiled at most once per unique shader"
+    description: |
+      The PipelineCache (HashMap<usize, CachedPipeline>) is keyed by the
+      shader source string's pointer address.  Since all shader sources are
+      &'static str constants (MATMUL_SHADER, RELU_SHADER, etc.), their
+      pointers are stable for the lifetime of the program.
+
+      First call with a given shader: compiles shader module, creates bind
+      group layout + pipeline layout + compute pipeline, stores in cache.
+      Subsequent calls: returns cached pipeline, skips all compilation.
+    severity: P0
+    critical: true
+    verification: "Batch tests pass with multiple operations using same shader"
+
+  - id: C-PIPELINE-CACHE-002
+    name: "Single command encoder per execute() call"
+    description: |
+      execute() creates ONE CommandEncoder and passes it to all encode_*_op
+      functions.  All compute passes are recorded into this single encoder.
+      One queue.submit() call at the end submits all work.
+
+      Before KAIZEN-022: N encoders + N submits (one per operation)
+      After KAIZEN-022: 1 encoder + 1 submit per batch
+
+      wgpu automatically inserts barriers between compute passes within a
+      single command buffer, so data dependencies are handled correctly.
+    severity: P0
+    critical: true
+
+# =============================================================================
+# IMPACT
+# =============================================================================
+
+impact:
+  - id: C-PIPELINE-IMPACT-001
+    name: "Compilation reduction for Qwen3-4B FFN"
+    description: |
+      Per-layer FFN batch: 3 matmuls + 1 swish + 1 mul = 5 operations
+      36 layers per forward pass = 180 operations total
+
+      Before: 180 pipeline compilations + 180 queue submissions
+      After (within batch): 3 unique compilations + 1 submission per batch
+      After (across 36 batches): 3 compilations + 36 submissions
+
+      Note: cross-batch caching requires moving cache to GpuDevice (future work).
+      Current implementation caches within a single batch execution only.
+    severity: P0
+    critical: true
