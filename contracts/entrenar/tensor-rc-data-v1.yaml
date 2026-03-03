@@ -1,0 +1,114 @@
+# Tensor Rc Data Contract v1.0.0
+# THE SOURCE OF TRUTH for Tensor data sharing via Rc<Array1<f32>>
+#
+# STATUS: Authoritative
+# TICKET: KAIZEN-019
+# CONSUMERS:
+#   - entrenar/src/autograd/tensor.rs (Tensor struct, clone, data_mut)
+#   - entrenar/src/autograd/ops/matmul.rs (MatmulBackward clones)
+#   - entrenar/src/autograd/ops/basic.rs (AddBackward, MulBackward clones)
+#
+# ENFORCEMENT: Unit tests (258 autograd), property tests, gradient checks.
+
+metadata:
+  version: "1.0.0"
+  created: "2026-03-03"
+  author: "PAIML Engineering"
+  description: "Tensor data stored behind Rc for O(1) clone — eliminates 16 GB redundant copies per step"
+  references:
+    - "KAIZEN-019: Tensor::clone() deep-copies data — 16 GB redundant frozen weight copies per step"
+    - "lora-gradient-flow-v1.yaml (KAIZEN-018: backward ops that clone tensors)"
+
+# =============================================================================
+# DATA SHARING INVARIANTS
+# =============================================================================
+
+data_sharing:
+  - id: C-RC-DATA-001
+    name: "Clone is O(1) reference count bump"
+    description: |
+      Tensor::clone() performs Rc::clone on the data field, which is an
+      atomic reference count increment (O(1)), NOT a deep copy of the
+      Array1<f32> data.  This is critical because every MatmulBackward,
+      AddBackward, etc. clones input tensors to hold references for
+      gradient computation.
+
+      For Qwen3-4B with batch_size=8:
+      Before KAIZEN-019: ~16 GB of redundant frozen weight deep copies per step
+      After KAIZEN-019: ~0 bytes (just Rc pointer bumps)
+    severity: P0
+    critical: true
+    verification: "test_tensor_clone (existing), cargo check compilation"
+
+  - id: C-RC-DATA-002
+    name: "data() returns &Array1<f32> via Rc deref coercion"
+    description: |
+      data() returns &Array1<f32> through Rust's Deref coercion on
+      Rc<Array1<f32>>.  All existing code using tensor.data() and
+      tensor.data().as_slice() works unchanged.  No API change.
+    severity: P1
+    critical: true
+    verification: "All 258 autograd tests pass"
+
+  - id: C-RC-DATA-003
+    name: "data_mut() uses Rc::make_mut for copy-on-write"
+    description: |
+      data_mut() uses Rc::make_mut(&mut self.data) which:
+      - If refcount == 1: returns &mut to existing data (zero copy)
+      - If refcount > 1: clones the Array1, stores the clone, returns &mut
+
+      This provides copy-on-write semantics.  During optimizer step,
+      parameter tensors typically have refcount=1 (backward ops dropped
+      after backward pass), so no copy occurs.  This means the optimizer
+      path has zero overhead from the Rc change.
+    severity: P0
+    critical: true
+    verification: "test_tensor_data_mut (existing)"
+
+# =============================================================================
+# BACKWARD COMPATIBILITY
+# =============================================================================
+
+backward_compat:
+  - id: C-RC-COMPAT-001
+    name: "All existing APIs preserved"
+    description: |
+      The public API surface is unchanged:
+      - data() -> &Array1<f32>  (unchanged, deref coercion)
+      - data_mut() -> &mut Array1<f32>  (unchanged, Rc::make_mut)
+      - new(Array1<f32>, bool) -> Self  (unchanged, wraps in Rc internally)
+      - from_vec(Vec<f32>, bool) -> Self  (unchanged)
+      - len() -> usize  (unchanged, deref coercion)
+      - is_empty() -> bool  (unchanged, deref coercion)
+      - Clone trait  (now O(1) instead of O(n))
+
+      No consumer code changes required.
+    severity: P0
+    critical: true
+
+# =============================================================================
+# IMPACT
+# =============================================================================
+
+impact:
+  - id: C-RC-IMPACT-001
+    name: "Memory savings for training"
+    description: |
+      For Qwen3-4B (hidden=2560, 36 layers) with batch_size=8:
+
+      MatmulBackward clones per step (Q/K/V/O projections):
+      - 4 projections x 8 samples x 36 layers = 1,152 backward ops
+      - Each backward holds clones of both input tensors
+
+      Frozen weight sizes:
+      - Q: 2560x2560 = 6.5M floats (26 MB)
+      - K: 160x2560 = 410K floats (1.6 MB)
+      - V: 160x2560 = 410K floats (1.6 MB)
+      - O: 2560x2560 = 6.5M floats (26 MB)
+
+      Before: ~16 GB deep copies per step
+      After: ~0 bytes (Rc bumps)
+
+      Wall-clock savings: ~1-2 seconds per step at ~10 GB/s memcpy rate
+    severity: P0
+    critical: true
