@@ -1,0 +1,129 @@
+# Tiled Matmul Shader Contract v1.0.0
+# THE SOURCE OF TRUTH for the GPU tiled matrix multiplication shader
+#
+# STATUS: Authoritative
+# TICKET: KAIZEN-021
+# CONSUMERS:
+#   - trueno/src/backends/gpu/shaders/basic_ops.rs (MATMUL_SHADER constant)
+#   - trueno/src/backends/gpu/device/linalg/matmul.rs (standalone dispatch)
+#   - trueno/src/backends/gpu/batch/execute/dispatch.rs (batched dispatch)
+#   - entrenar/src/transformer/wgpu_block.rs (FFN forward pass)
+#   - entrenar/src/autograd/ops/matmul.rs (per-op fallback)
+#
+# ENFORCEMENT: GPU matmul unit tests (basic, identity, non_square), integration tests.
+
+metadata:
+  version: "1.0.0"
+  created: "2026-03-03"
+  author: "PAIML Engineering"
+  description: "16×16 shared memory tiled matmul shader — reduces global memory bandwidth by ~16×"
+  references:
+    - "KAIZEN-021: Naive wgpu matmul shader — no tiling, ~5% GPU utilization"
+    - "Standard tiled matmul algorithm (GPU Computing Gems, Ch. 2)"
+
+# =============================================================================
+# TILING INVARIANTS
+# =============================================================================
+
+tiling:
+  - id: C-TILED-MATMUL-001
+    name: "Binding layout backward compatible"
+    description: |
+      The tiled shader uses the same binding layout as the naive shader:
+        binding 0: storage<read> a — input matrix A (M×K, row-major)
+        binding 1: storage<read> b — input matrix B (K×N, row-major)
+        binding 2: storage<read_write> c — output matrix C (M×N, row-major)
+        binding 3: uniform dims — Dimensions { M, K, N } (16-byte aligned with padding)
+
+      No changes to bind group layout, pipeline creation, or dispatch code.
+    severity: P0
+    critical: true
+    verification: "Existing GPU matmul tests pass unchanged"
+
+  - id: C-TILED-MATMUL-002
+    name: "16×16 shared memory tiles reduce bandwidth by ~16×"
+    description: |
+      Each workgroup loads a 16×16 tile of A and a 16×16 tile of B into
+      var<workgroup> shared memory (2 × 256 × 4 bytes = 2 KB per workgroup).
+      Each element loaded from global memory is reused by 16 threads in the
+      workgroup, reducing global memory reads by a factor of ~TILE_SIZE = 16.
+
+      For Qwen3-4B FFN down projection (2560×13824 @ 13824×2560):
+        Naive: each thread reads 13,824 elements from A and 13,824 from B
+        Tiled: each thread loads 13,824/16 = 864 elements total (shared with 15 others)
+        Bandwidth reduction: ~16×
+    severity: P0
+    critical: true
+    verification: "GPU matmul tests verify numerical correctness"
+
+  - id: C-TILED-MATMUL-003
+    name: "workgroupBarrier synchronization is correct"
+    description: |
+      Two workgroupBarrier() calls per tile iteration:
+      1. After loading tiles: ensures all 256 threads have written their tile
+         elements before any thread reads from shared memory
+      2. After computing partial products: ensures all threads have finished
+         reading from the current tile before any thread overwrites with the
+         next tile
+
+      Without barrier 1: data races on tile_a/tile_b reads
+      Without barrier 2: data races on tile_a/tile_b writes
+    severity: P0
+    critical: true
+    verification: "Correctness verified by matmul unit tests on GPU"
+
+  - id: C-TILED-MATMUL-004
+    name: "Boundary handling for non-multiple-of-16 dimensions"
+    description: |
+      When M, K, or N are not multiples of 16, boundary threads load 0.0
+      into shared memory tiles. This is equivalent to zero-padding:
+      - A tile: if row >= M or a_col >= K, store 0.0
+      - B tile: if b_row >= K or col >= N, store 0.0
+
+      The final write also bounds-checks: only threads with
+      row < M && col < N write to the output buffer.
+
+      This handles all dimension combinations without extra dispatch logic.
+    severity: P0
+    critical: true
+    verification: "test_gpu_matmul_non_square (2×3 @ 3×2)"
+
+# =============================================================================
+# DISPATCH COMPATIBILITY
+# =============================================================================
+
+dispatch:
+  - id: C-TILED-DISPATCH-001
+    name: "Workgroup dispatch formula unchanged"
+    description: |
+      Dispatch: ceil(M/16) × ceil(N/16) × 1 workgroups
+      Workgroup size: 16 × 16 = 256 threads
+
+      Both dispatch paths (standalone matmul_async and batched execute_matmul_op)
+      use this formula. The tiled shader is a drop-in replacement — no dispatch
+      code changes needed.
+    severity: P0
+    critical: true
+
+# =============================================================================
+# PERFORMANCE IMPACT
+# =============================================================================
+
+impact:
+  - id: C-TILED-IMPACT-001
+    name: "Expected 5–15× speedup for large matmuls"
+    description: |
+      The naive shader is bandwidth-bound: each thread reads the entire K
+      dimension from global memory independently. The tiled shader makes
+      each workgroup cooperative: 256 threads share 2 KB of tile data.
+
+      For Qwen3-4B FFN matmuls (2560×13824, 2560×2560):
+        Naive: ~5-10% GPU ALU utilization (memory bandwidth bottleneck)
+        Tiled: ~60-80% GPU ALU utilization (compute-bound)
+        Expected speedup: 5–15× depending on GPU memory hierarchy
+
+      For the full forward pass (4 FFN matmuls × 36 layers = 144 matmuls):
+        Naive: ~10s per forward pass on Radeon Pro W5700X
+        Tiled: ~1-2s per forward pass (estimated)
+    severity: P0
+    critical: true
