@@ -1,0 +1,101 @@
+# C-INSTBUF-001: Pre-allocated Forward/Backward Buffers in InstructPipeline (KAIZEN-062)
+#
+# InstructPipeline had the same class of per-step allocations as ClassifyPipeline
+# (fixed by KAIZEN-060/061). forward_cuda_training allocated 2 GPU buffers per
+# forward via trainer.upload() + trainer.zeros(), forward_logits_gpu allocated 1
+# GPU buffer via trainer.upload(), and backward_nf4_gpu_blocks allocated a CPU
+# vec![0.0; padded_size] per backward.
+#
+# For instruct training (Qwen3-4B, max_seq_len=512):
+#   - 3× cuMemAlloc + 3× cuMemFree per step (~60-600µs CUDA driver overhead)
+#   - 2× CPU vec alloc/free per step (~5.2MB each = 10.4MB heap churn per step)
+#
+# Fix: Add fwd_scratch_a, fwd_scratch_b, lm_head_hidden_buf to InstructGpuTrainingState.
+# Use copy_from_host_at for partial uploads. Ping-pong pattern for forward.
+
+contract: C-INSTBUF-001
+title: "Pre-allocated Forward/Backward Buffers in InstructPipeline"
+kaizen: KAIZEN-062
+parent: C-GPUTRAINIT-002  # GPU training init contract
+status: implemented
+date: 2026-03-04
+
+# Measured baseline (pre-KAIZEN-062)
+baseline:
+  cuMemAlloc_per_step: 3  # forward_cuda_training (2) + forward_logits_gpu (1)
+  cuMemFree_per_step: 3  # all buffers dropped at function exit
+  cpu_alloc_per_step: 2  # padded_hidden in forward + padded_grad in backward
+  cpu_alloc_size_bytes: 5242880  # max_seq_len(512) * hidden(2560) * 4 each
+  per_step_overhead_us: 60  # 3 × ~20µs per cuMemAlloc (conservative)
+
+# After KAIZEN-062
+target:
+  cuMemAlloc_per_step: 0  # All buffers pre-allocated
+  cuMemFree_per_step: 0  # No per-call GPU deallocations
+  cpu_alloc_per_step: 0  # No CPU vec allocations
+  per_step_overhead_us: 0  # Zero CUDA driver overhead per step
+  one_time_cost_bytes: 15728640  # 3 × 512 × 2560 × 4 (15.7MB GPU for Qwen3-4B)
+
+# API design
+api:
+  fwd_scratch_a_b: |
+    New fields on InstructGpuTrainingState: fwd_scratch_a, fwd_scratch_b.
+    Both GpuBuffer<f32> sized to max_seq_len * hidden_size.
+    Allocated once during try_init_gpu_training().
+  lm_head_hidden_buf: |
+    New field on InstructGpuTrainingState: lm_head_hidden_buf.
+    GpuBuffer<f32> sized to max_seq_len * hidden_size.
+    Used for normed hidden upload before lm_head GEMM.
+  forward_cuda_training: |
+    Rewritten to use pre-allocated ping-pong buffers.
+    Upload via copy_from_host_at (partial write into fwd_scratch_a).
+    Ping-pong via raw pointers (same pattern as KAIZEN-060 classify pipeline).
+  backward_nf4_gpu_blocks: |
+    Removed CPU vec![0.0; padded_size] allocation.
+    Uses copy_from_host_at to write gradient directly to grad_upload_buf.
+  forward_logits_gpu: |
+    Replaced trainer.upload(&normed_hidden) with
+    copy_from_host_at into lm_head_hidden_buf.
+
+# Safety analysis
+safety:
+  buffer_sizing: |
+    fwd_scratch_a/b and lm_head_hidden_buf are max_seq_len * hidden_size — sufficient
+    for any seq_len <= max_seq_len. copy_from_host_at writes only seq_len * hidden_size
+    elements at offset 0. Remaining buffer contents are irrelevant (kernels use seq_len).
+  ping_pong_safety: |
+    Raw pointers used for disjoint field access (same pattern as cuda_trainer.rs
+    and classify_pipeline.rs KAIZEN-060). scratch_a_ptr and scratch_b_ptr point to
+    different struct fields. Only one is written per iteration; the other is read-only.
+  partial_upload: |
+    copy_from_host_at writes only the actual data (seq_len * hidden_size elements).
+    Padded positions retain stale values from previous samples. This is safe because
+    all GPU kernels use seq_len for GEMM dimensions and attention masking — padded
+    positions are never read in any computation that affects the loss.
+  split_borrows: |
+    fwd_scratch_a, fwd_scratch_b, lm_head_hidden_buf, layer_inputs, blocks_output,
+    grad_upload_buf are all separate struct fields. Rust split-borrow rules allow
+    concurrent access to different fields without &mut self conflicts.
+
+# Preconditions
+preconditions:
+  - "InstructGpuTrainingState initialized (fwd_scratch_a/b, lm_head_hidden_buf allocated)"
+  - "seq_len <= max_seq_len"
+
+# Postconditions
+postconditions:
+  - "Forward/backward behavior identical — same GEMM, same gradients, same optimizer"
+  - "Zero per-call GPU memory allocations during training step"
+  - "Zero per-call CPU heap allocations for staging buffers"
+
+# Invariants
+invariants:
+  - "fwd_scratch_a/b.len() == max_seq_len * hidden_size"
+  - "lm_head_hidden_buf.len() == max_seq_len * hidden_size"
+  - "No buffer reallocated after construction"
+  - "Inference-only path unchanged (no InstructGpuTrainingState)"
+
+# Files modified
+files:
+  - path: entrenar/src/finetune/instruct_pipeline.rs
+    change: "Added fwd_scratch_a/b, lm_head_hidden_buf to InstructGpuTrainingState; rewrote forward/backward to use pre-allocated buffers"
