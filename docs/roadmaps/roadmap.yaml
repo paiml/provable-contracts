@@ -1130,3 +1130,36 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-063
+  github_issue: null
+  item_type: task
+  title: APR checkpoint contract v1.0.0 (F-CKPT-001..018)
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-03-01T11:48:17Z
+  updated: 2026-03-01T11:48:17Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-064
+  github_issue: null
+  item_type: task
+  title: SSC encoder contracts for bashrs v11
+  status: inprogress
+  priority: high
+  assigned_to: null
+  created: 2026-03-05T11:21:35Z
+  updated: 2026-03-05T11:21:39.148642674+00:00
+  spec: null
+  acceptance_criteria:
+  - '4 YAML contracts: bidirectional-attention, learned-position-embedding, encoder-forward, linear-probe-classifier'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
