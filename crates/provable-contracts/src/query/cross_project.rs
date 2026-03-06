@@ -39,7 +39,7 @@ pub struct BindingRef {
     pub status: String,
 }
 
-/// A KAIZEN-NNN or C-XXX-NNN reference in code or commits.
+/// A KAIZEN-NNN or C-UPPER-DIGITS reference in code or commits.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct KaizenRef {
     pub project: String,
@@ -294,7 +294,7 @@ fn scan_binding_refs(
     }
 }
 
-/// Scan .rs files for KAIZEN-NNN and C-XXX-NNN patterns.
+/// Scan .rs files for KAIZEN-NNN and C-UPPER-DIGITS patterns.
 fn scan_kaizen_refs(
     project: &ProjectEntry,
     refs: &mut HashMap<String, Vec<KaizenRef>>,
@@ -331,7 +331,7 @@ fn scan_kaizen_refs(
             .unwrap_or(parts[0])
             .trim_start_matches('/');
 
-        // Extract all KAIZEN-NNN and C-XXX-NNN patterns
+        // Extract all KAIZEN-NNN and C-UPPER-DIGITS patterns
         for pattern in extract_patterns(content) {
             refs.entry(pattern.clone()).or_default().push(KaizenRef {
                 project: project.name.clone(),
@@ -343,7 +343,7 @@ fn scan_kaizen_refs(
     }
 }
 
-/// Extract KAIZEN-NNN and C-XXX-NNN patterns from a line.
+/// Extract KAIZEN-NNN and C-UPPER-DIGITS patterns from a line.
 fn extract_patterns(content: &str) -> Vec<String> {
     let mut patterns = Vec::new();
     let mut rest = content;
