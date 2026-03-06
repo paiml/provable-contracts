@@ -7,9 +7,10 @@
 //! Spec: `docs/specifications/sub/scoring.md`
 
 mod codebase;
+pub mod drift;
 mod types;
 
-pub use codebase::{score_codebase, score_codebase_with_pagerank};
+pub use codebase::{score_codebase, score_codebase_full, score_codebase_with_pagerank};
 pub use types::{
     CodebaseScore, ContractScore, Grade, ScoringGap, ScoringWeights,
 };

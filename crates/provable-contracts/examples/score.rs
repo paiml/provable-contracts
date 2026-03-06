@@ -78,8 +78,30 @@ fn main() {
         println!("\n=== Codebase Score (aprender) ===\n");
         print!("{codebase}");
 
-        // Pagerank-weighted gap analysis
-        println!("\n=== Pagerank-Weighted Gap Analysis ===\n");
+        // Drift detection via git timestamps
+        println!("\n=== Drift Detection ===\n");
+        let bound_stems: std::collections::HashSet<&str> = binding
+            .bindings
+            .iter()
+            .map(|b| b.contract.as_str())
+            .collect();
+        let stale = provable_contracts::scoring::drift::detect_stale_contracts(
+            contracts_dir,
+            binding_path,
+            &bound_stems,
+        );
+        let drift = provable_contracts::scoring::drift::compute_drift(
+            stale.len(),
+            bound_stems.len(),
+        );
+        println!("  Stale contracts: {}/{}", stale.len(), bound_stems.len());
+        println!("  Drift score: {drift:.2}");
+        for s in &stale {
+            println!("    - {s}");
+        }
+
+        // Pagerank-weighted gap analysis with drift
+        println!("\n=== Full Codebase Score (pagerank + drift) ===\n");
         let index = provable_contracts::query::ContractIndex::from_directory(contracts_dir)
             .expect("contracts/ directory must exist");
         let pagerank: std::collections::HashMap<String, f64> = index
@@ -87,13 +109,12 @@ fn main() {
             .iter()
             .filter_map(|e| index.cached_pagerank(&e.stem).map(|s| (e.stem.clone(), s)))
             .collect();
-        let codebase_pr =
-            provable_contracts::scoring::score_codebase_with_pagerank(&refs, &binding, Some(&pagerank));
-        for gap in &codebase_pr.top_gaps {
-            println!(
-                "  {}: {} (impact: {:.2}) — {}",
-                gap.contract, gap.dimension, gap.impact, gap.action
-            );
-        }
+        let codebase_full = provable_contracts::scoring::score_codebase_full(
+            &refs,
+            &binding,
+            Some(&pagerank),
+            Some(drift),
+        );
+        print!("{codebase_full}");
     }
 }

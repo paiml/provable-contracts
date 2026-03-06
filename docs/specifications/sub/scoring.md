@@ -159,7 +159,7 @@ pd = (L1*0.1 + L2*0.2 + L3*0.4 + L4*0.8 + L5*1.0) / count(obligations)
 
 Higher concentration at L4/L5 = higher score.
 
-#### CD5: Drift Detection (weight: 15%)
+#### CD5: Drift Detection (weight: 15%) [IMPLEMENTED]
 
 Are contracts current with the code?
 
@@ -167,8 +167,9 @@ Are contracts current with the code?
 drift = 1.0 - (stale_contracts / total_bound_contracts)
 ```
 
-A contract is "stale" if `pv diff` between the current YAML and the
-version at the last binding update shows a major or minor change.
+A contract is "stale" if its git commit timestamp is more recent than
+the binding file's git commit timestamp. Uses `git log -1 --format=%ct`
+for timestamp comparison. Implementation in `scoring::drift` module.
 
 ### Composite
 

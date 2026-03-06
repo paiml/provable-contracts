@@ -2,10 +2,13 @@
 
 use std::path::Path;
 
+use std::collections::HashSet;
+
 use provable_contracts::binding::BindingRegistry;
 use provable_contracts::schema::parse_contract;
 use provable_contracts::query::ContractIndex;
 use provable_contracts::scoring;
+use provable_contracts::scoring::drift;
 use provable_contracts::scoring::{ContractScore, ScoringWeights};
 
 pub fn run(
@@ -29,7 +32,7 @@ pub fn run(
     };
 
     if path.is_dir() {
-        run_directory(path, binding_registry.as_ref(), format, min_score, &weights)
+        run_directory(path, binding_registry.as_ref(), binding, format, min_score, &weights)
     } else {
         run_single(path, binding_registry.as_ref(), format, min_score, &weights)
     }
@@ -72,6 +75,7 @@ fn run_single(
 fn run_directory(
     dir: &Path,
     binding: Option<&BindingRegistry>,
+    binding_path: Option<&Path>,
     format: &str,
     min_score: Option<f64>,
     weights: &ScoringWeights,
@@ -133,8 +137,24 @@ fn run_directory(
                 .filter_map(|e| idx.cached_pagerank(&e.stem).map(|s| (e.stem.clone(), s)))
                 .collect::<std::collections::HashMap<String, f64>>()
         });
-        let codebase =
-            scoring::score_codebase_with_pagerank(&refs, binding, pagerank.as_ref());
+
+        // CD5: Detect stale contracts via git timestamps
+        let drift_score = binding_path.map(|bp| {
+            let bound_stems: HashSet<&str> = binding
+                .bindings
+                .iter()
+                .map(|b| b.contract.as_str())
+                .collect();
+            let stale = drift::detect_stale_contracts(dir, bp, &bound_stems);
+            drift::compute_drift(stale.len(), bound_stems.len())
+        });
+
+        let codebase = scoring::score_codebase_full(
+            &refs,
+            binding,
+            pagerank.as_ref(),
+            drift_score,
+        );
 
         match format {
             "json" => {

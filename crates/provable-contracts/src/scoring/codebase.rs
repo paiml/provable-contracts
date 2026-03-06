@@ -15,7 +15,7 @@ use super::score_contract;
 /// - CD2: Binding completeness (20%) — implemented / total bindings
 /// - CD3: Mean contract score (20%) — avg composite of bound contracts
 /// - CD4: Proof depth distribution (15%) — weighted L1-L5 distribution
-/// - CD5: Drift detection (15%) — currently 1.0 (no stale detection yet)
+/// - CD5: Drift detection (15%) — via git timestamp comparison
 ///
 /// Optional `pagerank` scores weight gap analysis by dependency importance.
 #[allow(clippy::cast_precision_loss)]
@@ -27,11 +27,26 @@ pub fn score_codebase(
 }
 
 /// Score a codebase with pagerank-weighted gap analysis.
+///
+/// `drift_override` provides a pre-computed CD5 drift score (0.0-1.0).
+/// Use [`super::drift::compute_drift`] + [`super::drift::detect_stale_contracts`]
+/// to compute it from git timestamps. Pass `None` to default to 1.0 (no drift).
 #[allow(clippy::cast_precision_loss, clippy::implicit_hasher)]
 pub fn score_codebase_with_pagerank(
     contracts: &[(String, &Contract)],
     binding: &BindingRegistry,
     pagerank: Option<&HashMap<String, f64>>,
+) -> CodebaseScore {
+    score_codebase_full(contracts, binding, pagerank, None)
+}
+
+/// Score a codebase with all optional enrichment: pagerank + drift.
+#[allow(clippy::cast_precision_loss, clippy::implicit_hasher)]
+pub fn score_codebase_full(
+    contracts: &[(String, &Contract)],
+    binding: &BindingRegistry,
+    pagerank: Option<&HashMap<String, f64>>,
+    drift_override: Option<f64>,
 ) -> CodebaseScore {
     let bound_stems: BTreeSet<_> = binding
         .bindings
@@ -84,8 +99,8 @@ pub fn score_codebase_with_pagerank(
     // CD4: Proof depth distribution (weighted L1-L5)
     let proof_depth_dist = compute_proof_depth(contracts, &bound_stems);
 
-    // CD5: Drift detection (placeholder — always fresh for now)
-    let drift = 1.0;
+    // CD5: Drift detection
+    let drift = drift_override.unwrap_or(1.0);
 
     let composite = contract_coverage * 0.30
         + binding_completeness * 0.20
@@ -412,6 +427,21 @@ mod tests {
         assert!(f_high > f_low, "High pagerank should have higher fanout");
         assert!(f_low >= 1.0, "Min fanout should be 1.0");
         assert!(f_high <= 10.0, "Max fanout should be 10.0");
+    }
+
+    #[test]
+    fn drift_override_affects_composite() {
+        let (parsed, binding) = load_contracts_and_binding();
+        let contracts: Vec<_> = parsed.iter().map(|(s, c)| (s.clone(), c)).collect();
+
+        let fresh = super::score_codebase_full(&contracts, &binding, None, Some(1.0));
+        let stale = super::score_codebase_full(&contracts, &binding, None, Some(0.0));
+
+        assert!((fresh.drift - 1.0).abs() < 1e-9);
+        assert!((stale.drift - 0.0).abs() < 1e-9);
+        // Drift weight is 0.15, so composite should differ by 0.15
+        let diff = fresh.composite - stale.composite;
+        assert!((diff - 0.15).abs() < 0.01, "diff={diff}");
     }
 
     #[test]
