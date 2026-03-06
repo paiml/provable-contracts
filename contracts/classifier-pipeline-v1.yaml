@@ -66,27 +66,31 @@ falsification_tests:
     prediction: "sigmoid(0) = 0.5, sigmoid(large) ≈ 1, sigmoid(-large) ≈ 0"
     test: "Unit test sigmoid function at boundary values"
     if_fails: "Numerical implementation error in activation"
+    status: "PASS — test_sigmoid"
   - id: FALSIFY-CLF-002
     rule: "Split determinism"
     prediction: "Same seed produces identical train/test partition"
     test: "Split twice with same seed, compare sets"
     if_fails: "Non-deterministic hash or random element in splitting"
+    status: "PASS — test_split_deterministic, test_fnv1a_deterministic, test_fnv1a_different_seeds"
   - id: FALSIFY-CLF-003
     rule: "Linear probe learns"
     prediction: "Training accuracy > 70% on linearly separable synthetic data"
     test: "Create synthetic embeddings with clear separation, train, measure accuracy"
     if_fails: "SGD implementation error or learning rate too large/small"
+    status: "PASS — test_train_linear_probe_learns"
   - id: FALSIFY-CLF-004
     rule: "Serialization roundtrip"
     prediction: "save_probe → load_probe preserves all fields exactly"
     test: "Create probe, save, load, compare all fields"
     if_fails: "JSON serialization loses precision or drops fields"
-    status: "PASS — LinearProbe (test_save_load_probe) + MlpProbeWeights (test_mlp_probe_weights_roundtrip, KAIZEN-106)"
+    status: "PASS — test_save_load_probe + test_mlp_probe_weights_roundtrip (KAIZEN-106)"
   - id: FALSIFY-CLF-005
     rule: "Embedding serialization roundtrip"
     prediction: "save_embeddings → load_embeddings preserves all entries"
     test: "Create embeddings, save to JSONL, reload, verify count and values"
     if_fails: "JSONL line parsing error or float precision loss"
+    status: "PASS — test_save_load_embeddings"
 
 kani_harnesses:
   - id: KANI-CLF-001
