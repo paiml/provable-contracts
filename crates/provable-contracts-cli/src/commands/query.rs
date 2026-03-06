@@ -29,6 +29,8 @@ pub struct QueryCliParams<'a> {
     pub show_diff: bool,
     pub show_pagerank: bool,
     pub show_call_sites: bool,
+    pub show_violations: bool,
+    pub show_coverage_map: bool,
     pub format: &'a str,
     pub exit_code: bool,
 }
@@ -64,6 +66,8 @@ pub fn run(p: &QueryCliParams<'_>) -> Result<(), Box<dyn std::error::Error>> {
         show_diff: p.show_diff,
         show_pagerank: p.show_pagerank,
         show_call_sites: p.show_call_sites,
+        show_violations: p.show_violations,
+        show_coverage_map: p.show_coverage_map,
         min_level: p.min_level.clone(),
     };
 

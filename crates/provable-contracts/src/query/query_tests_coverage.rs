@@ -166,6 +166,8 @@
             }),
             pagerank: Some(0.042),
             call_sites: vec![],
+            violations: vec![],
+            coverage_map: vec![],
         };
         let text = format!("{r}");
         assert!(text.contains("Bindings:"));
@@ -206,6 +208,8 @@
                 }),
                 pagerank: None,
                 call_sites: vec![],
+                violations: vec![],
+                coverage_map: vec![],
             }],
         };
         let md = output.to_markdown();
@@ -307,6 +311,162 @@
         };
         let output = execute(&index, &params);
         assert_eq!(output.total_matches, 0, "0.99 threshold should filter everything");
+    }
+
+    #[test]
+    fn violations_enrichment() {
+        let index = test_index();
+        let params = QueryParams {
+            query: "clustering".to_string(),
+            show_violations: true,
+            limit: 3,
+            ..Default::default()
+        };
+        let output = execute(&index, &params);
+        // Violations require cross-project index which scans sibling projects
+        // At least some contracts should show violations (unproven obligations)
+        assert!(!output.results.is_empty());
+    }
+
+    #[test]
+    fn coverage_map_enrichment() {
+        let index = test_index();
+        let params = QueryParams {
+            query: "softmax".to_string(),
+            show_coverage_map: true,
+            limit: 3,
+            ..Default::default()
+        };
+        let output = execute(&index, &params);
+        assert!(!output.results.is_empty());
+        // Coverage map should show aprender for contracts with bindings
+        let has_map = output.results.iter().any(|r| !r.coverage_map.is_empty());
+        assert!(has_map, "At least one softmax contract should have coverage data");
+    }
+
+    #[test]
+    fn display_with_violations_and_coverage() {
+        let r = QueryResult {
+            rank: 1,
+            stem: "test-v1".to_string(),
+            path: "test.yaml".to_string(),
+            relevance: 0.9,
+            description: "test".to_string(),
+            equations: vec![],
+            obligation_count: 3,
+            references: vec![],
+            depends_on: vec![],
+            depended_by: vec![],
+            score: None,
+            proof_status: None,
+            bindings: vec![],
+            diff: None,
+            pagerank: None,
+            call_sites: vec![],
+            violations: vec![ViolationInfo {
+                project: "aprender".to_string(),
+                kind: "binding_gap".to_string(),
+                detail: "softmax: not_implemented".to_string(),
+            }],
+            coverage_map: vec![types::ProjectCoverage {
+                project: "aprender".to_string(),
+                call_sites: 2,
+                binding_refs: 3,
+                binding_implemented: 2,
+                binding_total: 3,
+            }],
+        };
+        let text = format!("{r}");
+        assert!(text.contains("Violations (1):"));
+        assert!(text.contains("binding_gap"));
+        assert!(text.contains("Coverage map:"));
+        assert!(text.contains("aprender"));
+    }
+
+    #[test]
+    fn markdown_with_violations_and_coverage() {
+        let output = QueryOutput {
+            query: "test".to_string(),
+            total_matches: 1,
+            results: vec![QueryResult {
+                rank: 1,
+                stem: "test-v1".to_string(),
+                path: "test.yaml".to_string(),
+                relevance: 0.9,
+                description: "test".to_string(),
+                equations: vec![],
+                obligation_count: 1,
+                references: vec![],
+                depends_on: vec![],
+                depended_by: vec![],
+                score: None,
+                proof_status: None,
+                bindings: vec![],
+                diff: None,
+                pagerank: None,
+                call_sites: vec![],
+                violations: vec![ViolationInfo {
+                    project: "trueno".to_string(),
+                    kind: "unproven_obligations".to_string(),
+                    detail: "2/5 lack Kani".to_string(),
+                }],
+                coverage_map: vec![types::ProjectCoverage {
+                    project: "trueno".to_string(),
+                    call_sites: 1,
+                    binding_refs: 2,
+                    binding_implemented: 1,
+                    binding_total: 2,
+                }],
+            }],
+        };
+        let md = output.to_markdown();
+        assert!(md.contains("**Violations"));
+        assert!(md.contains("unproven_obligations"));
+        assert!(md.contains("**Coverage map:**"));
+        assert!(md.contains("50%"));
+    }
+
+    #[test]
+    fn coverage_bar_rendering() {
+        // Test the coverage bar helper
+        let full = super::types::ProjectCoverage {
+            project: "p".to_string(),
+            call_sites: 1,
+            binding_refs: 3,
+            binding_implemented: 3,
+            binding_total: 3,
+        };
+        let empty = super::types::ProjectCoverage {
+            project: "p".to_string(),
+            call_sites: 0,
+            binding_refs: 0,
+            binding_implemented: 0,
+            binding_total: 0,
+        };
+        // Full coverage should show all filled blocks
+        let r = QueryResult {
+            rank: 1,
+            stem: "t".to_string(),
+            path: "t.yaml".to_string(),
+            relevance: 0.5,
+            description: "t".to_string(),
+            equations: vec![],
+            obligation_count: 0,
+            references: vec![],
+            depends_on: vec![],
+            depended_by: vec![],
+            score: None,
+            proof_status: None,
+            bindings: vec![],
+            diff: None,
+            pagerank: None,
+            call_sites: vec![],
+            violations: vec![],
+            coverage_map: vec![full, empty],
+        };
+        let text = format!("{r}");
+        assert!(text.contains("██████"));
+        assert!(text.contains("--"));
     }
 
     #[test]

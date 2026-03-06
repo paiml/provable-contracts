@@ -208,6 +208,12 @@ enum Commands {
         /// Show cross-project call sites
         #[arg(long)]
         call_sites: bool,
+        /// Show contract violations in consumer projects
+        #[arg(long)]
+        violations: bool,
+        /// Show cross-project coverage matrix
+        #[arg(long)]
+        coverage_map: bool,
         /// Path to binding registry YAML (for --binding-info)
         #[arg(long)]
         binding: Option<PathBuf>,
@@ -310,6 +316,8 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             diff,
             pagerank,
             call_sites,
+            violations,
+            coverage_map,
             binding,
             format,
             exit_code,
@@ -317,7 +325,8 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             &contract_dir, &query, regex, literal, case_sensitive, limit,
             &obligation, min_score, &min_level, &depends_on, &depended_by, unproven,
             score, graph, paper, proof_status, binding_info, binding_gaps,
-            diff, pagerank, call_sites, &binding, &format, exit_code,
+            diff, pagerank, call_sites, violations, coverage_map,
+            &binding, &format, exit_code,
         ),
         Commands::Book {
             contract_dir,
@@ -356,6 +365,8 @@ fn dispatch_query(
     diff: bool,
     pagerank: bool,
     call_sites: bool,
+    violations: bool,
+    coverage_map: bool,
     binding: &Option<PathBuf>,
     format: &str,
     exit_code: bool,
@@ -382,6 +393,8 @@ fn dispatch_query(
         show_diff: diff,
         show_pagerank: pagerank,
         show_call_sites: call_sites,
+        show_violations: violations,
+        show_coverage_map: coverage_map,
         binding: binding.as_deref(),
         format,
         exit_code,

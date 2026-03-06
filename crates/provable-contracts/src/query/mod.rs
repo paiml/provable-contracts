@@ -9,12 +9,13 @@ pub mod cross_project;
 mod index;
 mod persist;
 mod types;
+mod types_render;
 
 pub use cross_project::CrossProjectIndex;
 pub use index::ContractIndex;
 pub use types::{
-    DiffInfo, EquationBinding, ProofStatusInfo, QueryOutput, QueryParams, QueryResult, ScoreInfo,
-    SearchMode,
+    DiffInfo, EquationBinding, ProjectCoverage, ProofStatusInfo, QueryOutput, QueryParams,
+    QueryResult, ScoreInfo, SearchMode, ViolationInfo,
 };
 
 use crate::binding::BindingRegistry;
@@ -46,8 +47,9 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
     let total_matches = filtered.len();
     let limited: Vec<_> = filtered.into_iter().take(params.limit).collect();
 
-    // Build cross-project index lazily only when call sites are requested
-    let xp_index = if params.show_call_sites {
+    // Build cross-project index lazily when any cross-project flag is set
+    let needs_xp = params.show_call_sites || params.show_violations || params.show_coverage_map;
+    let xp_index = if needs_xp {
         index.entries.first().map(|e| {
             let p = std::path::Path::new(&e.path);
             // Go up from contracts/foo.yaml to the repo root
@@ -106,6 +108,8 @@ fn build_result(
         diff: params.show_diff.then(|| build_diff_info(entry)).flatten(),
         pagerank: if params.show_pagerank { index.cached_pagerank(&entry.stem) } else { None },
         call_sites: build_call_sites(&entry.stem, xp_index),
+        violations: build_violations(entry, xp_index, params.show_violations),
+        coverage_map: build_coverage_map(&entry.stem, xp_index, params.show_coverage_map),
     }
 }
 
@@ -125,6 +129,97 @@ fn build_call_sites(
             equation: cs.equation.clone(),
         })
         .collect()
+}
+
+fn build_violations(
+    entry: &types::ContractEntry,
+    xp_index: Option<&cross_project::CrossProjectIndex>,
+    show: bool,
+) -> Vec<types::ViolationInfo> {
+    if !show {
+        return Vec::new();
+    }
+    let Some(xp) = xp_index else {
+        return Vec::new();
+    };
+    let mut violations = Vec::new();
+
+    // Check binding refs for unimplemented / partial bindings
+    for br in xp.binding_refs_for(&entry.stem) {
+        if br.status == "not_implemented" || br.status == "partial" {
+            violations.push(types::ViolationInfo {
+                project: br.project.clone(),
+                kind: "binding_gap".to_string(),
+                detail: format!("{}: {}", br.equation, br.status),
+            });
+        }
+    }
+
+    // If contract has unproven obligations, flag consumer projects
+    if entry.obligation_count > entry.kani_count {
+        let unproven = entry.obligation_count - entry.kani_count;
+        let sites = xp.call_sites_for(&entry.stem);
+        let mut projects: Vec<String> = sites.iter().map(|s| s.project.clone()).collect();
+        projects.sort();
+        projects.dedup();
+        for proj in projects {
+            violations.push(types::ViolationInfo {
+                project: proj,
+                kind: "unproven_obligations".to_string(),
+                detail: format!("{unproven}/{} obligations lack Kani harnesses", entry.obligation_count),
+            });
+        }
+    }
+
+    violations
+}
+
+fn build_coverage_map(
+    stem: &str,
+    xp_index: Option<&cross_project::CrossProjectIndex>,
+    show: bool,
+) -> Vec<types::ProjectCoverage> {
+    if !show {
+        return Vec::new();
+    }
+    let Some(xp) = xp_index else {
+        return Vec::new();
+    };
+
+    let mut map: std::collections::HashMap<String, types::ProjectCoverage> =
+        std::collections::HashMap::new();
+
+    // Count call sites per project
+    for cs in xp.call_sites_for(stem) {
+        let entry = map.entry(cs.project.clone()).or_insert_with(|| types::ProjectCoverage {
+            project: cs.project.clone(),
+            call_sites: 0,
+            binding_refs: 0,
+            binding_implemented: 0,
+            binding_total: 0,
+        });
+        entry.call_sites += 1;
+    }
+
+    // Count binding refs per project
+    for br in xp.binding_refs_for(stem) {
+        let entry = map.entry(br.project.clone()).or_insert_with(|| types::ProjectCoverage {
+            project: br.project.clone(),
+            call_sites: 0,
+            binding_refs: 0,
+            binding_implemented: 0,
+            binding_total: 0,
+        });
+        entry.binding_refs += 1;
+        entry.binding_total += 1;
+        if br.status == "implemented" {
+            entry.binding_implemented += 1;
+        }
+    }
+
+    let mut result: Vec<_> = map.into_values().collect();
+    result.sort_by(|a, b| a.project.cmp(&b.project));
+    result
 }
 
 fn opt_vec(source: &[String], include: bool) -> Vec<String> {

@@ -55,6 +55,8 @@ pub struct QueryParams {
     pub show_diff: bool,
     pub show_pagerank: bool,
     pub show_call_sites: bool,
+    pub show_violations: bool,
+    pub show_coverage_map: bool,
     pub min_level: Option<String>,
 }
 
@@ -80,6 +82,8 @@ impl Default for QueryParams {
             show_diff: false,
             show_pagerank: false,
             show_call_sites: false,
+            show_violations: false,
+            show_coverage_map: false,
             min_level: None,
         }
     }
@@ -111,6 +115,10 @@ pub struct QueryResult {
     pub pagerank: Option<f64>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub call_sites: Vec<CallSiteInfo>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub violations: Vec<ViolationInfo>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub coverage_map: Vec<ProjectCoverage>,
 }
 
 /// Cross-project call site for a contract.
@@ -120,6 +128,24 @@ pub struct CallSiteInfo {
     pub file: String,
     pub line: u32,
     pub equation: Option<String>,
+}
+
+/// A contract violation detected in a consumer project.
+#[derive(Debug, Clone, Serialize)]
+pub struct ViolationInfo {
+    pub project: String,
+    pub kind: String,
+    pub detail: String,
+}
+
+/// Per-project coverage summary for a contract.
+#[derive(Debug, Clone, Serialize)]
+pub struct ProjectCoverage {
+    pub project: String,
+    pub call_sites: usize,
+    pub binding_refs: usize,
+    pub binding_implemented: usize,
+    pub binding_total: usize,
 }
 
 /// Inline score info for enrichment.
@@ -167,168 +193,4 @@ pub struct QueryOutput {
     pub query: String,
     pub total_matches: usize,
     pub results: Vec<QueryResult>,
-}
-
-impl QueryResult {
-    fn fmt_enrichment(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let Some(s) = &self.score {
-            writeln!(f, "    Score: {:.2} (Grade {})", s.composite, s.grade)?;
-            writeln!(
-                f,
-                "    Spec: {:.2} | Falsify: {:.2} | Kani: {:.2} | Lean: {:.2} | Bind: {:.2}",
-                s.spec_depth, s.falsification, s.kani, s.lean, s.binding
-            )?;
-        }
-        if let Some(ps) = &self.proof_status {
-            writeln!(
-                f,
-                "    Proof Level: {} (ob:{} ft:{} kani:{} lean:{})",
-                ps.level, ps.obligations, ps.falsification_tests, ps.kani_harnesses, ps.lean_proved
-            )?;
-        }
-        if !self.bindings.is_empty() {
-            writeln!(f, "    Bindings:")?;
-            for b in &self.bindings {
-                let loc = b.module_path.as_deref().unwrap_or("unbound");
-                writeln!(f, "      {}: {} ({})", b.equation, b.status, loc)?;
-            }
-        }
-        if let Some(d) = &self.diff {
-            writeln!(f, "    Last modified: {} ({} days ago, {})",
-                d.last_modified, d.days_ago, &d.commit_hash[..7.min(d.commit_hash.len())])?;
-        }
-        if let Some(pr) = self.pagerank {
-            writeln!(f, "    PageRank: {pr:.4}")?;
-        }
-        if !self.call_sites.is_empty() {
-            writeln!(f, "    Call sites ({} projects):", count_unique_projects(&self.call_sites))?;
-            for cs in &self.call_sites {
-                let eq = cs.equation.as_deref().unwrap_or("");
-                writeln!(f, "      {}/{}:{} {eq}", cs.project, cs.file, cs.line)?;
-            }
-        }
-        Ok(())
-    }
-
-    fn to_markdown_item(&self) -> String {
-        let mut out = format!("### {}. {}\n\n", self.rank, self.stem);
-        out.push_str(&format!("- **Relevance:** {:.2}\n", self.relevance));
-        if !self.equations.is_empty() {
-            out.push_str(&format!("- **Equations:** {}\n", self.equations.join(", ")));
-        }
-        out.push_str(&format!("- **Obligations:** {}\n", self.obligation_count));
-        self.append_markdown_enrichment(&mut out);
-        if !self.references.is_empty() {
-            out.push_str(&format!("- **Papers:** {}\n", self.references.join("; ")));
-        }
-        if !self.depends_on.is_empty() {
-            out.push_str(&format!("- **Depends on:** {}\n", self.depends_on.join(", ")));
-        }
-        if !self.depended_by.is_empty() {
-            out.push_str(&format!("- **Depended by:** {}\n", self.depended_by.join(", ")));
-        }
-        out.push('\n');
-        out
-    }
-
-    fn append_markdown_enrichment(&self, out: &mut String) {
-        if let Some(s) = &self.score {
-            out.push_str(&format!("- **Score:** {:.2} (Grade {})\n", s.composite, s.grade));
-            out.push_str(&format!(
-                "- Spec: {:.2} | Falsify: {:.2} | Kani: {:.2} | Lean: {:.2} | Bind: {:.2}\n",
-                s.spec_depth, s.falsification, s.kani, s.lean, s.binding
-            ));
-        }
-        if let Some(ps) = &self.proof_status {
-            out.push_str(&format!(
-                "- **Proof Level:** {} (ob:{} ft:{} kani:{} lean:{})\n",
-                ps.level, ps.obligations, ps.falsification_tests,
-                ps.kani_harnesses, ps.lean_proved
-            ));
-        }
-        if !self.bindings.is_empty() {
-            out.push_str("- **Bindings:**\n");
-            for b in &self.bindings {
-                let loc = b.module_path.as_deref().unwrap_or("unbound");
-                out.push_str(&format!("  - `{}`: {} (`{}`)\n", b.equation, b.status, loc));
-            }
-        }
-        if let Some(d) = &self.diff {
-            out.push_str(&format!(
-                "- **Last modified:** {} ({} days ago)\n",
-                d.last_modified, d.days_ago
-            ));
-        }
-        if let Some(pr) = self.pagerank {
-            out.push_str(&format!("- **PageRank:** {pr:.4}\n"));
-        }
-        if !self.call_sites.is_empty() {
-            out.push_str(&format!(
-                "- **Call sites** ({} projects):\n",
-                count_unique_projects(&self.call_sites)
-            ));
-            for cs in &self.call_sites {
-                let eq = cs
-                    .equation
-                    .as_deref()
-                    .map_or(String::new(), |e| format!(" eq={e}"));
-                out.push_str(&format!(
-                    "  - `{}/{}:{}`{eq}\n",
-                    cs.project, cs.file, cs.line
-                ));
-            }
-        }
-    }
-}
-
-impl std::fmt::Display for QueryResult {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "[{}] {} (relevance: {:.2})", self.rank, self.stem, self.relevance)?;
-        writeln!(f, "    {}", self.description)?;
-        if !self.equations.is_empty() {
-            writeln!(f, "    Equations: {}", self.equations.join(", "))?;
-        }
-        writeln!(f, "    Obligations: {}", self.obligation_count)?;
-        if !self.references.is_empty() {
-            writeln!(f, "    Papers: {}", self.references.join("; "))?;
-        }
-        self.fmt_enrichment(f)?;
-        if !self.depends_on.is_empty() {
-            writeln!(f, "    Depends on: {}", self.depends_on.join(", "))?;
-        }
-        if !self.depended_by.is_empty() {
-            writeln!(f, "    Depended by: {}", self.depended_by.join(", "))?;
-        }
-        Ok(())
-    }
-}
-
-impl QueryOutput {
-    /// Render results as Markdown (for `--format markdown`).
-    pub fn to_markdown(&self) -> String {
-        let mut out = format!("## Query: \"{}\"\n\n", self.query);
-        for r in &self.results {
-            out.push_str(&r.to_markdown_item());
-        }
-        out.push_str(&format!("*{} matches*\n", self.total_matches));
-        out
-    }
-}
-
-fn count_unique_projects(sites: &[CallSiteInfo]) -> usize {
-    let mut seen = std::collections::HashSet::new();
-    for s in sites {
-        seen.insert(&s.project);
-    }
-    seen.len()
-}
-
-impl std::fmt::Display for QueryOutput {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for r in &self.results {
-            write!(f, "{r}")?;
-            writeln!(f, "    ---")?;
-        }
-        writeln!(f, "\n{} matches for \"{}\"", self.total_matches, self.query)
-    }
 }
