@@ -389,7 +389,7 @@ opt-in flag.
 ### Phase 4: Graph-Aware Queries [PARTIAL]
 
 - DAG traversal (--depends-on, --depended-by) [IMPLEMENTED]
-- Dependency PageRank
+- Dependency PageRank [IMPLEMENTED] — pre-computed at index build, O(1) via `cached_pagerank()`
 - Impact-weighted gap analysis
 
 ### Phase 5: CI Integration [PARTIAL]

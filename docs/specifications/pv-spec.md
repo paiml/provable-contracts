@@ -306,6 +306,8 @@ provable_contracts::scoring::score_codebase(contracts, binding) -> CodebaseScore
 provable_contracts::scoring::ScoringWeights { spec_depth, falsification, kani, lean, binding }
 provable_contracts::query::ContractIndex::from_directory(dir) -> ContractIndex
 provable_contracts::query::ContractIndex::cached_score(stem) -> Option<f64>
+provable_contracts::query::ContractIndex::cached_pagerank(stem) -> Option<f64>
+provable_contracts::query::ContractIndex::pagerank(iterations, damping) -> HashMap<String, f64>
 provable_contracts::query::execute(index, params) -> QueryOutput
 provable_contracts::query::QueryOutput::to_markdown() -> String
 ```
