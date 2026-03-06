@@ -204,4 +204,37 @@ mod tests {
         };
         assert_eq!(r.bound_count, 0);
     }
+
+    #[test]
+    fn verify_bindings_warn_on_gaps() {
+        let binding_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../contracts/aprender/binding.yaml");
+        // WarnOnGaps policy doesn't panic on partial/not_implemented
+        let result = verify_bindings(
+            binding_path.to_str().unwrap(),
+            BindingPolicy::WarnOnGaps,
+        );
+        assert!(result.bound_count > 0, "Should have some implemented bindings");
+    }
+
+    #[test]
+    fn make_env_key_with_yaml_extension() {
+        assert_eq!(
+            make_env_key("softmax-kernel-v1.yaml", "softmax"),
+            "CONTRACT_SOFTMAX_KERNEL_V1_YAML_SOFTMAX"
+        );
+    }
+
+    #[test]
+    fn binding_policy_debug() {
+        // Exercise Debug derive
+        assert_eq!(
+            format!("{:?}", BindingPolicy::AllImplemented),
+            "AllImplemented"
+        );
+        assert_eq!(
+            format!("{:?}", BindingPolicy::TieredEnforcement),
+            "TieredEnforcement"
+        );
+    }
 }

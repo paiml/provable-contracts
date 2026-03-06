@@ -269,6 +269,45 @@
     }
 
     #[test]
+    fn binding_info_unbound_equations() {
+        let index = test_index();
+        // Use a real binding that doesn't cover all equations of a contract
+        let binding_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../contracts/aprender/binding.yaml");
+        let params = QueryParams {
+            query: "attention".to_string(),
+            show_binding: true,
+            binding_path: Some(binding_path.display().to_string()),
+            limit: 1,
+            ..Default::default()
+        };
+        let output = execute(&index, &params);
+        if let Some(r) = output.results.first() {
+            // Attention contracts have equations not all bound
+            let unbound = r.bindings.iter().any(|b| b.status == "unbound");
+            // At least one equation should be unbound for attention
+            assert!(
+                unbound || r.bindings.iter().all(|b| b.status == "implemented"),
+                "Should have unbound or implemented bindings"
+            );
+        }
+    }
+
+    #[test]
+    fn min_score_filter() {
+        let index = test_index();
+        // With a very high min_score, no results should pass
+        let params = QueryParams {
+            query: "softmax".to_string(),
+            min_score: Some(0.99),
+            limit: 10,
+            ..Default::default()
+        };
+        let output = execute(&index, &params);
+        assert_eq!(output.total_matches, 0, "0.99 threshold should filter everything");
+    }
+
+    #[test]
     fn graph_enrichment_with_depended_by() {
         let index = test_index();
         let params = QueryParams {

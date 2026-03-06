@@ -127,4 +127,31 @@ mod tests {
         // Result depends on actual git history — just check it doesn't panic
         assert!(stale.len() <= 1);
     }
+
+    #[test]
+    fn detect_stale_no_git_binding() {
+        // Binding path with no git history → early return, no stale contracts
+        let contract_dir =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
+        let mut bound = HashSet::new();
+        bound.insert("softmax-kernel-v1.yaml");
+        let stale = detect_stale_contracts(
+            &contract_dir,
+            Path::new("/tmp/nonexistent-binding.yaml"),
+            &bound,
+        );
+        assert!(stale.is_empty());
+    }
+
+    #[test]
+    fn detect_stale_missing_contract_file() {
+        // Bound stem that doesn't exist on disk → skip (continue branch)
+        let contract_dir =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
+        let binding_path = contract_dir.join("aprender/binding.yaml");
+        let mut bound = HashSet::new();
+        bound.insert("nonexistent-contract-v1.yaml");
+        let stale = detect_stale_contracts(&contract_dir, &binding_path, &bound);
+        assert!(stale.is_empty());
+    }
 }
