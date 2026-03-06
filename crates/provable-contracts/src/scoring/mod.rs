@@ -11,7 +11,7 @@ mod types;
 
 pub use codebase::score_codebase;
 pub use types::{
-    CodebaseScore, ContractScore, Grade, ScoringGap,
+    CodebaseScore, ContractScore, Grade, ScoringGap, ScoringWeights,
 };
 
 use crate::binding::{BindingRegistry, ImplStatus};
@@ -30,14 +30,28 @@ pub fn score_contract(
     binding: Option<&BindingRegistry>,
     stem: &str,
 ) -> ContractScore {
+    score_contract_weighted(contract, binding, stem, &ScoringWeights::default())
+}
+
+/// Score a contract with custom weights for each dimension.
+pub fn score_contract_weighted(
+    contract: &Contract,
+    binding: Option<&BindingRegistry>,
+    stem: &str,
+    weights: &ScoringWeights,
+) -> ContractScore {
+    let w = weights.normalized();
     let spec_depth = compute_spec_depth(contract);
     let falsification = compute_falsification_coverage(contract);
     let kani = compute_kani_coverage(contract);
     let lean = compute_lean_coverage(contract);
     let binding_cov = compute_binding_coverage(contract, binding, stem);
 
-    let composite =
-        spec_depth * 0.20 + falsification * 0.25 + kani * 0.25 + lean * 0.10 + binding_cov * 0.20;
+    let composite = spec_depth * w.spec_depth
+        + falsification * w.falsification
+        + kani * w.kani
+        + lean * w.lean
+        + binding_cov * w.binding;
 
     ContractScore {
         stem: stem.to_string(),
@@ -258,6 +272,49 @@ kani_harnesses:
         assert_eq!(Grade::from_score(0.65), Grade::C);
         assert_eq!(Grade::from_score(0.45), Grade::D);
         assert_eq!(Grade::from_score(0.30), Grade::F);
+    }
+
+    #[test]
+    fn custom_weights_change_composite() {
+        let contract = parse_contract_str(minimal_kernel_yaml()).unwrap();
+        let default = score_contract(&contract, None, "test-v1");
+        let kani_heavy = score_contract_weighted(
+            &contract,
+            None,
+            "test-v1",
+            &ScoringWeights {
+                spec_depth: 0.05,
+                falsification: 0.05,
+                kani: 0.70,
+                lean: 0.10,
+                binding: 0.10,
+            },
+        );
+        // Different weights should produce different composites
+        assert!(
+            (default.composite - kani_heavy.composite).abs() > 0.01,
+            "default={} kani_heavy={}",
+            default.composite,
+            kani_heavy.composite
+        );
+        // Individual dimensions should be the same
+        assert_eq!(default.spec_depth, kani_heavy.spec_depth);
+        assert_eq!(default.kani_coverage, kani_heavy.kani_coverage);
+    }
+
+    #[test]
+    fn weights_normalization() {
+        let w = ScoringWeights {
+            spec_depth: 2.0,
+            falsification: 2.0,
+            kani: 2.0,
+            lean: 2.0,
+            binding: 2.0,
+        };
+        let n = w.normalized();
+        let total = n.spec_depth + n.falsification + n.kani + n.lean + n.binding;
+        assert!((total - 1.0).abs() < 1e-9, "total={total}");
+        assert!((n.spec_depth - 0.2).abs() < 1e-9);
     }
 
     #[test]

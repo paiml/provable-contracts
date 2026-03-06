@@ -112,6 +112,7 @@ fn dispatch_score_single() {
         binding: None,
         format: "text".to_string(),
         min_score: None,
+        weights: None,
     });
     assert!(result.is_ok());
 }
@@ -123,6 +124,7 @@ fn dispatch_score_directory() {
         binding: None,
         format: "json".to_string(),
         min_score: None,
+        weights: None,
     });
     assert!(result.is_ok());
 }
@@ -134,6 +136,7 @@ fn dispatch_score_min_threshold_fails() {
         binding: None,
         format: "text".to_string(),
         min_score: Some(0.99),
+        weights: None,
     });
     assert!(result.is_err());
 }
@@ -209,6 +212,21 @@ fn dispatch_query_with_score() {
         binding_info: false,
         binding: None,
         format: "text".to_string(),
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_score_custom_weights() {
+    let result = run_command(Commands::Score {
+        path: test_contract(),
+        binding: None,
+        format: "text".to_string(),
+        min_score: None,
+        weights: Some(
+            r#"{"spec_depth":0.1,"falsification":0.3,"kani":0.3,"lean":0.1,"binding":0.2}"#
+                .to_string(),
+        ),
     });
     assert!(result.is_ok());
 }

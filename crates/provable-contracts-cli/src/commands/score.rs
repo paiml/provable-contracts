@@ -5,12 +5,14 @@ use std::path::Path;
 use provable_contracts::binding::BindingRegistry;
 use provable_contracts::schema::parse_contract;
 use provable_contracts::scoring;
+use provable_contracts::scoring::ScoringWeights;
 
 pub fn run(
     path: &Path,
     binding: Option<&Path>,
     format: &str,
     min_score: Option<f64>,
+    weights_json: Option<&str>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let binding_registry = binding
         .map(|p| {
@@ -20,10 +22,15 @@ pub fn run(
         })
         .transpose()?;
 
+    let weights = match weights_json {
+        Some(json) => serde_json::from_str::<ScoringWeights>(json)?,
+        None => ScoringWeights::default(),
+    };
+
     if path.is_dir() {
-        run_directory(path, binding_registry.as_ref(), format, min_score)
+        run_directory(path, binding_registry.as_ref(), format, min_score, &weights)
     } else {
-        run_single(path, binding_registry.as_ref(), format, min_score)
+        run_single(path, binding_registry.as_ref(), format, min_score, &weights)
     }
 }
 
@@ -32,13 +39,14 @@ fn run_single(
     binding: Option<&BindingRegistry>,
     format: &str,
     min_score: Option<f64>,
+    weights: &ScoringWeights,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let contract = parse_contract(path)?;
     let stem = path
         .file_stem()
         .and_then(|s| s.to_str())
         .unwrap_or("unknown");
-    let score = scoring::score_contract(&contract, binding, stem);
+    let score = scoring::score_contract_weighted(&contract, binding, stem, weights);
 
     if format == "json" {
         println!("{}", serde_json::to_string_pretty(&score)?);
@@ -65,6 +73,7 @@ fn run_directory(
     binding: Option<&BindingRegistry>,
     format: &str,
     min_score: Option<f64>,
+    weights: &ScoringWeights,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut entries: Vec<_> = std::fs::read_dir(dir)?
         .filter_map(Result::ok)
@@ -87,7 +96,7 @@ fn run_directory(
             .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("unknown");
-        scores.push(scoring::score_contract(&contract, binding, stem));
+        scores.push(scoring::score_contract_weighted(&contract, binding, stem, weights));
     }
 
     let mean: f64 = if scores.is_empty() {

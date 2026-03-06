@@ -3,6 +3,47 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
+/// Custom scoring weights for the 5 contract dimensions.
+/// Must sum to 1.0 (auto-normalized if not).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ScoringWeights {
+    pub spec_depth: f64,
+    pub falsification: f64,
+    pub kani: f64,
+    pub lean: f64,
+    pub binding: f64,
+}
+
+impl Default for ScoringWeights {
+    fn default() -> Self {
+        Self {
+            spec_depth: 0.20,
+            falsification: 0.25,
+            kani: 0.25,
+            lean: 0.10,
+            binding: 0.20,
+        }
+    }
+}
+
+impl ScoringWeights {
+    /// Normalize weights so they sum to 1.0.
+    #[must_use]
+    pub fn normalized(&self) -> Self {
+        let total = self.spec_depth + self.falsification + self.kani + self.lean + self.binding;
+        if total == 0.0 || (total - 1.0).abs() < 1e-9 {
+            return self.clone();
+        }
+        Self {
+            spec_depth: self.spec_depth / total,
+            falsification: self.falsification / total,
+            kani: self.kani / total,
+            lean: self.lean / total,
+            binding: self.binding / total,
+        }
+    }
+}
+
 /// Score for a single contract across 5 dimensions.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ContractScore {

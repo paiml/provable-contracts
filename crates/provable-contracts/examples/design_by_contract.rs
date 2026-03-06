@@ -1,0 +1,76 @@
+//! Design by Contract walkthrough.
+//!
+//! Demonstrates the core provable-contracts workflow: parse a contract
+//! YAML, inspect its equations and proof obligations, diff two contract
+//! versions, and check binding status from a registry.
+//!
+//! Run from the workspace root:
+//!   cargo run --example design_by_contract
+
+use provable_contracts::binding::parse_binding_str;
+use provable_contracts::diff::diff_contracts;
+use provable_contracts::schema::parse_contract_str;
+
+fn main() {
+    // --- 1. Parse a contract from YAML ---
+    let yaml = include_str!("../../../contracts/softmax-kernel-v1.yaml");
+    let contract = parse_contract_str(yaml).expect("valid contract YAML");
+
+    println!("Contract: {}", contract.metadata.description);
+    println!("Version:  {}", contract.metadata.version);
+    println!();
+
+    // --- 2. Inspect equations ---
+    println!("Equations ({}):", contract.equations.len());
+    for (name, eq) in &contract.equations {
+        println!("  {name}: {}", eq.formula);
+        if let Some(ref domain) = eq.domain {
+            println!("    domain:   {domain}");
+        }
+        for inv in &eq.invariants {
+            println!("    invariant: {inv}");
+        }
+    }
+    println!();
+
+    // --- 3. Inspect proof obligations ---
+    println!("Proof obligations ({}):", contract.proof_obligations.len());
+    for ob in &contract.proof_obligations {
+        let tol = ob
+            .tolerance
+            .map_or_else(String::new, |t| format!(" (tol={t})"));
+        println!("  [{}] {}{tol}", ob.obligation_type, ob.property);
+    }
+    println!();
+
+    // --- 4. Diff two contract versions ---
+    let v2_yaml = yaml.replace("version: \"1.0.0\"", "version: \"1.1.0\"");
+    let v2 = parse_contract_str(&v2_yaml).expect("v2 contract");
+    let diff = diff_contracts(&contract, &v2);
+    println!(
+        "Diff {} -> {}: suggested bump = {}",
+        diff.old_version, diff.new_version, diff.suggested_bump
+    );
+    println!();
+
+    // --- 5. Check binding status ---
+    let binding_yaml = r#"
+version: "1.0.0"
+target_crate: aprender
+bindings:
+  - contract: softmax-kernel-v1.yaml
+    equation: softmax
+    module_path: "aprender::nn::softmax"
+    function: softmax_f32
+    status: implemented
+"#;
+    let registry = parse_binding_str(binding_yaml).expect("valid binding YAML");
+    println!(
+        "Binding registry: {} ({} bindings)",
+        registry.target_crate,
+        registry.bindings.len()
+    );
+    for b in &registry.bindings {
+        println!("  {} :: {} -> {}", b.contract, b.equation, b.status);
+    }
+}
