@@ -23,8 +23,8 @@ provable-contracts (library)
 +-- book_gen/         mdBook generation
 +-- latex             Math -> LaTeX conversion
 +-- kernels/          Reference kernel implementations
-+-- scoring/          Contract + codebase scoring [PLANNED]
-+-- query/            O(1) contract search index [PLANNED]
++-- scoring/          Contract + codebase scoring [IMPLEMENTED]
++-- query/            O(1) contract search index [IMPLEMENTED]
 +-- build_helper      Build-time helpers
 +-- error             Error types
 ```
@@ -217,7 +217,7 @@ pub enum ImplStatus { Implemented, Partial, NotImplemented }
 
 ---
 
-## 6. Scoring Module [PLANNED — not yet implemented]
+## 6. Scoring Module [IMPLEMENTED]
 
 ```rust
 pub struct ContractScore {
@@ -292,7 +292,7 @@ composite = sd*0.20 + fc*0.25 + kc*0.25 + lc*0.10 + bc*0.20
 
 ---
 
-## 7. Query Module [PLANNED — not yet implemented]
+## 7. Query Module [IMPLEMENTED]
 
 ```rust
 pub struct ContractIndex {

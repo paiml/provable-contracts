@@ -237,7 +237,7 @@ Show recent contract changes (requires git).
     Changes: +2 falsification tests, +1 kani harness
 ```
 
-### --call-sites
+### --call-sites [IMPLEMENTED]
 
 Show where the contract is referenced across consumer projects.
 
@@ -250,7 +250,7 @@ Show where the contract is referenced across consumer projects.
       entrenar/src/loss.rs:33            // C-XENT-002: refs softmax-kernel-v1
 ```
 
-### --violations
+### --violations [IMPLEMENTED]
 
 Show contracts whose obligations are violated in consumer code (e.g.,
 unchecked invariants, missing tests, binding gaps).
@@ -262,7 +262,7 @@ unchecked invariants, missing tests, binding gaps).
       trueno:   missing SIMD equivalence test for AVX-512 path
 ```
 
-### --coverage-map
+### --coverage-map [IMPLEMENTED]
 
 Show cross-project contract coverage matrix.
 
@@ -378,14 +378,16 @@ opt-in flag.
 - JSON + markdown output formats
 - Score cache for O(1) --min-score filtering
 
-### Phase 3: Cross-Project Search
+### Phase 3: Cross-Project Search [DONE]
 
-- Auto-discover sibling projects via `../`
-- Scan for `#[contract]` annotations (ripgrep)
-- Parse consumer binding.yaml files
-- Scan for KAIZEN/contract ID patterns in code + git log
-- `--call-sites`, `--violations`, `--coverage-map` enrichment
-- CrossProjectIndex with persistence + auto-rebuild
+- Auto-discover sibling projects via `../` [IMPLEMENTED]
+- Scan for `#[contract]` annotations (grep) [IMPLEMENTED]
+- Parse consumer binding.yaml files [IMPLEMENTED]
+- Scan for KAIZEN/contract ID patterns in code [IMPLEMENTED]
+- `--call-sites` enrichment [IMPLEMENTED]
+- `--violations` enrichment [IMPLEMENTED]
+- `--coverage-map` enrichment [IMPLEMENTED]
+- CrossProjectIndex persistence — deferred (in-memory is fast enough)
 
 ### Phase 4: Graph-Aware Queries [DONE]
 
