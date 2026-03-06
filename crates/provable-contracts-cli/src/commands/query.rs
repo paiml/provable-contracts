@@ -15,6 +15,7 @@ pub struct QueryCliParams<'a> {
     pub limit: usize,
     pub obligation: Option<&'a str>,
     pub min_score: Option<f64>,
+    pub min_level: Option<String>,
     pub depends_on: Option<&'a str>,
     pub depended_by: Option<&'a str>,
     pub unproven: bool,
@@ -59,6 +60,7 @@ pub fn run(p: &QueryCliParams<'_>) -> Result<(), Box<dyn std::error::Error>> {
         binding_path: p.binding.map(|b| b.display().to_string()),
         binding_gaps_only: p.binding_gaps,
         show_diff: p.show_diff,
+        min_level: p.min_level.clone(),
     };
 
     let output = query::execute(&index, &params);

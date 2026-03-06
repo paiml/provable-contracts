@@ -405,7 +405,7 @@ pv query --include-project ../trueno  # Explicit project path
 ```
 
 ### Enrichment [IMPLEMENTED]: `--score`, `--proof-status`, `--binding-info`,
-`--graph`, `--paper`. Output: `-f text|json|markdown`.
+`--graph`, `--paper`, `--diff`. Output: `-f text|json|markdown`.
 
 ---
 

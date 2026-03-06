@@ -178,6 +178,9 @@ enum Commands {
         /// Minimum score threshold (filter results below this)
         #[arg(long)]
         min_score: Option<f64>,
+        /// Minimum proof level (L1-L5) to include
+        #[arg(long)]
+        min_level: Option<String>,
         /// Include contract scores in output
         #[arg(long)]
         score: bool,
@@ -288,6 +291,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             limit,
             obligation,
             min_score,
+            min_level,
             depends_on,
             depended_by,
             unproven,
@@ -303,7 +307,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             exit_code,
         } => dispatch_query(
             &contract_dir, &query, regex, literal, case_sensitive, limit,
-            &obligation, min_score, &depends_on, &depended_by, unproven,
+            &obligation, min_score, &min_level, &depends_on, &depended_by, unproven,
             score, graph, paper, proof_status, binding_info, binding_gaps,
             diff, &binding, &format, exit_code,
         ),
@@ -331,6 +335,7 @@ fn dispatch_query(
     limit: usize,
     obligation: &Option<String>,
     min_score: Option<f64>,
+    min_level: &Option<String>,
     depends_on: &Option<String>,
     depended_by: &Option<String>,
     unproven: bool,
@@ -354,6 +359,7 @@ fn dispatch_query(
         limit,
         obligation: obligation.as_deref(),
         min_score,
+        min_level: min_level.clone(),
         depends_on: depends_on.as_deref(),
         depended_by: depended_by.as_deref(),
         unproven,

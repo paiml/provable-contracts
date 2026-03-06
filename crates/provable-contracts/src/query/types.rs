@@ -53,6 +53,7 @@ pub struct QueryParams {
     pub binding_path: Option<String>,
     pub binding_gaps_only: bool,
     pub show_diff: bool,
+    pub min_level: Option<String>,
 }
 
 impl Default for QueryParams {
@@ -75,6 +76,7 @@ impl Default for QueryParams {
             binding_path: None,
             binding_gaps_only: false,
             show_diff: false,
+            min_level: None,
         }
     }
 }

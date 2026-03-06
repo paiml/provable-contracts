@@ -152,6 +152,7 @@ fn dispatch_query_semantic() {
         limit: 3,
         obligation: None,
         min_score: None,
+        min_level: None,
         depends_on: None,
         depended_by: None,
         unproven: false,
@@ -180,6 +181,7 @@ fn dispatch_query_literal() {
         limit: 5,
         obligation: None,
         min_score: None,
+        min_level: None,
         depends_on: None,
         depended_by: None,
         unproven: false,
@@ -208,6 +210,7 @@ fn dispatch_query_with_score() {
         limit: 2,
         obligation: None,
         min_score: None,
+        min_level: None,
         depends_on: None,
         depended_by: None,
         unproven: false,
@@ -251,6 +254,7 @@ fn dispatch_query_with_proof_status() {
         limit: 2,
         obligation: None,
         min_score: None,
+        min_level: None,
         depends_on: None,
         depended_by: None,
         unproven: false,
@@ -281,6 +285,7 @@ fn dispatch_query_with_binding() {
         limit: 2,
         obligation: None,
         min_score: None,
+        min_level: None,
         depends_on: None,
         depended_by: None,
         unproven: false,
@@ -309,6 +314,7 @@ fn dispatch_query_markdown_format() {
         limit: 3,
         obligation: None,
         min_score: None,
+        min_level: None,
         depends_on: None,
         depended_by: None,
         unproven: false,
@@ -349,6 +355,7 @@ fn dispatch_query_exit_code_success() {
         limit: 3,
         obligation: None,
         min_score: None,
+        min_level: None,
         depends_on: None,
         depended_by: None,
         unproven: false,
@@ -377,6 +384,7 @@ fn dispatch_query_exit_code_no_match() {
         limit: 3,
         obligation: None,
         min_score: None,
+        min_level: None,
         depends_on: None,
         depended_by: None,
         unproven: false,
@@ -392,4 +400,33 @@ fn dispatch_query_exit_code_no_match() {
         exit_code: true,
     });
     assert!(result.is_err());
+}
+
+#[test]
+fn dispatch_query_min_level() {
+    let result = run_command(Commands::Query {
+        query: "softmax".to_string(),
+        contract_dir: contracts_dir(),
+        regex: false,
+        literal: false,
+        case_sensitive: false,
+        limit: 3,
+        obligation: None,
+        min_score: None,
+        min_level: Some("L3".to_string()),
+        depends_on: None,
+        depended_by: None,
+        unproven: false,
+        score: false,
+        graph: false,
+        paper: false,
+        proof_status: false,
+        binding_info: false,
+        binding_gaps: false,
+        diff: false,
+        binding: None,
+        format: "text".to_string(),
+        exit_code: false,
+    });
+    assert!(result.is_ok());
 }

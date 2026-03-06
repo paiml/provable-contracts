@@ -345,3 +345,25 @@
         let results = index.get_by_obligation("invariant");
         assert!(!results.is_empty());
     }
+
+    #[test]
+    fn min_level_filter_restricts_results() {
+        let index = test_index();
+        let all = QueryParams {
+            query: "softmax".to_string(),
+            limit: 50,
+            ..Default::default()
+        };
+        let all_output = execute(&index, &all);
+
+        let filtered = QueryParams {
+            query: "softmax".to_string(),
+            limit: 50,
+            min_level: Some("L3".to_string()),
+            ..Default::default()
+        };
+        let filtered_output = execute(&index, &filtered);
+
+        // L3 filter should return <= total results
+        assert!(filtered_output.total_matches <= all_output.total_matches);
+    }

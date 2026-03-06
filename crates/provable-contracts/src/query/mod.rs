@@ -118,6 +118,7 @@ fn apply_filters(
                 && filter_unproven(entry, params.unproven_only)
                 && filter_min_score(index, entry, params.min_score)
                 && filter_binding_gaps(entry, params.binding_gaps_only, binding)
+                && filter_min_level(entry, params.min_level.as_deref())
         })
         .collect()
 }
@@ -198,6 +199,27 @@ fn filter_unproven(entry: &types::ContractEntry, unproven_only: bool) -> bool {
     }
     // Show contracts with more obligations than kani harnesses
     entry.obligation_count > entry.kani_count
+}
+
+fn filter_min_level(entry: &types::ContractEntry, min_level: Option<&str>) -> bool {
+    let Some(min) = min_level else { return true };
+    let threshold = parse_proof_level(min);
+    let path = std::path::Path::new(&entry.path);
+    let Ok(contract) = crate::schema::parse_contract(path) else {
+        return false;
+    };
+    let level = crate::proof_status::compute_proof_level(&contract, None);
+    level >= threshold
+}
+
+fn parse_proof_level(s: &str) -> crate::proof_status::ProofLevel {
+    match s.to_uppercase().as_str() {
+        "L5" => crate::proof_status::ProofLevel::L5,
+        "L4" => crate::proof_status::ProofLevel::L4,
+        "L3" => crate::proof_status::ProofLevel::L3,
+        "L2" => crate::proof_status::ProofLevel::L2,
+        _ => crate::proof_status::ProofLevel::L1,
+    }
 }
 
 #[allow(clippy::cast_possible_truncation)]
