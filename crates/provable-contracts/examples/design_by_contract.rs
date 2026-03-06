@@ -7,9 +7,13 @@
 //! Run from the workspace root:
 //!   cargo run --example design_by_contract
 
+use std::path::Path;
+
 use provable_contracts::binding::parse_binding_str;
 use provable_contracts::diff::diff_contracts;
+use provable_contracts::query::{self, ContractIndex, QueryParams};
 use provable_contracts::schema::parse_contract_str;
+use provable_contracts::scoring;
 
 fn main() {
     // --- 1. Parse a contract from YAML ---
@@ -72,5 +76,28 @@ bindings:
     );
     for b in &registry.bindings {
         println!("  {} :: {} -> {}", b.contract, b.equation, b.status);
+    }
+    println!();
+
+    // --- 6. Score the contract ---
+    let score = scoring::score_contract(&contract, Some(&registry), "softmax-kernel-v1");
+    print!("{score}");
+    println!();
+
+    // --- 7. Query the contract index ---
+    let contracts_dir = Path::new("contracts");
+    if contracts_dir.exists() {
+        let index = ContractIndex::from_directory(contracts_dir)
+            .expect("contracts/ directory must exist");
+        let params = QueryParams {
+            query: "softmax numerical stability".to_string(),
+            show_score: true,
+            show_pagerank: true,
+            limit: 3,
+            ..Default::default()
+        };
+        let output = query::execute(&index, &params);
+        println!("--- Query: \"softmax numerical stability\" (top 3) ---\n");
+        print!("{output}");
     }
 }
