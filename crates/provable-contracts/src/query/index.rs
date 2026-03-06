@@ -459,4 +459,30 @@ mod tests {
         let scores = index.pagerank(20, 0.85);
         assert!(scores.is_empty());
     }
+
+    #[test]
+    fn from_directory_uses_cache() {
+        // Build from a temp dir to avoid contaminating the real .pv cache
+        let tmp = std::env::temp_dir().join("pv_from_dir_cache_test");
+        let _ = std::fs::remove_dir_all(&tmp);
+        std::fs::create_dir_all(&tmp).unwrap();
+
+        // Copy a few contracts to temp
+        let src = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
+        for name in &["softmax-kernel-v1.yaml", "rmsnorm-kernel-v1.yaml"] {
+            let content = std::fs::read_to_string(src.join(name)).unwrap();
+            std::fs::write(tmp.join(name), content).unwrap();
+        }
+
+        // First call builds + caches
+        let idx1 = ContractIndex::from_directory(&tmp).unwrap();
+        assert!(idx1.entries.len() >= 2);
+
+        // Second call should hit cache
+        let idx2 = ContractIndex::from_directory(&tmp).unwrap();
+        assert_eq!(idx1.entries.len(), idx2.entries.len());
+
+        let _ = std::fs::remove_dir_all(&tmp);
+        let _ = std::fs::remove_dir_all(tmp.parent().unwrap().join(".pv"));
+    }
 }

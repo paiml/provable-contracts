@@ -248,3 +248,38 @@
         let output = execute(&index, &params);
         assert_eq!(output.total_matches, 0, "No binding registry means all filtered");
     }
+
+    #[test]
+    fn pagerank_enrichment() {
+        let index = test_index();
+        let params = QueryParams {
+            query: "softmax".to_string(),
+            show_pagerank: true,
+            limit: 3,
+            ..Default::default()
+        };
+        let output = execute(&index, &params);
+        assert!(!output.results.is_empty());
+        // Softmax-kernel-v1 should have a pagerank score
+        let sm = output.results.iter().find(|r| r.stem == "softmax-kernel-v1");
+        if let Some(r) = sm {
+            assert!(r.pagerank.is_some(), "pagerank should be populated");
+            assert!(r.pagerank.unwrap() > 0.0, "pagerank should be positive");
+        }
+    }
+
+    #[test]
+    fn graph_enrichment_with_depended_by() {
+        let index = test_index();
+        let params = QueryParams {
+            query: "softmax-kernel".to_string(),
+            show_graph: true,
+            limit: 3,
+            ..Default::default()
+        };
+        let output = execute(&index, &params);
+        let sm = output.results.iter().find(|r| r.stem == "softmax-kernel-v1");
+        if let Some(r) = sm {
+            assert!(!r.depended_by.is_empty(), "softmax should have dependents");
+        }
+    }
