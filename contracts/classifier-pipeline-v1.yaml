@@ -156,9 +156,20 @@ validated_results:
       train_mcc: 0.546
       ship_gate: "PASS"
       notes: "Class-weighted online SGD (sqrt-inverse balanced), L2=1e-4, 100 epochs, lr=0.001"
-  extraction_rate: "1.65 entries/s (CPU release build)"
+    - name: "3000-entry BPE (degradation onset)"
+      test_mcc: 0.291
+      ship_gate: "FAIL"
+      notes: "Unsafe entries stop at index ~3000; test set still has some unsafe samples"
+    - name: "4000+ entry BPE (data gap)"
+      test_mcc: 0.000
+      ship_gate: "FAIL"
+      notes: "Test set drawn from indices 3000+ which are 100% safe; zero true positives possible"
+  extraction_rate: "1.68 entries/s (CPU release build)"
   model_load_time: "~23s (476MB safetensors)"
+  unsafe_label_count: 283
+  unsafe_label_max_index: "~3000 (all 283 unsafe entries in first 3000)"
   known_limitations:
-    - "MCC degrades at n>2500: corpus entries 3000+ have zero unsafe labels (data labeling gap)"
+    - "MCC degrades at n>2500: corpus entries 3000+ have zero unsafe labels (data labeling gap, #171)"
+    - "Max effective training size: ~2500 entries (beyond this, test set has no unsafe samples)"
     - "Linear probe limited by linear separability of CodeBERT [CLS] embeddings"
     - "Full-batch GD fails on imbalanced data (aprender#428); online SGD required"
