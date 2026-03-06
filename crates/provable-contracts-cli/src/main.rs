@@ -172,6 +172,9 @@ enum Commands {
         /// Show only contracts with unproven obligations
         #[arg(long)]
         unproven: bool,
+        /// Minimum score threshold (filter results below this)
+        #[arg(long)]
+        min_score: Option<f64>,
         /// Include contract scores in output
         #[arg(long)]
         score: bool,
@@ -181,7 +184,16 @@ enum Commands {
         /// Include paper references
         #[arg(long)]
         paper: bool,
-        /// Output format: text (default) or json
+        /// Include proof level (L1-L5) in output
+        #[arg(long)]
+        proof_status: bool,
+        /// Include binding status per equation
+        #[arg(long)]
+        binding_info: bool,
+        /// Path to binding registry YAML (for --binding-info)
+        #[arg(long)]
+        binding: Option<PathBuf>,
+        /// Output format: text, json, or markdown
         #[arg(short, long, default_value = "text")]
         format: String,
     },
@@ -262,29 +274,22 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             case_sensitive,
             limit,
             obligation,
+            min_score,
             depends_on,
             depended_by,
             unproven,
             score,
             graph,
             paper,
+            proof_status,
+            binding_info,
+            binding,
             format,
-        } => commands::query::run(&commands::query::QueryCliParams {
-            contract_dir: &contract_dir,
-            query_str: &query,
-            regex,
-            literal,
-            case_sensitive,
-            limit,
-            obligation: obligation.as_deref(),
-            depends_on: depends_on.as_deref(),
-            depended_by: depended_by.as_deref(),
-            unproven,
-            show_score: score,
-            show_graph: graph,
-            show_paper: paper,
-            format: &format,
-        }),
+        } => dispatch_query(
+            &contract_dir, &query, regex, literal, case_sensitive, limit,
+            &obligation, min_score, &depends_on, &depended_by, unproven,
+            score, graph, paper, proof_status, binding_info, &binding, &format,
+        ),
         Commands::Book {
             contract_dir,
             output,
@@ -297,6 +302,49 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             summary_path.as_deref(),
         ),
     }
+}
+
+#[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools, clippy::ref_option)]
+fn dispatch_query(
+    contract_dir: &std::path::Path,
+    query: &str,
+    regex: bool,
+    literal: bool,
+    case_sensitive: bool,
+    limit: usize,
+    obligation: &Option<String>,
+    min_score: Option<f64>,
+    depends_on: &Option<String>,
+    depended_by: &Option<String>,
+    unproven: bool,
+    score: bool,
+    graph: bool,
+    paper: bool,
+    proof_status: bool,
+    binding_info: bool,
+    binding: &Option<PathBuf>,
+    format: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    commands::query::run(&commands::query::QueryCliParams {
+        contract_dir,
+        query_str: query,
+        regex,
+        literal,
+        case_sensitive,
+        limit,
+        obligation: obligation.as_deref(),
+        min_score,
+        depends_on: depends_on.as_deref(),
+        depended_by: depended_by.as_deref(),
+        unproven,
+        show_score: score,
+        show_graph: graph,
+        show_paper: paper,
+        show_proof_status: proof_status,
+        show_binding: binding_info,
+        binding: binding.as_deref(),
+        format,
+    })
 }
 
 /// Entry point: parse CLI arguments and run the selected subcommand

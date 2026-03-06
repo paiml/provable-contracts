@@ -9,8 +9,11 @@ mod index;
 mod types;
 
 pub use index::ContractIndex;
-pub use types::{QueryOutput, QueryParams, QueryResult, ScoreInfo, SearchMode};
+pub use types::{
+    EquationBinding, ProofStatusInfo, QueryOutput, QueryParams, QueryResult, ScoreInfo, SearchMode,
+};
 
+use crate::binding::BindingRegistry;
 use crate::scoring;
 
 /// Execute a query against a contract index.
@@ -30,6 +33,11 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
             .collect(),
     };
 
+    let binding = params.binding_path.as_ref().and_then(|p| {
+        let content = std::fs::read_to_string(p).ok()?;
+        serde_yaml::from_str::<BindingRegistry>(&content).ok()
+    });
+
     let filtered = apply_filters(index, scored_indices, params);
     let total_matches = filtered.len();
     let limited: Vec<_> = filtered.into_iter().take(params.limit).collect();
@@ -43,6 +51,16 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
                 build_score_info(entry)
             } else {
                 None
+            };
+            let proof_status = if params.show_proof_status {
+                build_proof_status_info(entry)
+            } else {
+                None
+            };
+            let bindings = if params.show_binding {
+                build_binding_info(entry, binding.as_ref())
+            } else {
+                Vec::new()
             };
 
             QueryResult {
@@ -64,6 +82,8 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
                     Vec::new()
                 },
                 score,
+                proof_status,
+                bindings,
             }
         })
         .collect();
@@ -88,6 +108,7 @@ fn apply_filters(
                 && filter_depends_on(entry, params.depends_on.as_ref())
                 && filter_depended_by(index, entry, params.depended_by.as_ref())
                 && filter_unproven(entry, params.unproven_only)
+                && filter_min_score(entry, params.min_score)
         })
         .collect()
 }
@@ -128,12 +149,76 @@ fn filter_depended_by(
     }
 }
 
+fn filter_min_score(entry: &types::ContractEntry, min_score: Option<f64>) -> bool {
+    let Some(threshold) = min_score else {
+        return true;
+    };
+    build_score_info(entry).is_some_and(|s| s.composite >= threshold)
+}
+
 fn filter_unproven(entry: &types::ContractEntry, unproven_only: bool) -> bool {
     if !unproven_only {
         return true;
     }
     // Show contracts with more obligations than kani harnesses
     entry.obligation_count > entry.kani_count
+}
+
+#[allow(clippy::cast_possible_truncation)]
+fn build_proof_status_info(entry: &types::ContractEntry) -> Option<ProofStatusInfo> {
+    let path = std::path::Path::new(&entry.path);
+    let contract = crate::schema::parse_contract(path).ok()?;
+    let level = crate::proof_status::compute_proof_level(&contract, None);
+    Some(ProofStatusInfo {
+        level: level.to_string(),
+        obligations: entry.obligation_count as u32,
+        falsification_tests: entry.falsification_count as u32,
+        kani_harnesses: entry.kani_count as u32,
+        lean_proved: contract
+            .verification_summary
+            .as_ref()
+            .map_or(0, |vs| vs.l4_lean_proved),
+    })
+}
+
+fn build_binding_info(
+    entry: &types::ContractEntry,
+    binding: Option<&BindingRegistry>,
+) -> Vec<EquationBinding> {
+    let Some(binding) = binding else {
+        return entry
+            .equations
+            .iter()
+            .map(|eq| EquationBinding {
+                equation: eq.clone(),
+                status: "no binding registry".into(),
+                module_path: None,
+            })
+            .collect();
+    };
+    let contract_file = format!("{}.yaml", entry.stem);
+    entry
+        .equations
+        .iter()
+        .map(|eq| {
+            let found = binding
+                .bindings
+                .iter()
+                .find(|b| b.contract == contract_file && b.equation == *eq);
+            match found {
+                Some(b) => EquationBinding {
+                    equation: eq.clone(),
+                    status: b.status.to_string(),
+                    module_path: b.module_path.clone(),
+                },
+                None => EquationBinding {
+                    equation: eq.clone(),
+                    status: "unbound".into(),
+                    module_path: None,
+                },
+            }
+        })
+        .collect()
 }
 
 fn build_score_info(entry: &types::ContractEntry) -> Option<ScoreInfo> {
@@ -256,6 +341,93 @@ mod tests {
         let text = output.to_string();
         assert!(text.contains("[1]"));
         assert!(text.contains("softmax"));
+    }
+
+    #[test]
+    fn proof_status_enrichment_works() {
+        let index = test_index();
+        let params = QueryParams {
+            query: "softmax".to_string(),
+            show_proof_status: true,
+            limit: 1,
+            ..Default::default()
+        };
+        let output = execute(&index, &params);
+        assert!(!output.results.is_empty());
+        let ps = output.results[0].proof_status.as_ref().unwrap();
+        assert!(!ps.level.is_empty());
+    }
+
+    #[test]
+    fn binding_enrichment_without_registry() {
+        let index = test_index();
+        let params = QueryParams {
+            query: "softmax".to_string(),
+            show_binding: true,
+            limit: 1,
+            ..Default::default()
+        };
+        let output = execute(&index, &params);
+        assert!(!output.results.is_empty());
+        assert!(!output.results[0].bindings.is_empty());
+        assert_eq!(output.results[0].bindings[0].status, "no binding registry");
+    }
+
+    #[test]
+    fn binding_enrichment_with_registry() {
+        let binding_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../contracts/aprender/binding.yaml");
+        let index = test_index();
+        let params = QueryParams {
+            query: "softmax".to_string(),
+            show_binding: true,
+            binding_path: Some(binding_path.display().to_string()),
+            limit: 5,
+            ..Default::default()
+        };
+        let output = execute(&index, &params);
+        // At least one result should have a non-"no binding registry" status
+        let has_bound = output.results.iter().any(|r| {
+            r.bindings
+                .iter()
+                .any(|b| b.status != "no binding registry")
+        });
+        assert!(has_bound, "Should find implemented bindings");
+    }
+
+    #[test]
+    fn min_score_filter_works() {
+        let index = test_index();
+        let high = QueryParams {
+            query: "kernel".to_string(),
+            min_score: Some(0.80),
+            ..Default::default()
+        };
+        let low = QueryParams {
+            query: "kernel".to_string(),
+            min_score: Some(0.10),
+            ..Default::default()
+        };
+        let high_out = execute(&index, &high);
+        let low_out = execute(&index, &low);
+        assert!(high_out.total_matches <= low_out.total_matches);
+    }
+
+    #[test]
+    fn markdown_output_format() {
+        let index = test_index();
+        let params = QueryParams {
+            query: "softmax".to_string(),
+            show_score: true,
+            show_paper: true,
+            limit: 2,
+            ..Default::default()
+        };
+        let output = execute(&index, &params);
+        let md = output.to_markdown();
+        assert!(md.contains("## Query:"));
+        assert!(md.contains("### 1."));
+        assert!(md.contains("**Score:**"));
     }
 
     #[test]

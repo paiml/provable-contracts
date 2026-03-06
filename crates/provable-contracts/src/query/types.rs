@@ -48,6 +48,9 @@ pub struct QueryParams {
     pub show_score: bool,
     pub show_graph: bool,
     pub show_paper: bool,
+    pub show_proof_status: bool,
+    pub show_binding: bool,
+    pub binding_path: Option<String>,
 }
 
 impl Default for QueryParams {
@@ -65,6 +68,9 @@ impl Default for QueryParams {
             show_score: false,
             show_graph: false,
             show_paper: false,
+            show_proof_status: false,
+            show_binding: false,
+            binding_path: None,
         }
     }
 }
@@ -83,6 +89,10 @@ pub struct QueryResult {
     pub depends_on: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub score: Option<ScoreInfo>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub proof_status: Option<ProofStatusInfo>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub bindings: Vec<EquationBinding>,
 }
 
 /// Inline score info for enrichment.
@@ -95,6 +105,25 @@ pub struct ScoreInfo {
     pub kani: f64,
     pub lean: f64,
     pub binding: f64,
+}
+
+/// Inline proof status info for enrichment.
+#[derive(Debug, Clone, Serialize)]
+pub struct ProofStatusInfo {
+    pub level: String,
+    pub obligations: u32,
+    pub falsification_tests: u32,
+    pub kani_harnesses: u32,
+    pub lean_proved: u32,
+}
+
+/// Binding status for a single equation.
+#[derive(Debug, Clone, Serialize)]
+pub struct EquationBinding {
+    pub equation: String,
+    pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub module_path: Option<String>,
 }
 
 /// Output of a query execution.
@@ -129,10 +158,69 @@ impl std::fmt::Display for QueryResult {
                 s.spec_depth, s.falsification, s.kani, s.lean, s.binding
             )?;
         }
+        if let Some(ps) = &self.proof_status {
+            writeln!(
+                f,
+                "    Proof Level: {} (ob:{} ft:{} kani:{} lean:{})",
+                ps.level, ps.obligations, ps.falsification_tests, ps.kani_harnesses, ps.lean_proved
+            )?;
+        }
+        if !self.bindings.is_empty() {
+            writeln!(f, "    Bindings:")?;
+            for b in &self.bindings {
+                let loc = b.module_path.as_deref().unwrap_or("unbound");
+                writeln!(f, "      {}: {} ({})", b.equation, b.status, loc)?;
+            }
+        }
         if !self.depends_on.is_empty() {
             writeln!(f, "    Depends on: {}", self.depends_on.join(", "))?;
         }
         Ok(())
+    }
+}
+
+impl QueryOutput {
+    /// Render results as Markdown (for `--format markdown`).
+    pub fn to_markdown(&self) -> String {
+        let mut out = format!("## Query: \"{}\"\n\n", self.query);
+        for r in &self.results {
+            out.push_str(&format!("### {}. {}\n\n", r.rank, r.stem));
+            out.push_str(&format!("- **Relevance:** {:.2}\n", r.relevance));
+            if !r.equations.is_empty() {
+                out.push_str(&format!("- **Equations:** {}\n", r.equations.join(", ")));
+            }
+            out.push_str(&format!("- **Obligations:** {}\n", r.obligation_count));
+            if let Some(s) = &r.score {
+                out.push_str(&format!("- **Score:** {:.2} (Grade {})\n", s.composite, s.grade));
+                out.push_str(&format!(
+                    "- Spec: {:.2} | Falsify: {:.2} | Kani: {:.2} | Lean: {:.2} | Bind: {:.2}\n",
+                    s.spec_depth, s.falsification, s.kani, s.lean, s.binding
+                ));
+            }
+            if let Some(ps) = &r.proof_status {
+                out.push_str(&format!(
+                    "- **Proof Level:** {} (ob:{} ft:{} kani:{} lean:{})\n",
+                    ps.level, ps.obligations, ps.falsification_tests,
+                    ps.kani_harnesses, ps.lean_proved
+                ));
+            }
+            if !r.bindings.is_empty() {
+                out.push_str("- **Bindings:**\n");
+                for b in &r.bindings {
+                    let loc = b.module_path.as_deref().unwrap_or("unbound");
+                    out.push_str(&format!("  - `{}`: {} (`{}`)\n", b.equation, b.status, loc));
+                }
+            }
+            if !r.references.is_empty() {
+                out.push_str(&format!("- **Papers:** {}\n", r.references.join("; ")));
+            }
+            if !r.depends_on.is_empty() {
+                out.push_str(&format!("- **Depends on:** {}\n", r.depends_on.join(", ")));
+            }
+            out.push('\n');
+        }
+        out.push_str(&format!("*{} matches*\n", self.total_matches));
+        out
     }
 }
 

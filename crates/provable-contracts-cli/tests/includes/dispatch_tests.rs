@@ -148,12 +148,16 @@ fn dispatch_query_semantic() {
         case_sensitive: false,
         limit: 3,
         obligation: None,
+        min_score: None,
         depends_on: None,
         depended_by: None,
         unproven: false,
         score: false,
         graph: false,
         paper: false,
+        proof_status: false,
+        binding_info: false,
+        binding: None,
         format: "text".to_string(),
     });
     assert!(result.is_ok());
@@ -169,12 +173,16 @@ fn dispatch_query_literal() {
         case_sensitive: false,
         limit: 5,
         obligation: None,
+        min_score: None,
         depends_on: None,
         depended_by: None,
         unproven: false,
         score: false,
         graph: false,
         paper: false,
+        proof_status: false,
+        binding_info: false,
+        binding: None,
         format: "json".to_string(),
     });
     assert!(result.is_ok());
@@ -190,13 +198,94 @@ fn dispatch_query_with_score() {
         case_sensitive: false,
         limit: 2,
         obligation: None,
+        min_score: None,
         depends_on: None,
         depended_by: None,
         unproven: false,
         score: true,
         graph: true,
         paper: true,
+        proof_status: true,
+        binding_info: false,
+        binding: None,
         format: "text".to_string(),
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_query_with_proof_status() {
+    let result = run_command(Commands::Query {
+        query: "softmax".to_string(),
+        contract_dir: contracts_dir(),
+        regex: false,
+        literal: false,
+        case_sensitive: false,
+        limit: 2,
+        obligation: None,
+        min_score: None,
+        depends_on: None,
+        depended_by: None,
+        unproven: false,
+        score: false,
+        graph: false,
+        paper: false,
+        proof_status: true,
+        binding_info: false,
+        binding: None,
+        format: "text".to_string(),
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_query_with_binding() {
+    let binding =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts/aprender/binding.yaml");
+    let result = run_command(Commands::Query {
+        query: "softmax".to_string(),
+        contract_dir: contracts_dir(),
+        regex: false,
+        literal: false,
+        case_sensitive: false,
+        limit: 2,
+        obligation: None,
+        min_score: None,
+        depends_on: None,
+        depended_by: None,
+        unproven: false,
+        score: false,
+        graph: false,
+        paper: false,
+        proof_status: false,
+        binding_info: true,
+        binding: Some(binding),
+        format: "text".to_string(),
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_query_markdown_format() {
+    let result = run_command(Commands::Query {
+        query: "rmsnorm".to_string(),
+        contract_dir: contracts_dir(),
+        regex: false,
+        literal: false,
+        case_sensitive: false,
+        limit: 3,
+        obligation: None,
+        min_score: None,
+        depends_on: None,
+        depended_by: None,
+        unproven: false,
+        score: true,
+        graph: false,
+        paper: true,
+        proof_status: false,
+        binding_info: false,
+        binding: None,
+        format: "markdown".to_string(),
     });
     assert!(result.is_ok());
 }

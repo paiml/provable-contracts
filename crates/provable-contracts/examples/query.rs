@@ -15,11 +15,13 @@ fn main() {
 
     println!("Indexed {} contracts\n", index.entries.len());
 
-    // Semantic search
+    // Semantic search with score + proof-status enrichment
     let params = QueryParams {
         query: "softmax numerical stability".to_string(),
-        limit: 5,
+        limit: 3,
         show_score: true,
+        show_proof_status: true,
+        show_paper: true,
         ..Default::default()
     };
     let output = query::execute(&index, &params);
@@ -36,7 +38,7 @@ fn main() {
     let output = query::execute(&index, &params);
     print!("{output}");
 
-    // Filtered search
+    // Filtered search with obligation type
     println!("\n--- Invariant obligations only ---\n");
     let params = QueryParams {
         query: "kernel".to_string(),
@@ -46,4 +48,31 @@ fn main() {
     };
     let output = query::execute(&index, &params);
     print!("{output}");
+
+    // Markdown output
+    println!("\n--- Markdown format ---\n");
+    let params = QueryParams {
+        query: "rmsnorm".to_string(),
+        show_score: true,
+        show_paper: true,
+        limit: 2,
+        ..Default::default()
+    };
+    let output = query::execute(&index, &params);
+    print!("{}", output.to_markdown());
+
+    // Binding enrichment
+    let binding_path = Path::new("contracts/aprender/binding.yaml");
+    if binding_path.exists() {
+        println!("\n--- Binding enrichment ---\n");
+        let params = QueryParams {
+            query: "softmax".to_string(),
+            show_binding: true,
+            binding_path: Some(binding_path.display().to_string()),
+            limit: 2,
+            ..Default::default()
+        };
+        let output = query::execute(&index, &params);
+        print!("{output}");
+    }
 }
