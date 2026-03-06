@@ -84,4 +84,27 @@ fn main() {
         let output = query::execute(&index, &params);
         print!("{output}");
     }
+
+    // Diff enrichment — show last git modification date
+    println!("\n--- Diff enrichment ---\n");
+    let params = QueryParams {
+        query: "rmsnorm".to_string(),
+        show_diff: true,
+        limit: 3,
+        ..Default::default()
+    };
+    let output = query::execute(&index, &params);
+    print!("{output}");
+
+    // Min-level filter — only L3+ contracts
+    println!("\n--- L3+ contracts only ---\n");
+    let params = QueryParams {
+        query: "softmax".to_string(),
+        min_level: Some("L3".to_string()),
+        show_proof_status: true,
+        limit: 3,
+        ..Default::default()
+    };
+    let output = query::execute(&index, &params);
+    print!("{output}");
 }
