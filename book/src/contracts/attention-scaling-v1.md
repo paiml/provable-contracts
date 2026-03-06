@@ -21,7 +21,10 @@ Attention scaling — 1/√d_k normalization, numerical stability, and softmax s
 graph LR
     attention_scaling_v1["attention-scaling-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
     attention_scaling_v1["attention-scaling-v1"] --> qk_norm_v1["qk-norm-v1"]
+    qwen2_e2e_verification_v1["qwen2-e2e-verification-v1"] --> attention_scaling_v1["attention-scaling-v1"]
+    qwen3_e2e_verification_v1["qwen3-e2e-verification-v1"] --> attention_scaling_v1["attention-scaling-v1"]
     qwen35_e2e_verification_v1["qwen35-e2e-verification-v1"] --> attention_scaling_v1["attention-scaling-v1"]
+    qwen3moe_e2e_verification_v1["qwen3moe-e2e-verification-v1"] --> attention_scaling_v1["attention-scaling-v1"]
 ```
 
 ## Equations
@@ -147,9 +150,7 @@ $$
 
 Numerical stability and scaling quality gate
 
-**Checks:** scaled_dot_product, variance_preservation,
-softmax_saturation, score_bound_with_qknorm,
-attention_entropy, numerical_stability
+**Checks:** scaled_dot_product, variance_preservation, softmax_saturation, score_bound_with_qknorm, attention_entropy, numerical_stability
 
 **Pass criteria:** All 7 falsification tests pass
 

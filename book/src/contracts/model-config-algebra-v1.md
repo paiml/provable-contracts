@@ -17,7 +17,10 @@ Model config algebra — 5-level proof hierarchy for transformer config constrai
 graph LR
     hybrid_layer_dispatch_v1["hybrid-layer-dispatch-v1"] --> model_config_algebra_v1["model-config-algebra-v1"]
     kv_cache_sizing_v1["kv-cache-sizing-v1"] --> model_config_algebra_v1["model-config-algebra-v1"]
+    qwen2_shapes_v1["qwen2-shapes-v1"] --> model_config_algebra_v1["model-config-algebra-v1"]
+    qwen3_shapes_v1["qwen3-shapes-v1"] --> model_config_algebra_v1["model-config-algebra-v1"]
     qwen35_shapes_v1["qwen35-shapes-v1"] --> model_config_algebra_v1["model-config-algebra-v1"]
+    qwen3moe_shapes_v1["qwen3moe-shapes-v1"] --> model_config_algebra_v1["model-config-algebra-v1"]
 ```
 
 ## Equations

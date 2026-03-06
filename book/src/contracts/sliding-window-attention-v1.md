@@ -50,7 +50,7 @@ $$
 **Invariants:**
 
 - $Strictly lower-triangular within window$
-- $No future tokens: mask(i,j) = 0 for j > i$
+- $Causal masking: mask(i,j) = 0 for j > i (no future positions visible)$
 - $At most min(i+1, W) attended positions for query i$
 
 ### effective_context

@@ -27,7 +27,10 @@ graph LR
     inference_pipeline_v1["inference-pipeline-v1"] --> gated_delta_net_v1["gated-delta-net-v1"]
     inference_pipeline_v1["inference-pipeline-v1"] --> embedding_algebra_v1["embedding-algebra-v1"]
     inference_pipeline_v1["inference-pipeline-v1"] --> rmsnorm_kernel_v1["rmsnorm-kernel-v1"]
+    qwen2_e2e_verification_v1["qwen2-e2e-verification-v1"] --> inference_pipeline_v1["inference-pipeline-v1"]
+    qwen3_e2e_verification_v1["qwen3-e2e-verification-v1"] --> inference_pipeline_v1["inference-pipeline-v1"]
     qwen35_e2e_verification_v1["qwen35-e2e-verification-v1"] --> inference_pipeline_v1["inference-pipeline-v1"]
+    qwen3moe_e2e_verification_v1["qwen3moe-e2e-verification-v1"] --> inference_pipeline_v1["inference-pipeline-v1"]
 ```
 
 ## Equations

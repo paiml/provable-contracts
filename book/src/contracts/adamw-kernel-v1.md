@@ -9,6 +9,13 @@ AdamW kernel — Adam optimizer with decoupled weight decay
 - Loshchilov & Hutter (2017) Decoupled Weight Decay Regularization
 - Kingma & Ba (2014) Adam: A Method for Stochastic Optimization
 
+## Dependency Graph
+
+```mermaid
+graph LR
+    classification_finetune_v1["classification-finetune-v1"] --> adamw_kernel_v1["adamw-kernel-v1"]
+```
+
 ## Equations
 
 ### adam_moments

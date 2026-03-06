@@ -9,6 +9,13 @@ LayerNorm kernel — layer normalization with affine transform
 - Ba et al. (2016) Layer Normalization
 - Ioffe & Szegedy (2015) Batch Normalization
 
+## Dependency Graph
+
+```mermaid
+graph LR
+    encoder_forward_v1["encoder-forward-v1"] --> layernorm_kernel_v1["layernorm-kernel-v1"]
+```
+
 ## Equations
 
 ### layernorm

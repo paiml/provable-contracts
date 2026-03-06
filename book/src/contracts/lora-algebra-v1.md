@@ -12,6 +12,13 @@ SVD LoRA extraction and merge strategy algebra
 - Yu et al. (2023) DARE: Language Models are Super Mario
 - Qwen3.5 Fine-Tune Spec Phase 2
 
+## Dependency Graph
+
+```mermaid
+graph LR
+    classification_finetune_v1["classification-finetune-v1"] --> lora_algebra_v1["lora-algebra-v1"]
+```
+
 ## Equations
 
 ### dare_unbiased

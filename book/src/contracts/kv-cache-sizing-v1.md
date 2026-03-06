@@ -19,7 +19,10 @@ KV cache memory sizing and bias absence invariants
 graph LR
     kv_cache_sizing_v1["kv-cache-sizing-v1"] --> model_config_algebra_v1["model-config-algebra-v1"]
     kv_cache_equivalence_v1["kv-cache-equivalence-v1"] --> kv_cache_sizing_v1["kv-cache-sizing-v1"]
+    qwen2_e2e_verification_v1["qwen2-e2e-verification-v1"] --> kv_cache_sizing_v1["kv-cache-sizing-v1"]
+    qwen3_e2e_verification_v1["qwen3-e2e-verification-v1"] --> kv_cache_sizing_v1["kv-cache-sizing-v1"]
     qwen35_e2e_verification_v1["qwen35-e2e-verification-v1"] --> kv_cache_sizing_v1["kv-cache-sizing-v1"]
+    qwen3moe_e2e_verification_v1["qwen3moe-e2e-verification-v1"] --> kv_cache_sizing_v1["kv-cache-sizing-v1"]
 ```
 
 ## Equations

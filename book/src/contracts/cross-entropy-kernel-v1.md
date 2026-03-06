@@ -18,6 +18,8 @@ Cross-entropy kernel — log-sum-exp stable cross-entropy loss
 ```mermaid
 graph LR
     cross_entropy_kernel_v1["cross-entropy-kernel-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
+    classification_finetune_v1["classification-finetune-v1"] --> cross_entropy_kernel_v1["cross-entropy-kernel-v1"]
+    linear_probe_classifier_v1["linear-probe-classifier-v1"] --> cross_entropy_kernel_v1["cross-entropy-kernel-v1"]
 ```
 
 ## Equations

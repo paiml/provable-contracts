@@ -17,6 +17,7 @@ Scaled dot-product attention kernel
 ```mermaid
 graph LR
     attention_kernel_v1["attention-kernel-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
+    bidirectional_attention_v1["bidirectional-attention-v1"] --> attention_kernel_v1["attention-kernel-v1"]
     inference_pipeline_v1["inference-pipeline-v1"] --> attention_kernel_v1["attention-kernel-v1"]
     qwen35_hybrid_forward_v1["qwen35-hybrid-forward-v1"] --> attention_kernel_v1["attention-kernel-v1"]
     sliding_window_attention_v1["sliding-window-attention-v1"] --> attention_kernel_v1["attention-kernel-v1"]
