@@ -10,7 +10,8 @@ mod types;
 
 pub use index::ContractIndex;
 pub use types::{
-    EquationBinding, ProofStatusInfo, QueryOutput, QueryParams, QueryResult, ScoreInfo, SearchMode,
+    DiffInfo, EquationBinding, ProofStatusInfo, QueryOutput, QueryParams, QueryResult, ScoreInfo,
+    SearchMode,
 };
 
 use crate::binding::BindingRegistry;
@@ -62,6 +63,11 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
             } else {
                 Vec::new()
             };
+            let diff = if params.show_diff {
+                build_diff_info(entry)
+            } else {
+                None
+            };
 
             QueryResult {
                 rank: rank + 1,
@@ -84,6 +90,7 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
                 score,
                 proof_status,
                 bindings,
+                diff,
             }
         })
         .collect();
@@ -248,6 +255,55 @@ fn build_binding_info(
             }
         })
         .collect()
+}
+
+fn build_diff_info(entry: &types::ContractEntry) -> Option<DiffInfo> {
+    let output = std::process::Command::new("git")
+        .args(["log", "-1", "--format=%H %aI", "--"])
+        .arg(&entry.path)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let line = String::from_utf8(output.stdout).ok()?;
+    let line = line.trim();
+    let (hash, date) = line.split_once(' ')?;
+    let date_part = date.split('T').next().unwrap_or(date);
+    // Calculate days ago from ISO date
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .ok()?
+        .as_secs();
+    let days_ago = parse_iso_days_ago(date_part, now);
+    Some(DiffInfo {
+        last_modified: date_part.to_string(),
+        days_ago,
+        commit_hash: hash.to_string(),
+    })
+}
+
+fn parse_iso_days_ago(date: &str, now_epoch: u64) -> u64 {
+    // Simple ISO date parsing: YYYY-MM-DD
+    let parts: Vec<&str> = date.split('-').collect();
+    if parts.len() != 3 {
+        return 0;
+    }
+    let y: u64 = parts[0].parse().unwrap_or(0);
+    let m: usize = parts[1].parse().unwrap_or(0);
+    let d: u64 = parts[2].parse().unwrap_or(0);
+    // Approximate epoch seconds for the date
+    let days_from_epoch = y.saturating_sub(1970) * 365
+        + y.saturating_sub(1969) / 4
+        + month_days(m)
+        + d.saturating_sub(1);
+    let date_epoch = days_from_epoch * 86400;
+    now_epoch.saturating_sub(date_epoch) / 86400
+}
+
+fn month_days(m: usize) -> u64 {
+    const CUMULATIVE: [u64; 13] = [0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+    CUMULATIVE.get(m).copied().unwrap_or(0)
 }
 
 fn build_score_info(entry: &types::ContractEntry) -> Option<ScoreInfo> {

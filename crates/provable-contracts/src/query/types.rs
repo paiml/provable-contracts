@@ -52,6 +52,7 @@ pub struct QueryParams {
     pub show_binding: bool,
     pub binding_path: Option<String>,
     pub binding_gaps_only: bool,
+    pub show_diff: bool,
 }
 
 impl Default for QueryParams {
@@ -73,6 +74,7 @@ impl Default for QueryParams {
             show_binding: false,
             binding_path: None,
             binding_gaps_only: false,
+            show_diff: false,
         }
     }
 }
@@ -95,6 +97,8 @@ pub struct QueryResult {
     pub proof_status: Option<ProofStatusInfo>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub bindings: Vec<EquationBinding>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub diff: Option<DiffInfo>,
 }
 
 /// Inline score info for enrichment.
@@ -119,6 +123,14 @@ pub struct ProofStatusInfo {
     pub lean_proved: u32,
 }
 
+/// Git diff summary for a contract.
+#[derive(Debug, Clone, Serialize)]
+pub struct DiffInfo {
+    pub last_modified: String,
+    pub days_ago: u64,
+    pub commit_hash: String,
+}
+
 /// Binding status for a single equation.
 #[derive(Debug, Clone, Serialize)]
 pub struct EquationBinding {
@@ -136,24 +148,10 @@ pub struct QueryOutput {
     pub results: Vec<QueryResult>,
 }
 
-impl std::fmt::Display for QueryResult {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "[{}] {} (relevance: {:.2})", self.rank, self.stem, self.relevance)?;
-        writeln!(f)?;
-        writeln!(f, "    {}", self.description)?;
-        if !self.equations.is_empty() {
-            writeln!(f, "    Equations: {}", self.equations.join(", "))?;
-        }
-        writeln!(f, "    Obligations: {}", self.obligation_count)?;
-        if !self.references.is_empty() {
-            writeln!(f, "    Papers: {}", self.references.join("; "))?;
-        }
+impl QueryResult {
+    fn fmt_enrichment(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(s) = &self.score {
-            writeln!(
-                f,
-                "    Score: {:.2} (Grade {})",
-                s.composite, s.grade
-            )?;
+            writeln!(f, "    Score: {:.2} (Grade {})", s.composite, s.grade)?;
             writeln!(
                 f,
                 "    Spec: {:.2} | Falsify: {:.2} | Kani: {:.2} | Lean: {:.2} | Bind: {:.2}",
@@ -174,6 +172,74 @@ impl std::fmt::Display for QueryResult {
                 writeln!(f, "      {}: {} ({})", b.equation, b.status, loc)?;
             }
         }
+        if let Some(d) = &self.diff {
+            writeln!(f, "    Last modified: {} ({} days ago, {})",
+                d.last_modified, d.days_ago, &d.commit_hash[..7.min(d.commit_hash.len())])?;
+        }
+        Ok(())
+    }
+
+    fn to_markdown_item(&self) -> String {
+        let mut out = format!("### {}. {}\n\n", self.rank, self.stem);
+        out.push_str(&format!("- **Relevance:** {:.2}\n", self.relevance));
+        if !self.equations.is_empty() {
+            out.push_str(&format!("- **Equations:** {}\n", self.equations.join(", ")));
+        }
+        out.push_str(&format!("- **Obligations:** {}\n", self.obligation_count));
+        self.append_markdown_enrichment(&mut out);
+        if !self.references.is_empty() {
+            out.push_str(&format!("- **Papers:** {}\n", self.references.join("; ")));
+        }
+        if !self.depends_on.is_empty() {
+            out.push_str(&format!("- **Depends on:** {}\n", self.depends_on.join(", ")));
+        }
+        out.push('\n');
+        out
+    }
+
+    fn append_markdown_enrichment(&self, out: &mut String) {
+        if let Some(s) = &self.score {
+            out.push_str(&format!("- **Score:** {:.2} (Grade {})\n", s.composite, s.grade));
+            out.push_str(&format!(
+                "- Spec: {:.2} | Falsify: {:.2} | Kani: {:.2} | Lean: {:.2} | Bind: {:.2}\n",
+                s.spec_depth, s.falsification, s.kani, s.lean, s.binding
+            ));
+        }
+        if let Some(ps) = &self.proof_status {
+            out.push_str(&format!(
+                "- **Proof Level:** {} (ob:{} ft:{} kani:{} lean:{})\n",
+                ps.level, ps.obligations, ps.falsification_tests,
+                ps.kani_harnesses, ps.lean_proved
+            ));
+        }
+        if !self.bindings.is_empty() {
+            out.push_str("- **Bindings:**\n");
+            for b in &self.bindings {
+                let loc = b.module_path.as_deref().unwrap_or("unbound");
+                out.push_str(&format!("  - `{}`: {} (`{}`)\n", b.equation, b.status, loc));
+            }
+        }
+        if let Some(d) = &self.diff {
+            out.push_str(&format!(
+                "- **Last modified:** {} ({} days ago)\n",
+                d.last_modified, d.days_ago
+            ));
+        }
+    }
+}
+
+impl std::fmt::Display for QueryResult {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "[{}] {} (relevance: {:.2})", self.rank, self.stem, self.relevance)?;
+        writeln!(f, "    {}", self.description)?;
+        if !self.equations.is_empty() {
+            writeln!(f, "    Equations: {}", self.equations.join(", "))?;
+        }
+        writeln!(f, "    Obligations: {}", self.obligation_count)?;
+        if !self.references.is_empty() {
+            writeln!(f, "    Papers: {}", self.references.join("; "))?;
+        }
+        self.fmt_enrichment(f)?;
         if !self.depends_on.is_empty() {
             writeln!(f, "    Depends on: {}", self.depends_on.join(", "))?;
         }
@@ -186,40 +252,7 @@ impl QueryOutput {
     pub fn to_markdown(&self) -> String {
         let mut out = format!("## Query: \"{}\"\n\n", self.query);
         for r in &self.results {
-            out.push_str(&format!("### {}. {}\n\n", r.rank, r.stem));
-            out.push_str(&format!("- **Relevance:** {:.2}\n", r.relevance));
-            if !r.equations.is_empty() {
-                out.push_str(&format!("- **Equations:** {}\n", r.equations.join(", ")));
-            }
-            out.push_str(&format!("- **Obligations:** {}\n", r.obligation_count));
-            if let Some(s) = &r.score {
-                out.push_str(&format!("- **Score:** {:.2} (Grade {})\n", s.composite, s.grade));
-                out.push_str(&format!(
-                    "- Spec: {:.2} | Falsify: {:.2} | Kani: {:.2} | Lean: {:.2} | Bind: {:.2}\n",
-                    s.spec_depth, s.falsification, s.kani, s.lean, s.binding
-                ));
-            }
-            if let Some(ps) = &r.proof_status {
-                out.push_str(&format!(
-                    "- **Proof Level:** {} (ob:{} ft:{} kani:{} lean:{})\n",
-                    ps.level, ps.obligations, ps.falsification_tests,
-                    ps.kani_harnesses, ps.lean_proved
-                ));
-            }
-            if !r.bindings.is_empty() {
-                out.push_str("- **Bindings:**\n");
-                for b in &r.bindings {
-                    let loc = b.module_path.as_deref().unwrap_or("unbound");
-                    out.push_str(&format!("  - `{}`: {} (`{}`)\n", b.equation, b.status, loc));
-                }
-            }
-            if !r.references.is_empty() {
-                out.push_str(&format!("- **Papers:** {}\n", r.references.join("; ")));
-            }
-            if !r.depends_on.is_empty() {
-                out.push_str(&format!("- **Depends on:** {}\n", r.depends_on.join(", ")));
-            }
-            out.push('\n');
+            out.push_str(&r.to_markdown_item());
         }
         out.push_str(&format!("*{} matches*\n", self.total_matches));
         out
