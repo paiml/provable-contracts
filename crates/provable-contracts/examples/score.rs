@@ -77,5 +77,23 @@ fn main() {
         let codebase = provable_contracts::scoring::score_codebase(&refs, &binding);
         println!("\n=== Codebase Score (aprender) ===\n");
         print!("{codebase}");
+
+        // Pagerank-weighted gap analysis
+        println!("\n=== Pagerank-Weighted Gap Analysis ===\n");
+        let index = provable_contracts::query::ContractIndex::from_directory(contracts_dir)
+            .expect("contracts/ directory must exist");
+        let pagerank: std::collections::HashMap<String, f64> = index
+            .entries
+            .iter()
+            .filter_map(|e| index.cached_pagerank(&e.stem).map(|s| (e.stem.clone(), s)))
+            .collect();
+        let codebase_pr =
+            provable_contracts::scoring::score_codebase_with_pagerank(&refs, &binding, Some(&pagerank));
+        for gap in &codebase_pr.top_gaps {
+            println!(
+                "  {}: {} (impact: {:.2}) — {}",
+                gap.contract, gap.dimension, gap.impact, gap.action
+            );
+        }
     }
 }

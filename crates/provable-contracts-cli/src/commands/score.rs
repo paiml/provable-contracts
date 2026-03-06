@@ -4,6 +4,7 @@ use std::path::Path;
 
 use provable_contracts::binding::BindingRegistry;
 use provable_contracts::schema::parse_contract;
+use provable_contracts::query::ContractIndex;
 use provable_contracts::scoring;
 use provable_contracts::scoring::{ContractScore, ScoringWeights};
 
@@ -124,7 +125,16 @@ fn run_directory(
             parsed.push((stem, contract));
         }
         let refs: Vec<_> = parsed.iter().map(|(s, c)| (s.clone(), c)).collect();
-        let codebase = scoring::score_codebase(&refs, binding);
+
+        // Build pagerank from contract index for impact-weighted gap analysis
+        let pagerank = ContractIndex::from_directory(dir).ok().map(|idx| {
+            idx.entries
+                .iter()
+                .filter_map(|e| idx.cached_pagerank(&e.stem).map(|s| (e.stem.clone(), s)))
+                .collect::<std::collections::HashMap<String, f64>>()
+        });
+        let codebase =
+            scoring::score_codebase_with_pagerank(&refs, binding, pagerank.as_ref());
 
         match format {
             "json" => {

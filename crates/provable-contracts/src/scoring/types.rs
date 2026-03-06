@@ -72,6 +72,9 @@ pub struct CodebaseScore {
 }
 
 /// A gap identified by the scoring system.
+///
+/// Impact is computed per spec Section 4:
+/// `impact = (1.0 - obligation_coverage) * dependency_fanout * tier_weight`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScoringGap {
     pub contract: String,
@@ -79,6 +82,7 @@ pub struct ScoringGap {
     pub current: f64,
     pub target: f64,
     pub impact: f64,
+    pub action: String,
 }
 
 /// Letter grade A-F.
@@ -140,8 +144,8 @@ impl fmt::Display for CodebaseScore {
             for gap in &self.top_gaps {
                 writeln!(
                     f,
-                    "    {}: {} ({:.2} -> {:.2}, impact: {:.0})",
-                    gap.contract, gap.dimension, gap.current, gap.target, gap.impact
+                    "    {}: {} ({:.2} -> {:.2}, impact: {:.2}) — {}",
+                    gap.contract, gap.dimension, gap.current, gap.target, gap.impact, gap.action
                 )?;
             }
         }

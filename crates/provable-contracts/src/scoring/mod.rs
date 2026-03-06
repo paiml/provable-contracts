@@ -9,7 +9,7 @@
 mod codebase;
 mod types;
 
-pub use codebase::score_codebase;
+pub use codebase::{score_codebase, score_codebase_with_pagerank};
 pub use types::{
     CodebaseScore, ContractScore, Grade, ScoringGap, ScoringWeights,
 };
