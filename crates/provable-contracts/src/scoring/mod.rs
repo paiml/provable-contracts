@@ -346,4 +346,25 @@ equations:
         assert!(score.falsification_coverage > 0.0);
         assert!(score.kani_coverage > 0.0);
     }
+
+    #[test]
+    fn grade_display_all_variants() {
+        assert_eq!(format!("{}", Grade::A), "A");
+        assert_eq!(format!("{}", Grade::B), "B");
+        assert_eq!(format!("{}", Grade::C), "C");
+        assert_eq!(format!("{}", Grade::D), "D");
+        assert_eq!(format!("{}", Grade::F), "F");
+    }
+
+    #[test]
+    fn contract_score_display() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../contracts/softmax-kernel-v1.yaml");
+        let contract = crate::schema::parse_contract(&path).unwrap();
+        let score = score_contract(&contract, None, "softmax-kernel-v1");
+        let text = format!("{score}");
+        assert!(text.contains("softmax-kernel-v1"), "Display should include stem");
+        assert!(text.contains("Grade"), "Display should include Grade");
+        assert!(text.contains("Spec:"), "Display should include dimension breakdown");
+    }
 }
