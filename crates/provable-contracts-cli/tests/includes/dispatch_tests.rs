@@ -163,6 +163,7 @@ fn dispatch_query_semantic() {
         binding_gaps: false,
         binding: None,
         format: "text".to_string(),
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -189,6 +190,7 @@ fn dispatch_query_literal() {
         binding_gaps: false,
         binding: None,
         format: "json".to_string(),
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -215,6 +217,7 @@ fn dispatch_query_with_score() {
         binding_gaps: false,
         binding: None,
         format: "text".to_string(),
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -256,6 +259,7 @@ fn dispatch_query_with_proof_status() {
         binding_gaps: false,
         binding: None,
         format: "text".to_string(),
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -284,6 +288,7 @@ fn dispatch_query_with_binding() {
         binding_gaps: false,
         binding: Some(binding),
         format: "text".to_string(),
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -310,6 +315,7 @@ fn dispatch_query_markdown_format() {
         binding_gaps: false,
         binding: None,
         format: "markdown".to_string(),
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -324,4 +330,58 @@ fn dispatch_proof_status_with_binding() {
         format: "json".to_string(),
     });
     assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_query_exit_code_success() {
+    let result = run_command(Commands::Query {
+        query: "softmax".to_string(),
+        contract_dir: contracts_dir(),
+        regex: false,
+        literal: false,
+        case_sensitive: false,
+        limit: 3,
+        obligation: None,
+        min_score: None,
+        depends_on: None,
+        depended_by: None,
+        unproven: false,
+        score: false,
+        graph: false,
+        paper: false,
+        proof_status: false,
+        binding_info: false,
+        binding_gaps: false,
+        binding: None,
+        format: "text".to_string(),
+        exit_code: true,
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_query_exit_code_no_match() {
+    let result = run_command(Commands::Query {
+        query: "zzz_nonexistent_query_zzz".to_string(),
+        contract_dir: contracts_dir(),
+        regex: false,
+        literal: true,
+        case_sensitive: false,
+        limit: 3,
+        obligation: None,
+        min_score: None,
+        depends_on: None,
+        depended_by: None,
+        unproven: false,
+        score: false,
+        graph: false,
+        paper: false,
+        proof_status: false,
+        binding_info: false,
+        binding_gaps: false,
+        binding: None,
+        format: "text".to_string(),
+        exit_code: true,
+    });
+    assert!(result.is_err());
 }

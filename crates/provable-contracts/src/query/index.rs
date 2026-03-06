@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::path::Path;
 
 use crate::schema::{parse_contract, Contract};
+use crate::scoring;
 
 use super::types::ContractEntry;
 
@@ -14,6 +15,8 @@ pub struct ContractIndex {
     name_index: HashMap<String, usize>,
     equation_index: HashMap<String, Vec<usize>>,
     obligation_index: HashMap<String, Vec<usize>>,
+    /// Pre-computed composite scores for O(1) `--min-score` filtering.
+    score_cache: HashMap<String, f64>,
     /// Average document length for BM25.
     avg_dl: f64,
     /// Document frequency per term.
@@ -27,6 +30,7 @@ impl ContractIndex {
         yaml_paths.sort();
 
         let mut entries = Vec::new();
+        let mut score_cache = HashMap::new();
         for path in &yaml_paths {
             let Ok(contract) = parse_contract(path) else {
                 continue;
@@ -37,10 +41,14 @@ impl ContractIndex {
                 .unwrap_or("unknown")
                 .to_string();
             let path_str = path.display().to_string();
+            let score = scoring::score_contract(&contract, None, &stem);
+            score_cache.insert(stem.clone(), score.composite);
             entries.push(build_entry(stem, path_str, &contract));
         }
 
-        Ok(Self::from_entries(entries))
+        let mut index = Self::from_entries(entries);
+        index.score_cache = score_cache;
+        Ok(index)
     }
 
     /// Build an index from pre-parsed entries.
@@ -82,6 +90,7 @@ impl ContractIndex {
             name_index,
             equation_index,
             obligation_index,
+            score_cache: HashMap::new(),
             avg_dl,
             df,
         }
@@ -90,6 +99,11 @@ impl ContractIndex {
     /// Look up a contract by exact stem.
     pub fn get_by_stem(&self, stem: &str) -> Option<&ContractEntry> {
         self.name_index.get(stem).map(|&i| &self.entries[i])
+    }
+
+    /// Get the pre-computed composite score for a contract stem.
+    pub fn cached_score(&self, stem: &str) -> Option<f64> {
+        self.score_cache.get(stem).copied()
     }
 
     /// Look up contracts by obligation type.

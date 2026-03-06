@@ -26,6 +26,7 @@ pub struct QueryCliParams<'a> {
     pub binding_gaps: bool,
     pub binding: Option<&'a Path>,
     pub format: &'a str,
+    pub exit_code: bool,
 }
 
 pub fn run(p: &QueryCliParams<'_>) -> Result<(), Box<dyn std::error::Error>> {
@@ -64,6 +65,10 @@ pub fn run(p: &QueryCliParams<'_>) -> Result<(), Box<dyn std::error::Error>> {
         "json" => println!("{}", serde_json::to_string_pretty(&output)?),
         "markdown" => print!("{}", output.to_markdown()),
         _ => print!("{output}"),
+    }
+
+    if p.exit_code && output.results.is_empty() {
+        return Err("No matching contracts found".into());
     }
 
     Ok(())

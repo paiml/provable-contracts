@@ -202,6 +202,9 @@ enum Commands {
         /// Output format: text, json, or markdown
         #[arg(short, long, default_value = "text")]
         format: String,
+        /// Exit with status 1 if no results match (for CI quality gates)
+        #[arg(long)]
+        exit_code: bool,
     },
     /// Generate mdBook pages for contracts
     Book {
@@ -293,11 +296,12 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             binding_gaps,
             binding,
             format,
+            exit_code,
         } => dispatch_query(
             &contract_dir, &query, regex, literal, case_sensitive, limit,
             &obligation, min_score, &depends_on, &depended_by, unproven,
             score, graph, paper, proof_status, binding_info, binding_gaps,
-            &binding, &format,
+            &binding, &format, exit_code,
         ),
         Commands::Book {
             contract_dir,
@@ -334,6 +338,7 @@ fn dispatch_query(
     binding_gaps: bool,
     binding: &Option<PathBuf>,
     format: &str,
+    exit_code: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     commands::query::run(&commands::query::QueryCliParams {
         contract_dir,
@@ -355,6 +360,7 @@ fn dispatch_query(
         binding_gaps,
         binding: binding.as_deref(),
         format,
+        exit_code,
     })
 }
 

@@ -109,7 +109,7 @@ fn apply_filters(
                 && filter_depends_on(entry, params.depends_on.as_ref())
                 && filter_depended_by(index, entry, params.depended_by.as_ref())
                 && filter_unproven(entry, params.unproven_only)
-                && filter_min_score(entry, params.min_score)
+                && filter_min_score(index, entry, params.min_score)
                 && filter_binding_gaps(entry, params.binding_gaps_only, binding)
         })
         .collect()
@@ -151,10 +151,18 @@ fn filter_depended_by(
     }
 }
 
-fn filter_min_score(entry: &types::ContractEntry, min_score: Option<f64>) -> bool {
+fn filter_min_score(
+    index: &ContractIndex,
+    entry: &types::ContractEntry,
+    min_score: Option<f64>,
+) -> bool {
     let Some(threshold) = min_score else {
         return true;
     };
+    // Use score cache (O(1)) when available, fall back to re-computing
+    if let Some(cached) = index.cached_score(&entry.stem) {
+        return cached >= threshold;
+    }
     build_score_info(entry).is_some_and(|s| s.composite >= threshold)
 }
 
