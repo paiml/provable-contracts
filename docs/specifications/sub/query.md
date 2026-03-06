@@ -156,17 +156,17 @@ pv query --literal "Zhang & Sennrich" --case-sensitive
 
 Filters are applied after search, before ranking.
 
-| Filter | Type | Example |
-|---|---|---|
-| `--obligation <type>` | Enum | `--obligation invariant` |
-| `--min-score <f64>` | Threshold | `--min-score 0.8` |
-| `--min-level <L1-L5>` | Threshold | `--min-level L4` |
-| `--depends-on <stem>` | DAG traversal | `--depends-on softmax-kernel-v1` |
-| `--depended-by <stem>` | Reverse DAG | `--depended-by attention-kernel-v1` |
-| `--unproven` | Boolean | Shows obligations at L2 or below |
-| `--binding-gaps` | Boolean | Shows not_implemented bindings |
-| `--tier <n>` | Enum | `--tier 1` |
-| `--class <A-E>` | Enum | `--class A` |
+| Filter | Type | Example | Status |
+|---|---|---|---|
+| `--obligation <type>` | Enum | `--obligation invariant` | [IMPLEMENTED] |
+| `--min-score <f64>` | Threshold | `--min-score 0.8` | [IMPLEMENTED] |
+| `--min-level <L1-L5>` | Threshold | `--min-level L4` | [IMPLEMENTED] |
+| `--depends-on <stem>` | DAG traversal | `--depends-on softmax-kernel-v1` | [IMPLEMENTED] |
+| `--depended-by <stem>` | Reverse DAG | `--depended-by attention-kernel-v1` | [IMPLEMENTED] |
+| `--unproven` | Boolean | Shows obligations at L2 or below | [IMPLEMENTED] |
+| `--binding-gaps` | Boolean | Shows not_implemented bindings | [IMPLEMENTED] |
+| `--tier <n>` | Enum | `--tier 1` | — |
+| `--class <A-E>` | Enum | `--class A` | — |
 
 ---
 
@@ -174,7 +174,7 @@ Filters are applied after search, before ranking.
 
 Enrichment flags add metadata to search results without changing ranking.
 
-### --score
+### --score [IMPLEMENTED]
 
 Show contract score inline with results.
 
@@ -184,7 +184,7 @@ Show contract score inline with results.
     Spec: 0.92 | Falsify: 0.88 | Kani: 0.75 | Lean: 0.00 | Bind: 1.00
 ```
 
-### --proof-status
+### --proof-status [IMPLEMENTED]
 
 Show L1-L5 breakdown per result.
 
@@ -194,7 +194,7 @@ Show L1-L5 breakdown per result.
     L1: 7/7 | L2: 5/7 | L3: 5/7 | L4: 3/7 | L5: 0/7
 ```
 
-### --binding
+### --binding-info [IMPLEMENTED]
 
 Show binding status per equation.
 
@@ -205,7 +205,7 @@ Show binding status per equation.
       log_softmax: implemented (aprender::nn::functional::log_softmax)
 ```
 
-### --graph
+### --graph [IMPLEMENTED]
 
 Show dependency context.
 
@@ -215,7 +215,7 @@ Show dependency context.
     Depended by: flash-attention-v1
 ```
 
-### --paper
+### --paper [IMPLEMENTED]
 
 Show paper references.
 
@@ -226,7 +226,7 @@ Show paper references.
       - Goodfellow et al. (2016). Deep Learning Ch. 6.2.2
 ```
 
-### --diff
+### --diff [IMPLEMENTED]
 
 Show recent contract changes (requires git).
 
@@ -363,18 +363,19 @@ opt-in flag.
 
 ## 8. Implementation Plan
 
-### Phase 1: Core Index + Semantic Search
+### Phase 1: Core Index + Semantic Search [DONE]
 
 - Parse all YAML contracts into ContractIndex
 - BM25 ranking over corpus
 - Name/equation O(1) lookup
 - Basic text output
 
-### Phase 2: Filters + Enrichment
+### Phase 2: Filters + Enrichment [DONE]
 
-- Obligation type, score, level filters
-- Score and proof-status enrichment
-- JSON output format
+- Obligation type, score, level, min-score, min-level filters
+- Score, proof-status, binding, graph, paper, diff enrichment
+- JSON + markdown output formats
+- Score cache for O(1) --min-score filtering
 
 ### Phase 3: Cross-Project Search
 
@@ -385,9 +386,9 @@ opt-in flag.
 - `--call-sites`, `--violations`, `--coverage-map` enrichment
 - CrossProjectIndex with persistence + auto-rebuild
 
-### Phase 4: Graph-Aware Queries
+### Phase 4: Graph-Aware Queries [PARTIAL]
 
-- DAG traversal (--depends-on, --depended-by)
+- DAG traversal (--depends-on, --depended-by) [IMPLEMENTED]
 - Dependency PageRank
 - Impact-weighted gap analysis
 
