@@ -84,9 +84,9 @@ fn apply_filters(
         .into_iter()
         .filter(|(idx, _)| {
             let entry = &index.entries[*idx];
-            filter_obligation(entry, &params.obligation_filter)
-                && filter_depends_on(entry, &params.depends_on)
-                && filter_depended_by(index, entry, &params.depended_by)
+            filter_obligation(entry, params.obligation_filter.as_ref())
+                && filter_depends_on(entry, params.depends_on.as_ref())
+                && filter_depended_by(index, entry, params.depended_by.as_ref())
                 && filter_unproven(entry, params.unproven_only)
         })
         .collect()
@@ -94,7 +94,7 @@ fn apply_filters(
 
 fn filter_obligation(
     entry: &types::ContractEntry,
-    obligation: &Option<String>,
+    obligation: Option<&String>,
 ) -> bool {
     match obligation {
         Some(ot) => entry.obligation_types.iter().any(|t| t == ot),
@@ -104,7 +104,7 @@ fn filter_obligation(
 
 fn filter_depends_on(
     entry: &types::ContractEntry,
-    depends_on: &Option<String>,
+    depends_on: Option<&String>,
 ) -> bool {
     match depends_on {
         Some(dep) => entry.depends_on.iter().any(|d| d == dep),
@@ -115,14 +115,14 @@ fn filter_depends_on(
 fn filter_depended_by(
     index: &ContractIndex,
     entry: &types::ContractEntry,
-    depended_by: &Option<String>,
+    depended_by: Option<&String>,
 ) -> bool {
     match depended_by {
         Some(target) => {
             // entry must be depended-on by `target`
             index
                 .get_by_stem(target)
-                .map_or(false, |t| t.depends_on.contains(&entry.stem))
+                .is_some_and(|t| t.depends_on.contains(&entry.stem))
         }
         None => true,
     }

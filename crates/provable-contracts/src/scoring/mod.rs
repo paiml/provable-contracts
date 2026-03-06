@@ -102,6 +102,7 @@ fn compute_spec_depth(contract: &Contract) -> f64 {
     score
 }
 
+#[allow(clippy::cast_precision_loss)]
 fn compute_falsification_coverage(contract: &Contract) -> f64 {
     let total = contract.proof_obligations.len();
     if total == 0 {
@@ -115,6 +116,7 @@ fn compute_falsification_coverage(contract: &Contract) -> f64 {
     covered as f64 / total as f64
 }
 
+#[allow(clippy::cast_precision_loss)]
 fn compute_kani_coverage(contract: &Contract) -> f64 {
     let total = contract.proof_obligations.len();
     if total == 0 {
@@ -139,6 +141,7 @@ fn compute_kani_coverage(contract: &Contract) -> f64 {
     (weighted_sum / total as f64).min(1.0)
 }
 
+#[allow(clippy::cast_precision_loss)]
 fn compute_lean_coverage(contract: &Contract) -> f64 {
     let applicable: Vec<_> = contract
         .proof_obligations
@@ -146,7 +149,7 @@ fn compute_lean_coverage(contract: &Contract) -> f64 {
         .filter(|ob| {
             ob.lean
                 .as_ref()
-                .map_or(false, |l| l.status != LeanStatus::NotApplicable)
+                .is_some_and(|l| l.status != LeanStatus::NotApplicable)
         })
         .collect();
 
@@ -159,21 +162,21 @@ fn compute_lean_coverage(contract: &Contract) -> f64 {
         .filter(|ob| {
             ob.lean
                 .as_ref()
-                .map_or(false, |l| l.status == LeanStatus::Proved)
+                .is_some_and(|l| l.status == LeanStatus::Proved)
         })
         .count();
 
     proved as f64 / applicable.len() as f64
 }
 
+#[allow(clippy::cast_precision_loss)]
 fn compute_binding_coverage(
     _contract: &Contract,
     binding: Option<&BindingRegistry>,
     stem: &str,
 ) -> f64 {
-    let binding = match binding {
-        Some(b) => b,
-        None => return 0.0,
+    let Some(binding) = binding else {
+        return 0.0;
     };
 
     let relevant: Vec<_> = binding

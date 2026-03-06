@@ -22,7 +22,7 @@ pub fn validate_contract(contract: &Contract) -> Vec<Violation> {
 }
 
 /// Enforce the provability invariant: kernel contracts (non-registry) MUST have
-/// proof_obligations, falsification_tests, and kani_harnesses.
+/// `proof_obligations`, `falsification_tests`, and `kani_harnesses`.
 fn validate_provability_invariant(contract: &Contract, violations: &mut Vec<Violation>) {
     for v in contract.provability_violations() {
         violations.push(Violation {

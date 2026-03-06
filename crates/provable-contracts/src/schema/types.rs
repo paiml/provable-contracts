@@ -35,7 +35,7 @@ impl Contract {
     }
 
     /// Enforce the provability invariant: kernel contracts MUST have
-    /// proof_obligations, falsification_tests, and kani_harnesses.
+    /// `proof_obligations`, `falsification_tests`, and `kani_harnesses`.
     /// Returns a list of violations. Empty list = contract is valid.
     pub fn provability_violations(&self) -> Vec<String> {
         if self.is_registry() {
@@ -79,7 +79,7 @@ pub struct Metadata {
     pub depends_on: Vec<String>,
     /// Data registry contracts (lookup tables, enum definitions, config bounds)
     /// are exempt from the provability invariant. All other contracts MUST have
-    /// proof_obligations, falsification_tests, and kani_harnesses.
+    /// `proof_obligations`, `falsification_tests`, and `kani_harnesses`.
     #[serde(default)]
     pub registry: bool,
 }

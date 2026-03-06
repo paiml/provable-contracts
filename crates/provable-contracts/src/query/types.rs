@@ -34,6 +34,7 @@ pub struct ContractEntry {
 
 /// Parameters controlling a query.
 #[derive(Debug, Clone)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct QueryParams {
     pub query: String,
     pub mode: SearchMode,

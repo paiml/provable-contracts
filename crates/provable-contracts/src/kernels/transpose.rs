@@ -31,10 +31,11 @@ use std::arch::x86_64::*;
 ///
 /// Panics if `a.len() != rows * cols` or `b.len() != rows * cols`.
 pub fn transpose_scalar(rows: usize, cols: usize, a: &[f32], b: &mut [f32]) {
+    const BLOCK: usize = 8;
+
     assert_eq!(a.len(), rows * cols, "a length mismatch");
     assert_eq!(b.len(), rows * cols, "b length mismatch");
 
-    const BLOCK: usize = 8;
     let rb_end = rows / BLOCK * BLOCK;
     let cb_end = cols / BLOCK * BLOCK;
 

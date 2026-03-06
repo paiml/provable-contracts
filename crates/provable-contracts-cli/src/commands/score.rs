@@ -40,16 +40,17 @@ fn run_single(
         .unwrap_or("unknown");
     let score = scoring::score_contract(&contract, binding, stem);
 
-    match format {
-        "json" => println!("{}", serde_json::to_string_pretty(&score)?),
-        _ => print!("{score}"),
+    if format == "json" {
+        println!("{}", serde_json::to_string_pretty(&score)?);
+    } else {
+        print!("{score}");
     }
 
     if let Some(threshold) = min_score {
         if score.composite < threshold {
             return Err(format!(
-                "Score {:.2} below threshold {:.2}",
-                score.composite, threshold
+                "Score {:.2} below threshold {threshold:.2}",
+                score.composite,
             )
             .into());
         }
@@ -58,6 +59,7 @@ fn run_single(
     Ok(())
 }
 
+#[allow(clippy::cast_precision_loss)]
 fn run_directory(
     dir: &Path,
     binding: Option<&BindingRegistry>,
@@ -65,7 +67,7 @@ fn run_directory(
     min_score: Option<f64>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut entries: Vec<_> = std::fs::read_dir(dir)?
-        .filter_map(|e| e.ok())
+        .filter_map(Result::ok)
         .filter(|e| {
             e.path()
                 .extension()
@@ -73,14 +75,13 @@ fn run_directory(
                 == Some("yaml")
         })
         .collect();
-    entries.sort_by_key(|e| e.path());
+    entries.sort_by_key(std::fs::DirEntry::path);
 
     let mut scores = Vec::new();
     for entry in &entries {
         let path = entry.path();
-        let contract = match parse_contract(&path) {
-            Ok(c) => c,
-            Err(_) => continue,
+        let Ok(contract) = parse_contract(&path) else {
+            continue;
         };
         let stem = path
             .file_stem()
@@ -95,34 +96,29 @@ fn run_directory(
         scores.iter().map(|s| s.composite).sum::<f64>() / scores.len() as f64
     };
 
-    match format {
-        "json" => {
-            let output = serde_json::json!({
-                "contracts": scores.len(),
-                "mean_score": mean,
-                "mean_grade": scoring::Grade::from_score(mean).to_string(),
-                "scores": scores,
-            });
-            println!("{}", serde_json::to_string_pretty(&output)?);
+    if format == "json" {
+        let output = serde_json::json!({
+            "contracts": scores.len(),
+            "mean_score": mean,
+            "mean_grade": scoring::Grade::from_score(mean).to_string(),
+            "scores": scores,
+        });
+        println!("{}", serde_json::to_string_pretty(&output)?);
+    } else {
+        for s in &scores {
+            print!("{s}");
         }
-        _ => {
-            for s in &scores {
-                print!("{s}");
-            }
-            println!(
-                "\n{} contracts — Mean: {:.2} (Grade {})",
-                scores.len(),
-                mean,
-                scoring::Grade::from_score(mean)
-            );
-        }
+        println!(
+            "\n{} contracts — Mean: {mean:.2} (Grade {})",
+            scores.len(),
+            scoring::Grade::from_score(mean)
+        );
     }
 
     if let Some(threshold) = min_score {
         if mean < threshold {
             return Err(format!(
-                "Mean score {:.2} below threshold {:.2}",
-                mean, threshold
+                "Mean score {mean:.2} below threshold {threshold:.2}",
             )
             .into());
         }

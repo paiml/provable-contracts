@@ -28,9 +28,8 @@ impl ContractIndex {
 
         let mut entries = Vec::new();
         for path in &yaml_paths {
-            let contract = match parse_contract(path) {
-                Ok(c) => c,
-                Err(_) => continue,
+            let Ok(contract) = parse_contract(path) else {
+                continue;
             };
             let stem = path
                 .file_stem()
@@ -45,6 +44,7 @@ impl ContractIndex {
     }
 
     /// Build an index from pre-parsed entries.
+    #[allow(clippy::cast_precision_loss)]
     pub fn from_entries(entries: Vec<ContractEntry>) -> Self {
         let mut name_index = HashMap::new();
         let mut equation_index: HashMap<String, Vec<usize>> = HashMap::new();
@@ -109,6 +109,7 @@ impl ContractIndex {
     }
 
     /// BM25 search across all entries. Returns (index, score) pairs sorted descending.
+    #[allow(clippy::cast_precision_loss)]
     pub fn bm25_search(&self, query: &str) -> Vec<(usize, f64)> {
         let query_terms = tokenize(query);
         if query_terms.is_empty() {
@@ -239,7 +240,7 @@ fn build_entry(stem: String, path: String, contract: &Contract) -> ContractEntry
 /// Tokenize text into lowercase alphanumeric terms (>= 2 chars).
 fn tokenize(text: &str) -> Vec<String> {
     text.split(|c: char| !c.is_alphanumeric() && c != '_')
-        .map(|s| s.to_lowercase())
+        .map(str::to_lowercase)
         .filter(|s| s.len() >= 2)
         .collect()
 }
