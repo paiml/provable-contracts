@@ -17,6 +17,8 @@ pub struct ContractIndex {
     obligation_index: HashMap<String, Vec<usize>>,
     /// Pre-computed composite scores for O(1) `--min-score` filtering.
     score_cache: HashMap<String, f64>,
+    /// Pre-computed pagerank scores for importance-weighted ranking.
+    pagerank_cache: HashMap<String, f64>,
     /// Average document length for BM25.
     avg_dl: f64,
     /// Document frequency per term.
@@ -48,6 +50,7 @@ impl ContractIndex {
 
         let mut index = Self::from_entries(entries);
         index.score_cache = score_cache;
+        index.pagerank_cache = index.pagerank(20, 0.85);
         Ok(index)
     }
 
@@ -91,6 +94,7 @@ impl ContractIndex {
             equation_index,
             obligation_index,
             score_cache: HashMap::new(),
+            pagerank_cache: HashMap::new(),
             avg_dl,
             df,
         }
@@ -104,6 +108,11 @@ impl ContractIndex {
     /// Get the pre-computed composite score for a contract stem.
     pub fn cached_score(&self, stem: &str) -> Option<f64> {
         self.score_cache.get(stem).copied()
+    }
+
+    /// Get the pre-computed pagerank score for a contract stem.
+    pub fn cached_pagerank(&self, stem: &str) -> Option<f64> {
+        self.pagerank_cache.get(stem).copied()
     }
 
     /// Look up contracts by obligation type.
@@ -197,6 +206,48 @@ impl ContractIndex {
             .iter()
             .filter(|e| e.depends_on.iter().any(|d| d == stem))
             .map(|e| e.stem.as_str())
+            .collect()
+    }
+
+    /// Compute pagerank scores over the contract dependency graph.
+    ///
+    /// Returns a map from stem to pagerank score. Higher scores indicate
+    /// more "important" contracts (more depended-upon by others).
+    #[allow(clippy::cast_precision_loss)]
+    pub fn pagerank(&self, iterations: usize, damping: f64) -> HashMap<String, f64> {
+        let n = self.entries.len();
+        if n == 0 {
+            return HashMap::new();
+        }
+        let n_f = n as f64;
+        let mut scores: Vec<f64> = vec![1.0 / n_f; n];
+
+        for _ in 0..iterations {
+            let mut new_scores = vec![(1.0 - damping) / n_f; n];
+            for (i, entry) in self.entries.iter().enumerate() {
+                let out_degree = entry.depends_on.len();
+                if out_degree == 0 {
+                    // Distribute rank equally to all (dangling node)
+                    let share = damping * scores[i] / n_f;
+                    for s in &mut new_scores {
+                        *s += share;
+                    }
+                } else {
+                    let share = damping * scores[i] / out_degree as f64;
+                    for dep in &entry.depends_on {
+                        if let Some(&j) = self.name_index.get(dep) {
+                            new_scores[j] += share;
+                        }
+                    }
+                }
+            }
+            scores = new_scores;
+        }
+
+        self.entries
+            .iter()
+            .enumerate()
+            .map(|(i, e)| (e.stem.clone(), scores[i]))
             .collect()
     }
 }
@@ -352,5 +403,31 @@ mod tests {
             !deps.is_empty() || true,
             "May or may not have dependents depending on contracts"
         );
+    }
+
+    #[test]
+    fn pagerank_produces_valid_scores() {
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
+        let index = ContractIndex::from_directory(&dir).unwrap();
+        let scores = index.pagerank(20, 0.85);
+        assert_eq!(scores.len(), index.entries.len());
+        // All scores should be positive
+        for s in scores.values() {
+            assert!(*s > 0.0, "PageRank should be positive");
+        }
+        // Softmax should rank relatively high (many things depend on it)
+        let softmax = scores.get("softmax-kernel-v1").unwrap();
+        let mean = scores.values().sum::<f64>() / scores.len() as f64;
+        assert!(
+            *softmax >= mean,
+            "softmax ({softmax:.4}) should be >= mean ({mean:.4})"
+        );
+    }
+
+    #[test]
+    fn pagerank_empty_index() {
+        let index = ContractIndex::from_entries(Vec::new());
+        let scores = index.pagerank(20, 0.85);
+        assert!(scores.is_empty());
     }
 }

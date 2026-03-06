@@ -107,4 +107,14 @@ fn main() {
     };
     let output = query::execute(&index, &params);
     print!("{output}");
+
+    // PageRank — contract importance scores
+    println!("\n--- PageRank (top 5 most depended-upon) ---\n");
+    let mut pr: Vec<_> = index.entries.iter()
+        .filter_map(|e| index.cached_pagerank(&e.stem).map(|s| (&e.stem, s)))
+        .collect();
+    pr.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+    for (stem, score) in pr.iter().take(5) {
+        println!("  {stem}: {score:.4}");
+    }
 }
