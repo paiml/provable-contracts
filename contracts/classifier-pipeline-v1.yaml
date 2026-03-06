@@ -147,5 +147,18 @@ validated_results:
       test_f1: 0.625
       train_mcc: 0.808
       ship_gate: "PASS"
-  extraction_rate: "1.5 entries/s (CPU release build)"
+    - name: "2047-entry BPE (class-weighted)"
+      test_mcc: 0.321
+      test_accuracy: 0.837
+      test_precision: 0.328
+      test_recall: 0.512
+      test_f1: 0.400
+      train_mcc: 0.546
+      ship_gate: "PASS"
+      notes: "Class-weighted online SGD (sqrt-inverse balanced), L2=1e-4, 100 epochs, lr=0.001"
+  extraction_rate: "1.65 entries/s (CPU release build)"
   model_load_time: "~23s (476MB safetensors)"
+  known_limitations:
+    - "MCC degrades at n>2500: corpus entries 3000+ have zero unsafe labels (data labeling gap)"
+    - "Linear probe limited by linear separability of CodeBERT [CLS] embeddings"
+    - "Full-batch GD fails on imbalanced data (aprender#428); online SGD required"
