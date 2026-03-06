@@ -124,12 +124,13 @@ qa_gate:
   name: "C-CLF-PIPELINE-001"
   description: "Classifier pipeline quality gate"
   checks:
-    - "13 unit tests pass (sigmoid, split, train, save/load, tokenize)"
+    - "14 unit tests pass (sigmoid, split, train, save/load, tokenize, mlp_forward)"
     - "Linear probe achieves > 70% accuracy on synthetic data"
+    - "MLP probe (Level 0.5) achieves MCC > 0.6 at all tested scales (3k-12k)"
     - "Embedding extraction produces 768-dimensional vectors"
     - "Train/test split is deterministic with same seed"
-    - "All serialization roundtrips preserve data exactly"
-    - "43 CLI integration tests pass (assert_cmd)"
+    - "All serialization roundtrips preserve data exactly (LinearProbe + MlpProbeWeights)"
+    - "45 CLI integration tests pass (assert_cmd)"
 
 validated_results:
   date: "2026-03-06"
@@ -169,6 +170,20 @@ validated_results:
       test_f1: 0.775
       ship_gate: "PASS"
       notes: "MLP probe (Level 0.5), lr=1e-4, 50 epochs, L2=1e-4, shell-based labels (#172), adversarial augmentation"
+    - name: "10k-entry shell + 350 adv (MLP h=32)"
+      test_mcc: 0.693
+      test_accuracy: 0.966
+      test_precision: 0.554
+      test_recall: 0.906
+      ship_gate: "PASS"
+      notes: "MLP probe, lr=1e-4, 50 epochs, scale validation"
+    - name: "12k-entry shell + 350 adv (MLP h=32)"
+      test_mcc: 0.654
+      test_accuracy: 0.967
+      test_precision: 0.490
+      test_recall: 0.909
+      ship_gate: "PASS"
+      notes: "MLP probe, lr=1e-4, 50 epochs, scale validation"
     - name: "3000-entry shell (linear, no aug)"
       test_mcc: 0.043
       ship_gate: "FAIL"
@@ -183,9 +198,10 @@ validated_results:
     keyword_regex: 0.103
     linter: 1.000  # tautological — labels derived from linter
   known_limitations:
-    - "MCC degrades at n>2500: corpus entries 3000+ have zero unsafe labels (data labeling gap, #171)"
-    - "Max effective training size: ~2500 entries (beyond this, test set has no unsafe samples)"
-    - "Linear probe limited by linear separability of CodeBERT [CLS] embeddings"
+    - "MCC degrades at n>3000 without augmentation: entries 3000+ have zero unsafe labels (#171)"
+    - "MLP probe + 350 adversarial entries: MCC scales from 0.754 (3k) to 0.654 (12k) — all PASS"
+    - "Adversarial augmentation is required: without it, both linear and MLP probes predict all-safe"
+    - "Linear probe (Level 0) insufficient for shell-based labels (KAIZEN-104); use MLP (Level 0.5)"
     - "Full-batch GD fails on imbalanced data (aprender#428); online SGD required"
     - "Linter baseline MCC=1.000 is tautological (labels derived from linter findings)"
     - "Pre-#172: trained on Rust code, inferred on shell (domain mismatch) — now fixed"
