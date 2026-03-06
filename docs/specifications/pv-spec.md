@@ -305,6 +305,7 @@ provable_contracts::scoring::score_contract_weighted(contract, binding, stem, we
 provable_contracts::scoring::score_codebase(contracts, binding) -> CodebaseScore
 provable_contracts::scoring::ScoringWeights { spec_depth, falsification, kani, lean, binding }
 provable_contracts::query::ContractIndex::from_directory(dir) -> ContractIndex
+provable_contracts::query::ContractIndex::cached_score(stem) -> Option<f64>
 provable_contracts::query::execute(index, params) -> QueryOutput
 provable_contracts::query::QueryOutput::to_markdown() -> String
 ```
@@ -367,7 +368,7 @@ Multi-index hybrid approach for sub-second lookups (modeled on
 | Equation index | `HashMap<eq_name, Vec<idx>>` | O(1) |
 | Full-text corpus | In-memory BM25 | O(n), n=161 |
 | Dependency DAG | `BTreeMap<String, Vec<String>>` | O(1) |
-| Score cache | `HashMap<stem, ContractScore>` | O(1) |
+| Score cache [IMPLEMENTED] | `HashMap<stem, f64>` | O(1) |
 | **Cross-project index** | `HashMap<stem, Vec<ProjectRef>>` | O(1) |
 
 ### Cross-Project Search (Automatic)

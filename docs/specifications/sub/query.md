@@ -391,8 +391,8 @@ opt-in flag.
 - Dependency PageRank
 - Impact-weighted gap analysis
 
-### Phase 5: CI Integration
+### Phase 5: CI Integration [PARTIAL]
 
-- --exit-code for quality gates
-- Trend tracking via JSON output
+- --exit-code for quality gates [IMPLEMENTED]
+- Trend tracking via JSON output [IMPLEMENTED via -f json]
 - Cross-project violation alerting

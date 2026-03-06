@@ -61,6 +61,15 @@ fn main() {
     let output = query::execute(&index, &params);
     print!("{}", output.to_markdown());
 
+    // Score cache lookup (O(1))
+    println!("\n--- Score cache ---\n");
+    if let Some(score) = index.cached_score("softmax-kernel-v1") {
+        println!("softmax-kernel-v1 cached score: {score:.2}");
+    }
+    if let Some(score) = index.cached_score("rmsnorm-kernel-v1") {
+        println!("rmsnorm-kernel-v1 cached score: {score:.2}");
+    }
+
     // Binding enrichment
     let binding_path = Path::new("contracts/aprender/binding.yaml");
     if binding_path.exists() {
