@@ -164,12 +164,19 @@ validated_results:
       test_mcc: 0.000
       ship_gate: "FAIL"
       notes: "Test set drawn from indices 3000+ which are 100% safe; zero true positives possible"
-  extraction_rate: "1.68 entries/s (CPU release build)"
+  extraction_rate: "1.82 entries/s (CPU release build, shell-based #172)"
   model_load_time: "~23s (476MB safetensors)"
-  unsafe_label_count: 283
-  unsafe_label_max_index: "~3000 (all 283 unsafe entries in first 3000)"
+  unsafe_label_count: 148
+  unsafe_label_distribution: "0.82% unsafe (148/17942), concentrated in first ~3000 entries"
+  training_data_domain: "transpiled shell output (matches inference, #172 fix)"
+  baseline_mcc:
+    majority: 0.000
+    keyword_regex: 0.103
+    linter: 1.000  # tautological — labels derived from linter
   known_limitations:
     - "MCC degrades at n>2500: corpus entries 3000+ have zero unsafe labels (data labeling gap, #171)"
     - "Max effective training size: ~2500 entries (beyond this, test set has no unsafe samples)"
     - "Linear probe limited by linear separability of CodeBERT [CLS] embeddings"
     - "Full-batch GD fails on imbalanced data (aprender#428); online SGD required"
+    - "Linter baseline MCC=1.000 is tautological (labels derived from linter findings)"
+    - "Pre-#172: trained on Rust code, inferred on shell (domain mismatch) — now fixed"
