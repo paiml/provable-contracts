@@ -23,6 +23,7 @@ pub struct QueryCliParams<'a> {
     pub show_paper: bool,
     pub show_proof_status: bool,
     pub show_binding: bool,
+    pub binding_gaps: bool,
     pub binding: Option<&'a Path>,
     pub format: &'a str,
 }
@@ -54,6 +55,7 @@ pub fn run(p: &QueryCliParams<'_>) -> Result<(), Box<dyn std::error::Error>> {
         show_proof_status: p.show_proof_status,
         show_binding: p.show_binding,
         binding_path: p.binding.map(|b| b.display().to_string()),
+        binding_gaps_only: p.binding_gaps,
     };
 
     let output = query::execute(&index, &params);

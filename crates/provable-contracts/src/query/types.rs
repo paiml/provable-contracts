@@ -51,6 +51,7 @@ pub struct QueryParams {
     pub show_proof_status: bool,
     pub show_binding: bool,
     pub binding_path: Option<String>,
+    pub binding_gaps_only: bool,
 }
 
 impl Default for QueryParams {
@@ -71,6 +72,7 @@ impl Default for QueryParams {
             show_proof_status: false,
             show_binding: false,
             binding_path: None,
+            binding_gaps_only: false,
         }
     }
 }

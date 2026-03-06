@@ -38,7 +38,7 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
         serde_yaml::from_str::<BindingRegistry>(&content).ok()
     });
 
-    let filtered = apply_filters(index, scored_indices, params);
+    let filtered = apply_filters(index, scored_indices, params, binding.as_ref());
     let total_matches = filtered.len();
     let limited: Vec<_> = filtered.into_iter().take(params.limit).collect();
 
@@ -99,6 +99,7 @@ fn apply_filters(
     index: &ContractIndex,
     results: Vec<(usize, f64)>,
     params: &QueryParams,
+    binding: Option<&BindingRegistry>,
 ) -> Vec<(usize, f64)> {
     results
         .into_iter()
@@ -109,6 +110,7 @@ fn apply_filters(
                 && filter_depended_by(index, entry, params.depended_by.as_ref())
                 && filter_unproven(entry, params.unproven_only)
                 && filter_min_score(entry, params.min_score)
+                && filter_binding_gaps(entry, params.binding_gaps_only, binding)
         })
         .collect()
 }
@@ -154,6 +156,25 @@ fn filter_min_score(entry: &types::ContractEntry, min_score: Option<f64>) -> boo
         return true;
     };
     build_score_info(entry).is_some_and(|s| s.composite >= threshold)
+}
+
+fn filter_binding_gaps(
+    entry: &types::ContractEntry,
+    gaps_only: bool,
+    binding: Option<&BindingRegistry>,
+) -> bool {
+    if !gaps_only {
+        return true;
+    }
+    let Some(binding) = binding else {
+        return false; // No binding registry = can't check gaps
+    };
+    let contract_file = format!("{}.yaml", entry.stem);
+    binding.bindings.iter().any(|b| {
+        b.contract == contract_file
+            && (b.status == crate::binding::ImplStatus::NotImplemented
+                || b.status == crate::binding::ImplStatus::Partial)
+    })
 }
 
 fn filter_unproven(entry: &types::ContractEntry, unproven_only: bool) -> bool {

@@ -160,6 +160,7 @@ fn dispatch_query_semantic() {
         paper: false,
         proof_status: false,
         binding_info: false,
+        binding_gaps: false,
         binding: None,
         format: "text".to_string(),
     });
@@ -185,6 +186,7 @@ fn dispatch_query_literal() {
         paper: false,
         proof_status: false,
         binding_info: false,
+        binding_gaps: false,
         binding: None,
         format: "json".to_string(),
     });
@@ -210,6 +212,7 @@ fn dispatch_query_with_score() {
         paper: true,
         proof_status: true,
         binding_info: false,
+        binding_gaps: false,
         binding: None,
         format: "text".to_string(),
     });
@@ -250,6 +253,7 @@ fn dispatch_query_with_proof_status() {
         paper: false,
         proof_status: true,
         binding_info: false,
+        binding_gaps: false,
         binding: None,
         format: "text".to_string(),
     });
@@ -277,6 +281,7 @@ fn dispatch_query_with_binding() {
         paper: false,
         proof_status: false,
         binding_info: true,
+        binding_gaps: false,
         binding: Some(binding),
         format: "text".to_string(),
     });
@@ -302,6 +307,7 @@ fn dispatch_query_markdown_format() {
         paper: true,
         proof_status: false,
         binding_info: false,
+        binding_gaps: false,
         binding: None,
         format: "markdown".to_string(),
     });

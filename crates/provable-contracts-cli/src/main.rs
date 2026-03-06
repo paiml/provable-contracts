@@ -193,6 +193,9 @@ enum Commands {
         /// Include binding status per equation
         #[arg(long)]
         binding_info: bool,
+        /// Show only contracts with unimplemented bindings
+        #[arg(long)]
+        binding_gaps: bool,
         /// Path to binding registry YAML (for --binding-info)
         #[arg(long)]
         binding: Option<PathBuf>,
@@ -287,12 +290,14 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             paper,
             proof_status,
             binding_info,
+            binding_gaps,
             binding,
             format,
         } => dispatch_query(
             &contract_dir, &query, regex, literal, case_sensitive, limit,
             &obligation, min_score, &depends_on, &depended_by, unproven,
-            score, graph, paper, proof_status, binding_info, &binding, &format,
+            score, graph, paper, proof_status, binding_info, binding_gaps,
+            &binding, &format,
         ),
         Commands::Book {
             contract_dir,
@@ -326,6 +331,7 @@ fn dispatch_query(
     paper: bool,
     proof_status: bool,
     binding_info: bool,
+    binding_gaps: bool,
     binding: &Option<PathBuf>,
     format: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
@@ -346,6 +352,7 @@ fn dispatch_query(
         show_paper: paper,
         show_proof_status: proof_status,
         show_binding: binding_info,
+        binding_gaps,
         binding: binding.as_deref(),
         format,
     })

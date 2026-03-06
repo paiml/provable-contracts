@@ -5,7 +5,7 @@ use std::path::Path;
 use provable_contracts::binding::BindingRegistry;
 use provable_contracts::schema::parse_contract;
 use provable_contracts::scoring;
-use provable_contracts::scoring::ScoringWeights;
+use provable_contracts::scoring::{ContractScore, ScoringWeights};
 
 pub fn run(
     path: &Path,
@@ -48,10 +48,10 @@ fn run_single(
         .unwrap_or("unknown");
     let score = scoring::score_contract_weighted(&contract, binding, stem, weights);
 
-    if format == "json" {
-        println!("{}", serde_json::to_string_pretty(&score)?);
-    } else {
-        print!("{score}");
+    match format {
+        "json" => println!("{}", serde_json::to_string_pretty(&score)?),
+        "markdown" => print!("{}", score_to_markdown(&score)),
+        _ => print!("{score}"),
     }
 
     if let Some(threshold) = min_score {
@@ -105,24 +105,7 @@ fn run_directory(
         scores.iter().map(|s| s.composite).sum::<f64>() / scores.len() as f64
     };
 
-    if format == "json" {
-        let output = serde_json::json!({
-            "contracts": scores.len(),
-            "mean_score": mean,
-            "mean_grade": scoring::Grade::from_score(mean).to_string(),
-            "scores": scores,
-        });
-        println!("{}", serde_json::to_string_pretty(&output)?);
-    } else {
-        for s in &scores {
-            print!("{s}");
-        }
-        println!(
-            "\n{} contracts — Mean: {mean:.2} (Grade {})",
-            scores.len(),
-            scoring::Grade::from_score(mean)
-        );
-    }
+    print_directory_scores(&scores, mean, format)?;
 
     // Codebase scoring if binding is provided
     if let Some(binding) = binding {
@@ -143,11 +126,26 @@ fn run_directory(
         let refs: Vec<_> = parsed.iter().map(|(s, c)| (s.clone(), c)).collect();
         let codebase = scoring::score_codebase(&refs, binding);
 
-        if format == "json" {
-            let output = serde_json::json!({ "codebase": codebase });
-            println!("{}", serde_json::to_string_pretty(&output)?);
-        } else {
-            println!("\n{codebase}");
+        match format {
+            "json" => {
+                let output = serde_json::json!({ "codebase": codebase });
+                println!("{}", serde_json::to_string_pretty(&output)?);
+            }
+            "markdown" => {
+                println!("\n## Codebase Score\n");
+                println!("| Dimension | Value |");
+                println!("|-----------|-------|");
+                println!("| Coverage | {:.0}% |", codebase.contract_coverage * 100.0);
+                println!("| Binding | {:.0}% |", codebase.binding_completeness * 100.0);
+                println!("| Mean Score | {:.2} |", codebase.mean_contract_score);
+                println!("| Proof Depth | {:.2} |", codebase.proof_depth_dist);
+                println!("| Drift | {:.2} |", codebase.drift);
+                println!(
+                    "\n**Composite:** {:.2} (Grade {})",
+                    codebase.composite, codebase.grade
+                );
+            }
+            _ => println!("\n{codebase}"),
         }
     }
 
@@ -161,4 +159,61 @@ fn run_directory(
     }
 
     Ok(())
+}
+
+#[allow(clippy::cast_precision_loss)]
+fn print_directory_scores(
+    scores: &[ContractScore],
+    mean: f64,
+    format: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    match format {
+        "json" => {
+            let output = serde_json::json!({
+                "contracts": scores.len(),
+                "mean_score": mean,
+                "mean_grade": scoring::Grade::from_score(mean).to_string(),
+                "scores": scores,
+            });
+            println!("{}", serde_json::to_string_pretty(&output)?);
+        }
+        "markdown" => {
+            println!("## Contract Scores\n");
+            println!("| Contract | Score | Grade | Spec | Falsify | Kani | Lean | Bind |");
+            println!("|----------|-------|-------|------|---------|------|------|------|");
+            for s in scores {
+                println!(
+                    "| {} | {:.2} | {} | {:.2} | {:.2} | {:.2} | {:.2} | {:.2} |",
+                    s.stem, s.composite, s.grade,
+                    s.spec_depth, s.falsification_coverage,
+                    s.kani_coverage, s.lean_coverage, s.binding_coverage
+                );
+            }
+            println!(
+                "\n**{} contracts** — Mean: {mean:.2} (Grade {})",
+                scores.len(),
+                scoring::Grade::from_score(mean)
+            );
+        }
+        _ => {
+            for s in scores {
+                print!("{s}");
+            }
+            println!(
+                "\n{} contracts — Mean: {mean:.2} (Grade {})",
+                scores.len(),
+                scoring::Grade::from_score(mean)
+            );
+        }
+    }
+    Ok(())
+}
+
+fn score_to_markdown(score: &ContractScore) -> String {
+    format!(
+        "### {}\n\n- **Score:** {:.2} (Grade {})\n- Spec: {:.2} | Falsify: {:.2} | Kani: {:.2} | Lean: {:.2} | Bind: {:.2}\n",
+        score.stem, score.composite, score.grade,
+        score.spec_depth, score.falsification_coverage,
+        score.kani_coverage, score.lean_coverage, score.binding_coverage
+    )
 }
