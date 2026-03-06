@@ -56,4 +56,26 @@ fn main() {
         mean,
         provable_contracts::scoring::Grade::from_score(mean)
     );
+
+    // Codebase scoring with binding
+    let binding_path = Path::new("contracts/aprender/binding.yaml");
+    if binding_path.exists() {
+        let content = std::fs::read_to_string(binding_path).unwrap();
+        let binding: provable_contracts::binding::BindingRegistry =
+            serde_yaml::from_str(&content).unwrap();
+
+        let mut parsed = Vec::new();
+        for entry in &entries {
+            let path = entry.path();
+            let Ok(c) = provable_contracts::schema::parse_contract(&path) else {
+                continue;
+            };
+            let stem = path.file_name().unwrap().to_str().unwrap().to_string();
+            parsed.push((stem, c));
+        }
+        let refs: Vec<_> = parsed.iter().map(|(s, c)| (s.clone(), c)).collect();
+        let codebase = provable_contracts::scoring::score_codebase(&refs, &binding);
+        println!("\n=== Codebase Score (aprender) ===\n");
+        print!("{codebase}");
+    }
 }

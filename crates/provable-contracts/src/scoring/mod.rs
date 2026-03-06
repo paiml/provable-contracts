@@ -6,8 +6,10 @@
 //!
 //! Spec: `docs/specifications/sub/scoring.md`
 
+mod codebase;
 mod types;
 
+pub use codebase::score_codebase;
 pub use types::{
     CodebaseScore, ContractScore, Grade, ScoringGap,
 };

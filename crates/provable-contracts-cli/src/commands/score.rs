@@ -115,6 +115,33 @@ fn run_directory(
         );
     }
 
+    // Codebase scoring if binding is provided
+    if let Some(binding) = binding {
+        let mut parsed = Vec::new();
+        for entry in &entries {
+            let path = entry.path();
+            let Ok(contract) = parse_contract(&path) else {
+                continue;
+            };
+            // Binding uses filename WITH .yaml extension as stem
+            let stem = path
+                .file_name()
+                .and_then(|s| s.to_str())
+                .unwrap_or("unknown")
+                .to_string();
+            parsed.push((stem, contract));
+        }
+        let refs: Vec<_> = parsed.iter().map(|(s, c)| (s.clone(), c)).collect();
+        let codebase = scoring::score_codebase(&refs, binding);
+
+        if format == "json" {
+            let output = serde_json::json!({ "codebase": codebase });
+            println!("{}", serde_json::to_string_pretty(&output)?);
+        } else {
+            println!("\n{codebase}");
+        }
+    }
+
     if let Some(threshold) = min_score {
         if mean < threshold {
             return Err(format!(

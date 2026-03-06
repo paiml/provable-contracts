@@ -78,6 +78,36 @@ impl fmt::Display for Grade {
     }
 }
 
+impl fmt::Display for CodebaseScore {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(
+            f,
+            "Codebase: {} — {:.2} (Grade {})",
+            self.path, self.composite, self.grade
+        )?;
+        writeln!(
+            f,
+            "  Coverage: {:.0}% | Binding: {:.0}% | MeanScore: {:.2} | ProofDepth: {:.2} | Drift: {:.2}",
+            self.contract_coverage * 100.0,
+            self.binding_completeness * 100.0,
+            self.mean_contract_score,
+            self.proof_depth_dist,
+            self.drift,
+        )?;
+        if !self.top_gaps.is_empty() {
+            writeln!(f, "  Top gaps:")?;
+            for gap in &self.top_gaps {
+                writeln!(
+                    f,
+                    "    {}: {} ({:.2} -> {:.2}, impact: {:.0})",
+                    gap.contract, gap.dimension, gap.current, gap.target, gap.impact
+                )?;
+            }
+        }
+        Ok(())
+    }
+}
+
 impl fmt::Display for ContractScore {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(

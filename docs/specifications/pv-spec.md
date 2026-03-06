@@ -89,8 +89,8 @@ provable-contracts/
 |   |   +-- probar_gen/             Property test codegen
 |   |   +-- lean_gen/               Lean 4 codegen
 |   |   +-- audit/                  Traceability chain
-|   |   |   +-- scoring/                Contract + codebase scoring [PLANNED]
-|   |   +-- query/                  O(1) contract search index [PLANNED]
+|   |   +-- scoring/                Contract + codebase scoring
+|   |   +-- query/                  BM25 contract search index
 |   |   +-- binding.rs              Contract -> impl mapping
 |   |   +-- diff.rs                 Version diffing
 |   |   +-- coverage.rs             Obligation coverage
@@ -111,7 +111,7 @@ provable-contracts/
 | YAML contracts | 162 |
 | Binding entries (aprender) | 301 (98.0% implemented) |
 | Proof obligation types | 12 |
-| CLI commands | 15 (current) + 2 (planned: score, query) |
+| CLI commands | 17 (including score, query) |
 | Consuming projects | 1 Rust dep (aprender) + 3 YAML-only (entrenar, trueno, bashrs) |
 | Stack LoC governed | ~900K Rust |
 
@@ -247,8 +247,7 @@ Kani verification strategies in **[sub/pipeline.md](sub/pipeline.md)**.
 
 ## 5. CLI Reference
 
-The `pv` binary provides 15 commands today, with 2 planned (score,
-query). Full reference with examples, flags, and output formats in
+The `pv` binary provides 17 commands. Full reference with examples, flags, and output formats in
 **[sub/cli.md](sub/cli.md)**.
 
 ### Command Summary
@@ -270,8 +269,8 @@ query). Full reference with examples, flags, and output formats in
 | `pv lean-status <dir>` | Lean proof status report |
 | `pv proof-status <dir>` | L1-L5 level report |
 | `pv book <dir>` | Generate mdBook pages |
-| **`pv score <target>`** | **Score contract or codebase [PLANNED]** |
-| **`pv query <terms>`** | **O(1) contract search [PLANNED]** |
+| **`pv score <target>`** | **Score contract or codebase [IMPLEMENTED]** |
+| **`pv query <terms>`** | **O(1) contract search [IMPLEMENTED]** |
 
 ---
 
@@ -300,11 +299,10 @@ provable_contracts::diff::diff_contracts(old, new) -> ContractDiff
 provable_contracts::graph::dependency_graph(contracts) -> DependencyGraph
 provable_contracts::proof_status::proof_status_report(...) -> ProofStatusReport
 
-// PLANNED (not yet implemented)
-provable_contracts::scoring::score_contract(contract) -> ContractScore
-provable_contracts::scoring::score_codebase(path, contracts) -> CodebaseScore
-provable_contracts::query::build_index(contracts_dir) -> ContractIndex
-provable_contracts::query::search(index, query) -> Vec<QueryResult>
+// Scoring + Query (implemented)
+provable_contracts::scoring::score_contract(contract, binding, stem) -> ContractScore
+provable_contracts::query::ContractIndex::from_directory(dir) -> ContractIndex
+provable_contracts::query::execute(index, params) -> QueryOutput
 ```
 
 ---
@@ -349,7 +347,7 @@ and grade thresholds in **[sub/scoring.md](sub/scoring.md)**.
 
 ## 8. Query Engine
 
-`pv query` (PLANNED) provides O(1) semantic search across all 162+ contracts
+`pv query` provides O(1) semantic search across all 162+ contracts
 AND their consumer projects. Inspired by `pmat query` from
 paiml-mcp-agent-toolkit. Full query architecture, index format, and
 enrichment flags in **[sub/query.md](sub/query.md)**.
