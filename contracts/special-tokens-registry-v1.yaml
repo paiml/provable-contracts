@@ -14,6 +14,7 @@
 metadata:
   version: "1.0.0"
   description: "Canonical EOS/BOS/PAD token IDs per model family"
+  registry: true
   references:
     - "PROVABLE_CONTRACTS_ANALYSIS.md Gap 1"
     - "realizar/src/gguf/config.rs default_eos_for_architecture()"
@@ -21,6 +22,18 @@ metadata:
   sources:
     - "HuggingFace config.json / tokenizer_config.json (2026-02-23)"
     - "llama.cpp tokenizer implementation"
+
+equations:
+  token_bounds:
+    formula: "∀ family F: eos_id(F) < vocab_size(F) ∧ (bos_id(F) = null ∨ bos_id(F) < vocab_size(F))"
+    domain: "F ∈ { qwen2, qwen3, qwen3_moe, qwen3_5, llama, mistral, gemma, deepseek, phi2, phi3, gpt2 }"
+    codomain: "bool (all token IDs within vocab bounds)"
+    invariants:
+      - "eos_token_id < vocab_size for every family"
+      - "bos_token_id < vocab_size when not null"
+      - "pad_token_id < vocab_size when not null"
+      - "All additional_eos entries < vocab_size"
+      - "Every architecture key maps to a valid family"
 
 families:
   qwen2:
@@ -181,8 +194,32 @@ architecture_mapping:
   phi3: phi3
   gpt2: gpt2
 
-# Proof obligations (for FALSIFY tests):
 proof_obligations:
+  - type: bound
+    property: "EOS token ID within vocab for every family"
+    formal: "∀ F: eos_token_id(F) < vocab_size(F)"
+  - type: bound
+    property: "BOS token ID within vocab when not null"
+    formal: "∀ F: bos_token_id(F) = null ∨ bos_token_id(F) < vocab_size(F)"
+  - type: bound
+    property: "PAD token ID within vocab when not null"
+    formal: "∀ F: pad_token_id(F) = null ∨ pad_token_id(F) < vocab_size(F)"
+  - type: completeness
+    property: "Architecture mapping covers all families"
+    formal: "∀ key ∈ architecture_mapping: mapping(key) ∈ families"
+
+falsification_tests:
+  - id: FALSIFY-STOK-001
+    rule: "EOS bounds"
+    prediction: "All families have eos_token_id < vocab_size"
+    if_fails: "EOS ID exceeds vocab — will cause index-out-of-bounds in embedding lookup"
+  - id: FALSIFY-STOK-002
+    rule: "Architecture coverage"
+    prediction: "Every architecture_mapping value resolves to a defined family"
+    if_fails: "Unknown family in mapping — will cause lookup miss at runtime"
+
+# Additional token proof obligations (informational, not in standard schema format):
+token_proof_obligations:
   - name: "eos_within_vocab"
     description: "For every family, eos_token_id < vocab_size"
     check: "family.eos_token_id < family.vocab_size"

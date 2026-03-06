@@ -98,6 +98,36 @@ falsification_tests:
     test: "Benchmark with --threads 1 vs --threads 4"
     if_fails: "Lock contention or memory bandwidth saturation"
 
+kani_harnesses:
+  - id: KANI-WS-001
+    obligation: "Dispatch overhead under budget"
+    property: "Work-stealing overhead is less than 1% of matmul compute time"
+    bound: 8
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_dispatch_overhead_budget
+  - id: KANI-WS-002
+    obligation: "No false sharing"
+    property: "All atomic counters are 64-byte cache-line aligned"
+    bound: 8
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_no_false_sharing
+  - id: KANI-WS-003
+    obligation: "L1 tile fits"
+    property: "Tile footprint in bytes does not exceed 32KB L1d"
+    bound: 8
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_l1_tile_fits
+  - id: KANI-WS-004
+    obligation: "Work-stealing output matches Rayon output"
+    property: "matvec_worksteal and matvec_rayon produce identical results"
+    bound: 4
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_worksteal_rayon_equivalence
+
 qa_gate:
   id: F-WS-001
   name: "CPU Work-Stealing Parallelism Contract"

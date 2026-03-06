@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 /// A complete YAML kernel contract.
 ///
 /// This is the root type for the contract schema defined in
-/// `docs/specifications/provable-contracts.md` Section 5.
+/// `docs/specifications/pv-spec.md` Section 3.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Contract {
     pub metadata: Metadata,
@@ -28,6 +28,40 @@ pub struct Contract {
     pub verification_summary: Option<VerificationSummary>,
 }
 
+impl Contract {
+    /// Returns true if this is a data registry (exempt from provability invariant).
+    pub fn is_registry(&self) -> bool {
+        self.metadata.registry
+    }
+
+    /// Enforce the provability invariant: kernel contracts MUST have
+    /// proof_obligations, falsification_tests, and kani_harnesses.
+    /// Returns a list of violations. Empty list = contract is valid.
+    pub fn provability_violations(&self) -> Vec<String> {
+        if self.is_registry() {
+            return vec![];
+        }
+        let mut violations = Vec::new();
+        if self.proof_obligations.is_empty() {
+            violations.push("Kernel contract has no proof_obligations".into());
+        }
+        if self.falsification_tests.is_empty() {
+            violations.push("Kernel contract has no falsification_tests".into());
+        }
+        if self.kani_harnesses.is_empty() {
+            violations.push("Kernel contract has no kani_harnesses".into());
+        }
+        if self.falsification_tests.len() < self.proof_obligations.len() {
+            violations.push(format!(
+                "falsification_tests ({}) < proof_obligations ({})",
+                self.falsification_tests.len(),
+                self.proof_obligations.len(),
+            ));
+        }
+        violations
+    }
+}
+
 /// Contract metadata block.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Metadata {
@@ -43,6 +77,11 @@ pub struct Metadata {
     /// Values are contract stems (e.g. "silu-kernel-v1").
     #[serde(default)]
     pub depends_on: Vec<String>,
+    /// Data registry contracts (lookup tables, enum definitions, config bounds)
+    /// are exempt from the provability invariant. All other contracts MUST have
+    /// proof_obligations, falsification_tests, and kani_harnesses.
+    #[serde(default)]
+    pub registry: bool,
 }
 
 /// A mathematical equation extracted from a paper (Phase 1 output).

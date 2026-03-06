@@ -66,6 +66,29 @@ falsification_tests:
     test: "Compare token sequences side-by-side"
     if_fails: "Conversion rounding differs from GGUF quantization"
 
+kani_harnesses:
+  - id: KANI-SD-001
+    obligation: "SafeTensors CPU matches GGUF CPU throughput"
+    property: "Throughput ratio >= 0.9 after Q4K conversion"
+    bound: 4
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_throughput_parity
+  - id: KANI-SD-002
+    obligation: "Quantized dispatch after conversion"
+    property: "All weight tensors have Q4_K type post-conversion"
+    bound: 8
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_quantized_dispatch
+  - id: KANI-SD-003
+    obligation: "Output parity across formats"
+    property: "argmax(logits) identical between SafeTensors and GGUF paths"
+    bound: 4
+    strategy: stub_float
+    solver: cadical
+    harness: verify_output_parity
+
 qa_gate:
   id: F-SD-001
   name: "SafeTensors CPU Dispatch Contract"

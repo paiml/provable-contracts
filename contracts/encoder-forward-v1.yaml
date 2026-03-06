@@ -62,3 +62,38 @@ falsification_tests:
     prediction: "entrenar output matches saved HuggingFace reference within 1e-4"
     test: "Compare against fixture embeddings from Python HuggingFace"
     if_fails: "Weight loading error or architectural mismatch"
+  - id: FALSIFY-ENC-004
+    rule: "CLS pooling correctness"
+    prediction: "CLS embedding equals first row of encoder output"
+    test: "proptest with random encoder output, verify pooling extracts row 0"
+    if_fails: "Pooling selects wrong token index or averages instead of selecting"
+
+kani_harnesses:
+  - id: KANI-ENC-001
+    obligation: "Shape preservation"
+    property: "Each encoder layer preserves input shape"
+    bound: 4
+    strategy: stub_float
+    solver: cadical
+    harness: verify_shape_preservation
+  - id: KANI-ENC-002
+    obligation: "No NaN/Inf"
+    property: "Output contains only finite values for finite input"
+    bound: 4
+    strategy: stub_float
+    solver: cadical
+    harness: verify_no_nan_inf
+  - id: KANI-ENC-003
+    obligation: "Reference parity"
+    property: "Encoder output matches reference within tolerance"
+    bound: 4
+    strategy: stub_float
+    solver: cadical
+    harness: verify_reference_parity
+  - id: KANI-ENC-004
+    obligation: "CLS pooling correctness"
+    property: "CLS embedding is exactly encoder_output[0]"
+    bound: 4
+    strategy: stub_float
+    solver: cadical
+    harness: verify_cls_pooling

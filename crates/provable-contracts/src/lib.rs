@@ -40,3 +40,4 @@ pub mod probar_gen;
 pub mod proof_status;
 pub mod scaffold;
 pub mod schema;
+pub mod scoring;

@@ -67,6 +67,29 @@ falsification_tests:
     test: "Send same prompt with stream:true and stream:false, compare"
     if_fails: "Streaming tokenization differs from batch response"
 
+kani_harnesses:
+  - id: KANI-ST-001
+    obligation: "TPOT computed from streaming data"
+    property: "TPOT > 0 when streaming active and n_tokens > 1"
+    bound: 8
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_tpot_positive
+  - id: KANI-ST-002
+    obligation: "TTFT separable from TPOT"
+    property: "TTFT / latency < 0.95 proving streaming is active"
+    bound: 4
+    strategy: stub_float
+    solver: cadical
+    harness: verify_ttft_separable
+  - id: KANI-ST-003
+    obligation: "Streaming output matches non-streaming"
+    property: "Concatenated streaming tokens equal non-streaming response"
+    bound: 8
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_streaming_content_parity
+
 qa_gate:
   id: F-ST-001
   name: "Streaming TPOT Measurement Contract"

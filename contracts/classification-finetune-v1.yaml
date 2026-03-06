@@ -152,5 +152,5 @@ qa_gate:
     - "softmax_sum_invariant"
     - "nan_inf_rejection"
     - "config_factory_contract_sync"
-  pass_criteria: "All 13 falsification tests pass (6 CLASS + 7 FT-QWEN35)"
+  pass_criteria: "All 6 falsification tests pass"
   falsification: "Bypass ValidatedClassLogits::new() with unsafe or wrong constructor"

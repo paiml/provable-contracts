@@ -53,3 +53,38 @@ falsification_tests:
     prediction: "Each row sums to 1.0 within tolerance"
     test: "proptest with random Q, K of varying dimensions"
     if_fails: "Softmax normalization missing or incorrect"
+  - id: FALSIFY-BIATT-004
+    rule: "Full attention density"
+    prediction: "All entries in attention weight matrix are strictly positive"
+    test: "proptest with random Q, K, verify min(attn_weights) > 0"
+    if_fails: "Sparse attention or zero entries from masking bug"
+
+kani_harnesses:
+  - id: KANI-BIATT-001
+    obligation: "Causal parity on single-token input"
+    property: "BiAttn matches CausalAttn when n=1"
+    bound: 4
+    strategy: stub_float
+    solver: cadical
+    harness: verify_causal_parity_single_token
+  - id: KANI-BIATT-002
+    obligation: "Full attention density"
+    property: "All attention weights are strictly positive"
+    bound: 4
+    strategy: stub_float
+    solver: cadical
+    harness: verify_attention_density
+  - id: KANI-BIATT-003
+    obligation: "Weight normalization"
+    property: "Each row of attention weights sums to 1.0"
+    bound: 4
+    strategy: stub_float
+    solver: cadical
+    harness: verify_weight_normalization
+  - id: KANI-BIATT-004
+    obligation: "No causal mask applied"
+    property: "Upper triangle of attention matrix is non-zero"
+    bound: 4
+    strategy: stub_float
+    solver: cadical
+    harness: verify_no_causal_mask

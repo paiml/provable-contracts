@@ -126,6 +126,21 @@ enum Commands {
         #[arg(long, default_value = "text")]
         format: String,
     },
+    /// Score contracts or a codebase directory
+    Score {
+        /// Path to a contract YAML file or directory of contracts
+        #[arg(default_value = "contracts")]
+        path: PathBuf,
+        /// Path to binding registry YAML
+        #[arg(long)]
+        binding: Option<PathBuf>,
+        /// Output format: text (default) or json
+        #[arg(short, long, default_value = "text")]
+        format: String,
+        /// Minimum score threshold (exit 1 if below)
+        #[arg(long)]
+        min_score: Option<f64>,
+    },
     /// Generate mdBook pages for contracts
     Book {
         /// Directory containing contract YAML files
@@ -189,6 +204,12 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             binding,
             format,
         } => commands::proof_status::run(&path, binding.as_deref(), &format),
+        Commands::Score {
+            path,
+            binding,
+            format,
+            min_score,
+        } => commands::score::run(&path, binding.as_deref(), &format, min_score),
         Commands::Book {
             contract_dir,
             output,
@@ -319,6 +340,40 @@ mod tests {
             format: "text".to_string(),
         });
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn dispatch_score_single() {
+        let result = run_command(Commands::Score {
+            path: test_contract(),
+            binding: None,
+            format: "text".to_string(),
+            min_score: None,
+        });
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn dispatch_score_directory() {
+        let contracts_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
+        let result = run_command(Commands::Score {
+            path: contracts_dir,
+            binding: None,
+            format: "json".to_string(),
+            min_score: None,
+        });
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn dispatch_score_min_threshold_fails() {
+        let result = run_command(Commands::Score {
+            path: test_contract(),
+            binding: None,
+            format: "text".to_string(),
+            min_score: Some(0.99),
+        });
+        assert!(result.is_err());
     }
 
     #[test]

@@ -84,8 +84,46 @@ falsification_tests:
     test: "Check SYSTEM_PROMPT constant for required phrases"
     if_fails: "S6.5 honesty requirements not embedded in training data"
 
+kani_harnesses:
+  - id: KANI-CONV-001
+    obligation: "ChatML structure"
+    property: "Every conversation has exactly 3 turns with correct roles"
+    bound: 8
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_chatml_structure
+  - id: KANI-CONV-002
+    obligation: "Type D minimum"
+    property: "Safe entries produce Type D classification"
+    bound: 16
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_type_d_minimum
+  - id: KANI-CONV-003
+    obligation: "No empty responses"
+    property: "All generated turns have non-empty content"
+    bound: 8
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_no_empty_responses
+  - id: KANI-CONV-004
+    obligation: "System prompt honesty"
+    property: "System prompt contains required honesty disclaimers"
+    bound: 4
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_system_prompt_honesty
+  - id: KANI-CONV-005
+    obligation: "Deterministic generation"
+    property: "Same inputs produce identical output"
+    bound: 8
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_deterministic_generation
+
 qa_gate:
-  name: "C-CONV-001"
+  id: "C-CONV-001"
+  name: "Conversation Generation Quality Gate"
   description: "Conversation generation quality gate"
   checks:
     - "generate_batch produces >= 30% Type D"

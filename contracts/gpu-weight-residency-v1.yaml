@@ -90,6 +90,36 @@ falsification_tests:
     test: "Compare 20-token greedy generation GPU vs CPU"
     if_fails: "VRAM layout corruption or precision drift"
 
+kani_harnesses:
+  - id: KANI-GWR-001
+    obligation: "All weights resident in VRAM after startup"
+    property: "gpu_memory_used >= model_bytes after Benchmark::new()"
+    bound: 4
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_weight_residency
+  - id: KANI-GWR-002
+    obligation: "GPU throughput reaches target"
+    property: "tok/s(apr GPU) >= 180 on RTX 4090 with Qwen2.5-1.5B Q4K"
+    bound: 4
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_throughput_target
+  - id: KANI-GWR-003
+    obligation: "Zero PCIe transfers during inference"
+    property: "cudaMemcpy count during forward() = 0 for weight tensors"
+    bound: 8
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_zero_pcie_transfers
+  - id: KANI-GWR-004
+    obligation: "Output parity with CPU path"
+    property: "argmax(logits_gpu) == argmax(logits_cpu) for greedy decoding"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_gpu_cpu_output_parity
+
 qa_gate:
   id: F-GWR-001
   name: "GPU Weight Residency Contract"

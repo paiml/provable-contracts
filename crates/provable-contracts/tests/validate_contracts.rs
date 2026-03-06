@@ -2,7 +2,7 @@ use std::path::Path;
 
 use provable_contracts::error::Severity;
 use provable_contracts::graph::dependency_graph;
-use provable_contracts::schema::{parse_contract, validate_contract};
+use provable_contracts::schema::{parse_contract, validate_contract, Contract};
 
 fn contracts_dir() -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -179,6 +179,41 @@ fn qwen35_dag_integrity() {
     );
 }
 
+fn check_falsification_ids(stem: &str, contract: &Contract, errors: &mut Vec<String>) {
+    let parts: Vec<&str> = contract
+        .falsification_tests
+        .first()
+        .map(|ft| ft.id.rsplitn(2, '-').collect::<Vec<_>>())
+        .unwrap_or_default();
+    if parts.len() != 2 {
+        return;
+    }
+    let prefix = parts[1];
+    for (i, ft) in contract.falsification_tests.iter().enumerate() {
+        let expected = format!("{prefix}-{:03}", i + 1);
+        if ft.id != expected {
+            errors.push(format!("{stem}: test ID gap: expected {expected}, found {}", ft.id));
+            break;
+        }
+    }
+}
+
+fn check_pass_criteria(stem: &str, contract: &Contract, ft_count: usize, errors: &mut Vec<String>) {
+    let criteria = contract
+        .qa_gate
+        .as_ref()
+        .and_then(|qa| qa.pass_criteria.as_deref());
+    let n = criteria
+        .and_then(|c| c.strip_prefix("All "))
+        .and_then(|s| s.split_whitespace().next())
+        .and_then(|s| s.parse::<usize>().ok());
+    if let Some(n) = n {
+        if n != ft_count {
+            errors.push(format!("{stem}: pass_criteria says {n} tests, actual {ft_count}"));
+        }
+    }
+}
+
 #[test]
 fn contract_data_integrity() {
     let paths = all_contract_paths();
@@ -194,78 +229,29 @@ fn contract_data_integrity() {
             parse_contract(path).unwrap_or_else(|e| panic!("Failed to parse {stem}: {e}"));
 
         let eq_count = contract.equations.len();
-        let ob_count = contract.proof_obligations.len();
         let ft_count = contract.falsification_tests.len();
-        let kani_count = contract.kani_harnesses.len();
 
         total_eq += eq_count;
-        total_ob += ob_count;
+        total_ob += contract.proof_obligations.len();
         total_ft += ft_count;
-        total_kani += kani_count;
+        total_kani += contract.kani_harnesses.len();
 
-        // Every contract must have at least 1 equation
         if eq_count == 0 {
             errors.push(format!("{stem}: no equations"));
         }
 
-        // Every obligation must have at least one falsification test
-        if ft_count < ob_count {
-            errors.push(format!(
-                "{stem}: obligations ({ob_count}) > falsification tests ({ft_count})"
-            ));
+        for v in contract.provability_violations() {
+            errors.push(format!("{stem}: {v}"));
         }
 
-        // Every contract must have at least 1 Kani harness
-        if kani_count == 0 {
-            errors.push(format!("{stem}: no Kani harnesses"));
-        }
-
-        // Falsification test IDs must be sequential
-        let prefix_pattern: Vec<&str> = contract
-            .falsification_tests
-            .first()
-            .map(|ft| ft.id.rsplitn(2, '-').collect::<Vec<_>>())
-            .unwrap_or_default();
-        if prefix_pattern.len() == 2 {
-            let prefix = prefix_pattern[1]; // "FALSIFY-XX"
-            for (i, ft) in contract.falsification_tests.iter().enumerate() {
-                let expected = format!("{prefix}-{:03}", i + 1);
-                if ft.id != expected {
-                    errors.push(format!(
-                        "{stem}: test ID gap: expected {expected}, found {}",
-                        ft.id
-                    ));
-                    break; // One ID error per contract is enough
-                }
-            }
-        }
-
-        // pass_criteria number must match actual test count
-        if let Some(qa) = &contract.qa_gate {
-            if let Some(criteria) = &qa.pass_criteria {
-                // Extract "All N" pattern
-                if let Some(n_str) = criteria
-                    .strip_prefix("All ")
-                    .and_then(|s| s.split_whitespace().next())
-                {
-                    if let Ok(n) = n_str.parse::<usize>() {
-                        if n != ft_count {
-                            errors.push(format!(
-                                "{stem}: pass_criteria says {n} tests, \
-                                 actual {ft_count}"
-                            ));
-                        }
-                    }
-                }
-            }
-        }
+        check_falsification_ids(stem, &contract, &mut errors);
+        check_pass_criteria(stem, &contract, ft_count, &mut errors);
     }
 
-    // Verify totals
-    assert_eq!(total_eq, 277, "Total equations changed");
-    assert_eq!(total_ob, 425, "Total obligations changed");
-    assert_eq!(total_ft, 449, "Total falsification tests changed");
-    assert_eq!(total_kani, 151, "Total Kani harnesses changed");
+    assert_eq!(total_eq, 353, "Total equations changed");
+    assert_eq!(total_ob, 545, "Total obligations changed");
+    assert_eq!(total_ft, 585, "Total falsification tests changed");
+    assert_eq!(total_kani, 206, "Total Kani harnesses changed");
 
     assert!(
         errors.is_empty(),

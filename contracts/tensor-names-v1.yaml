@@ -29,6 +29,7 @@ metadata:
   created: "2026-02-23"
   author: "PAIML Engineering"
   description: "Architecture-specific tensor name resolution — source of truth"
+  registry: true
   references:
     - "GH-311: Tensor name resolution contract"
     - "architecture-requirements-v1.yaml: Weight role definitions"

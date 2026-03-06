@@ -11,9 +11,21 @@
 metadata:
   version: "1.0.0"
   description: "Valid ranges for model configuration dimensions"
+  registry: true
   references:
     - "enforce-provable-DbC.md Section 4 Gap 2"
     - "realizar/src/gguf/config.rs ValidatedModelConfig::validate()"
+
+equations:
+  config_bounds_check:
+    formula: "validate(cfg) = all(field_min <= cfg.field <= field_max for field in required_fields)"
+    domain: "cfg: ModelConfig with hidden_dim, num_layers, num_heads, num_kv_heads, vocab_size, intermediate_dim, context_length, rope_theta, eps"
+    codomain: "Result<ValidatedModelConfig, ConfigError>"
+    invariants:
+      - "hidden_dim ∈ [1, 65536] and divisible by num_heads"
+      - "num_kv_heads divides num_heads evenly (GQA ratio)"
+      - "eps ∈ [1e-10, 0.01] when configured"
+      - "rope_theta ∈ [1.0, 1e8] when configured"
 
 fields:
   hidden_dim:
@@ -83,3 +95,28 @@ fields:
     max: 0.01
     default: 0.000001  # 1e-6
     comment: "0.0 means not configured; when > 0, must be in [1e-10, 0.01]"
+
+proof_obligations:
+  - type: bound
+    property: "All required fields within min/max bounds"
+    formal: "∀ field ∈ required: field.min ≤ cfg[field] ≤ field.max"
+  - type: invariant
+    property: "hidden_dim divisible by num_heads"
+    formal: "cfg.hidden_dim % cfg.num_heads == 0"
+  - type: invariant
+    property: "num_kv_heads divides num_heads"
+    formal: "cfg.num_heads % cfg.num_kv_heads == 0"
+
+falsification_tests:
+  - id: FALSIFY-MMB-001
+    rule: "Bounds rejection"
+    prediction: "validate() rejects hidden_dim = 0"
+    if_fails: "Lower bound check missing for hidden_dim"
+  - id: FALSIFY-MMB-002
+    rule: "Bounds rejection"
+    prediction: "validate() rejects hidden_dim = 131072"
+    if_fails: "Upper bound check missing for hidden_dim"
+  - id: FALSIFY-MMB-003
+    rule: "GQA divisibility"
+    prediction: "validate() rejects num_heads=7, num_kv_heads=3"
+    if_fails: "Missing GQA divisibility check"

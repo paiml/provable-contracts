@@ -11,5 +11,6 @@ pub mod lean_status;
 pub mod probar;
 pub mod proof_status;
 pub mod scaffold;
+pub mod score;
 pub mod status;
 pub mod validate;

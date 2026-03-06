@@ -12,12 +12,26 @@ pub fn validate_contract(contract: &Contract) -> Vec<Violation> {
 
     validate_metadata(contract, &mut violations);
     validate_equations(contract, &mut violations);
+    validate_provability_invariant(contract, &mut violations);
     validate_proof_obligations(contract, &mut violations);
     validate_falsification_tests(contract, &mut violations);
     validate_kani_harnesses(contract, &mut violations);
     validate_qa_gate(contract, &mut violations);
 
     violations
+}
+
+/// Enforce the provability invariant: kernel contracts (non-registry) MUST have
+/// proof_obligations, falsification_tests, and kani_harnesses.
+fn validate_provability_invariant(contract: &Contract, violations: &mut Vec<Violation>) {
+    for v in contract.provability_violations() {
+        violations.push(Violation {
+            severity: Severity::Error,
+            rule: "PROVABILITY-001".to_string(),
+            message: v,
+            location: None,
+        });
+    }
 }
 
 fn validate_metadata(contract: &Contract, violations: &mut Vec<Violation>) {
@@ -201,6 +215,13 @@ falsification_tests:
     rule: "finiteness"
     prediction: "output is always finite"
     if_fails: "overflow in computation"
+kani_harnesses:
+  - id: KANI-001
+    obligation: "output is finite"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_finiteness
 qa_gate:
   id: F-001
   name: "Test Gate"
@@ -468,6 +489,92 @@ falsification_tests: []
         let contract = parse_contract_str(yaml).unwrap();
         let violations = validate_contract(&contract);
         assert!(violations.iter().any(|v| v.rule == "SCHEMA-011"));
+    }
+
+    #[test]
+    fn kernel_contract_without_kani_is_error() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Missing kani"
+  references:
+    - "Paper"
+equations:
+  f:
+    formula: "f(x) = x"
+proof_obligations:
+  - type: invariant
+    property: "output is finite"
+falsification_tests:
+  - id: FALSIFY-001
+    rule: "finiteness"
+    prediction: "finite"
+    if_fails: "overflow"
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let violations = validate_contract(&contract);
+        assert!(
+            violations.iter().any(|v| v.rule == "PROVABILITY-001"),
+            "Kernel contract without kani_harnesses must fail PROVABILITY-001"
+        );
+    }
+
+    #[test]
+    fn registry_contract_without_kani_is_ok() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Data registry"
+  registry: true
+  references:
+    - "Internal"
+equations:
+  lookup:
+    formula: "f(key) = table[key]"
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let violations = validate_contract(&contract);
+        assert!(
+            !violations.iter().any(|v| v.rule == "PROVABILITY-001"),
+            "Registry contract should be exempt from provability invariant"
+        );
+    }
+
+    #[test]
+    fn kernel_with_fewer_tests_than_obligations_is_error() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Imbalanced"
+  references:
+    - "Paper"
+equations:
+  f:
+    formula: "f(x) = x"
+proof_obligations:
+  - type: invariant
+    property: "prop1"
+  - type: bound
+    property: "prop2"
+falsification_tests:
+  - id: FALSIFY-001
+    rule: "test"
+    prediction: "works"
+    if_fails: "broken"
+kani_harnesses:
+  - id: KANI-001
+    obligation: "prop1"
+    bound: 8
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        let violations = validate_contract(&contract);
+        assert!(
+            violations
+                .iter()
+                .any(|v| v.rule == "PROVABILITY-001"
+                    && v.message.contains("falsification_tests")),
+            "Fewer falsification tests than obligations must fail PROVABILITY-001"
+        );
     }
 
     #[test]

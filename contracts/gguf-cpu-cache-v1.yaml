@@ -84,6 +84,58 @@ falsification:
     assertion: "KV cache memory bounded by O(layers × seq_len × head_dim)"
     test: "Monitor RSS during 100-token generation"
 
+falsification_tests:
+  - id: FALSIFY-CC-001
+    rule: "Output equivalence"
+    prediction: "generate_with_cache produces identical tokens to generate for greedy (temp=0)"
+    test: "proptest comparing 10-token cached vs uncached generation on random prompts"
+    if_fails: "KV cache corrupts hidden state across autoregressive steps"
+  - id: FALSIFY-CC-002
+    rule: "Single-token forward"
+    prediction: "forward_single_with_cache processes exactly 1 token per call"
+    test: "instrument forward call with token-count assertion"
+    if_fails: "Cache miss causes full-sequence recomputation"
+  - id: FALSIFY-CC-003
+    rule: "Throughput bound"
+    prediction: "GGUF CPU tok/s >= 0.8 * APR CPU tok/s after cache fix"
+    test: "probador llm bench comparing GGUF and APR CPU throughput"
+    if_fails: "KV cache overhead negates O(n) benefit at short sequences"
+  - id: FALSIFY-CC-004
+    rule: "Greedy decoding parity"
+    prediction: "argmax(logits_cached) == argmax(logits_uncached) for all steps"
+    test: "proptest greedy decoding 20 tokens, compare argmax at each step"
+    if_fails: "Numerical divergence in cached attention computation"
+
+kani_harnesses:
+  - id: KANI-CC-001
+    obligation: "KV cache output matches no-cache output"
+    property: "generate_with_cache produces identical tokens to generate for greedy decoding"
+    bound: 4
+    strategy: stub_float
+    solver: cadical
+    harness: verify_cache_output_equivalence
+  - id: KANI-CC-002
+    obligation: "KV cache reduces work from O(n^2) to O(n)"
+    property: "forward_single_with_cache processes exactly 1 token per call"
+    bound: 8
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_single_token_forward
+  - id: KANI-CC-003
+    obligation: "GGUF CPU throughput matches APR CPU"
+    property: "Throughput ratio tok/s(GGUF CPU) >= 0.8 * tok/s(APR CPU)"
+    bound: 4
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_throughput_bound
+  - id: KANI-CC-004
+    obligation: "No regression in generation quality"
+    property: "argmax(logits_cached) == argmax(logits_uncached) for greedy decoding"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_greedy_decoding_parity
+
 qa_gate:
   id: "F-GGUF-CACHE-001"
   name: "GGUF CPU KV Cache Contract"

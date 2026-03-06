@@ -43,3 +43,31 @@ falsification_tests:
     prediction: "Same position always returns identical embedding"
     test: "proptest calling PE(pos) twice with same weights"
     if_fails: "Non-determinism in embedding lookup"
+  - id: FALSIFY-POS-003
+    rule: "Output dimension"
+    prediction: "PE(pos).len() == d_model for all valid positions"
+    test: "proptest with random valid pos, assert output length equals d_model"
+    if_fails: "Embedding table has mismatched column dimension"
+
+kani_harnesses:
+  - id: KANI-POS-001
+    obligation: "Position in range"
+    property: "0 <= pos < max_positions for all inputs"
+    bound: 16
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_position_bounds
+  - id: KANI-POS-002
+    obligation: "Deterministic lookup"
+    property: "PE(pos) = PE(pos) for same weights (idempotent)"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+    harness: verify_deterministic_lookup
+  - id: KANI-POS-003
+    obligation: "Output dimension"
+    property: "PE(pos).len() == d_model for all valid pos"
+    bound: 16
+    strategy: bounded_int
+    solver: cadical
+    harness: verify_output_dimension

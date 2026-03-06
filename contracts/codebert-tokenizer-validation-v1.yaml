@@ -15,12 +15,24 @@ metadata:
   created: "2026-03-06"
   author: "PAIML Engineering"
   description: "Validates CodeBERT (RoBERTa) tokenizer quality on shell script constructs"
+  registry: true
   references:
     - "shell-safety-inference.md v11.0.0 Section 5.2"
     - "Feng et al. (2020) CodeBERT: A Pre-Trained Model for Programming and Natural Languages"
     - "Liu et al. (2019) RoBERTa: A Robustly Optimized BERT Pretraining Approach"
   depends_on:
     - "tokenizer-loading-v1"
+
+equations:
+  tokenizer_adequacy:
+    formula: "acceptable_rate(T, corpus) = |{c ∈ constructs : tokens(T, c) is acceptable}| / |constructs| ≥ 0.70"
+    domain: "T = CodeBERT RoBERTa tokenizer (50265 BPE vocab), corpus = shell scripts"
+    codomain: "acceptable_rate ∈ [0, 1]"
+    invariants:
+      - "Vocab size = 50265"
+      - "Every non-empty input produces at least 1 token"
+      - "No construct produces > 20 tokens"
+      - "Tokenization is deterministic"
 
 # =============================================================================
 # THEORETICAL FOUNDATION
@@ -64,38 +76,55 @@ tokenizer_config:
 shell_constructs:
   command_substitution:
     - construct: "$(command)"
-      acceptable: ["$(" + "command" + ")", "$(command)"]
+      acceptable_splits:
+        - ["$(", "command", ")"]
+        - ["$(command)"]
       unacceptable_signal: "fragmented into 5+ tokens"
   redirect:
     - construct: "2>&1"
-      acceptable: ["2>&1", "2>" + "&1", "2>& " + "1"]
+      acceptable_splits:
+        - ["2>&1"]
+        - ["2>", "&1"]
+        - ["2>&", "1"]
       unacceptable_signal: "each char is separate token"
   variable:
     - construct: "$RANDOM"
-      acceptable: ["$RANDOM", "$" + "RANDOM"]
+      acceptable_splits:
+        - ["$RANDOM"]
+        - ["$", "RANDOM"]
       unacceptable_signal: "$ + RAN + DOM"
     - construct: "$HOME"
-      acceptable: ["$HOME", "$" + "HOME"]
+      acceptable_splits:
+        - ["$HOME"]
+        - ["$", "HOME"]
       unacceptable_signal: "$ + H + OM + E"
   pipe:
     - construct: "|"
-      acceptable: ["|"]
+      acceptable_splits:
+        - ["|"]
       unacceptable_signal: "merged with adjacent code"
   heredoc:
     - construct: "<<'EOF'"
-      acceptable: ["<<" + "'EOF'", "<<'" + "EOF" + "'"]
+      acceptable_splits:
+        - ["<<", "'EOF'"]
+        - ["<<'", "EOF", "'"]
       unacceptable_signal: "fully fragmented into 6+ tokens"
   shebang:
     - construct: "#!/bin/sh"
-      acceptable: ["#!/" + "bin/" + "sh", "#!" + "/bin/sh"]
+      acceptable_splits:
+        - ["#!/", "bin/", "sh"]
+        - ["#!", "/bin/sh"]
       unacceptable_signal: "each char separate"
   eval:
     - construct: "eval"
-      acceptable: ["eval"]
+      acceptable_splits:
+        - ["eval"]
       unacceptable_signal: "ev + al"
   backtick:
     - construct: "`command`"
-      acceptable: ["`" + "command" + "`", "`command`"]
+      acceptable_splits:
+        - ["`", "command", "`"]
+        - ["`command`"]
       unacceptable_signal: "fragmented"
 
 # =============================================================================
