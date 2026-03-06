@@ -84,6 +84,7 @@ fn build_result(
         proof_status: params.show_proof_status.then(|| build_proof_status_info(entry)).flatten(),
         bindings: opt_binding(entry, binding, params.show_binding),
         diff: params.show_diff.then(|| build_diff_info(entry)).flatten(),
+        pagerank: if params.show_pagerank { index.cached_pagerank(&entry.stem) } else { None },
     }
 }
 

@@ -53,6 +53,7 @@ pub struct QueryParams {
     pub binding_path: Option<String>,
     pub binding_gaps_only: bool,
     pub show_diff: bool,
+    pub show_pagerank: bool,
     pub min_level: Option<String>,
 }
 
@@ -76,6 +77,7 @@ impl Default for QueryParams {
             binding_path: None,
             binding_gaps_only: false,
             show_diff: false,
+            show_pagerank: false,
             min_level: None,
         }
     }
@@ -103,6 +105,8 @@ pub struct QueryResult {
     pub bindings: Vec<EquationBinding>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub diff: Option<DiffInfo>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pagerank: Option<f64>,
 }
 
 /// Inline score info for enrichment.
@@ -180,6 +184,9 @@ impl QueryResult {
             writeln!(f, "    Last modified: {} ({} days ago, {})",
                 d.last_modified, d.days_ago, &d.commit_hash[..7.min(d.commit_hash.len())])?;
         }
+        if let Some(pr) = self.pagerank {
+            writeln!(f, "    PageRank: {pr:.4}")?;
+        }
         Ok(())
     }
 
@@ -231,6 +238,9 @@ impl QueryResult {
                 "- **Last modified:** {} ({} days ago)\n",
                 d.last_modified, d.days_ago
             ));
+        }
+        if let Some(pr) = self.pagerank {
+            out.push_str(&format!("- **PageRank:** {pr:.4}\n"));
         }
     }
 }

@@ -164,6 +164,7 @@
                 days_ago: 5,
                 commit_hash: "abc1234def".to_string(),
             }),
+            pagerank: Some(0.042),
         };
         let text = format!("{r}");
         assert!(text.contains("Bindings:"));
@@ -171,6 +172,7 @@
         assert!(text.contains("Last modified: 2026-03-01"));
         assert!(text.contains("Depends on: dep-v1"));
         assert!(text.contains("Depended by: consumer-v1"));
+        assert!(text.contains("PageRank: 0.0420"));
     }
 
     #[test]
@@ -201,6 +203,7 @@
                     days_ago: 5,
                     commit_hash: "abc1234".to_string(),
                 }),
+                pagerank: None,
             }],
         };
         let md = output.to_markdown();

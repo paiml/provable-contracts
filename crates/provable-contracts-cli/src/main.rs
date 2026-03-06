@@ -202,6 +202,9 @@ enum Commands {
         /// Show last git modification date
         #[arg(long)]
         diff: bool,
+        /// Show dependency pagerank score
+        #[arg(long)]
+        pagerank: bool,
         /// Path to binding registry YAML (for --binding-info)
         #[arg(long)]
         binding: Option<PathBuf>,
@@ -302,6 +305,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             binding_info,
             binding_gaps,
             diff,
+            pagerank,
             binding,
             format,
             exit_code,
@@ -309,7 +313,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             &contract_dir, &query, regex, literal, case_sensitive, limit,
             &obligation, min_score, &min_level, &depends_on, &depended_by, unproven,
             score, graph, paper, proof_status, binding_info, binding_gaps,
-            diff, &binding, &format, exit_code,
+            diff, pagerank, &binding, &format, exit_code,
         ),
         Commands::Book {
             contract_dir,
@@ -346,6 +350,7 @@ fn dispatch_query(
     binding_info: bool,
     binding_gaps: bool,
     diff: bool,
+    pagerank: bool,
     binding: &Option<PathBuf>,
     format: &str,
     exit_code: bool,
@@ -370,6 +375,7 @@ fn dispatch_query(
         show_binding: binding_info,
         binding_gaps,
         show_diff: diff,
+        show_pagerank: pagerank,
         binding: binding.as_deref(),
         format,
         exit_code,
