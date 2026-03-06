@@ -6,6 +6,7 @@
 //! Spec: `docs/specifications/sub/query.md`
 
 mod index;
+mod persist;
 mod types;
 
 pub use index::ContractIndex;

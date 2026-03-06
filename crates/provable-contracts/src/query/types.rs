@@ -1,6 +1,6 @@
 //! Types for the contract query engine.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// How to interpret the query string.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -14,7 +14,7 @@ pub enum SearchMode {
 }
 
 /// A single entry in the contract index.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ContractEntry {
     pub stem: String,
     pub path: String,

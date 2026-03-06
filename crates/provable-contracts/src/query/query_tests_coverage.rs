@@ -4,7 +4,7 @@
 
     fn test_index() -> ContractIndex {
         let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
-        ContractIndex::from_directory(&dir).unwrap()
+        ContractIndex::build_from_directory(&dir).unwrap()
     }
 
     #[test]

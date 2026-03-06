@@ -180,7 +180,7 @@ Same grade thresholds as contract score.
 
 ---
 
-## 4. Gap Analysis
+## 4. Gap Analysis [IMPLEMENTED]
 
 `pv score` reports the top gaps sorted by impact. Impact is computed as:
 

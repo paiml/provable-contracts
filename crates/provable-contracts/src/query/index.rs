@@ -6,6 +6,7 @@ use std::path::Path;
 use crate::schema::{parse_contract, Contract};
 use crate::scoring;
 
+use super::persist::{self, PersistedIndex};
 use super::types::ContractEntry;
 
 /// In-memory contract index with inverted indexes for fast lookup.
@@ -27,7 +28,35 @@ pub struct ContractIndex {
 
 impl ContractIndex {
     /// Build an index from a directory of YAML contracts.
+    ///
+    /// Uses cached index from `.pv/contracts.idx` when fresh,
+    /// otherwise rebuilds and caches for next time.
     pub fn from_directory(dir: &Path) -> Result<Self, Box<dyn std::error::Error>> {
+        // Try loading cached index first
+        if let Some(cached) = persist::load_cached(dir) {
+            let mut index = Self::from_entries(cached.entries);
+            index.score_cache = cached.score_cache;
+            index.pagerank_cache = cached.pagerank_cache;
+            return Ok(index);
+        }
+
+        let index = Self::build_from_directory(dir)?;
+
+        // Save to cache (best-effort, don't fail on write errors)
+        let _ = persist::save_cached(
+            dir,
+            &PersistedIndex {
+                entries: index.entries.clone(),
+                score_cache: index.score_cache.clone(),
+                pagerank_cache: index.pagerank_cache.clone(),
+            },
+        );
+
+        Ok(index)
+    }
+
+    /// Build an index from a directory without cache.
+    pub fn build_from_directory(dir: &Path) -> Result<Self, Box<dyn std::error::Error>> {
         let mut yaml_paths: Vec<_> = collect_yaml_files(dir)?;
         yaml_paths.sort();
 
@@ -356,7 +385,7 @@ mod tests {
     #[test]
     fn index_from_contracts_dir() {
         let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
-        let index = ContractIndex::from_directory(&dir).unwrap();
+        let index = ContractIndex::build_from_directory(&dir).unwrap();
         assert!(index.entries.len() > 10, "Should index many contracts");
         assert!(index.get_by_stem("softmax-kernel-v1").is_some());
     }
@@ -364,7 +393,7 @@ mod tests {
     #[test]
     fn bm25_ranks_relevant_first() {
         let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
-        let index = ContractIndex::from_directory(&dir).unwrap();
+        let index = ContractIndex::build_from_directory(&dir).unwrap();
         let results = index.bm25_search("softmax numerical stability");
         assert!(!results.is_empty());
         // Top result should be related to softmax/cross-entropy (both reference softmax)
@@ -379,7 +408,7 @@ mod tests {
     #[test]
     fn literal_search_finds_match() {
         let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
-        let index = ContractIndex::from_directory(&dir).unwrap();
+        let index = ContractIndex::build_from_directory(&dir).unwrap();
         let matches = index.literal_search("RMSNorm", false);
         assert!(!matches.is_empty());
     }
@@ -387,7 +416,7 @@ mod tests {
     #[test]
     fn regex_search_finds_patterns() {
         let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
-        let index = ContractIndex::from_directory(&dir).unwrap();
+        let index = ContractIndex::build_from_directory(&dir).unwrap();
         let matches = index.regex_search(r"(?i)softmax|log.softmax").unwrap();
         assert!(!matches.is_empty());
     }
@@ -395,7 +424,7 @@ mod tests {
     #[test]
     fn depended_by_returns_dependents() {
         let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
-        let index = ContractIndex::from_directory(&dir).unwrap();
+        let index = ContractIndex::build_from_directory(&dir).unwrap();
         // softmax-kernel-v1 is depended on by several contracts
         let deps = index.depended_by("softmax-kernel-v1");
         // At minimum attention contracts depend on softmax
@@ -408,7 +437,7 @@ mod tests {
     #[test]
     fn pagerank_produces_valid_scores() {
         let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
-        let index = ContractIndex::from_directory(&dir).unwrap();
+        let index = ContractIndex::build_from_directory(&dir).unwrap();
         let scores = index.pagerank(20, 0.85);
         assert_eq!(scores.len(), index.entries.len());
         // All scores should be positive

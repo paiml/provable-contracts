@@ -34,6 +34,9 @@ target
 lcov.info
 *.profraw
 
+# pv query index cache
+.pv/
+
 # mdBook build output
 book/html/
 
