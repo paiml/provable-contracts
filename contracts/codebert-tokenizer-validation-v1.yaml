@@ -1,0 +1,201 @@
+# CodeBERT Tokenizer Validation Contract v1.0.0
+# THE SOURCE OF TRUTH for C-TOK-001: Shell construct tokenization quality
+#
+# STATUS: Authoritative
+# SPEC: bashrs/docs/specifications/shell-safety-inference.md Section 5.2
+# TICKET: SSC VAL-001
+# CONSUMERS:
+#   - bashrs/rash/src/corpus/tokenizer_validation.rs
+#   - bashrs/rash/examples/tokenizer_validation.rs
+#
+# ENFORCEMENT: Pre-training gate — blocks classifier training if tokenizer inadequate.
+
+metadata:
+  version: "1.0.0"
+  created: "2026-03-06"
+  author: "PAIML Engineering"
+  description: "Validates CodeBERT (RoBERTa) tokenizer quality on shell script constructs"
+  references:
+    - "shell-safety-inference.md v11.0.0 Section 5.2"
+    - "Feng et al. (2020) CodeBERT: A Pre-Trained Model for Programming and Natural Languages"
+    - "Liu et al. (2019) RoBERTa: A Robustly Optimized BERT Pretraining Approach"
+  depends_on:
+    - "tokenizer-loading-v1"
+
+# =============================================================================
+# THEORETICAL FOUNDATION
+# =============================================================================
+#
+# CodeBERT uses RoBERTa's tokenizer (50265 BPE vocab, trained on English +
+# 6 programming languages). Shell is NOT in the pretraining corpus.
+#
+# C-TOK-001 validates that shell-specific constructs tokenize "acceptably" —
+# meaning the tokenizer preserves semantic boundaries that matter for safety
+# classification. A construct is "acceptable" if it tokenizes into <= 3 tokens
+# OR if it preserves the semantic unit (e.g., $RANDOM as 1-2 tokens, not 5).
+
+# =============================================================================
+# TOKENIZER CONFIGURATION
+# =============================================================================
+
+tokenizer_config:
+  model_family: "RoBERTa"
+  model_name: "microsoft/codebert-base"
+  vocab_size: 50265
+  format: "legacy (vocab.json + merges.txt)"
+  special_tokens:
+    - id: 0
+      content: "<s>"
+      role: "bos"
+    - id: 2
+      content: "</s>"
+      role: "eos"
+    - id: 1
+      content: "<pad>"
+      role: "pad"
+    - id: 3
+      content: "<unk>"
+      role: "unk"
+
+# =============================================================================
+# SHELL CONSTRUCTS TO VALIDATE
+# =============================================================================
+
+shell_constructs:
+  command_substitution:
+    - construct: "$(command)"
+      acceptable: ["$(" + "command" + ")", "$(command)"]
+      unacceptable_signal: "fragmented into 5+ tokens"
+  redirect:
+    - construct: "2>&1"
+      acceptable: ["2>&1", "2>" + "&1", "2>& " + "1"]
+      unacceptable_signal: "each char is separate token"
+  variable:
+    - construct: "$RANDOM"
+      acceptable: ["$RANDOM", "$" + "RANDOM"]
+      unacceptable_signal: "$ + RAN + DOM"
+    - construct: "$HOME"
+      acceptable: ["$HOME", "$" + "HOME"]
+      unacceptable_signal: "$ + H + OM + E"
+  pipe:
+    - construct: "|"
+      acceptable: ["|"]
+      unacceptable_signal: "merged with adjacent code"
+  heredoc:
+    - construct: "<<'EOF'"
+      acceptable: ["<<" + "'EOF'", "<<'" + "EOF" + "'"]
+      unacceptable_signal: "fully fragmented into 6+ tokens"
+  shebang:
+    - construct: "#!/bin/sh"
+      acceptable: ["#!/" + "bin/" + "sh", "#!" + "/bin/sh"]
+      unacceptable_signal: "each char separate"
+  eval:
+    - construct: "eval"
+      acceptable: ["eval"]
+      unacceptable_signal: "ev + al"
+  backtick:
+    - construct: "`command`"
+      acceptable: ["`" + "command" + "`", "`command`"]
+      unacceptable_signal: "fragmented"
+
+# =============================================================================
+# CONTRACT: C-TOK-001
+# =============================================================================
+
+contract:
+  id: C-TOK-001
+  name: "Shell tokenizer adequacy"
+  description: "CodeBERT tokenizer handles >= 70% of shell constructs acceptably"
+  threshold: 0.70
+  sample_size: 100
+  methodology: |
+    1. Select 100 shell scripts from bashrs corpus (stratified: safe + unsafe)
+    2. Tokenize each with CodeBERT's RoBERTa tokenizer
+    3. For each construct type, check if tokenization is "acceptable"
+    4. Report % acceptable per construct type and overall
+  pass_criteria: "overall_acceptable_rate >= 0.70"
+  fail_action: |
+    Three fallback options (cheapest first):
+    1. Proceed anyway — tokenizer damage may not matter for classification
+    2. Mean-pool instead of [CLS] — distributes signal across broken tokens
+    3. Continue-pretrain CodeBERT on 100K unlabeled GitHub bash scripts
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  - id: F-CTOK-001
+    name: "Tokenizer loads CodeBERT vocab"
+    description: "from_vocab_merges loads exactly 50265 tokens"
+    severity: P0
+    critical: true
+
+  - id: F-CTOK-002
+    name: "Non-empty tokenization"
+    description: "Every non-empty shell script produces at least 1 token"
+    severity: P0
+    critical: true
+
+  - id: F-CTOK-003
+    name: "Construct preservation"
+    description: ">= 70% of shell constructs tokenize acceptably"
+    severity: P0
+    critical: true
+
+  - id: F-CTOK-004
+    name: "Token count bounded"
+    description: "No single shell construct explodes into > 20 tokens"
+    severity: P1
+
+  - id: F-CTOK-005
+    name: "Deterministic tokenization"
+    description: "Same input always produces identical token sequence"
+    severity: P0
+    critical: true
+
+# =============================================================================
+# FALSIFICATION TESTS
+# =============================================================================
+
+falsification_tests:
+  - id: FALSIFY-CTOK-001
+    rule: "F-CTOK-001 (Vocab size)"
+    prediction: "CodeBERT vocab has exactly 50265 entries"
+    if_fails: "Vocab file corrupted or wrong model downloaded"
+
+  - id: FALSIFY-CTOK-002
+    rule: "F-CTOK-002 (Non-empty)"
+    prediction: "100 corpus scripts all produce non-empty token sequences"
+    if_fails: "Tokenizer silently dropping all content"
+
+  - id: FALSIFY-CTOK-003
+    rule: "F-CTOK-003 (Construct preservation)"
+    prediction: ">= 70% of constructs tokenize acceptably"
+    if_fails: "RoBERTa tokenizer too fragmented for shell — use fallback options"
+
+  - id: FALSIFY-CTOK-004
+    rule: "F-CTOK-004 (Token explosion)"
+    prediction: "No construct produces > 20 tokens"
+    if_fails: "Pathological tokenization — may need custom pre-tokenizer"
+
+  - id: FALSIFY-CTOK-005
+    rule: "F-CTOK-005 (Determinism)"
+    prediction: "Repeated tokenization of same input is bit-identical"
+    if_fails: "HashMap ordering leak in BPE merge — critical bug"
+
+# =============================================================================
+# QA GATE
+# =============================================================================
+
+qa_gate:
+  id: C-TOK-001-GATE
+  name: "Tokenizer Validation Gate"
+  description: "Pre-training quality gate for CodeBERT tokenizer on shell"
+  checks:
+    - "vocab_size_50265"
+    - "non_empty_tokenization"
+    - "construct_preservation_70pct"
+    - "no_token_explosion"
+    - "deterministic_encoding"
+  pass_criteria: "All 5 checks pass"
