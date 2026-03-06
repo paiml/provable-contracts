@@ -38,6 +38,7 @@
 - [f16-conversion-v1](contracts/f16-conversion-v1.md)
 - [flash-attention-v1](contracts/flash-attention-v1.md)
 - [format-parity-v1](contracts/format-parity-v1.md)
+- [gpu-decode-profiling-v1](contracts/gpu-decode-profiling-v1.md)
 - [gated-delta-net-v1](contracts/gated-delta-net-v1.md)
 - [gqa-kernel-v1](contracts/gqa-kernel-v1.md)
 - [graph-centrality-v1](contracts/graph-centrality-v1.md)
