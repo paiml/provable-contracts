@@ -54,7 +54,7 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
             let p = std::path::Path::new(&e.path);
             // Go up from contracts/foo.yaml to the repo root
             let contracts_dir = p.parent().unwrap_or(p);
-            let repo_root = if contracts_dir.parent().map_or(true, |p| p.as_os_str().is_empty()) {
+            let repo_root = if contracts_dir.parent().is_none_or(|p| p.as_os_str().is_empty()) {
                 std::path::Path::new(".")
             } else {
                 contracts_dir.parent().unwrap()

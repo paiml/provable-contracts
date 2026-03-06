@@ -187,7 +187,7 @@ fn scan_contract_annotations(
     }
 
     let output = std::process::Command::new("grep")
-        .args(["-rn", r#"contract("#, "--include=*.rs"])
+        .args(["-rn", "contract(\"", "--include=*.rs"])
         .arg(&src_dir)
         .output();
 
@@ -226,7 +226,7 @@ fn parse_contract_annotation(line: &str, project_name: &str, project_path: &Path
 
     // Make file path relative to project
     let relative = file_path
-        .strip_prefix(&project_path.to_string_lossy().as_ref())
+        .strip_prefix(project_path.to_string_lossy().as_ref())
         .unwrap_or(file_path)
         .trim_start_matches('/');
 
@@ -327,7 +327,7 @@ fn scan_kaizen_refs(
         let content = parts[2];
 
         let relative = parts[0]
-            .strip_prefix(&project.path.to_string_lossy().as_ref())
+            .strip_prefix(project.path.to_string_lossy().as_ref())
             .unwrap_or(parts[0])
             .trim_start_matches('/');
 
@@ -366,7 +366,7 @@ fn extract_patterns(content: &str) -> Vec<String> {
         let alpha_end = after_c
             .find(|c: char| !c.is_ascii_uppercase())
             .unwrap_or(0);
-        if alpha_end > 0 && after_c.get(alpha_end..alpha_end + 1) == Some("-") {
+        if alpha_end > 0 && after_c.get(alpha_end..=alpha_end) == Some("-") {
             let digit_start = alpha_end + 1;
             let digit_rest = &after_c[digit_start..];
             let digit_end = digit_rest

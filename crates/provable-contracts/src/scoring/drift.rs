@@ -15,10 +15,10 @@ use std::path::Path;
 /// is more recent than the binding file's commit timestamp.
 ///
 /// Returns the set of stale contract stems (filenames like "softmax-kernel-v1.yaml").
-pub fn detect_stale_contracts(
+pub fn detect_stale_contracts<S: std::hash::BuildHasher>(
     contract_dir: &Path,
     binding_path: &Path,
-    bound_stems: &HashSet<&str>,
+    bound_stems: &HashSet<&str, S>,
 ) -> HashSet<String> {
     let mut stale = HashSet::new();
 

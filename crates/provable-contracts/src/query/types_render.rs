@@ -2,7 +2,10 @@
 //!
 //! Split from types.rs to keep per-function complexity under thresholds.
 
-use super::types::*;
+use super::types::{
+    CallSiteInfo, DiffInfo, EquationBinding, ProjectCoverage, ProofStatusInfo, QueryOutput,
+    QueryResult, ScoreInfo, ViolationInfo,
+};
 
 impl QueryResult {
     pub(crate) fn fmt_enrichment(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -225,7 +228,8 @@ fn md_coverage_map(out: &mut String, map: &[ProjectCoverage]) {
     out.push_str("- **Coverage map:**\n");
     for c in map {
         let pct = if c.binding_total > 0 {
-            c.binding_implemented as f64 / c.binding_total as f64 * 100.0
+            #[allow(clippy::cast_precision_loss)]
+            { c.binding_implemented as f64 / c.binding_total as f64 * 100.0 }
         } else {
             0.0
         };
