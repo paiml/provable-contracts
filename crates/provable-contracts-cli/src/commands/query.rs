@@ -28,6 +28,7 @@ pub struct QueryCliParams<'a> {
     pub binding: Option<&'a Path>,
     pub show_diff: bool,
     pub show_pagerank: bool,
+    pub show_call_sites: bool,
     pub format: &'a str,
     pub exit_code: bool,
 }
@@ -62,6 +63,7 @@ pub fn run(p: &QueryCliParams<'_>) -> Result<(), Box<dyn std::error::Error>> {
         binding_gaps_only: p.binding_gaps,
         show_diff: p.show_diff,
         show_pagerank: p.show_pagerank,
+        show_call_sites: p.show_call_sites,
         min_level: p.min_level.clone(),
     };
 

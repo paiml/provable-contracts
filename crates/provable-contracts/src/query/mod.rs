@@ -5,10 +5,12 @@
 //!
 //! Spec: `docs/specifications/sub/query.md`
 
+pub mod cross_project;
 mod index;
 mod persist;
 mod types;
 
+pub use cross_project::CrossProjectIndex;
 pub use index::ContractIndex;
 pub use types::{
     DiffInfo, EquationBinding, ProofStatusInfo, QueryOutput, QueryParams, QueryResult, ScoreInfo,
@@ -44,11 +46,28 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
     let total_matches = filtered.len();
     let limited: Vec<_> = filtered.into_iter().take(params.limit).collect();
 
+    // Build cross-project index lazily only when call sites are requested
+    let xp_index = if params.show_call_sites {
+        index.entries.first().map(|e| {
+            let p = std::path::Path::new(&e.path);
+            // Go up from contracts/foo.yaml to the repo root
+            let contracts_dir = p.parent().unwrap_or(p);
+            let repo_root = if contracts_dir.parent().map_or(true, |p| p.as_os_str().is_empty()) {
+                std::path::Path::new(".")
+            } else {
+                contracts_dir.parent().unwrap()
+            };
+            cross_project::CrossProjectIndex::build(repo_root)
+        })
+    } else {
+        None
+    };
+
     let results: Vec<QueryResult> = limited
         .into_iter()
         .enumerate()
         .map(|(rank, (idx, relevance))| {
-            build_result(index, params, binding.as_ref(), rank, idx, relevance)
+            build_result(index, params, binding.as_ref(), xp_index.as_ref(), rank, idx, relevance)
         })
         .collect();
 
@@ -63,6 +82,7 @@ fn build_result(
     index: &ContractIndex,
     params: &QueryParams,
     binding: Option<&BindingRegistry>,
+    xp_index: Option<&cross_project::CrossProjectIndex>,
     rank: usize,
     idx: usize,
     relevance: f64,
@@ -85,7 +105,26 @@ fn build_result(
         bindings: opt_binding(entry, binding, params.show_binding),
         diff: params.show_diff.then(|| build_diff_info(entry)).flatten(),
         pagerank: if params.show_pagerank { index.cached_pagerank(&entry.stem) } else { None },
+        call_sites: build_call_sites(&entry.stem, xp_index),
     }
+}
+
+fn build_call_sites(
+    stem: &str,
+    xp_index: Option<&cross_project::CrossProjectIndex>,
+) -> Vec<types::CallSiteInfo> {
+    let Some(xp) = xp_index else {
+        return Vec::new();
+    };
+    xp.call_sites_for(stem)
+        .iter()
+        .map(|cs| types::CallSiteInfo {
+            project: cs.project.clone(),
+            file: cs.file.clone(),
+            line: cs.line,
+            equation: cs.equation.clone(),
+        })
+        .collect()
 }
 
 fn opt_vec(source: &[String], include: bool) -> Vec<String> {

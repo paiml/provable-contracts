@@ -54,6 +54,7 @@ pub struct QueryParams {
     pub binding_gaps_only: bool,
     pub show_diff: bool,
     pub show_pagerank: bool,
+    pub show_call_sites: bool,
     pub min_level: Option<String>,
 }
 
@@ -78,6 +79,7 @@ impl Default for QueryParams {
             binding_gaps_only: false,
             show_diff: false,
             show_pagerank: false,
+            show_call_sites: false,
             min_level: None,
         }
     }
@@ -107,6 +109,17 @@ pub struct QueryResult {
     pub diff: Option<DiffInfo>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pagerank: Option<f64>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub call_sites: Vec<CallSiteInfo>,
+}
+
+/// Cross-project call site for a contract.
+#[derive(Debug, Clone, Serialize)]
+pub struct CallSiteInfo {
+    pub project: String,
+    pub file: String,
+    pub line: u32,
+    pub equation: Option<String>,
 }
 
 /// Inline score info for enrichment.
@@ -187,6 +200,13 @@ impl QueryResult {
         if let Some(pr) = self.pagerank {
             writeln!(f, "    PageRank: {pr:.4}")?;
         }
+        if !self.call_sites.is_empty() {
+            writeln!(f, "    Call sites ({} projects):", count_unique_projects(&self.call_sites))?;
+            for cs in &self.call_sites {
+                let eq = cs.equation.as_deref().unwrap_or("");
+                writeln!(f, "      {}/{}:{} {eq}", cs.project, cs.file, cs.line)?;
+            }
+        }
         Ok(())
     }
 
@@ -242,6 +262,22 @@ impl QueryResult {
         if let Some(pr) = self.pagerank {
             out.push_str(&format!("- **PageRank:** {pr:.4}\n"));
         }
+        if !self.call_sites.is_empty() {
+            out.push_str(&format!(
+                "- **Call sites** ({} projects):\n",
+                count_unique_projects(&self.call_sites)
+            ));
+            for cs in &self.call_sites {
+                let eq = cs
+                    .equation
+                    .as_deref()
+                    .map_or(String::new(), |e| format!(" eq={e}"));
+                out.push_str(&format!(
+                    "  - `{}/{}:{}`{eq}\n",
+                    cs.project, cs.file, cs.line
+                ));
+            }
+        }
     }
 }
 
@@ -277,6 +313,14 @@ impl QueryOutput {
         out.push_str(&format!("*{} matches*\n", self.total_matches));
         out
     }
+}
+
+fn count_unique_projects(sites: &[CallSiteInfo]) -> usize {
+    let mut seen = std::collections::HashSet::new();
+    for s in sites {
+        seen.insert(&s.project);
+    }
+    seen.len()
 }
 
 impl std::fmt::Display for QueryOutput {

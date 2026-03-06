@@ -165,6 +165,7 @@
                 commit_hash: "abc1234def".to_string(),
             }),
             pagerank: Some(0.042),
+            call_sites: vec![],
         };
         let text = format!("{r}");
         assert!(text.contains("Bindings:"));
@@ -204,6 +205,7 @@
                     commit_hash: "abc1234".to_string(),
                 }),
                 pagerank: None,
+                call_sites: vec![],
             }],
         };
         let md = output.to_markdown();
