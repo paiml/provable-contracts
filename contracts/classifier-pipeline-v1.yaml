@@ -156,14 +156,18 @@ validated_results:
       train_mcc: 0.546
       ship_gate: "PASS"
       notes: "Class-weighted online SGD (sqrt-inverse balanced), L2=1e-4, 100 epochs, lr=0.001"
-    - name: "3000-entry BPE (degradation onset)"
-      test_mcc: 0.291
+    - name: "3000-entry shell + 350 adv (MLP h=32)"
+      test_mcc: 0.754
+      test_accuracy: 0.942
+      test_precision: 0.670
+      test_recall: 0.918
+      test_f1: 0.775
+      ship_gate: "PASS"
+      notes: "MLP probe (Level 0.5), lr=1e-4, 50 epochs, L2=1e-4, shell-based labels (#172), adversarial augmentation"
+    - name: "3000-entry shell (linear, no aug)"
+      test_mcc: 0.043
       ship_gate: "FAIL"
-      notes: "Unsafe entries stop at index ~3000; test set still has some unsafe samples"
-    - name: "4000+ entry BPE (data gap)"
-      test_mcc: 0.000
-      ship_gate: "FAIL"
-      notes: "Test set drawn from indices 3000+ which are 100% safe; zero true positives possible"
+      notes: "Linear probe insufficient for shell-based labels; 0.82% positive rate"
   extraction_rate: "1.82 entries/s (CPU release build, shell-based #172)"
   model_load_time: "~23s (476MB safetensors)"
   unsafe_label_count: 148
