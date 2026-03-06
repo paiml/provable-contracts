@@ -304,6 +304,9 @@ provable_contracts::scoring::score_contract(contract, binding, stem) -> Contract
 provable_contracts::scoring::score_contract_weighted(contract, binding, stem, weights) -> ContractScore
 provable_contracts::scoring::score_codebase(contracts, binding) -> CodebaseScore
 provable_contracts::scoring::score_codebase_with_pagerank(contracts, binding, pagerank) -> CodebaseScore
+provable_contracts::scoring::score_codebase_full(contracts, binding, pagerank, drift) -> CodebaseScore
+provable_contracts::scoring::drift::detect_stale_contracts(dir, binding_path, stems) -> HashSet<String>
+provable_contracts::scoring::drift::compute_drift(stale, total) -> f64
 provable_contracts::scoring::ScoringWeights { spec_depth, falsification, kani, lean, binding }
 provable_contracts::query::ContractIndex::from_directory(dir) -> ContractIndex
 provable_contracts::query::ContractIndex::cached_score(stem) -> Option<f64>
@@ -311,6 +314,9 @@ provable_contracts::query::ContractIndex::cached_pagerank(stem) -> Option<f64>
 provable_contracts::query::ContractIndex::pagerank(iterations, damping) -> HashMap<String, f64>
 provable_contracts::query::execute(index, params) -> QueryOutput
 provable_contracts::query::QueryOutput::to_markdown() -> String
+provable_contracts::query::CrossProjectIndex::build(repo_root) -> CrossProjectIndex
+provable_contracts::query::CrossProjectIndex::call_sites_for(stem) -> &[CallSite]
+provable_contracts::query::CrossProjectIndex::binding_refs_for(stem) -> &[BindingRef]
 ```
 
 ---
