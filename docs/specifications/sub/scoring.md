@@ -241,7 +241,7 @@ pv score contracts/ -f json | diff prev-scores.json -
 
 ---
 
-## 6. Custom Weights
+## 6. Custom Weights [IMPLEMENTED]
 
 Default weights can be overridden:
 

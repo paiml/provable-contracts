@@ -301,8 +301,12 @@ provable_contracts::proof_status::proof_status_report(...) -> ProofStatusReport
 
 // Scoring + Query (implemented)
 provable_contracts::scoring::score_contract(contract, binding, stem) -> ContractScore
+provable_contracts::scoring::score_contract_weighted(contract, binding, stem, weights) -> ContractScore
+provable_contracts::scoring::score_codebase(contracts, binding) -> CodebaseScore
+provable_contracts::scoring::ScoringWeights { spec_depth, falsification, kani, lean, binding }
 provable_contracts::query::ContractIndex::from_directory(dir) -> ContractIndex
 provable_contracts::query::execute(index, params) -> QueryOutput
+provable_contracts::query::QueryOutput::to_markdown() -> String
 ```
 
 ---
@@ -385,7 +389,7 @@ Cross-project data sources:
 - KAIZEN ticket refs (`KAIZEN-NNN`, `C-*-NNN`) in commit messages + code
 - `Cargo.toml` dependency declarations on `provable-contracts`
 
-### Query Modes
+### Query Modes [IMPLEMENTED]
 
 ```bash
 pv query "softmax stability"           # Semantic (BM25)
@@ -394,11 +398,13 @@ pv query --literal "kani::proof"      # Exact match
 pv query --obligation invariant       # Filter by type
 pv query --unproven                   # Gaps only
 pv query --depends-on softmax         # DAG traversal
+pv query --min-score 0.5             # Score threshold
+pv query --binding-gaps --binding b   # Unimplemented bindings
 pv query --include-project ../trueno  # Explicit project path
 ```
 
-### Enrichment: `--score`, `--proof-status`, `--binding`, `--graph`,
-`--paper`, `--diff`, `--call-sites`. Output: `-f text|json|markdown`.
+### Enrichment [IMPLEMENTED]: `--score`, `--proof-status`, `--binding-info`,
+`--graph`, `--paper`. Output: `-f text|json|markdown`.
 
 ---
 
