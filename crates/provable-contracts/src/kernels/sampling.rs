@@ -348,6 +348,41 @@ mod tests {
     }
 
     #[test]
+    fn test_sample_scalar_delegates_to_greedy() {
+        let logits = [0.1, 0.5, -0.3, 0.8, 0.2];
+        assert_eq!(sample_scalar(&logits), greedy_scalar(&logits));
+    }
+
+    #[test]
+    fn test_top_k_full_k_is_noop() {
+        let mut probs = [0.25, 0.25, 0.25, 0.25];
+        let original = probs;
+        top_k_scalar(&mut probs, 4);
+        assert_eq!(probs, original);
+    }
+
+    #[test]
+    fn test_top_p_threshold_one() {
+        let mut probs = [0.25, 0.25, 0.25, 0.25];
+        top_p_scalar(&mut probs, 1.0);
+        let sum: f32 = probs.iter().sum();
+        assert!((sum - 1.0).abs() < 1e-5);
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    #[test]
+    fn test_temperature_avx2_parity() {
+        if !is_x86_feature_detected!("avx2") {
+            return;
+        }
+        let mut scalar = [2.0, 4.0, 6.0, 8.0];
+        let mut avx2 = scalar;
+        temperature_scalar(&mut scalar, 2.0);
+        unsafe { temperature_avx2(&mut avx2, 2.0) };
+        assert_eq!(scalar, avx2);
+    }
+
+    #[test]
     fn test_sampling_ptx_structure() {
         let ptx = sampling_ptx();
         assert!(ptx.contains(".entry greedy_kernel"));

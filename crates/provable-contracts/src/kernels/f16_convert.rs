@@ -312,6 +312,51 @@ mod tests {
         assert!(ptx.contains("ret;"));
     }
 
+    /// Verify f32-to-f16 edge cases: infinity, NaN, underflow, overflow
+    #[test]
+    fn test_f32_to_f16_edge_cases() {
+        // +inf → 0x7C00
+        assert_eq!(f32_to_f16_single(f32::INFINITY), 0x7C00);
+        // -inf → 0xFC00
+        assert_eq!(f32_to_f16_single(f32::NEG_INFINITY), 0xFC00);
+        // NaN → f16 NaN (sign=0, exp=31, mantissa!=0)
+        let nan_bits = f32_to_f16_single(f32::NAN);
+        assert_eq!(nan_bits & 0x7C00, 0x7C00);
+        assert_ne!(nan_bits & 0x03FF, 0);
+        // Very small positive → underflow to zero
+        assert_eq!(f32_to_f16_single(1e-10), 0x0000);
+        // Very large positive → overflow to inf
+        assert_eq!(f32_to_f16_single(1e10), 0x7C00);
+        // f32 subnormal → f16 zero
+        assert_eq!(f32_to_f16_single(f32::from_bits(0x0000_0001)), 0x0000);
+        // -0.0 → 0x8000
+        assert_eq!(f32_to_f16_single(-0.0), 0x8000);
+    }
+
+    /// Verify batch f32-to-f16 conversion
+    #[test]
+    fn test_f32_to_f16_batch() {
+        let input = [1.0f32, 2.0, 0.5, -1.0];
+        let mut output = [0u16; 4];
+        f32_to_f16_scalar(&input, &mut output);
+        assert_eq!(output[0], 0x3C00); // 1.0
+        assert_eq!(output[1], 0x4000); // 2.0
+        assert_eq!(output[2], 0x3800); // 0.5
+        assert_eq!(output[3], 0xBC00); // -1.0
+    }
+
+    /// Verify f16 subnormal conversion
+    #[test]
+    fn test_f16_subnormal_conversion() {
+        // Smallest positive subnormal: exp=0, mant=1
+        let val = f16_to_f32_single(0x0001);
+        assert!(val > 0.0);
+        assert!(val < 1e-5);
+        // Negative subnormal
+        let neg_val = f16_to_f32_single(0x8001);
+        assert!(neg_val < 0.0);
+    }
+
     /// Verify AVX2 f16-to-f32 conversion matches scalar output
     #[cfg(target_arch = "x86_64")]
     #[test]
