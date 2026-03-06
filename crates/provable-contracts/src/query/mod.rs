@@ -490,11 +490,8 @@ fn build_score_info(entry: &types::ContractEntry) -> Option<ScoreInfo> {
 }
 
 #[cfg(test)]
-mod tests {
-    include!("query_tests.rs");
-}
-
+mod tests { include!("query_tests.rs"); }
 #[cfg(test)]
-mod coverage_tests {
-    include!("query_tests_coverage.rs");
-}
+mod coverage_tests { include!("query_tests_coverage.rs"); }
+#[cfg(test)]
+mod render_tests { include!("query_tests_render.rs"); }
