@@ -90,16 +90,17 @@ pv query "softmax" --project aprender   # Filter to one project
 pv query --all-projects                 # Force full cross-project scan
 ```
 
-### Index Persistence
+### Index Persistence [IMPLEMENTED]
 
 ```
-.pv/contracts.idx              JSON-serialized ContractIndex
-.pv/contracts.idx.mtime        mtime of contracts/ at index build
+.pv/contracts.idx              JSON-serialized ContractIndex [IMPLEMENTED]
+.pv/contracts.idx.mtime        mtime of contracts/ at index build [IMPLEMENTED]
 .pv/cross-project.idx          JSON-serialized CrossProjectIndex
 .pv/cross-project.idx.mtime    max mtime of all sibling projects
 ```
 
-Auto-rebuild when `contracts/` or sibling project mtime > stored mtime.
+Auto-rebuild when `contracts/` mtime > stored mtime. [IMPLEMENTED]
+Cross-project index persistence deferred to Phase 3.
 
 ---
 

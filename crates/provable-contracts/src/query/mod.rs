@@ -48,51 +48,7 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
         .into_iter()
         .enumerate()
         .map(|(rank, (idx, relevance))| {
-            let entry = &index.entries[idx];
-            let score = if params.show_score {
-                build_score_info(entry)
-            } else {
-                None
-            };
-            let proof_status = if params.show_proof_status {
-                build_proof_status_info(entry)
-            } else {
-                None
-            };
-            let bindings = if params.show_binding {
-                build_binding_info(entry, binding.as_ref())
-            } else {
-                Vec::new()
-            };
-            let diff = if params.show_diff {
-                build_diff_info(entry)
-            } else {
-                None
-            };
-
-            QueryResult {
-                rank: rank + 1,
-                stem: entry.stem.clone(),
-                path: entry.path.clone(),
-                relevance,
-                description: entry.description.clone(),
-                equations: entry.equations.clone(),
-                obligation_count: entry.obligation_count,
-                references: if params.show_paper {
-                    entry.references.clone()
-                } else {
-                    Vec::new()
-                },
-                depends_on: if params.show_graph {
-                    entry.depends_on.clone()
-                } else {
-                    Vec::new()
-                },
-                score,
-                proof_status,
-                bindings,
-                diff,
-            }
+            build_result(index, params, binding.as_ref(), rank, idx, relevance)
         })
         .collect();
 
@@ -101,6 +57,59 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
         total_matches,
         results,
     }
+}
+
+fn build_result(
+    index: &ContractIndex,
+    params: &QueryParams,
+    binding: Option<&BindingRegistry>,
+    rank: usize,
+    idx: usize,
+    relevance: f64,
+) -> QueryResult {
+    let entry = &index.entries[idx];
+    let (depends_on, depended_by) = graph_fields(index, entry, params.show_graph);
+    QueryResult {
+        rank: rank + 1,
+        stem: entry.stem.clone(),
+        path: entry.path.clone(),
+        relevance,
+        description: entry.description.clone(),
+        equations: entry.equations.clone(),
+        obligation_count: entry.obligation_count,
+        references: opt_vec(&entry.references, params.show_paper),
+        depends_on,
+        depended_by,
+        score: params.show_score.then(|| build_score_info(entry)).flatten(),
+        proof_status: params.show_proof_status.then(|| build_proof_status_info(entry)).flatten(),
+        bindings: opt_binding(entry, binding, params.show_binding),
+        diff: params.show_diff.then(|| build_diff_info(entry)).flatten(),
+    }
+}
+
+fn opt_vec(source: &[String], include: bool) -> Vec<String> {
+    if include { source.to_vec() } else { Vec::new() }
+}
+
+fn graph_fields(
+    index: &ContractIndex,
+    entry: &types::ContractEntry,
+    show: bool,
+) -> (Vec<String>, Vec<String>) {
+    if !show {
+        return (Vec::new(), Vec::new());
+    }
+    let deps = entry.depends_on.clone();
+    let rev = index.depended_by(&entry.stem).into_iter().map(String::from).collect();
+    (deps, rev)
+}
+
+fn opt_binding(
+    entry: &types::ContractEntry,
+    binding: Option<&BindingRegistry>,
+    show: bool,
+) -> Vec<EquationBinding> {
+    if show { build_binding_info(entry, binding) } else { Vec::new() }
 }
 
 fn apply_filters(

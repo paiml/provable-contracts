@@ -151,6 +151,7 @@
             obligation_count: 3,
             references: vec![],
             depends_on: vec!["dep-v1".to_string()],
+            depended_by: vec!["consumer-v1".to_string()],
             score: None,
             proof_status: None,
             bindings: vec![EquationBinding {
@@ -169,6 +170,7 @@
         assert!(text.contains("eq1: implemented (mod::path)"));
         assert!(text.contains("Last modified: 2026-03-01"));
         assert!(text.contains("Depends on: dep-v1"));
+        assert!(text.contains("Depended by: consumer-v1"));
     }
 
     #[test]
@@ -186,6 +188,7 @@
                 obligation_count: 1,
                 references: vec![],
                 depends_on: vec!["dep-v1".to_string()],
+                depended_by: vec!["consumer-v1".to_string()],
                 score: None,
                 proof_status: None,
                 bindings: vec![EquationBinding {
@@ -205,6 +208,7 @@
         assert!(md.contains("`eq1`: unbound"));
         assert!(md.contains("**Last modified:**"));
         assert!(md.contains("**Depends on:** dep-v1"));
+        assert!(md.contains("**Depended by:** consumer-v1"));
     }
 
     #[test]

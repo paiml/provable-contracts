@@ -93,6 +93,8 @@ pub struct QueryResult {
     pub obligation_count: usize,
     pub references: Vec<String>,
     pub depends_on: Vec<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub depended_by: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub score: Option<ScoreInfo>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -195,6 +197,9 @@ impl QueryResult {
         if !self.depends_on.is_empty() {
             out.push_str(&format!("- **Depends on:** {}\n", self.depends_on.join(", ")));
         }
+        if !self.depended_by.is_empty() {
+            out.push_str(&format!("- **Depended by:** {}\n", self.depended_by.join(", ")));
+        }
         out.push('\n');
         out
     }
@@ -244,6 +249,9 @@ impl std::fmt::Display for QueryResult {
         self.fmt_enrichment(f)?;
         if !self.depends_on.is_empty() {
             writeln!(f, "    Depends on: {}", self.depends_on.join(", "))?;
+        }
+        if !self.depended_by.is_empty() {
+            writeln!(f, "    Depended by: {}", self.depended_by.join(", "))?;
         }
         Ok(())
     }
