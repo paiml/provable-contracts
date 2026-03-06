@@ -10,6 +10,7 @@ pub mod lean;
 pub mod lean_status;
 pub mod probar;
 pub mod proof_status;
+pub mod query;
 pub mod scaffold;
 pub mod score;
 pub mod status;

@@ -1,0 +1,126 @@
+metadata:
+  version: "1.0.0"
+  description: "CLF-RUN classifier pipeline — CodeBERT embedding extraction + linear probe training"
+  references:
+    - "SSC v11 Section 4.3: Classifier Infrastructure"
+    - "SSC v11 Phase 1: CLF-RUN task"
+    - "Alain & Bengio (2016) Understanding intermediate layers using linear classifier probes"
+  depends_on:
+    - "codebert-tokenizer-validation-v1"
+    - "linear-probe-classifier-v1"
+    - "conversation-generation-v1"
+
+equations:
+  embedding_extraction:
+    formula: "cls_emb = EncoderModel.forward(tokenize(script))[0, :hidden_size]"
+    domain: "script in String, model in EncoderModel"
+    codomain: "cls_emb in R^768"
+    invariants:
+      - "Output dimension equals hidden_size (768 for CodeBERT)"
+      - "Output is deterministic: same input → same embedding"
+      - "Encoder weights are frozen (no gradient updates)"
+
+  linear_probe:
+    formula: "P(unsafe|x) = sigmoid(w @ cls_emb + b)"
+    domain: "cls_emb in R^768, w in R^768, b in R"
+    codomain: "probability in [0, 1]"
+    invariants:
+      - "Only w and b are trainable (768 + 1 = 769 parameters)"
+      - "Prediction threshold at 0.5"
+      - "sigmoid(0) = 0.5 exactly"
+
+  evaluation:
+    formula: "MCC = (TP*TN - FP*FN) / sqrt((TP+FP)(TP+FN)(TN+FP)(TN+FN))"
+    domain: "predictions in Vec<(u8, u8)>"
+    codomain: "MCC in [-1, 1]"
+    invariants:
+      - "MCC = 0 for random classifier"
+      - "MCC > 0.3 beats keyword baseline (C-CLF-001 Level 1)"
+      - "MCC > 0.4 beats linter baseline (C-CLF-001 Level 2)"
+
+proof_obligations:
+  - type: invariant
+    property: "Embedding determinism"
+    formal: "extract(model, script) == extract(model, script) for same inputs"
+    applies_to: all
+  - type: invariant
+    property: "Split determinism"
+    formal: "split(data, seed) == split(data, seed) for same seed"
+    applies_to: all
+  - type: invariant
+    property: "Probe convergence"
+    formal: "train_accuracy(epoch=N) >= train_accuracy(epoch=0) for N >= 10"
+    applies_to: training
+  - type: invariant
+    property: "Ship gate C-CLF-001"
+    formal: "test_mcc > 0.3 (beats keyword) AND test_mcc > 0.0 (beats majority)"
+    applies_to: evaluation
+  - type: invariant
+    property: "No empty embeddings"
+    formal: "for all e in embeddings: e.embedding.len() == hidden_size AND any(e != 0.0)"
+    applies_to: extraction
+
+falsification_tests:
+  - id: FALSIFY-CLF-001
+    rule: "Sigmoid correctness"
+    prediction: "sigmoid(0) = 0.5, sigmoid(large) ≈ 1, sigmoid(-large) ≈ 0"
+    test: "Unit test sigmoid function at boundary values"
+    if_fails: "Numerical implementation error in activation"
+  - id: FALSIFY-CLF-002
+    rule: "Split determinism"
+    prediction: "Same seed produces identical train/test partition"
+    test: "Split twice with same seed, compare sets"
+    if_fails: "Non-deterministic hash or random element in splitting"
+  - id: FALSIFY-CLF-003
+    rule: "Linear probe learns"
+    prediction: "Training accuracy > 70% on linearly separable synthetic data"
+    test: "Create synthetic embeddings with clear separation, train, measure accuracy"
+    if_fails: "SGD implementation error or learning rate too large/small"
+  - id: FALSIFY-CLF-004
+    rule: "Serialization roundtrip"
+    prediction: "save_probe → load_probe preserves all fields exactly"
+    test: "Create probe, save, load, compare all fields"
+    if_fails: "JSON serialization loses precision or drops fields"
+  - id: FALSIFY-CLF-005
+    rule: "Embedding serialization roundtrip"
+    prediction: "save_embeddings → load_embeddings preserves all entries"
+    test: "Create embeddings, save to JSONL, reload, verify count and values"
+    if_fails: "JSONL line parsing error or float precision loss"
+
+kani_harnesses:
+  - id: KANI-CLF-001
+    obligation: "Embedding determinism"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+  - id: KANI-CLF-002
+    obligation: "Split determinism"
+    bound: 16
+    strategy: bounded_int
+    solver: cadical
+  - id: KANI-CLF-003
+    obligation: "Probe convergence"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+  - id: KANI-CLF-004
+    obligation: "Ship gate C-CLF-001"
+    bound: 8
+    strategy: stub_float
+    solver: cadical
+  - id: KANI-CLF-005
+    obligation: "No empty embeddings"
+    bound: 16
+    strategy: bounded_int
+    solver: cadical
+
+qa_gate:
+  id: "C-CLF-PIPELINE-001"
+  name: "C-CLF-PIPELINE-001"
+  description: "Classifier pipeline quality gate"
+  checks:
+    - "11 unit tests pass (sigmoid, split, train, save/load)"
+    - "Linear probe achieves > 70% accuracy on synthetic data"
+    - "Embedding extraction produces 768-dimensional vectors"
+    - "Train/test split is deterministic with same seed"
+    - "All serialization roundtrips preserve data exactly"

@@ -141,6 +141,50 @@ enum Commands {
         #[arg(long)]
         min_score: Option<f64>,
     },
+    /// Search contracts by intent, regex, or literal match
+    Query {
+        /// Search query string
+        query: String,
+        /// Directory containing contract YAML files
+        #[arg(long, default_value = "contracts")]
+        contract_dir: PathBuf,
+        /// Use regex matching instead of semantic search
+        #[arg(long)]
+        regex: bool,
+        /// Use literal substring matching
+        #[arg(long)]
+        literal: bool,
+        /// Force case-sensitive matching
+        #[arg(long)]
+        case_sensitive: bool,
+        /// Maximum number of results
+        #[arg(short, long, default_value = "10")]
+        limit: usize,
+        /// Filter by obligation type (invariant, equivalence, bound, etc.)
+        #[arg(long)]
+        obligation: Option<String>,
+        /// Filter to contracts depending on this stem
+        #[arg(long)]
+        depends_on: Option<String>,
+        /// Filter to contracts depended on by this stem
+        #[arg(long)]
+        depended_by: Option<String>,
+        /// Show only contracts with unproven obligations
+        #[arg(long)]
+        unproven: bool,
+        /// Include contract scores in output
+        #[arg(long)]
+        score: bool,
+        /// Include dependency graph info
+        #[arg(long)]
+        graph: bool,
+        /// Include paper references
+        #[arg(long)]
+        paper: bool,
+        /// Output format: text (default) or json
+        #[arg(short, long, default_value = "text")]
+        format: String,
+    },
     /// Generate mdBook pages for contracts
     Book {
         /// Directory containing contract YAML files
@@ -210,6 +254,37 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             format,
             min_score,
         } => commands::score::run(&path, binding.as_deref(), &format, min_score),
+        Commands::Query {
+            query,
+            contract_dir,
+            regex,
+            literal,
+            case_sensitive,
+            limit,
+            obligation,
+            depends_on,
+            depended_by,
+            unproven,
+            score,
+            graph,
+            paper,
+            format,
+        } => commands::query::run(
+            &contract_dir,
+            &query,
+            regex,
+            literal,
+            case_sensitive,
+            limit,
+            obligation.as_deref(),
+            depends_on.as_deref(),
+            depended_by.as_deref(),
+            unproven,
+            score,
+            graph,
+            paper,
+            &format,
+        ),
         Commands::Book {
             contract_dir,
             output,
@@ -235,157 +310,5 @@ fn main() {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    /// Return the path to the softmax contract fixture for testing
-    fn test_contract() -> PathBuf {
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts/softmax-kernel-v1.yaml")
-    }
-
-    #[test]
-    fn dispatch_validate() {
-        let result = run_command(Commands::Validate {
-            contract: test_contract(),
-        });
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn dispatch_scaffold() {
-        let result = run_command(Commands::Scaffold {
-            contract: test_contract(),
-        });
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn dispatch_kani() {
-        let result = run_command(Commands::Kani {
-            contract: test_contract(),
-        });
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn dispatch_status() {
-        let result = run_command(Commands::Status {
-            contract: test_contract(),
-        });
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn dispatch_diff() {
-        let c = test_contract();
-        let result = run_command(Commands::Diff {
-            old: c.clone(),
-            new: c,
-        });
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn dispatch_lean() {
-        let result = run_command(Commands::Lean {
-            contract: test_contract(),
-            output_dir: None,
-        });
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn dispatch_lean_status() {
-        let result = run_command(Commands::LeanStatus {
-            path: test_contract(),
-        });
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn dispatch_lean_status_directory() {
-        let contracts_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
-        let result = run_command(Commands::LeanStatus {
-            path: contracts_dir,
-        });
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn dispatch_proof_status() {
-        let result = run_command(Commands::ProofStatus {
-            path: test_contract(),
-            binding: None,
-            format: "text".to_string(),
-        });
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn dispatch_proof_status_json() {
-        let result = run_command(Commands::ProofStatus {
-            path: test_contract(),
-            binding: None,
-            format: "json".to_string(),
-        });
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn dispatch_proof_status_directory() {
-        let contracts_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
-        let result = run_command(Commands::ProofStatus {
-            path: contracts_dir,
-            binding: None,
-            format: "text".to_string(),
-        });
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn dispatch_score_single() {
-        let result = run_command(Commands::Score {
-            path: test_contract(),
-            binding: None,
-            format: "text".to_string(),
-            min_score: None,
-        });
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn dispatch_score_directory() {
-        let contracts_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
-        let result = run_command(Commands::Score {
-            path: contracts_dir,
-            binding: None,
-            format: "json".to_string(),
-            min_score: None,
-        });
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn dispatch_score_min_threshold_fails() {
-        let result = run_command(Commands::Score {
-            path: test_contract(),
-            binding: None,
-            format: "text".to_string(),
-            min_score: Some(0.99),
-        });
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn dispatch_proof_status_with_binding() {
-        let contracts_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
-        let binding =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts/aprender/binding.yaml");
-        let result = run_command(Commands::ProofStatus {
-            path: contracts_dir,
-            binding: Some(binding),
-            format: "json".to_string(),
-        });
-        assert!(result.is_ok());
-    }
-}
+#[path = "../tests/includes/dispatch_tests.rs"]
+mod dispatch_tests;
