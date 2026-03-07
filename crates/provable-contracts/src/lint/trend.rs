@@ -91,6 +91,7 @@ pub fn load_snapshots(trend_root: &Path) -> Vec<TrendSnapshot> {
 }
 
 /// Check for quality drift: mean score drop >threshold from rolling avg.
+#[allow(clippy::cast_precision_loss)]
 pub fn detect_drift(snapshots: &[TrendSnapshot], threshold: f64) -> Option<f64> {
     if snapshots.len() < 2 {
         return None;

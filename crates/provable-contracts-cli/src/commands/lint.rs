@@ -96,7 +96,7 @@ pub fn run(
     let effective_format = resolve_format(format, config_path, contract_dir);
     match effective_format.as_str() {
         "json" => print_json(&report)?,
-        "sarif" => print_sarif(&report)?,
+        "sarif" => print_sarif(&report),
         "github" => print_github(&report),
         _ => print_text(&report),
     }
@@ -329,11 +329,10 @@ fn print_json(report: &LintReport) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn print_sarif(report: &LintReport) -> Result<(), Box<dyn std::error::Error>> {
+fn print_sarif(report: &LintReport) {
     let version = env!("CARGO_PKG_VERSION");
     let sarif = findings_to_sarif(&report.findings, version);
     println!("{}", sarif_to_json(&sarif, true));
-    Ok(())
 }
 
 fn print_github(report: &LintReport) {
