@@ -39,6 +39,16 @@ proof_obligations:
     property: "Denominator strictly positive"
     formal: "sqrt(sigma^2 + eps) > 0 when eps > 0"
     applies_to: all
+    lean:
+      theorem: LayerNorm.ln_denom_pos
+      module: ProvableContracts.LayerNorm
+      status: proved
+      depends_on:
+        - LayerNorm.variance_nonneg
+        - Real.sqrt_pos_of_pos
+      mathlib_imports:
+        - Mathlib.Data.Real.Sqrt
+      notes: "Variance ≥ 0 (sum of squares), so var + ε > 0, and √ positive"
   - type: equivalence
     property: "SIMD matches scalar within ULP"
     tolerance: 8.0
@@ -53,6 +63,24 @@ proof_obligations:
     formal: "|LN(x + c) - LN(x)| < eps for any scalar c"
     tolerance: 1.0e-6
     applies_to: all
+    lean:
+      theorem: LayerNorm.variance_shift
+      module: ProvableContracts.LayerNorm
+      status: proved
+      depends_on:
+        - LayerNorm.mean_shift
+        - LayerNorm.centered_shift
+      mathlib_imports:
+        - Mathlib.Algebra.BigOperators.Group.Finset
+      notes: "mean(x+c) = mean(x)+c, so centered values unchanged, variance unchanged"
+
+verification_summary:
+  total_obligations: 6
+  l2_property_tested: 6
+  l3_kani_proved: 3
+  l4_lean_proved: 2
+  l4_sorry_count: 0
+  l4_not_applicable: 1
 
 kernel_structure:
   phases:

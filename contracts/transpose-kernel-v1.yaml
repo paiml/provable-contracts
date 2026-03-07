@@ -27,6 +27,15 @@ proof_obligations:
     property: "Involution (self-inverse)"
     formal: "transpose(transpose(A)) = A (bitwise exact)"
     applies_to: all
+    lean:
+      theorem: Transpose.transpose_involution
+      module: ProvableContracts.Transpose
+      status: proved
+      depends_on:
+        - Matrix.transpose_transpose
+      mathlib_imports:
+        - Mathlib.Data.Matrix.Basic
+      notes: "Direct application of Mathlib's Matrix.transpose_transpose"
   - type: equivalence
     property: "AVX2 matches scalar"
     formal: "|transpose_avx2(A) - transpose_scalar(A)| = 0 (bitwise exact)"
@@ -36,10 +45,26 @@ proof_obligations:
     property: "Element correctness"
     formal: "B[j][i] = A[i][j] for all valid i,j"
     applies_to: all
+    lean:
+      theorem: Transpose.transpose_element
+      module: ProvableContracts.Transpose
+      status: proved
+      depends_on: []
+      mathlib_imports:
+        - Mathlib.Data.Matrix.Basic
+      notes: "Aᵀ j i = A i j is definitional equality (rfl)"
   - type: invariant
     property: "All elements transposed"
     formal: "No element lost or duplicated — bijection on index pairs"
     applies_to: all
+
+verification_summary:
+  total_obligations: 5
+  l2_property_tested: 5
+  l3_kani_proved: 2
+  l4_lean_proved: 2
+  l4_sorry_count: 0
+  l4_not_applicable: 1
 
 kernel_structure:
   phases:

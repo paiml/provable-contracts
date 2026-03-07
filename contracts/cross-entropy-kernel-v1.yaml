@@ -32,10 +32,31 @@ proof_obligations:
     property: "Non-negativity"
     formal: "CE(targets, logits) >= 0"
     applies_to: all
+    lean:
+      theorem: CrossEntropy.cross_entropy_nonneg
+      module: ProvableContracts.CrossEntropy
+      status: proved
+      depends_on:
+        - CrossEntropy.log_softmax_le_zero
+      mathlib_imports:
+        - Mathlib.Analysis.SpecialFunctions.Log.Basic
+        - Mathlib.Analysis.SpecialFunctions.ExpDeriv
+      notes: "Requires non-negative targets; log_softmax ≤ 0 gives -sum(t·ls) ≥ 0"
   - type: bound
     property: "Log-softmax bounded above by zero"
     formal: "log_softmax(x)_i <= 0 for all i"
     applies_to: all
+    lean:
+      theorem: CrossEntropy.log_softmax_le_zero
+      module: ProvableContracts.CrossEntropy
+      status: proved
+      depends_on:
+        - CrossEntropy.exp_le_sum
+        - Real.log_le_log
+      mathlib_imports:
+        - Mathlib.Analysis.SpecialFunctions.Log.Basic
+        - Mathlib.Analysis.SpecialFunctions.ExpDeriv
+      notes: "exp(xᵢ) ≤ Σ exp(xⱼ), so log(exp(xᵢ)) ≤ log(Σ exp(xⱼ))"
   - type: equivalence
     property: "LogSoftmax + NLL equals CrossEntropy"
     formal: "|CE(t, x) - (-sum(t_i * log_softmax(x)_i))| < eps"
@@ -49,6 +70,14 @@ proof_obligations:
     property: "SIMD matches scalar within ULP"
     tolerance: 8.0
     applies_to: simd
+
+verification_summary:
+  total_obligations: 5
+  l2_property_tested: 5
+  l3_kani_proved: 3
+  l4_lean_proved: 2
+  l4_sorry_count: 0
+  l4_not_applicable: 1
 
 kernel_structure:
   phases:

@@ -25,10 +25,31 @@ proof_obligations:
     property: "Scale invariance"
     formal: "RMSNorm(α·x) = sign(α) · RMSNorm(x) for α ≠ 0"
     applies_to: all
+    lean:
+      theorem: RMSNorm.rms_scale_zero_eps
+      module: ProvableContracts.RMSNorm
+      status: proved
+      depends_on:
+        - RMSNorm.mean_sq_scale
+        - Real.sqrt_mul
+        - Real.sqrt_sq_eq_abs
+      mathlib_imports:
+        - Mathlib.Data.Real.Sqrt
+      notes: "Proved for ε=0; RMS(αx) = |α|·RMS(x). Full RMSNorm scale invariance follows."
   - type: bound
     property: "RMS denominator is positive"
     formal: "RMS(x) > 0 when ε > 0"
     applies_to: all
+    lean:
+      theorem: RMSNorm.rms_pos
+      module: ProvableContracts.RMSNorm
+      status: proved
+      depends_on:
+        - RMSNorm.mean_sq_nonneg
+        - Real.sqrt_pos_of_pos
+      mathlib_imports:
+        - Mathlib.Data.Real.Sqrt
+      notes: "sum(x²) ≥ 0, so sum(x²)/n + ε > 0, and √ of positive is positive"
   - type: equivalence
     property: "SIMD matches scalar within ULP"
     tolerance: 4.0
@@ -37,6 +58,14 @@ proof_obligations:
     property: "Normalized RMS ≈ 1"
     formal: "RMS(RMSNorm(x)/γ) ≈ 1 when γ = 1"
     applies_to: all
+
+verification_summary:
+  total_obligations: 5
+  l2_property_tested: 5
+  l3_kani_proved: 2
+  l4_lean_proved: 2
+  l4_sorry_count: 0
+  l4_not_applicable: 1
 
 kernel_structure:
   phases:

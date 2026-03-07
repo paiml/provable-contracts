@@ -30,6 +30,13 @@ proof_obligations:
     property: "Zero preservation"
     formal: "SiLU(0) = 0"
     applies_to: all
+    lean:
+      theorem: Sigmoid.silu_zero
+      module: ProvableContracts.Sigmoid
+      status: proved
+      depends_on: []
+      mathlib_imports: []
+      notes: "SiLU(0) = 0 · σ(0) = 0 by ring"
   - type: bound
     property: "Global lower bound"
     formal: "SiLU(x) > -0.279 for all x"
@@ -46,6 +53,14 @@ proof_obligations:
     property: "Asymptotic linearity"
     formal: "|SiLU(x) - x| < 0.01 for x > 10"
     applies_to: all
+
+verification_summary:
+  total_obligations: 5
+  l2_property_tested: 5
+  l3_kani_proved: 3
+  l4_lean_proved: 1
+  l4_sorry_count: 0
+  l4_not_applicable: 1
 
 kernel_structure:
   phases:
