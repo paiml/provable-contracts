@@ -401,8 +401,11 @@ opt-in flag.
 - `--graph` shows both depends-on and depended-by [IMPLEMENTED]
 - Impact-weighted gap analysis [IMPLEMENTED] — via `score_codebase_with_pagerank()`
 
-### Phase 5: CI Integration [PARTIAL]
+### Phase 5: CI Integration [DONE]
 
 - --exit-code for quality gates [IMPLEMENTED]
 - Trend tracking via JSON output [IMPLEMENTED via -f json]
-- Cross-project violation alerting
+- Cross-project violation alerting [IMPLEMENTED via --violations --exit-code]
+- Commit refs scanning in CrossProjectIndex [IMPLEMENTED]
+- --project, --include-project, --all-projects flags [IMPLEMENTED]
+- --rebuild-index flag [IMPLEMENTED]

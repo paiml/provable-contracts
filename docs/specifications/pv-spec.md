@@ -315,8 +315,11 @@ provable_contracts::query::ContractIndex::pagerank(iterations, damping) -> HashM
 provable_contracts::query::execute(index, params) -> QueryOutput
 provable_contracts::query::QueryOutput::to_markdown() -> String
 provable_contracts::query::CrossProjectIndex::build(repo_root) -> CrossProjectIndex
+provable_contracts::query::CrossProjectIndex::build_with_extra(root, extra) -> CrossProjectIndex
 provable_contracts::query::CrossProjectIndex::call_sites_for(stem) -> &[CallSite]
 provable_contracts::query::CrossProjectIndex::binding_refs_for(stem) -> &[BindingRef]
+provable_contracts::query::CrossProjectIndex::commit_refs_for(pattern) -> &[CommitRef]
+provable_contracts::query::ContractIndex::from_directory_opts(dir, force) -> ContractIndex
 ```
 
 ---
