@@ -1,3 +1,6 @@
+import ProvableContracts.Defs.Sigmoid
+import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+
 /-!
 # Sigmoid Bounded
 
@@ -11,9 +14,6 @@ Since exp(-x) > 0, the denominator 1 + exp(-x) > 1, so
 1/(1 + exp(-x)) < 1. And since the denominator is positive,
 the whole expression is positive.
 -/
-
-import ProvableContracts.Defs.Sigmoid
-import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 
 namespace ProvableContracts.Sigmoid
 

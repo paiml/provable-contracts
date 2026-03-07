@@ -1,3 +1,6 @@
+import Mathlib.Data.Matrix.Basic
+import Mathlib.Data.Real.Basic
+
 /-!
 # Transpose Definitions
 
@@ -8,8 +11,6 @@ Mathematical definition of matrix transpose, matching the
 
 - Standard linear algebra: B[j,i] = A[i,j]
 -/
-
-import Mathlib.Data.Matrix.Basic
 
 namespace ProvableContracts.Transpose
 

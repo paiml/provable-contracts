@@ -1,3 +1,9 @@
+import Mathlib.Data.Real.Basic
+import Mathlib.Data.Real.Sqrt
+import Mathlib.Data.Finset.Basic
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import ProvableContracts.Basic
+
 /-!
 # RMSNorm Definitions
 
@@ -9,12 +15,6 @@ matching the `rmsnorm-kernel-v1.yaml` contract equations.
 - Zhang & Sennrich (2019) Root Mean Square Layer Normalization
 - Touvron et al. (2023) Llama 2: Open Foundation and Fine-Tuned Chat Models
 -/
-
-import Mathlib.Data.Real.Basic
-import Mathlib.Data.Real.Sqrt
-import Mathlib.Data.Finset.Basic
-import Mathlib.Algebra.BigOperators.Group.Finset
-import ProvableContracts.Basic
 
 namespace ProvableContracts.RMSNorm
 

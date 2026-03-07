@@ -1,3 +1,10 @@
+import Mathlib.Data.Real.Basic
+import Mathlib.Analysis.SpecialFunctions.Log.Basic
+import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import ProvableContracts.Basic
+import ProvableContracts.Defs.Softmax
+
 /-!
 # Cross-Entropy Definitions
 
@@ -9,13 +16,6 @@ matching the `cross-entropy-kernel-v1.yaml` contract equations.
 - Shannon (1948) A Mathematical Theory of Communication
 - Milakov & Gimelshein (2018) Online normalizer calculation for softmax
 -/
-
-import Mathlib.Data.Real.Basic
-import Mathlib.Analysis.SpecialFunctions.Log.Basic
-import Mathlib.Analysis.SpecialFunctions.ExpDeriv
-import Mathlib.Algebra.BigOperators.Group.Finset
-import ProvableContracts.Basic
-import ProvableContracts.Defs.Softmax
 
 namespace ProvableContracts.CrossEntropy
 

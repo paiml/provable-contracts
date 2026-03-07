@@ -1,3 +1,6 @@
+import Mathlib.Data.Real.Basic
+import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+
 /-!
 # Sigmoid and SiLU Definitions
 
@@ -9,9 +12,6 @@ matching the `silu-kernel-v1.yaml` contract equations.
 - Ramachandran et al. (2017) Searching for Activation Functions
 - Elfwing et al. (2018) Sigmoid-Weighted Linear Units
 -/
-
-import Mathlib.Data.Real.Basic
-import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 
 namespace ProvableContracts.Sigmoid
 

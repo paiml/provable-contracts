@@ -1,3 +1,6 @@
+import ProvableContracts.Defs.LayerNorm
+import Mathlib.Data.Real.Sqrt
+
 /-!
 # LayerNorm Denominator Positivity
 
@@ -10,9 +13,6 @@ Proves that √(σ² + ε) > 0 when ε > 0.
 Variance is a sum of squares ÷ n, hence ≥ 0. Adding ε > 0 gives
 a strictly positive argument to √.
 -/
-
-import ProvableContracts.Defs.LayerNorm
-import Mathlib.Data.Real.Sqrt
 
 namespace ProvableContracts.LayerNorm
 
@@ -27,7 +27,7 @@ theorem variance_nonneg {n : ℕ} (x : RVec (n + 1)) :
   · apply Finset.sum_nonneg
     intro i _
     exact sq_nonneg _
-  · exact Nat.cast_nonneg'
+  · positivity
 
 -- Status: proved
 /-- The LayerNorm denominator is strictly positive when ε > 0. -/

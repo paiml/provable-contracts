@@ -1,3 +1,7 @@
+import ProvableContracts.Defs.RMSNorm
+import Mathlib.Data.Real.Sqrt
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+
 /-!
 # RMSNorm Scale Invariance
 
@@ -11,10 +15,6 @@ RMSNorm(α·x) = sign(α)·RMSNorm(x) for α ≠ 0.
 Key insight: RMS(α·x) = |α|·RMS(x), so (α·xᵢ)/(|α|·RMS(x))
 = sign(α)·xᵢ/RMS(x).
 -/
-
-import ProvableContracts.Defs.RMSNorm
-import Mathlib.Data.Real.Sqrt
-import Mathlib.Algebra.BigOperators.Group.Finset
 
 namespace ProvableContracts.RMSNorm
 

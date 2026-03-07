@@ -1,3 +1,6 @@
+import ProvableContracts.Defs.LayerNorm
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+
 /-!
 # LayerNorm Shift Invariance
 
@@ -11,9 +14,6 @@ LN(x + c·1) = LN(x).
 Key insight: mean(x + c) = mean(x) + c, so (xᵢ + c) - mean(x + c)
 = xᵢ - mean(x). The variance and normalization are therefore unchanged.
 -/
-
-import ProvableContracts.Defs.LayerNorm
-import Mathlib.Algebra.BigOperators.Group.Finset
 
 namespace ProvableContracts.LayerNorm
 
@@ -30,6 +30,9 @@ theorem mean_shift {n : ℕ} (x : RVec (n + 1)) (c : ℝ) :
   unfold mean shift
   simp only [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ,
     Fintype.card_fin, nsmul_eq_mul]
+  have hn : (↑(n + 1) : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
+  field_simp
+  push_cast
   ring
 
 -- Status: proved
@@ -37,17 +40,17 @@ theorem mean_shift {n : ℕ} (x : RVec (n + 1)) (c : ℝ) :
 theorem centered_shift {n : ℕ} (x : RVec (n + 1)) (c : ℝ) (i : Fin (n + 1)) :
     shift x c i - mean (shift x c) = x i - mean x := by
   rw [mean_shift]
-  unfold shift
+  simp only [shift]
   ring
 
 -- Status: proved
 /-- Variance is shift-invariant: var(x + c) = var(x). -/
 theorem variance_shift {n : ℕ} (x : RVec (n + 1)) (c : ℝ) :
     variance (shift x c) = variance x := by
-  unfold variance
+  simp only [variance]
   congr 1
   apply Finset.sum_congr rfl
   intro i _
-  rw [centered_shift]
+  rw [show shift x c i - mean (shift x c) = x i - mean x from centered_shift x c i]
 
 end ProvableContracts.LayerNorm

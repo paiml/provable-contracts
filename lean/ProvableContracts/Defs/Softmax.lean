@@ -1,3 +1,10 @@
+import Mathlib.Data.Real.Basic
+import Mathlib.Data.Finset.Basic
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+import Mathlib.Analysis.SpecialFunctions.Log.Basic
+import ProvableContracts.Basic
+
 /-!
 # Softmax Definitions
 
@@ -12,28 +19,16 @@ matching the `softmax-kernel-v1.yaml` contract equations.
 - Vaswani et al. "Attention Is All You Need." NeurIPS, 2017. Eq. 3.
 -/
 
-import Mathlib.Data.Real.Basic
-import Mathlib.Data.Finset.Basic
-import Mathlib.Algebra.BigOperators.Group.Finset
-import Mathlib.Analysis.SpecialFunctions.ExpDeriv
-import ProvableContracts.Basic
-
 namespace ProvableContracts.Softmax
 
 open Real Finset
 
 /-- The softmax function: `softmax(x)_i = exp(x_i) / Σ_j exp(x_j)`. -/
 noncomputable def softmax {n : ℕ} (x : RVec n) (i : Fin n) : ℝ :=
-  Real.exp (x i) / univ.sum (fun j => Real.exp (x j))
+  Real.exp (x i) / ∑ j : Fin n, Real.exp (x j)
 
 /-- Log-softmax: `log_softmax(x)_i = x_i - log(Σ_j exp(x_j))`. -/
 noncomputable def log_softmax {n : ℕ} (x : RVec n) (i : Fin n) : ℝ :=
-  x i - Real.log (univ.sum (fun j => Real.exp (x j)))
-
-/-- Numerically stable softmax via max-subtraction:
-    `stable_softmax(x)_i = exp(x_i - max(x)) / Σ_j exp(x_j - max(x))`. -/
-noncomputable def stable_softmax {n : ℕ} (x : RVec (n + 1)) (i : Fin (n + 1)) : ℝ :=
-  let m := RVec.max x
-  Real.exp (x i - m) / univ.sum (fun j => Real.exp (x j - m))
+  x i - Real.log (∑ j : Fin n, Real.exp (x j))
 
 end ProvableContracts.Softmax

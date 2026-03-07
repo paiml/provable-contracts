@@ -1,3 +1,9 @@
+import Mathlib.Data.Real.Basic
+import Mathlib.Data.Real.Sqrt
+import Mathlib.Data.Finset.Basic
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import ProvableContracts.Basic
+
 /-!
 # LayerNorm Definitions
 
@@ -8,12 +14,6 @@ Mathematical definition of Layer Normalization, matching the
 
 - Ba, Kiros & Hinton (2016) Layer Normalization
 -/
-
-import Mathlib.Data.Real.Basic
-import Mathlib.Data.Real.Sqrt
-import Mathlib.Data.Finset.Basic
-import Mathlib.Algebra.BigOperators.Group.Finset
-import ProvableContracts.Basic
 
 namespace ProvableContracts.LayerNorm
 

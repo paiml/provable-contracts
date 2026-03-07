@@ -44,3 +44,7 @@ book/html/
 .pmat/backup/
 .pmat-qa/
 .pmat/workspace.idx/
+
+# Lean 4 build artifacts
+lean/.lake/
+lean/lake-packages/

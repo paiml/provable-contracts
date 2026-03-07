@@ -1,3 +1,6 @@
+import ProvableContracts.Defs.Transpose
+import Mathlib.Data.Matrix.Basic
+
 /-!
 # Transpose Involution
 
@@ -9,9 +12,6 @@ Proves that transpose is an involution: (Aᵀ)ᵀ = A.
 
 This is a standard Mathlib result: `Matrix.transpose_transpose`.
 -/
-
-import ProvableContracts.Defs.Transpose
-import Mathlib.Data.Matrix.Basic
 
 namespace ProvableContracts.Transpose
 

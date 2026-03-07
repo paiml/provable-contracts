@@ -1,5 +1,6 @@
 .PHONY: build test test-fast test-full lint clippy deny clean coverage \
-       coverage-html comply quality-gate book book-serve
+       coverage-html comply quality-gate book book-serve \
+       lean-install lean-build lean-check lean-clean
 
 # Proptest configuration (CB-126-D compliance)
 export PROPTEST_CASES ?= 256
@@ -59,6 +60,21 @@ book:
 
 book-serve:
 	mdbook serve --open
+
+# ---------- Lean 4 Proofs (via forjar) ----------
+
+lean-install:
+	cd lean && forjar apply -f forjar.yaml -t toolchain --yes
+	cd lean && forjar apply -f forjar.yaml -t mathlib --yes
+
+lean-build:
+	cd lean && forjar apply -f forjar.yaml --yes
+
+lean-check:
+	cd lean && PATH="$$HOME/.elan/bin:$$PATH" lake build
+
+lean-clean:
+	cd lean && rm -rf .lake lake-packages lake-manifest.json
 
 # ---------- Clean ----------
 

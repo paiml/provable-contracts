@@ -1,3 +1,5 @@
+import ProvableContracts.Defs.Sigmoid
+
 /-!
 # SiLU Zero Preservation
 
@@ -9,8 +11,6 @@ Proves that SiLU(0) = 0.
 
 Since SiLU(x) = x · σ(x), at x = 0 we get 0 · σ(0) = 0.
 -/
-
-import ProvableContracts.Defs.Sigmoid
 
 namespace ProvableContracts.Sigmoid
 

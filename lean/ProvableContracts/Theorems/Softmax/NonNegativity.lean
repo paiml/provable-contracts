@@ -1,3 +1,6 @@
+import ProvableContracts.Defs.Softmax
+import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+
 /-!
 # Softmax Non-Negativity
 
@@ -5,29 +8,27 @@ Proves that softmax outputs are strictly positive for all real inputs.
 
 ## Obligation
 
-`SM-INV-002`: ∀ x ∈ ℝⁿ, softmax(x)_i > 0
+`SM-INV-002`: ∀ x ∈ ℝⁿ⁺¹, softmax(x)_i > 0
 
 This is the starter proof — it follows directly from `Real.exp_pos`.
 -/
-
-import ProvableContracts.Defs.Softmax
-import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 
 namespace ProvableContracts.Softmax
 
 open Real Finset
 
 -- Status: proved
+/-- The partition function Z = Σⱼ exp(xⱼ) is strictly positive. -/
+theorem sum_exp_pos {n : ℕ} (x : RVec (n + 1)) :
+    0 < ∑ j : Fin (n + 1), Real.exp (x j) :=
+  Finset.sum_pos (fun j _ => Real.exp_pos (x j)) Finset.univ_nonempty
+
+-- Status: proved
 /-- Softmax outputs are strictly positive.
     Follows from `exp > 0` and the denominator being a sum of positives. -/
-theorem softmax_pos {n : ℕ} (x : RVec n) (i : Fin n) :
+theorem softmax_pos {n : ℕ} (x : RVec (n + 1)) (i : Fin (n + 1)) :
     softmax x i > 0 := by
   unfold softmax
-  apply div_pos
-  · exact Real.exp_pos (x i)
-  · apply Finset.sum_pos
-    · intro j _
-      exact Real.exp_pos (x j)
-    · exact univ_nonempty
+  exact div_pos (Real.exp_pos _) (sum_exp_pos x)
 
 end ProvableContracts.Softmax

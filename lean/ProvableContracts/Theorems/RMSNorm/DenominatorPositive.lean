@@ -1,3 +1,6 @@
+import ProvableContracts.Defs.RMSNorm
+import Mathlib.Data.Real.Sqrt
+
 /-!
 # RMSNorm Denominator Positivity
 
@@ -11,9 +14,6 @@ when ε > 0.
 Since x² ≥ 0 for all x, mean(x²) ≥ 0. Adding ε > 0 gives a strictly
 positive argument to √, and √ of a positive real is positive.
 -/
-
-import ProvableContracts.Defs.RMSNorm
-import Mathlib.Data.Real.Sqrt
 
 namespace ProvableContracts.RMSNorm
 
@@ -29,7 +29,7 @@ theorem mean_sq_nonneg {n : ℕ} (x : RVec (n + 1)) :
   · apply Finset.sum_nonneg
     intro i _
     exact sq_nonneg (x i)
-  · exact Nat.cast_nonneg'
+  · positivity
 
 -- Status: proved
 /-- The RMS denominator is strictly positive when ε > 0. -/

@@ -1,3 +1,6 @@
+import ProvableContracts.Defs.Sigmoid
+import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+
 /-!
 # Sigmoid Symmetry
 
@@ -11,9 +14,6 @@ This is a standard identity. Proof:
 σ(-x) = 1/(1+eˣ) and σ(x) = 1/(1+e⁻ˣ) = eˣ/(eˣ+1).
 So 1 - σ(x) = 1/(eˣ+1) = σ(-x).
 -/
-
-import ProvableContracts.Defs.Sigmoid
-import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 
 namespace ProvableContracts.Sigmoid
 

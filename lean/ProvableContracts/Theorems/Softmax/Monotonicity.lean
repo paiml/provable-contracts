@@ -1,3 +1,7 @@
+import ProvableContracts.Defs.Softmax
+import ProvableContracts.Theorems.Softmax.NonNegativity
+import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+
 /-!
 # Softmax Monotonicity
 
@@ -5,11 +9,8 @@ Proves that softmax preserves input ordering.
 
 ## Obligation
 
-`SM-INV-003`: ∀ x ∈ ℝⁿ, x_i > x_j → softmax(x)_i > softmax(x)_j
+`SM-INV-003`: ∀ x ∈ ℝⁿ⁺¹, x_i > x_j → softmax(x)_i > softmax(x)_j
 -/
-
-import ProvableContracts.Defs.Softmax
-import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 
 namespace ProvableContracts.Softmax
 
@@ -19,15 +20,10 @@ open Real Finset
 /-- Softmax preserves input ordering: larger input → larger output.
     Since both terms share the same positive denominator Z, we reduce
     to showing exp(xᵢ) > exp(xⱼ), which follows from exp being monotone. -/
-theorem monotone {n : ℕ} (x : RVec n) (i j : Fin n)
+theorem monotone {n : ℕ} (x : RVec (n + 1)) (i j : Fin (n + 1))
     (h : x i > x j) :
     softmax x i > softmax x j := by
   unfold softmax
-  apply div_lt_div_of_pos_right
-  · exact Real.exp_lt_exp.mpr h
-  · apply Finset.sum_pos
-    · intro k _
-      exact Real.exp_pos (x k)
-    · exact univ_nonempty
+  exact div_lt_div_of_pos_right (Real.exp_strictMono h) (sum_exp_pos x)
 
 end ProvableContracts.Softmax
