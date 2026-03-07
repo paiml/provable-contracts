@@ -130,9 +130,7 @@ pub fn class_of(stem: &str) -> Option<char> {
         "bidirectional-attention-v1",
     ];
     // Class C: BLOOM / MPT — MHA + LayerNorm + GELU + ALiBi
-    const CLASS_C: &[&str] = &[
-        "alibi-kernel-v1",
-    ];
+    const CLASS_C: &[&str] = &["alibi-kernel-v1"];
     // Class D: Gemma — LayerNorm + GELU + SiLU + GQA
     // (shares contracts with A and B; D-unique contracts are few)
     const CLASS_D: &[&str] = &[];
@@ -168,40 +166,55 @@ pub fn class_of(stem: &str) -> Option<char> {
 pub fn classes_of(stem: &str) -> Vec<char> {
     let mut result = Vec::new();
     // Class A
-    if matches!(stem,
-        "gqa-kernel-v1" | "rmsnorm-kernel-v1" | "silu-kernel-v1" |
-        "swiglu-kernel-v1" | "rope-kernel-v1"
+    if matches!(
+        stem,
+        "gqa-kernel-v1"
+            | "rmsnorm-kernel-v1"
+            | "silu-kernel-v1"
+            | "swiglu-kernel-v1"
+            | "rope-kernel-v1"
     ) {
         result.push('A');
     }
     // Class B
-    if matches!(stem,
-        "attention-kernel-v1" | "layernorm-kernel-v1" | "gelu-kernel-v1" |
-        "absolute-position-v1" | "bidirectional-attention-v1"
+    if matches!(
+        stem,
+        "attention-kernel-v1"
+            | "layernorm-kernel-v1"
+            | "gelu-kernel-v1"
+            | "absolute-position-v1"
+            | "bidirectional-attention-v1"
     ) {
         result.push('B');
     }
     // Class C (shares attention, layernorm, gelu with B)
-    if matches!(stem,
-        "attention-kernel-v1" | "layernorm-kernel-v1" | "gelu-kernel-v1" |
-        "alibi-kernel-v1"
+    if matches!(
+        stem,
+        "attention-kernel-v1" | "layernorm-kernel-v1" | "gelu-kernel-v1" | "alibi-kernel-v1"
     ) {
         result.push('C');
     }
     // Class D (shares layernorm, gelu, silu, gqa with A/B)
-    if matches!(stem,
-        "layernorm-kernel-v1" | "gelu-kernel-v1" | "silu-kernel-v1" |
-        "gqa-kernel-v1"
+    if matches!(
+        stem,
+        "layernorm-kernel-v1" | "gelu-kernel-v1" | "silu-kernel-v1" | "gqa-kernel-v1"
     ) {
         result.push('D');
     }
     // Class E
-    if matches!(stem,
-        "rmsnorm-kernel-v1" | "swiglu-kernel-v1" | "gqa-kernel-v1" |
-        "qwen2-shapes-v1" | "qwen2-e2e-verification-v1" |
-        "qwen3-shapes-v1" | "qwen3-e2e-verification-v1" |
-        "qwen3moe-shapes-v1" | "qwen3moe-e2e-verification-v1" |
-        "qwen35-shapes-v1" | "qwen35-hybrid-forward-v1"
+    if matches!(
+        stem,
+        "rmsnorm-kernel-v1"
+            | "swiglu-kernel-v1"
+            | "gqa-kernel-v1"
+            | "qwen2-shapes-v1"
+            | "qwen2-e2e-verification-v1"
+            | "qwen3-shapes-v1"
+            | "qwen3-e2e-verification-v1"
+            | "qwen3moe-shapes-v1"
+            | "qwen3moe-e2e-verification-v1"
+            | "qwen35-shapes-v1"
+            | "qwen35-hybrid-forward-v1"
     ) {
         result.push('E');
     }

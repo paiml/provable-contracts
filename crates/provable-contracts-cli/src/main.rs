@@ -410,7 +410,11 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
-#[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools, clippy::ref_option)]
+#[allow(
+    clippy::too_many_arguments,
+    clippy::fn_params_excessive_bools,
+    clippy::ref_option
+)]
 fn dispatch_query(
     contract_dir: &std::path::Path,
     query: &str,

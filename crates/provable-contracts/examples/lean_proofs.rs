@@ -46,9 +46,7 @@ fn main() {
         println!("{stem}");
         println!(
             "  Score: {:.2} (Grade {}) — Lean: {:.2}",
-            score.composite,
-            score.grade,
-            score.lean_coverage
+            score.composite, score.grade, score.lean_coverage
         );
     }
 
