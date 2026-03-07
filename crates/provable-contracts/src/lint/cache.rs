@@ -61,13 +61,8 @@ pub fn cache_get(cache_root: &Path, hash: &str) -> Option<CacheEntry> {
 }
 
 /// Store a lint result in the cache.
-pub fn cache_put(
-    cache_root: &Path,
-    hash: &str,
-    findings: &[LintFinding],
-) -> Result<(), String> {
-    std::fs::create_dir_all(cache_root)
-        .map_err(|e| format!("Failed to create cache dir: {e}"))?;
+pub fn cache_put(cache_root: &Path, hash: &str, findings: &[LintFinding]) -> Result<(), String> {
+    std::fs::create_dir_all(cache_root).map_err(|e| format!("Failed to create cache dir: {e}"))?;
 
     let entry = CacheEntry {
         content_hash: hash.to_string(),
@@ -78,8 +73,7 @@ pub fn cache_put(
         .map_err(|e| format!("Failed to serialize cache entry: {e}"))?;
 
     let path = cache_root.join(format!("{hash}.json"));
-    std::fs::write(path, json)
-        .map_err(|e| format!("Failed to write cache entry: {e}"))?;
+    std::fs::write(path, json).map_err(|e| format!("Failed to write cache entry: {e}"))?;
 
     Ok(())
 }
@@ -88,8 +82,8 @@ pub fn cache_put(
 pub fn cache_clear(cache_root: &Path) -> Result<usize, String> {
     let mut count = 0;
     if cache_root.is_dir() {
-        let entries = std::fs::read_dir(cache_root)
-            .map_err(|e| format!("Failed to read cache dir: {e}"))?;
+        let entries =
+            std::fs::read_dir(cache_root).map_err(|e| format!("Failed to read cache dir: {e}"))?;
         for entry in entries.flatten() {
             if entry.path().extension().and_then(|e| e.to_str()) == Some("json") {
                 let _ = std::fs::remove_file(entry.path());

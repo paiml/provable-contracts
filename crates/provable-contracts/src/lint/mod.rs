@@ -24,7 +24,9 @@ use std::time::Instant;
 use serde::Serialize;
 
 use self::finding::LintFinding;
-use self::gates::{load_binding, load_contracts, run_audit_gate, run_score_gate, run_validate_gate};
+use self::gates::{
+    load_binding, load_contracts, run_audit_gate, run_score_gate, run_validate_gate,
+};
 use self::rules::RuleSeverity;
 
 /// Result of a single gate execution.
@@ -188,8 +190,7 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
     LintReport {
         passed,
         gates,
-        total_duration_ms: u64::try_from(overall_start.elapsed().as_millis())
-            .unwrap_or(u64::MAX),
+        total_duration_ms: u64::try_from(overall_start.elapsed().as_millis()).unwrap_or(u64::MAX),
         findings: all_findings,
         cache_stats: stats,
     }
@@ -307,7 +308,12 @@ mod tests {
         let mut config = LintConfig::new(&dir, None, 0.99);
         config.severity_filter = Some(RuleSeverity::Error);
         let report = run_lint(&config);
-        assert!(report.findings.iter().all(|f| f.severity >= RuleSeverity::Error));
+        assert!(
+            report
+                .findings
+                .iter()
+                .all(|f| f.severity >= RuleSeverity::Error)
+        );
     }
 
     #[test]

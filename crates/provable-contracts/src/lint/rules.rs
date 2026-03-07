@@ -251,9 +251,18 @@ mod tests {
 
     #[test]
     fn severity_from_str() {
-        assert_eq!(RuleSeverity::from_str_opt("error"), Some(RuleSeverity::Error));
-        assert_eq!(RuleSeverity::from_str_opt("warning"), Some(RuleSeverity::Warning));
-        assert_eq!(RuleSeverity::from_str_opt("warn"), Some(RuleSeverity::Warning));
+        assert_eq!(
+            RuleSeverity::from_str_opt("error"),
+            Some(RuleSeverity::Error)
+        );
+        assert_eq!(
+            RuleSeverity::from_str_opt("warning"),
+            Some(RuleSeverity::Warning)
+        );
+        assert_eq!(
+            RuleSeverity::from_str_opt("warn"),
+            Some(RuleSeverity::Warning)
+        );
         assert_eq!(RuleSeverity::from_str_opt("info"), Some(RuleSeverity::Info));
         assert_eq!(RuleSeverity::from_str_opt("off"), Some(RuleSeverity::Off));
         assert_eq!(RuleSeverity::from_str_opt("bogus"), None);
@@ -261,7 +270,12 @@ mod tests {
 
     #[test]
     fn severity_as_str_roundtrip() {
-        for sev in [RuleSeverity::Off, RuleSeverity::Info, RuleSeverity::Warning, RuleSeverity::Error] {
+        for sev in [
+            RuleSeverity::Off,
+            RuleSeverity::Info,
+            RuleSeverity::Warning,
+            RuleSeverity::Error,
+        ] {
             let s = sev.as_str();
             assert_eq!(RuleSeverity::from_str_opt(s), Some(sev));
         }

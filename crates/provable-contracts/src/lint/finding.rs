@@ -70,10 +70,7 @@ impl LintFinding {
             RuleSeverity::Warning => "warning",
             RuleSeverity::Info | RuleSeverity::Off => "notice",
         };
-        let line_part = self
-            .line
-            .map(|l| format!(",line={l}"))
-            .unwrap_or_default();
+        let line_part = self.line.map(|l| format!(",line={l}")).unwrap_or_default();
         format!(
             "::{level} file={}{line_part}::{}: {}",
             self.file, self.rule_id, self.message

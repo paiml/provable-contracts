@@ -101,9 +101,7 @@ pub(crate) fn run_validate_gate(
     (result, findings)
 }
 
-pub(crate) fn run_audit_gate(
-    contracts: &[(String, Contract)],
-) -> (GateResult, Vec<LintFinding>) {
+pub(crate) fn run_audit_gate(contracts: &[(String, Contract)]) -> (GateResult, Vec<LintFinding>) {
     let start = Instant::now();
     let mut total_findings = 0usize;
     let mut finding_messages = Vec::new();

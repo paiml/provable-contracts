@@ -183,8 +183,8 @@ pub fn find_config(start: &Path) -> Option<PathBuf> {
 
 /// Load and parse config from a path.
 pub fn load_config(path: &Path) -> Result<PvConfig, String> {
-    let content =
-        std::fs::read_to_string(path).map_err(|e| format!("Failed to read {}: {e}", path.display()))?;
+    let content = std::fs::read_to_string(path)
+        .map_err(|e| format!("Failed to read {}: {e}", path.display()))?;
     Ok(toml_parse(&content))
 }
 
@@ -220,10 +220,7 @@ fn parse_kv(line: &str) -> Option<(String, String)> {
     let key = parts.next()?.trim().to_string();
     let val = parts.next()?.trim().to_string();
     // Strip surrounding quotes
-    let val = val
-        .trim_matches('"')
-        .trim_matches('\'')
-        .to_string();
+    let val = val.trim_matches('"').trim_matches('\'').to_string();
     Some((key, val))
 }
 

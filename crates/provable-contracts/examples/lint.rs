@@ -82,14 +82,31 @@ fn print_gate(num: usize, gate: &provable_contracts::lint::GateResult) {
 
 fn gate_summary(detail: &GateDetail) -> String {
     match detail {
-        GateDetail::Validate { contracts, errors, warnings, .. } => {
+        GateDetail::Validate {
+            contracts,
+            errors,
+            warnings,
+            ..
+        } => {
             format!("{contracts} contracts, {errors} errors, {warnings} warnings")
         }
-        GateDetail::Audit { contracts, findings, .. } => {
+        GateDetail::Audit {
+            contracts,
+            findings,
+            ..
+        } => {
             format!("{contracts} contracts, {findings} findings")
         }
-        GateDetail::Score { contracts, min_score, mean_score, threshold, .. } => {
-            format!("{contracts} contracts, min={min_score:.2}, mean={mean_score:.2}, threshold={threshold:.2}")
+        GateDetail::Score {
+            contracts,
+            min_score,
+            mean_score,
+            threshold,
+            ..
+        } => {
+            format!(
+                "{contracts} contracts, min={min_score:.2}, mean={mean_score:.2}, threshold={threshold:.2}"
+            )
         }
         GateDetail::Skipped { reason } => reason.clone(),
     }
@@ -101,7 +118,10 @@ fn print_findings(report: &LintReport) {
     }
     let unsuppressed = report.findings.iter().filter(|f| !f.suppressed).count();
     let suppressed = report.findings.len() - unsuppressed;
-    println!("\nFindings: {} total ({suppressed} suppressed)", report.findings.len());
+    println!(
+        "\nFindings: {} total ({suppressed} suppressed)",
+        report.findings.len()
+    );
     for f in report.findings.iter().filter(|f| !f.suppressed) {
         println!("  {f}");
     }
@@ -111,5 +131,8 @@ fn print_summary(report: &LintReport) {
     let passed = report.gates.iter().filter(|g| g.passed).count();
     let total = report.gates.len();
     let result = if report.passed { "PASS" } else { "FAIL" };
-    println!("\nResult: {result} ({passed}/{total} gates passed) [{}ms]", report.total_duration_ms);
+    println!(
+        "\nResult: {result} ({passed}/{total} gates passed) [{}ms]",
+        report.total_duration_ms
+    );
 }

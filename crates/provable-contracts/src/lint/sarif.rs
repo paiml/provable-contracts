@@ -9,7 +9,7 @@
 use serde::Serialize;
 
 use super::finding::LintFinding;
-use super::rules::{RuleSeverity, RULES};
+use super::rules::{RULES, RuleSeverity};
 
 const SARIF_SCHEMA: &str =
     "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json";
@@ -250,10 +250,7 @@ mod tests {
         assert_eq!(result.level, "error");
         assert!(result.message.text.contains("Missing proof_obligations"));
         assert_eq!(
-            result.locations[0]
-                .physical_location
-                .artifact_location
-                .uri,
+            result.locations[0].physical_location.artifact_location.uri,
             "contracts/example-v1.yaml"
         );
     }

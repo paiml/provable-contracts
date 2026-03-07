@@ -10,14 +10,17 @@ use std::path::Path;
 use std::process::Command;
 
 /// Get contract stems changed since `base_ref`.
-pub fn changed_contracts(
-    contracts_dir: &Path,
-    base_ref: &str,
-) -> Result<Vec<String>, String> {
+pub fn changed_contracts(contracts_dir: &Path, base_ref: &str) -> Result<Vec<String>, String> {
     let repo_root = find_repo_root(contracts_dir)?;
 
     let output = Command::new("git")
-        .args(["diff", "--name-only", &format!("{base_ref}..HEAD"), "--", "contracts/"])
+        .args([
+            "diff",
+            "--name-only",
+            &format!("{base_ref}..HEAD"),
+            "--",
+            "contracts/",
+        ])
         .current_dir(repo_root)
         .output()
         .map_err(|e| format!("Failed to run git diff: {e}"))?;
@@ -54,8 +57,7 @@ pub fn expand_dependents(
     changed: &[String],
     all_contracts: &[(String, crate::schema::Contract)],
 ) -> Vec<String> {
-    let mut expanded: std::collections::HashSet<String> =
-        changed.iter().cloned().collect();
+    let mut expanded: std::collections::HashSet<String> = changed.iter().cloned().collect();
 
     // Find contracts that depend on any changed contract
     for (stem, contract) in all_contracts {

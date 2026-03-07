@@ -10,9 +10,9 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+use super::LintReport;
 use super::finding::LintFinding;
 use super::rules::RuleSeverity;
-use super::LintReport;
 
 /// A single point-in-time lint snapshot.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -38,8 +38,7 @@ pub fn record_snapshot(
     report: &LintReport,
     contracts_count: usize,
 ) -> Result<PathBuf, String> {
-    std::fs::create_dir_all(trend_root)
-        .map_err(|e| format!("Failed to create trend dir: {e}"))?;
+    std::fs::create_dir_all(trend_root).map_err(|e| format!("Failed to create trend dir: {e}"))?;
 
     let timestamp = now_iso8601();
     let commit = current_commit().ok();
@@ -62,8 +61,7 @@ pub fn record_snapshot(
     let path = trend_root.join(&filename);
     let json = serde_json::to_string_pretty(&snapshot)
         .map_err(|e| format!("Failed to serialize snapshot: {e}"))?;
-    std::fs::write(&path, json)
-        .map_err(|e| format!("Failed to write snapshot: {e}"))?;
+    std::fs::write(&path, json).map_err(|e| format!("Failed to write snapshot: {e}"))?;
 
     Ok(path)
 }
@@ -75,12 +73,7 @@ pub fn load_snapshots(trend_root: &Path) -> Vec<TrendSnapshot> {
     };
     let mut snapshots: Vec<TrendSnapshot> = entries
         .flatten()
-        .filter(|e| {
-            e.path()
-                .extension()
-                .and_then(|x| x.to_str())
-                == Some("json")
-        })
+        .filter(|e| e.path().extension().and_then(|x| x.to_str()) == Some("json"))
         .filter_map(|e| {
             let content = std::fs::read_to_string(e.path()).ok()?;
             serde_json::from_str(&content).ok()
@@ -170,14 +163,38 @@ fn extract_mean_score(report: &LintReport) -> f64 {
     0.0
 }
 
+#[allow(
+    clippy::cast_possible_wrap,
+    clippy::cast_sign_loss,
+    clippy::similar_names
+)]
 fn now_iso8601() -> String {
-    // Simple UTC timestamp without chrono dependency
-    let duration = std::time::SystemTime::now()
+    // UTC timestamp without chrono dependency — manual epoch-to-date conversion
+    let secs = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default();
-    let secs = duration.as_secs();
-    // Approximate: just use epoch seconds formatted
-    format!("{secs}")
+        .unwrap_or_default()
+        .as_secs();
+
+    // Days since epoch
+    let days = (secs / 86400) as i64;
+    let time_secs = secs % 86400;
+    let hours = time_secs / 3600;
+    let minutes = (time_secs % 3600) / 60;
+    let seconds = time_secs % 60;
+
+    // Civil date from days since epoch (Algorithm from Howard Hinnant)
+    let z = days + 719_468;
+    let era = (if z >= 0 { z } else { z - 146_096 }) / 146_097;
+    let doe = (z - era * 146_097) as u64;
+    let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146_096) / 365;
+    let y = yoe as i64 + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = if mp < 10 { mp + 3 } else { mp - 9 };
+    let y = if m <= 2 { y + 1 } else { y };
+
+    format!("{y:04}-{m:02}-{d:02}T{hours:02}:{minutes:02}:{seconds:02}Z")
 }
 
 fn current_commit() -> Result<String, String> {

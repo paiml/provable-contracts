@@ -38,9 +38,19 @@ pub fn run(
     }
 
     let config = build_config(
-        contract_dir, binding_path, min_score, format, severity, strict,
-        suppress, suppress_rule, suppress_file, rule_overrides, config_path,
-        no_cache, cache_stats,
+        contract_dir,
+        binding_path,
+        min_score,
+        format,
+        severity,
+        strict,
+        suppress,
+        suppress_rule,
+        suppress_file,
+        rule_overrides,
+        config_path,
+        no_cache,
+        cache_stats,
     );
 
     let report = run_lint(&config);
@@ -59,7 +69,12 @@ pub fn run(
         Ok(())
     } else {
         let passed_count = report.gates.iter().filter(|g| g.passed).count();
-        Err(format!("lint failed ({}/{} gates passed)", passed_count, report.gates.len()).into())
+        Err(format!(
+            "lint failed ({}/{} gates passed)",
+            passed_count,
+            report.gates.len()
+        )
+        .into())
     }
 }
 
@@ -85,7 +100,10 @@ fn run_diff_check(
             Some(Ok(()))
         }
         Ok(changed) => {
-            println!("Diff-aware: {} contracts changed since {base}", changed.len());
+            println!(
+                "Diff-aware: {} contracts changed since {base}",
+                changed.len()
+            );
             for stem in &changed {
                 println!("  {stem}");
             }
@@ -152,10 +170,7 @@ fn resolve_format(format: &str, config_path: Option<&Path>, contract_dir: &Path)
         .and_then(|cp| load_config(cp).ok())
         .or_else(|| find_config(contract_dir).and_then(|p| load_config(&p).ok()))
         .unwrap_or_default();
-    pv_config
-        .output
-        .format
-        .unwrap_or_else(|| "text".into())
+    pv_config.output.format.unwrap_or_else(|| "text".into())
 }
 
 #[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
