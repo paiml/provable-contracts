@@ -118,7 +118,7 @@ fn build_result(
     QueryResult {
         rank: rank + 1,
         stem: entry.stem.clone(),
-        path: entry.path.clone(),
+        path: clean_path(&entry.path),
         relevance,
         description: entry.description.clone(),
         equations: entry.equations.clone(),
@@ -153,6 +153,15 @@ fn build_result(
             build_coverage_map(&entry.stem, xp_index, params.show_coverage_map),
             project_filter,
         ),
+    }
+}
+
+/// Clean a contract path for display: strip to `contracts/...` relative form.
+fn clean_path(raw: &str) -> String {
+    if let Some(idx) = raw.find("contracts/") {
+        raw[idx..].to_string()
+    } else {
+        raw.to_string()
     }
 }
 

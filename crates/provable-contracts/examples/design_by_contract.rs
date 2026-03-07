@@ -99,5 +99,28 @@ bindings:
         let output = query::execute(&index, &params);
         println!("--- Query: \"softmax numerical stability\" (top 3) ---\n");
         print!("{output}");
+
+        // --- 8. Tier filter: Foundation kernels only ---
+        println!("--- Tier 1 (Foundation Kernels) ---\n");
+        let params = QueryParams {
+            query: "kernel".to_string(),
+            tier_filter: Some(1),
+            limit: 5,
+            ..Default::default()
+        };
+        let output = query::execute(&index, &params);
+        print!("{output}");
+
+        // --- 9. Class filter: Llama/Mistral equivalence class ---
+        println!("--- Class A (Llama/Mistral) ---\n");
+        let params = QueryParams {
+            query: "attention".to_string(),
+            class_filter: Some('A'),
+            show_score: true,
+            limit: 5,
+            ..Default::default()
+        };
+        let output = query::execute(&index, &params);
+        print!("{output}");
     }
 }

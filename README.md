@@ -37,7 +37,7 @@ intermediaries with Kani bounded model checking verification.
 - [Usage](#usage)
 - [CLI Reference](#cli-reference)
 - [Contract Registry](#contract-registry)
-- [The Six-Phase Pipeline](#the-six-phase-pipeline)
+- [The Seven-Phase Pipeline](#the-seven-phase-pipeline)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [License](#license)
@@ -56,6 +56,12 @@ intermediaries with Kani bounded model checking verification.
   (`aprender`, etc.) for wired integration tests.
 - **Traceability Audit** -- Verify the full chain from paper reference
   through equation, obligation, falsification test, and Kani harness.
+- **Contract Scoring** -- Five-dimension quality scoring (spec depth,
+  falsification, Kani, Lean, binding) with A-F letter grades.
+- **Semantic Query Engine** -- BM25 search across all contracts with
+  tier/class filters, cross-project discovery, and graph-aware ranking.
+- **Lean 4 Codegen** -- Generate Lean 4 definition and theorem stubs
+  from contract proof obligations.
 
 ## Installation
 
@@ -147,60 +153,86 @@ pv equations contracts/softmax-kernel-v1.yaml
 # Display equations (LaTeX)
 pv equations contracts/softmax-kernel-v1.yaml --format latex
 
-# Generate PTX kernel stub
-pv equations contracts/softmax-kernel-v1.yaml --format ptx
+# Generate Lean 4 stubs
+pv lean contracts/softmax-kernel-v1.yaml
 
-# Generate x86-64 SIMD assembly stub
-pv equations contracts/softmax-kernel-v1.yaml --format asm
+# Proof level report (L1-L5)
+pv proof-status contracts/
+
+# Score a contract (five-dimension quality metric)
+pv score contracts/softmax-kernel-v1.yaml
+
+# Score all contracts with CI quality gate
+pv score contracts/ --min-score 0.75 --exit-code
+
+# Semantic search across contracts
+pv query "softmax numerical stability"
+
+# Tier filter: foundation kernels only
+pv query "kernel" --tier 1
+
+# Class filter: Llama/Mistral equivalence class
+pv query "attention" --class A --score
+
+# Cross-project call sites and violations
+pv query "rmsnorm" --call-sites --violations --coverage-map
+
+# Generate mdBook pages
+pv book contracts/ -o book/src/contracts/
 ```
 
 ## CLI Reference
 
-| Command    | Description                                          |
-|------------|------------------------------------------------------|
-| `validate` | Parse and validate a YAML kernel contract            |
-| `scaffold` | Generate Rust trait definition + failing tests        |
-| `kani`     | Generate `#[kani::proof]` bounded model harnesses    |
-| `probar`   | Generate property-based tests from obligations       |
-| `status`   | Display contract summary (equations, obligations)    |
-| `audit`    | Run traceability audit with optional binding check   |
-| `diff`     | Compare two contract versions, suggest semver bump   |
-| `coverage` | Cross-contract obligation coverage report            |
-| `generate` | End-to-end codegen (scaffold + kani + probar)        |
-| `graph`    | Dependency DAG (`text`, `dot`, `json`, `mermaid`)    |
-| `equations`| Display equations (`text`, `latex`, `ptx`, `asm`)    |
+| Command        | Description                                          |
+|----------------|------------------------------------------------------|
+| `validate`     | Parse and validate a YAML kernel contract            |
+| `scaffold`     | Generate Rust trait definition + failing tests        |
+| `kani`         | Generate `#[kani::proof]` bounded model harnesses    |
+| `probar`       | Generate property-based tests from obligations       |
+| `status`       | Display contract summary (equations, obligations)    |
+| `audit`        | Run traceability audit with optional binding check   |
+| `diff`         | Compare two contract versions, suggest semver bump   |
+| `coverage`     | Cross-contract obligation coverage report            |
+| `generate`     | End-to-end codegen (scaffold + kani + probar + book) |
+| `graph`        | Dependency DAG (`text`, `dot`, `json`, `mermaid`)    |
+| `equations`    | Display equations (`text`, `latex`, `ptx`, `asm`)    |
+| `lean`         | Generate Lean 4 definitions and theorem stubs        |
+| `lean-status`  | Report Lean 4 proof status across contracts          |
+| `proof-status` | Hierarchical proof level (L1-L5) report              |
+| `score`        | Five-dimension contract quality scoring (A-F)        |
+| `query`        | Semantic search with tier/class/graph filters        |
+| `book`         | Generate mdBook pages for contracts                  |
 
 ## Contract Registry
 
-48 kernel contracts ship in `contracts/`, organized by tier:
+167 kernel contracts ship in `contracts/`, organized by seven tiers
+and five equivalence classes (A-E).
 
-**Tier 1 -- Core Kernels** (7 contracts):
-softmax, rmsnorm, rope, activation (GeLU/ReLU/SiLU), attention,
-matmul, flash-attention.
+**Tier 1 -- Foundation Kernels**: softmax, rmsnorm, rope, gelu, silu,
+layernorm, batchnorm, cross-entropy, transpose, matmul, embedding,
+absolute-position, alibi.
 
-**Tier 2 -- Compound Kernels** (6 contracts):
-swiglu, gqa, layernorm, silu, cross-entropy, adamw.
+**Tier 2 -- Composite Kernels**: attention, gqa, flash-attention,
+swiglu, bidirectional-attention, conv1d, adamw, sliding-window-attention.
 
-**Tier 3 -- Extended Algorithms** (7 contracts):
-ssm (Mamba), conv1d, batchnorm, kmeans, pagerank, lbfgs, cma-es.
+**Tier 3 -- System Contracts**: model-config-algebra, tensor-shape-flow,
+roofline-model, kv-cache-sizing, kernel-launch-budget, backend-dispatch,
+sampling-algorithms, and more.
 
-**Model Architecture** (21 contracts):
-model-config-algebra, qk-norm, tensor-shape-flow, roofline-model,
-gated-delta-net, format-parity, shannon-entropy, f16-conversion,
-kernel-launch-budget, tensor-inventory, performance-grading,
-q4k-q6k-superblock, sampling-algorithms, validated-tensor,
-hybrid-layer-dispatch, qwen35-shapes, kv-cache-sizing,
-kv-cache-equivalence, backend-dispatch, lora-algebra,
-quantization-ordering.
+**Tier 4 -- Training Contracts**: lora-algebra, classification-finetune,
+cuda-classify-training, qlora-hyperparameters.
 
-**Qwen 3.5 Verification** (7 contracts):
-sliding-window-attention, rope-extrapolation (NTK/YaRN),
-embedding-algebra, inference-pipeline, qwen35-hybrid-forward,
-attention-scaling, qwen35-e2e-verification.
+**Tier 5 -- Classical ML**: kmeans, pagerank, decision-tree, lbfgs,
+cma-es, arima, active-learning.
 
-**Totals**: 166 equations, 262 proof obligations, 276 falsification
-tests, 81 Kani harnesses, 174 binding entries. Every obligation has at
-least one falsification test.
+**Tier 6 -- Model-Specific**: qwen2/qwen3/qwen35 e2e verification,
+hybrid-layer-dispatch, gated-delta-net, qwen35-hybrid-forward.
+
+**Equivalence Classes**: A (Llama/Mistral), B (GPT-2/BERT),
+C (BLOOM/MPT), D (Gemma), E (Qwen).
+
+**Totals**: 356 equations, 550 proof obligations, 590 falsification
+tests, 211 Kani harnesses. 100% obligation coverage.
 
 ### Qwen 3.5 Verification DAG
 
@@ -221,9 +253,9 @@ model-config-algebra ← qwen35-shapes ─────────────�
                      ← kv-cache-sizing ─────────────────↑
 ```
 
-## The Six-Phase Pipeline
+## The Seven-Phase Pipeline
 
-The provable-contracts methodology follows six phases:
+The provable-contracts methodology follows seven phases:
 
 1. **Extract** -- Parse peer-reviewed papers into canonical math
    (equations, domains, invariants).
@@ -237,11 +269,15 @@ The provable-contracts methodology follows six phases:
    (probar + certeza).
 6. **Verify** -- Prove correctness bounds via Kani bounded model
    checking.
+7. **Prove** -- Generate Lean 4 theorem stubs and prove correctness
+   in a type-theoretic proof assistant.
 
 ## Documentation
 
-- **Specification**: [`docs/specifications/provable-contracts.md`](
-  docs/specifications/provable-contracts.md)
+- **Specification**: [`docs/specifications/pv-spec.md`](
+  docs/specifications/pv-spec.md) (canonical, ONE spec)
+- **Sub-specs**: `docs/specifications/sub/` (schema, CLI, query,
+  scoring, registry, pipeline, library, integration)
 - **mdBook**: Run `mdbook serve` from the repository root, or build
   with `mdbook build`.
 
