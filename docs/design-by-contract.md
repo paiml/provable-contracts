@@ -99,19 +99,28 @@ that exercise the kernel against the contract's proof obligations.
 
 ## Integration with the Sovereign AI Stack
 
-provable-contracts integrates with three sibling crates:
+provable-contracts integrates with four sibling crates, each at Level 3
+(compile-time enforcement via `build.rs` + `#[contract]` proc macro):
 
-| Crate | Role | Binding file |
-|-------|------|--------------|
-| **aprender** | ML training library (TOP 10 algorithms + advanced modules) | `contracts/aprender/binding.yaml` |
-| **trueno** | SIMD-accelerated tensor operations | (bindings via aprender's registry) |
-| **realizar** | Model inference and serving | (bindings via aprender's registry) |
+| Crate | Role | Binding file | Policy | Coverage |
+|-------|------|--------------|--------|----------|
+| **aprender** | ML training library | `contracts/aprender/binding.yaml` | AllImplemented | 284 bindings |
+| **realizar** | Model inference engine | `contracts/realizar/binding.yaml` | WarnOnGaps | 23/23 (100%) |
+| **entrenar** | Training & optimization | `contracts/entrenar/binding.yaml` | WarnOnGaps | 81/96 (84%) |
+| **trueno** | SIMD-accelerated compute | `contracts/trueno/binding.yaml` | AllImplemented | 22/22 (100%) |
 
-The 93 contract YAML files cover activations (SiLU, GELU, SwiGLU), attention
+Each downstream crate's `build.rs` reads its binding registry from
+`../provable-contracts/contracts/<crate>/binding.yaml` and emits
+`CONTRACT_*` env vars (e.g. `CONTRACT_SOFTMAX_KERNEL_V1_SOFTMAX=implemented`).
+These are consumed at compile time by the `#[contract]` proc macro.
+
+The 107+ contract YAML files cover activations (SiLU, GELU, SwiGLU), attention
 (MHA, GQA, flash attention), normalization (RMSNorm, LayerNorm, BatchNorm),
 positional encoding (RoPE, ALiBi, absolute position), loss functions
 (cross-entropy), optimizers (AdamW, L-BFGS, CMA-ES), classical ML (k-means,
-PageRank, decision trees, ARIMA), and architecture-level constraints.
+PageRank, decision trees, ARIMA), training infrastructure (learning rate
+schedules, gradient clipping, distributed training, VRAM management), and
+architecture-level constraints.
 
 ## CLI
 
