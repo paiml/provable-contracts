@@ -1183,11 +1183,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'pv query Phase 5: --project, --include-project, --all-projects, --rebuild-index, commit refs'
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-03-07T08:35:39Z
-  updated: 2026-03-07T08:35:44.769601251+00:00
+  updated: 2026-03-07T16:34:28.385869277+00:00
   spec: null
   acceptance_criteria: []
   phases: []
