@@ -459,4 +459,103 @@ min_score = 0.75
         assert!(json.contains("\"lint\""));
         assert!(json.contains("\"output\""));
     }
+
+    #[test]
+    fn parse_diff_section() {
+        let toml = r#"
+[lint.diff]
+base_ref = "main"
+"#;
+        let config = toml_parse(toml);
+        assert_eq!(config.lint.diff.base_ref.as_deref(), Some("main"));
+    }
+
+    #[test]
+    fn parse_trend_section() {
+        let toml = r#"
+[lint.trend]
+enabled = true
+retention_days = 30
+drift_threshold = 0.10
+"#;
+        let config = toml_parse(toml);
+        assert!(config.lint.trend.enabled);
+        assert_eq!(config.lint.trend.retention_days, 30);
+        assert!((config.lint.trend.drift_threshold - 0.10).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn parse_cache_section() {
+        let toml = r#"
+[lint.cache]
+enabled = false
+dir = "/tmp/cache"
+"#;
+        let config = toml_parse(toml);
+        assert!(!config.lint.cache.enabled);
+        assert_eq!(config.lint.cache.dir.as_deref(), Some("/tmp/cache"));
+    }
+
+    #[test]
+    fn parse_unknown_section_ignored() {
+        let toml = r#"
+[unknown]
+key = "value"
+
+[lint]
+min_score = 0.5
+"#;
+        let config = toml_parse(toml);
+        assert_eq!(config.lint.min_score, Some(0.5));
+    }
+
+    #[test]
+    fn parse_unknown_keys_in_sections_ignored() {
+        let toml = r#"
+[lint]
+unknown_key = "whatever"
+min_score = 0.5
+
+[lint.suppress]
+unknown_suppress = "nope"
+
+[lint.trend]
+unknown_trend = "nope"
+
+[lint.cache]
+unknown_cache = "nope"
+
+[output]
+unknown_output = "nope"
+format = "json"
+"#;
+        let config = toml_parse(toml);
+        assert_eq!(config.lint.min_score, Some(0.5));
+        assert_eq!(config.output.format.as_deref(), Some("json"));
+    }
+
+    #[test]
+    fn find_config_not_in_tempdir() {
+        // tempdir has no git repo root and no HOME config
+        let tmp = tempfile::tempdir().unwrap();
+        assert!(find_config(tmp.path()).is_none());
+    }
+
+    #[test]
+    fn default_functions_return_expected_values() {
+        assert!(default_true());
+        assert_eq!(default_retention_days(), 90);
+        assert!((default_drift_threshold() - 0.05).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn resolve_strict_from_config() {
+        let mut config = PvConfig::default();
+        config.lint.strict = true;
+        let map = resolve_rule_severities(&config, &[], false);
+        // Warnings should become errors in strict mode (from config)
+        assert_eq!(map.get("PV-AUD-001"), Some(&RuleSeverity::Error));
+        // Info stays info
+        assert_eq!(map.get("PV-AUD-002"), Some(&RuleSeverity::Info));
+    }
 }

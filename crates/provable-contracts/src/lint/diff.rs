@@ -142,4 +142,38 @@ mod tests {
         let expanded = expand_dependents(&changed, &contracts);
         assert!(expanded.is_empty());
     }
+
+    #[test]
+    fn changed_contracts_with_range() {
+        // Use a wide range to guarantee files are returned, exercising the filter closures
+        let result = changed_contracts(&contracts_dir(), "HEAD~50");
+        // Should succeed (may or may not have changes depending on history)
+        assert!(result.is_ok());
+        let stems = result.unwrap();
+        // All returned stems should be valid (no .yaml extension, no path prefix)
+        for stem in &stems {
+            assert!(
+                !stem.ends_with(".yaml"),
+                "Stem should not have extension: {stem}"
+            );
+            assert!(
+                !stem.contains('/'),
+                "Stem should not have path separator: {stem}"
+            );
+        }
+    }
+
+    #[test]
+    fn find_repo_root_works() {
+        let root = find_repo_root(&contracts_dir());
+        assert!(root.is_ok());
+        assert!(root.unwrap().contains("provable-contracts"));
+    }
+
+    #[test]
+    fn find_repo_root_non_git_dir() {
+        let tmp = tempfile::tempdir().unwrap();
+        let result = find_repo_root(tmp.path());
+        assert!(result.is_err());
+    }
 }

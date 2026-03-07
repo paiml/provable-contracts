@@ -465,4 +465,159 @@ falsification_tests: []
         // The pipe in formal should be escaped
         assert!(page.contains("\\|"));
     }
+
+    #[test]
+    fn codomain_and_invariants_rendered() {
+        let c = parse_contract_str(
+            r#"
+metadata:
+  version: "1.0.0"
+  description: "Test"
+equations:
+  f:
+    formula: "f(x) = x"
+    domain: "x ∈ ℝ^n"
+    codomain: "ℝ^n"
+    invariants:
+      - "f(x) >= 0"
+      - "f(0) = 0"
+falsification_tests: []
+"#,
+        )
+        .unwrap();
+        let refs = vec![("test".to_string(), &c)];
+        let graph = dependency_graph(&refs);
+        let page = generate_contract_page(&c, "test", &graph);
+
+        assert!(page.contains("**Codomain:**"));
+        assert!(page.contains("**Invariants:**"));
+    }
+
+    #[test]
+    fn kernel_phases_rendered() {
+        let c = parse_contract_str(
+            r#"
+metadata:
+  version: "1.0.0"
+  description: "Test"
+equations:
+  f:
+    formula: "f(x) = x"
+kernel_structure:
+  phases:
+    - name: "load"
+      description: "Load input"
+      invariant: "data aligned"
+    - name: "compute"
+      description: "Run kernel"
+falsification_tests: []
+"#,
+        )
+        .unwrap();
+        let refs = vec![("test".to_string(), &c)];
+        let graph = dependency_graph(&refs);
+        let page = generate_contract_page(&c, "test", &graph);
+
+        assert!(page.contains("## Kernel Phases"));
+        assert!(page.contains("**load**"));
+        assert!(page.contains("**compute**"));
+        assert!(page.contains("*data aligned*"));
+    }
+
+    #[test]
+    fn simd_dispatch_rendered() {
+        let c = parse_contract_str(
+            r#"
+metadata:
+  version: "1.0.0"
+  description: "Test"
+equations:
+  f:
+    formula: "f(x) = x"
+simd_dispatch:
+  softmax:
+    AVX2: "softmax_avx2"
+    Scalar: "softmax_scalar"
+falsification_tests: []
+"#,
+        )
+        .unwrap();
+        let refs = vec![("test".to_string(), &c)];
+        let graph = dependency_graph(&refs);
+        let page = generate_contract_page(&c, "test", &graph);
+
+        assert!(page.contains("## SIMD Dispatch"));
+        assert!(page.contains("softmax"));
+        assert!(page.contains("AVX2"));
+    }
+
+    #[test]
+    fn qa_gate_rendered() {
+        let c = parse_contract_str(
+            r#"
+metadata:
+  version: "1.0.0"
+  description: "Test"
+equations:
+  f:
+    formula: "f(x) = x"
+qa_gate:
+  id: QA-001
+  name: "Quality gate"
+  description: "Comprehensive testing"
+  checks:
+    - "unit tests"
+    - "integration tests"
+  pass_criteria: "all green"
+falsification_tests: []
+"#,
+        )
+        .unwrap();
+        let refs = vec![("test".to_string(), &c)];
+        let graph = dependency_graph(&refs);
+        let page = generate_contract_page(&c, "test", &graph);
+
+        assert!(page.contains("## QA Gate"));
+        assert!(page.contains("Quality gate"));
+        assert!(page.contains("Comprehensive testing"));
+        assert!(page.contains("unit tests, integration tests"));
+        assert!(page.contains("**Pass criteria:**"));
+    }
+
+    #[test]
+    fn dependent_graph_rendered() {
+        // "b" depends on "a", so "a" page should show "b" as dependent
+        let a = parse_contract_str(
+            r#"
+metadata:
+  version: "1.0.0"
+  description: "A"
+equations:
+  f:
+    formula: "f(x) = x"
+falsification_tests: []
+"#,
+        )
+        .unwrap();
+        let b = parse_contract_str(
+            r#"
+metadata:
+  version: "1.0.0"
+  description: "B"
+  depends_on: ["a"]
+equations:
+  g:
+    formula: "g(x) = x"
+falsification_tests: []
+"#,
+        )
+        .unwrap();
+        let refs = vec![("a".to_string(), &a), ("b".to_string(), &b)];
+        let graph = dependency_graph(&refs);
+        let page = generate_contract_page(&a, "a", &graph);
+
+        assert!(page.contains("```mermaid"));
+        // b depends on a, so b should appear in a's dependency graph
+        assert!(page.contains("b"));
+    }
 }

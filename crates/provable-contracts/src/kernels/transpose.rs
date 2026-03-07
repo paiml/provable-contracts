@@ -337,4 +337,19 @@ mod tests {
 
         assert_eq!(b_test, b_ref, "Attention shape 2048×128 mismatch");
     }
+
+    /// Cover scalar remainder paths (rows/cols not divisible by 8)
+    #[test]
+    fn scalar_remainder_paths() {
+        for (rows, cols) in [(3, 5), (10, 13), (15, 9), (7, 7)] {
+            let a: Vec<f32> = (0..rows * cols).map(|i| i as f32).collect();
+            let mut b_scalar = vec![0.0f32; rows * cols];
+            let mut b_ref = vec![0.0f32; rows * cols];
+
+            transpose_scalar(rows, cols, &a, &mut b_scalar);
+            transpose_naive(rows, cols, &a, &mut b_ref);
+
+            assert_eq!(b_scalar, b_ref, "Scalar mismatch for {rows}×{cols}");
+        }
+    }
 }

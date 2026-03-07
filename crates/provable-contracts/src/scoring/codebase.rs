@@ -475,4 +475,82 @@ equations:
         assert_eq!(counts.get("dep-v1.yaml").copied().unwrap_or(0), 1);
         assert_eq!(counts.get("test-v1.yaml").copied().unwrap_or(0), 0);
     }
+
+    #[test]
+    fn compute_gaps_falsification_and_binding() {
+        // Contract with more obligations than falsification tests
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Test"
+equations:
+  f:
+    formula: "f(x) = x"
+proof_obligations:
+  - type: invariant
+    property: "finite output"
+  - type: bound
+    property: "bounded error"
+  - type: equivalence
+    property: "matches reference"
+falsification_tests:
+  - id: FALSIFY-001
+    rule: "finite"
+    prediction: "finite"
+    if_fails: "overflow"
+kani_harnesses:
+  - id: KANI-001
+    obligation: OBL-001
+    bound: 16
+"#;
+        let contract = crate::schema::parse_contract_str(yaml).unwrap();
+        let binding = BindingRegistry {
+            version: "1.0.0".into(),
+            target_crate: "test".into(),
+            bindings: vec![
+                crate::binding::KernelBinding {
+                    contract: "test-v1.yaml".into(),
+                    equation: "f".into(),
+                    status: ImplStatus::Partial,
+                    module_path: Some("test::f".into()),
+                    function: None,
+                    signature: None,
+                    notes: None,
+                },
+                crate::binding::KernelBinding {
+                    contract: "test-v1.yaml".into(),
+                    equation: "g".into(),
+                    status: ImplStatus::NotImplemented,
+                    module_path: Some("test::g".into()),
+                    function: None,
+                    signature: None,
+                    notes: None,
+                },
+            ],
+        };
+
+        let contracts = vec![("test-v1.yaml".to_string(), &contract)];
+        let bound_stems: std::collections::BTreeSet<&str> =
+            contracts.iter().map(|(s, _)| s.as_str()).collect();
+        let gaps = super::compute_gaps(&contracts, &binding, &bound_stems, None);
+
+        // Should have gaps for: kani_coverage, falsification_coverage, binding_partial, binding_coverage
+        let dimensions: Vec<&str> = gaps.iter().map(|g| g.dimension.as_str()).collect();
+        assert!(
+            dimensions.contains(&"kani_coverage"),
+            "Expected kani gap: {dimensions:?}"
+        );
+        assert!(
+            dimensions.contains(&"falsification_coverage"),
+            "Expected falsification gap: {dimensions:?}"
+        );
+        assert!(
+            dimensions.contains(&"binding_partial"),
+            "Expected partial binding gap: {dimensions:?}"
+        );
+        assert!(
+            dimensions.contains(&"binding_coverage"),
+            "Expected unimpl binding gap: {dimensions:?}"
+        );
+    }
 }

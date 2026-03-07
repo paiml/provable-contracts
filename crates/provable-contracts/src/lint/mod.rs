@@ -397,4 +397,62 @@ mod tests {
         let r2 = run_lint(&config);
         assert!(r2.cache_stats.hits > 0);
     }
+
+    #[test]
+    fn lint_validation_failure_skips_audit_and_score() {
+        let tmp = tempfile::tempdir().unwrap();
+        // Write a malformed YAML that will parse into a Contract with validation errors
+        // Actually: write something that fails to parse entirely
+        std::fs::write(tmp.path().join("bad.yaml"), "not: valid: yaml: {{{{").unwrap();
+        let config = LintConfig::new(tmp.path(), None, 0.0);
+        let report = run_lint(&config);
+        assert!(!report.passed);
+        // validate should fail, audit and score should be skipped
+        assert_eq!(report.gates.len(), 3);
+        assert!(!report.gates[0].passed); // validate failed
+        assert!(report.gates[1].skipped); // audit skipped
+        assert!(report.gates[2].skipped); // score skipped
+    }
+
+    #[test]
+    fn lint_suppression_by_stem() {
+        let dir = contracts_dir();
+        let mut config = LintConfig::new(&dir, None, 0.99);
+        // Suppress by contract stem (--suppress)
+        config.suppressed_findings = vec!["special-tokens-registry-v1".into()];
+        let report = run_lint(&config);
+        for f in &report.findings {
+            if f.contract_stem.as_deref() == Some("special-tokens-registry-v1") {
+                assert!(f.suppressed);
+            }
+        }
+    }
+
+    #[test]
+    fn lint_suppression_by_file_pattern() {
+        let dir = contracts_dir();
+        let mut config = LintConfig::new(&dir, None, 0.99);
+        config.suppressed_files = vec!["arch-constraints".into()];
+        let report = run_lint(&config);
+        for f in &report.findings {
+            if f.file.contains("arch-constraints") {
+                assert!(f.suppressed);
+            }
+        }
+    }
+
+    #[test]
+    fn lint_severity_override() {
+        let dir = contracts_dir();
+        let mut config = LintConfig::new(&dir, None, 0.99);
+        let mut overrides = HashMap::new();
+        overrides.insert("PV-SCR-001".into(), RuleSeverity::Warning);
+        config.severity_overrides = overrides;
+        let report = run_lint(&config);
+        for f in &report.findings {
+            if f.rule_id == "PV-SCR-001" {
+                assert_eq!(f.severity, RuleSeverity::Warning);
+            }
+        }
+    }
 }

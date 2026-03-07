@@ -310,4 +310,75 @@ mod tests {
         let path = trend_dir(Path::new("/repo"));
         assert_eq!(path, PathBuf::from("/repo/.pv/trend"));
     }
+
+    #[test]
+    fn load_snapshots_nonexistent_dir() {
+        let snaps = load_snapshots(Path::new("/nonexistent/trend"));
+        assert!(snaps.is_empty());
+    }
+
+    #[test]
+    fn detect_drift_empty_recent_window() {
+        // Two snapshots with same score — no drift
+        let snaps = vec![
+            sample_snapshot(0.80, "2026-03-01"),
+            sample_snapshot(0.80, "2026-03-02"),
+        ];
+        assert!(detect_drift(&snaps, 0.05).is_none());
+    }
+
+    #[test]
+    fn format_trend_declining() {
+        let snaps = vec![
+            sample_snapshot(0.80, "2026-03-01T10:00:00"),
+            sample_snapshot(0.60, "2026-03-02T10:00:00"),
+        ];
+        let display = format_trend(&snaps, 10);
+        assert!(display.contains("declining"));
+    }
+
+    #[test]
+    fn format_trend_stable() {
+        let snaps = vec![
+            sample_snapshot(0.80, "2026-03-01T10:00:00"),
+            sample_snapshot(0.80, "2026-03-02T10:00:00"),
+        ];
+        let display = format_trend(&snaps, 10);
+        assert!(display.contains("stable"));
+    }
+
+    #[test]
+    fn extract_mean_score_no_score_gate() {
+        let report = LintReport {
+            passed: true,
+            gates: vec![],
+            total_duration_ms: 0,
+            findings: vec![],
+            cache_stats: Default::default(),
+        };
+        assert!((extract_mean_score(&report) - 0.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn now_iso8601_format() {
+        let ts = now_iso8601();
+        // Should be ISO 8601 with milliseconds: YYYY-MM-DDTHH:MM:SS.mmmZ
+        assert!(ts.ends_with('Z'));
+        assert!(ts.contains('T'));
+        assert!(ts.contains('.'));
+        assert_eq!(ts.len(), 24); // "2026-03-07T19:31:33.056Z"
+    }
+
+    #[test]
+    fn count_by_severity_mixed() {
+        use crate::lint::finding::LintFinding;
+        let findings = vec![
+            LintFinding::new("PV-VAL-001", RuleSeverity::Error, "e", "f.yaml"),
+            LintFinding::new("PV-AUD-001", RuleSeverity::Warning, "w", "f.yaml"),
+            LintFinding::new("PV-AUD-002", RuleSeverity::Info, "i", "f.yaml"),
+        ];
+        let (errors, warnings) = count_by_severity(&findings);
+        assert_eq!(errors, 1);
+        assert_eq!(warnings, 1);
+    }
 }
