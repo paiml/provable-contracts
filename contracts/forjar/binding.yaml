@@ -1,0 +1,113 @@
+# Binding Registry: provable-contracts <-> forjar
+version: "1.0.0"
+target_crate: forjar
+
+bindings:
+  # ── BLAKE3 State Hashing (I3) ──────────────────────────
+  - contract: blake3-state-v1.yaml
+    equation: hash_string
+    module_path: "forjar::tripwire::hasher::hash_string"
+    function: hash_string
+    signature: "fn hash_string(s: &str) -> String"
+    status: implemented
+    notes: "Returns 'blake3:' || hex(BLAKE3(s))"
+
+  - contract: blake3-state-v1.yaml
+    equation: hash_file
+    module_path: "forjar::tripwire::hasher::hash_file"
+    function: hash_file
+    signature: "fn hash_file(path: &Path) -> Result<String, String>"
+    status: implemented
+    notes: "Streaming 64KB buffer for large files"
+
+  - contract: blake3-state-v1.yaml
+    equation: composite_hash
+    module_path: "forjar::tripwire::hasher::composite_hash"
+    function: composite_hash
+    signature: "fn composite_hash(components: &[&str]) -> String"
+    status: implemented
+    notes: "NUL-separated component concatenation"
+
+  # ── DAG Ordering (I5) ──────────────────────────────────
+  - contract: dag-ordering-v1.yaml
+    equation: topological_sort
+    module_path: "forjar::core::resolver::build_execution_order"
+    function: build_execution_order
+    signature: "fn build_execution_order(config: &ForjarConfig) -> Result<Vec<String>, String>"
+    status: implemented
+    notes: "Kahn's algorithm with alphabetical tie-breaking"
+
+  - contract: dag-ordering-v1.yaml
+    equation: kahn_sort
+    module_path: "forjar::core::resolver::kahn_sort"
+    function: kahn_sort
+    signature: "fn kahn_sort(resource_ids: &[String], in_degree: &mut HashMap<String, usize>, adjacency: &mut HashMap<String, Vec<String>>) -> Vec<String>"
+    status: implemented
+    notes: "Private helper; tested via build_execution_order"
+
+  # ── Execution Safety (I4, I7) ──────────────────────────
+  - contract: execution-safety-v1.yaml
+    equation: atomic_write
+    module_path: "forjar::core::state::save_lock"
+    function: save_lock
+    signature: "fn save_lock(state_dir: &Path, lock: &StateLock) -> Result<(), String>"
+    status: implemented
+    notes: "temp + rename pattern; creates parent dirs"
+
+  - contract: execution-safety-v1.yaml
+    equation: jidoka_stop
+    module_path: "forjar::core::executor::record_failure"
+    function: record_failure
+    signature: "fn record_failure(ctx: &mut RecordCtx, resource_id: &str, resource_type: &ResourceType, duration: f64, error: &str) -> bool"
+    status: implemented
+    notes: "Private helper; returns should_stop based on FailurePolicy"
+
+  # ── Recipe Determinism (I11, I12) ──────────────────────
+  - contract: recipe-determinism-v1.yaml
+    equation: expand_recipe
+    module_path: "forjar::core::recipe::expand_recipe"
+    function: expand_recipe
+    signature: "fn expand_recipe(recipe_id: &str, recipe_file: &RecipeFile, machine: &MachineTarget, provided_inputs: &HashMap<String, Value>, external_depends_on: &[String]) -> Result<IndexMap<String, Resource>, String>"
+    status: implemented
+    notes: "Namespaces resource IDs, propagates machine target"
+
+  - contract: recipe-determinism-v1.yaml
+    equation: validate_inputs
+    module_path: "forjar::core::recipe::validate_inputs"
+    function: validate_inputs
+    signature: "fn validate_inputs(recipe: &RecipeMetadata, provided: &HashMap<String, Value>) -> Result<HashMap<String, String>, String>"
+    status: implemented
+    notes: "Type-checks all 6 input types (string, int, bool, path, enum, list)"
+
+  - contract: recipe-determinism-v1.yaml
+    equation: validate_input_type
+    module_path: "forjar::core::recipe::validate_input_type"
+    function: validate_input_type
+    signature: "fn validate_input_type(name: &str, type_name: &str, value: &Value, decl: &RecipeInput) -> Result<String, String>"
+    status: implemented
+    notes: "Private helper; dispatches to type-specific validation"
+
+  # ── Codegen Dispatch (I2) ──────────────────────────────
+  - contract: codegen-dispatch-v1.yaml
+    equation: check_script
+    module_path: "forjar::core::codegen::check_script"
+    function: check_script
+    signature: "fn check_script(resource: &Resource) -> Result<String, String>"
+    status: implemented
+    notes: "Dispatches to resource-specific check handlers"
+
+  - contract: codegen-dispatch-v1.yaml
+    equation: apply_script
+    module_path: "forjar::core::codegen::apply_script"
+    function: apply_script
+    signature: "fn apply_script(resource: &Resource) -> Result<String, String>"
+    status: implemented
+    notes: "Dispatches to resource-specific apply handlers"
+
+  - contract: codegen-dispatch-v1.yaml
+    equation: state_query_script
+    module_path: "forjar::core::codegen::state_query_script"
+    function: state_query_script
+    signature: "fn state_query_script(resource: &Resource) -> Result<String, String>"
+    status: implemented
+    notes: "Dispatches to resource-specific state query handlers"
