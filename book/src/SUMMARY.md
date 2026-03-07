@@ -18,6 +18,7 @@
 - [Qwen 3.5 Verification](./qwen35-verification.md)
 - [Integration with PAIML Stack](./integration.md)
 - [Contract Lifecycle](./contract-lifecycle.md)
+- [Lint Quality Gate](./lint-quality-gate.md)
 - [Examples](./examples.md)
 - [References](./references.md)
 

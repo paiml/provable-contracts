@@ -1,36 +1,105 @@
 //! Run the contract quality gate (validate + audit + score) on a directory.
 //!
+//! Demonstrates all lint features: text/json/sarif/github output, suppression,
+//! strict mode, severity filter, cache stats, and trend tracking.
+//!
 //! Usage:
 //!   cargo run --example lint -- contracts/
 //!   cargo run --example lint -- contracts/ 0.60
 //!   cargo run --example lint -- contracts/ 0.0 sarif
+//!   cargo run --example lint -- contracts/ 0.0 text --strict
+//!   cargo run --example lint -- contracts/ 0.0 text --suppress-rule PV-SCR-001
+//!   cargo run --example lint -- contracts/ 0.0 text --cache-stats
+//!   cargo run --example lint -- contracts/ 0.0 text --trend
 
 use std::path::PathBuf;
 use std::process;
 
 use provable_contracts::lint::sarif::{findings_to_sarif, sarif_to_json};
+use provable_contracts::lint::trend;
 use provable_contracts::lint::{GateDetail, LintConfig, LintReport, run_lint};
 
 fn main() {
-    let dir = std::env::args().nth(1).map_or_else(
+    let args: Vec<String> = std::env::args().collect();
+
+    let dir = args.get(1).map_or_else(
         || {
-            eprintln!("Usage: lint <contracts-dir/> [min-score] [format]");
+            eprintln!(
+                "Usage: lint <contracts-dir/> [min-score] [format] [flags]\n\
+                 \n\
+                 Formats: text (default), json, sarif, github\n\
+                 \n\
+                 Flags:\n\
+                 \x20 --strict             Promote warnings to errors\n\
+                 \x20 --suppress-rule ID   Suppress findings by rule (e.g. PV-SCR-001)\n\
+                 \x20 --severity error     Filter to error-severity only\n\
+                 \x20 --no-cache           Disable content-addressable cache\n\
+                 \x20 --cache-stats        Show cache hit/miss statistics\n\
+                 \x20 --trend              Record trend snapshot and check for drift"
+            );
             process::exit(1);
         },
         PathBuf::from,
     );
 
-    let min_score: f64 = std::env::args()
-        .nth(2)
+    let min_score: f64 = args
+        .get(2)
         .and_then(|s| s.parse().ok())
         .unwrap_or(0.0);
 
-    let format = std::env::args().nth(3).unwrap_or_else(|| "text".into());
+    let format = args.get(3).map_or("text", |s| s.as_str());
 
-    let config = LintConfig::new(&dir, None, min_score);
+    let strict = args.iter().any(|a| a == "--strict");
+    let no_cache = args.iter().any(|a| a == "--no-cache");
+    let cache_stats = args.iter().any(|a| a == "--cache-stats");
+    let do_trend = args.iter().any(|a| a == "--trend");
+    let suppress_rule = flag_value(&args, "--suppress-rule");
+    let severity = flag_value(&args, "--severity");
+
+    let mut config = LintConfig::new(&dir, None, min_score);
+    config.strict = strict;
+    config.no_cache = no_cache;
+    config.cache_stats = cache_stats;
+    if let Some(rule) = suppress_rule {
+        config.suppressed_rules = vec![rule];
+    }
+    if let Some(ref sev) = severity {
+        config.severity_filter =
+            provable_contracts::lint::rules::RuleSeverity::from_str_opt(sev);
+    }
+
     let report = run_lint(&config);
 
-    match format.as_str() {
+    // Print cache statistics if requested
+    if cache_stats {
+        let cs = &report.cache_stats;
+        eprintln!(
+            "Cache: {} total, {} hits, {} misses ({:.0}% hit rate)",
+            cs.total,
+            cs.hits,
+            cs.misses,
+            cs.hit_rate() * 100.0,
+        );
+    }
+
+    // Record trend snapshot and detect drift
+    if do_trend {
+        let trend_root = trend::trend_dir(&dir);
+        let contracts_count = count_contracts(&report);
+        match trend::record_snapshot(&trend_root, &report, contracts_count) {
+            Ok(path) => eprintln!("Trend snapshot: {}", path.display()),
+            Err(e) => eprintln!("Warning: trend snapshot failed: {e}"),
+        }
+        let snapshots = trend::load_snapshots(&trend_root);
+        if let Some(drop) = trend::detect_drift(&snapshots, 0.05) {
+            eprintln!("Warning: quality drift detected (score dropped {drop:.3})");
+        }
+        if snapshots.len() >= 2 {
+            eprintln!("\n{}", trend::format_trend(&snapshots, 10));
+        }
+    }
+
+    match format {
         "sarif" => print_sarif(&report),
         "json" => println!("{}", serde_json::to_string_pretty(&report).unwrap()),
         "github" => print_github(&report),
@@ -40,6 +109,25 @@ fn main() {
     if !report.passed {
         process::exit(1);
     }
+}
+
+fn flag_value(args: &[String], flag: &str) -> Option<String> {
+    args.iter()
+        .position(|a| a == flag)
+        .and_then(|i| args.get(i + 1))
+        .cloned()
+}
+
+fn count_contracts(report: &LintReport) -> usize {
+    for gate in &report.gates {
+        match &gate.detail {
+            GateDetail::Validate { contracts, .. }
+            | GateDetail::Audit { contracts, .. }
+            | GateDetail::Score { contracts, .. } => return *contracts,
+            GateDetail::Skipped { .. } => {}
+        }
+    }
+    0
 }
 
 fn print_sarif(report: &LintReport) {
