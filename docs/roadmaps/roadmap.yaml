@@ -1150,11 +1150,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: SSC encoder contracts for bashrs v11
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-03-05T11:21:35Z
-  updated: 2026-03-05T11:21:39.148642674+00:00
+  updated: 2026-03-07T16:34:00.756354437+00:00
   spec: null
   acceptance_criteria:
   - '4 YAML contracts: bidirectional-attention, learned-position-embedding, encoder-forward, linear-probe-classifier'
