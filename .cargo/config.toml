@@ -2,8 +2,7 @@
 # See: https://doc.rust-lang.org/cargo/reference/config.html
 
 [build]
-# Use all available CPU cores for parallel compilation
-jobs = 0
+# Cargo defaults to num_cpus for parallel compilation
 
 [target.'cfg(target_os = "linux")']
 rustflags = ["-C", "target-cpu=native"]
