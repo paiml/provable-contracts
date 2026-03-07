@@ -1239,11 +1239,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Realizar contract extraction and binding registry
-  status: planned
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-03-07T12:15:18Z
-  updated: 2026-03-07T12:15:18Z
+  updated: 2026-03-07T12:31:50.494101404+00:00
   spec: null
   acceptance_criteria:
   - Create contracts/realizar/ directory with dedicated contracts and binding.yaml from 62 realizar references
