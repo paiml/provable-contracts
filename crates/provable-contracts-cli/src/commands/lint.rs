@@ -170,6 +170,7 @@ fn resolve_format(format: &str, config_path: Option<&Path>, contract_dir: &Path)
         .and_then(|cp| load_config(cp).ok())
         .or_else(|| find_config(contract_dir).and_then(|p| load_config(&p).ok()))
         .unwrap_or_default();
+    // Note: config errors already reported in build_config
     pv_config.output.format.unwrap_or_else(|| "text".into())
 }
 
@@ -190,7 +191,26 @@ fn build_config<'a>(
     cache_stats: bool,
 ) -> LintConfig<'a> {
     let pv_config = config_path
-        .and_then(|cp| load_config(cp).ok())
+        .and_then(|cp| match load_config(cp) {
+            Ok(c) => {
+                if c.lint.min_score.is_none()
+                    && !c.lint.strict
+                    && c.lint.severity.is_none()
+                    && c.lint.rules.is_empty()
+                    && c.output.format.is_none()
+                {
+                    eprintln!(
+                        "Warning: config {} parsed but no lint settings found",
+                        cp.display()
+                    );
+                }
+                Some(c)
+            }
+            Err(e) => {
+                eprintln!("Warning: failed to load config {}: {e}", cp.display());
+                None
+            }
+        })
         .or_else(|| find_config(contract_dir).and_then(|p| load_config(&p).ok()))
         .unwrap_or_default();
 
