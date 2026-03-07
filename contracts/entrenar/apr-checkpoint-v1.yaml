@@ -440,8 +440,10 @@ toyota_way_principles:
 # =============================================================================
 
 qa_gate:
+  id: F-CKPT-QA
+  name: "APR Checkpoint Contract"
   description: "APR checkpoint quality gate"
-  requirements:
+  checks:
     - "All 5 falsification tests pass"
     - "F-CKPT-001 and F-CKPT-004 verified on every checkpoint write"
     - "F-CKPT-005 verified before any resumed training starts"
