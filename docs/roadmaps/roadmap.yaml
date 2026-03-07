@@ -1259,11 +1259,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Downstream integration GH issues per repo
-  status: planned
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-03-07T12:15:19Z
-  updated: 2026-03-07T12:15:19Z
+  updated: 2026-03-07T12:32:19.953859344+00:00
   spec: null
   acceptance_criteria:
   - Create GitHub issues in paiml/entrenar, paiml/trueno, paiml/realizar, paiml/aprender for Level 3 contract integration
