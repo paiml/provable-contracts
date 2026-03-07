@@ -84,7 +84,30 @@ fn main() {
     let output = query::execute(&index, &params);
     print!("{}", output.to_markdown());
 
-    // 6. Rebuild index from scratch (skip cache)
+    // 6. Tier filter: Foundation kernels only
+    println!("\n=== Tier 1 (Foundation Kernels): \"kernel\" ===\n");
+    let params = QueryParams {
+        query: "kernel".to_string(),
+        tier_filter: Some(1),
+        limit: 5,
+        ..Default::default()
+    };
+    let output = query::execute(&index, &params);
+    print!("{output}");
+
+    // 7. Class filter: Qwen equivalence class
+    println!("\n=== Class E (Qwen): \"norm\" ===\n");
+    let params = QueryParams {
+        query: "norm".to_string(),
+        class_filter: Some('E'),
+        show_score: true,
+        limit: 5,
+        ..Default::default()
+    };
+    let output = query::execute(&index, &params);
+    print!("{output}");
+
+    // 8. Rebuild index from scratch (skip cache)
     println!("\n=== Rebuild Index ===\n");
     let fresh_index =
         ContractIndex::from_directory_opts(contracts_dir, true).expect("rebuild should succeed");
