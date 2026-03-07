@@ -345,3 +345,33 @@
         let results = index.get_by_obligation("invariant");
         assert!(!results.is_empty());
     }
+
+    #[test]
+    fn clean_path_strips_prefix() {
+        assert_eq!(
+            clean_path("/home/user/src/provable-contracts/contracts/softmax-kernel-v1.yaml"),
+            "contracts/softmax-kernel-v1.yaml"
+        );
+        assert_eq!(
+            clean_path("../../contracts/aprender/binding.yaml"),
+            "contracts/aprender/binding.yaml"
+        );
+        assert_eq!(clean_path("no-match.yaml"), "no-match.yaml");
+    }
+
+    #[test]
+    fn query_result_path_is_clean() {
+        let index = test_index();
+        let params = QueryParams {
+            query: "softmax".to_string(),
+            limit: 1,
+            ..Default::default()
+        };
+        let output = execute(&index, &params);
+        let path = &output.results[0].path;
+        assert!(
+            path.starts_with("contracts/"),
+            "path should be relative: {path}"
+        );
+        assert!(!path.contains("/../"), "path should not contain /../: {path}");
+    }

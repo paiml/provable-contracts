@@ -158,7 +158,9 @@ fn build_result(
 
 /// Clean a contract path for display: strip to `contracts/...` relative form.
 fn clean_path(raw: &str) -> String {
-    if let Some(idx) = raw.find("contracts/") {
+    // Use the last occurrence of "contracts/" to handle paths like
+    // /foo/contracts/crates/.../../../contracts/softmax-kernel-v1.yaml
+    if let Some(idx) = raw.rfind("contracts/") {
         raw[idx..].to_string()
     } else {
         raw.to_string()
