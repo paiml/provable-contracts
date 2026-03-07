@@ -170,8 +170,8 @@ Filters are applied after search, before ranking.
 | `--include-project <path>` | Path | `--include-project ../custom` | [IMPLEMENTED] |
 | `--all-projects` | Boolean | Force full cross-project scan | [IMPLEMENTED] |
 | `--rebuild-index` | Boolean | Force index rebuild | [IMPLEMENTED] |
-| `--tier <n>` | Enum | `--tier 1` | — |
-| `--class <A-E>` | Enum | `--class A` | — |
+| `--tier <n>` | Enum | `--tier 1` | [IMPLEMENTED] |
+| `--class <A-E>` | Enum | `--class A` | [IMPLEMENTED] |
 
 ---
 

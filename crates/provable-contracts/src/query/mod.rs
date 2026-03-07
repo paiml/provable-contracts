@@ -9,6 +9,7 @@ pub mod cross_project;
 mod index;
 mod persist;
 mod query_enrich;
+pub mod registry;
 mod types;
 mod types_render;
 
@@ -205,6 +206,8 @@ fn apply_filters(
                 && filter_min_score(index, entry, params.min_score)
                 && filter_binding_gaps(entry, params.binding_gaps_only, binding)
                 && filter_min_level(entry, params.min_level.as_deref())
+                && filter_tier(entry, params.tier_filter)
+                && filter_class(entry, params.class_filter)
         })
         .collect()
 }
@@ -274,6 +277,16 @@ fn filter_unproven(entry: &types::ContractEntry, unproven_only: bool) -> bool {
         return true;
     }
     entry.obligation_count > entry.kani_count
+}
+
+fn filter_tier(entry: &types::ContractEntry, tier: Option<u8>) -> bool {
+    let Some(t) = tier else { return true };
+    registry::tier_of(&entry.stem) == t
+}
+
+fn filter_class(entry: &types::ContractEntry, class: Option<char>) -> bool {
+    let Some(c) = class else { return true };
+    registry::classes_of(&entry.stem).contains(&c)
 }
 
 fn filter_min_level(entry: &types::ContractEntry, min_level: Option<&str>) -> bool {

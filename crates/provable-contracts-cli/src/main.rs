@@ -229,6 +229,12 @@ enum Commands {
         /// Force full cross-project scan even without --call-sites/--violations/--coverage-map
         #[arg(long)]
         all_projects: bool,
+        /// Filter by contract tier (1-7)
+        #[arg(long)]
+        tier: Option<u8>,
+        /// Filter by kernel equivalence class (A-E)
+        #[arg(long, value_name = "CLASS")]
+        class: Option<char>,
         /// Force rebuild of the contract index (ignore cache)
         #[arg(long)]
         rebuild_index: bool,
@@ -349,6 +355,8 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             coverage_map,
             project,
             include_project,
+            tier,
+            class,
             all_projects,
             rebuild_index,
             binding,
@@ -380,6 +388,8 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             coverage_map,
             &project,
             &include_project,
+            tier,
+            class,
             all_projects,
             rebuild_index,
             &binding,
@@ -400,11 +410,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
-#[allow(
-    clippy::too_many_arguments,
-    clippy::fn_params_excessive_bools,
-    clippy::ref_option
-)]
+#[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools, clippy::ref_option)]
 fn dispatch_query(
     contract_dir: &std::path::Path,
     query: &str,
@@ -431,6 +437,8 @@ fn dispatch_query(
     coverage_map: bool,
     project: &Option<String>,
     include_project: &Option<PathBuf>,
+    tier: Option<u8>,
+    class: Option<char>,
     all_projects: bool,
     rebuild_index: bool,
     binding: &Option<PathBuf>,
@@ -463,6 +471,8 @@ fn dispatch_query(
         show_coverage_map: coverage_map,
         project_filter: project.as_deref(),
         include_project: include_project.as_deref(),
+        tier,
+        class,
         all_projects,
         rebuild_index,
         binding: binding.as_deref(),

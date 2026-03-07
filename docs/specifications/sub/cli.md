@@ -281,6 +281,8 @@ pv query "rope" -f markdown
 | `--project <name>` | Filter to named project (aprender, trueno, etc.) |
 | `--include-project <path>` | Add explicit project path to scan |
 | `--all-projects` | Force full cross-project scan |
+| `--tier <n>` | Filter by contract tier (1-7) |
+| `--class <A-E>` | Filter by kernel equivalence class |
 | `-f, --format <fmt>` | text, json, markdown |
 | `-p, --contracts-dir <dir>` | Contracts directory (default: contracts/) |
 

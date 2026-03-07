@@ -33,6 +33,8 @@ pub struct QueryCliParams<'a> {
     pub show_coverage_map: bool,
     pub project_filter: Option<&'a str>,
     pub include_project: Option<&'a Path>,
+    pub tier: Option<u8>,
+    pub class: Option<char>,
     pub all_projects: bool,
     pub rebuild_index: bool,
     pub format: &'a str,
@@ -75,6 +77,8 @@ pub fn run(p: &QueryCliParams<'_>) -> Result<(), Box<dyn std::error::Error>> {
         min_level: p.min_level.clone(),
         project_filter: p.project_filter.map(String::from),
         include_project: p.include_project.map(|p| p.display().to_string()),
+        tier_filter: p.tier,
+        class_filter: p.class,
         all_projects: p.all_projects,
     };
 

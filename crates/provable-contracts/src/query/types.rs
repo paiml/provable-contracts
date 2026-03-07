@@ -64,6 +64,10 @@ pub struct QueryParams {
     pub include_project: Option<String>,
     /// Force cross-project scan even when no cross-project flags are set.
     pub all_projects: bool,
+    /// Filter by contract tier (1-7).
+    pub tier_filter: Option<u8>,
+    /// Filter by kernel equivalence class (A-E).
+    pub class_filter: Option<char>,
 }
 
 impl Default for QueryParams {
@@ -94,6 +98,8 @@ impl Default for QueryParams {
             project_filter: None,
             include_project: None,
             all_projects: false,
+            tier_filter: None,
+            class_filter: None,
         }
     }
 }
