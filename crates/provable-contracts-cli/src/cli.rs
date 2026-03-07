@@ -122,9 +122,9 @@ pub enum Commands {
         /// Path to binding registry YAML
         #[arg(long)]
         binding: Option<PathBuf>,
-        /// Output format: text, json, sarif, github
-        #[arg(short, long, default_value = "text")]
-        format: String,
+        /// Output format: text (default), json, sarif, github
+        #[arg(short, long)]
+        format: Option<String>,
         /// Minimum severity to report: error, warning, info
         #[arg(long)]
         severity: Option<String>,

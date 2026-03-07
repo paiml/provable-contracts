@@ -12,7 +12,7 @@ pub fn run(
     contract_dir: &Path,
     binding_path: Option<&Path>,
     min_score: f64,
-    format: &str,
+    format: Option<&str>,
     severity: Option<&str>,
     strict: bool,
     suppress: Option<&str>,
@@ -162,15 +162,16 @@ fn count_contracts(report: &LintReport) -> usize {
     0
 }
 
-fn resolve_format(format: &str, config_path: Option<&Path>, contract_dir: &Path) -> String {
-    if format != "text" {
-        return format.to_string();
+fn resolve_format(format: Option<&str>, config_path: Option<&Path>, contract_dir: &Path) -> String {
+    // CLI flag takes precedence when explicitly set
+    if let Some(f) = format {
+        return f.to_string();
     }
+    // Fall back to config file
     let pv_config = config_path
         .and_then(|cp| load_config(cp).ok())
         .or_else(|| find_config(contract_dir).and_then(|p| load_config(&p).ok()))
         .unwrap_or_default();
-    // Note: config errors already reported in build_config
     pv_config.output.format.unwrap_or_else(|| "text".into())
 }
 
@@ -179,7 +180,7 @@ fn build_config<'a>(
     contract_dir: &'a Path,
     binding_path: Option<&'a Path>,
     min_score: f64,
-    _format: &str,
+    _format: Option<&str>,
     severity: Option<&str>,
     strict: bool,
     suppress: Option<&str>,

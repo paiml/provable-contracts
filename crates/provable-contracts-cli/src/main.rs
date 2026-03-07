@@ -89,7 +89,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             &contract_dir,
             binding.as_deref(),
             min_score,
-            &format,
+            format.as_deref(),
             severity.as_deref(),
             strict,
             suppress.as_deref(),
