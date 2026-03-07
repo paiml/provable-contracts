@@ -1294,11 +1294,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Trueno Level 2-3: build.rs binding verification + #[contract] annotations'
-  status: planned
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-03-07T12:49:54Z
-  updated: 2026-03-07T12:49:54Z
+  updated: 2026-03-07T12:55:43.533356973+00:00
   spec: null
   acceptance_criteria: []
   phases: []
