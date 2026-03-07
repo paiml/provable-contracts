@@ -20,9 +20,9 @@ pub fn generate_wired_probar_tests(
     binding: &BindingRegistry,
 ) -> String {
     let bindings: Vec<&KernelBinding> = binding
-        .bindings
-        .iter()
-        .filter(|b| b.contract == contract_file && b.status != ImplStatus::NotImplemented)
+        .bindings_for(contract_file)
+        .into_iter()
+        .filter(|b| b.status != ImplStatus::NotImplemented)
         .collect();
 
     if bindings.is_empty() && contract.proof_obligations.is_empty() {

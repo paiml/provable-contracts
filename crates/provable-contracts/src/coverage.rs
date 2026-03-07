@@ -150,9 +150,7 @@ fn count_binding_coverage(
 
     for eq_name in contract.equations.keys() {
         let status = binding
-            .bindings
-            .iter()
-            .find(|b| b.contract == contract_file && b.equation == *eq_name)
+            .find_binding(contract_file, eq_name)
             .map(|b| b.status);
 
         match status {

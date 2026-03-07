@@ -58,6 +58,8 @@ intermediaries with Kani bounded model checking verification.
   through equation, obligation, falsification test, and Kani harness.
 - **Contract Scoring** -- Five-dimension quality scoring (spec depth,
   falsification, Kani, Lean, binding) with A-F letter grades.
+- **Quality Gate (lint)** -- Unified validate + audit + score gate with
+  pass/fail exit codes, JSON output, and CI integration.
 - **Semantic Query Engine** -- BM25 search across all contracts with
   tier/class filters, cross-project discovery, and graph-aware ranking.
 - **Lean 4 Codegen** -- Generate Lean 4 definition and theorem stubs
@@ -177,6 +179,18 @@ pv query "attention" --class A --score
 # Cross-project call sites and violations
 pv query "rmsnorm" --call-sites --violations --coverage-map
 
+# Contract quality gate (validate + audit + score)
+pv lint contracts/
+
+# Lint with minimum score threshold
+pv lint contracts/ --min-score 0.60
+
+# Lint with JSON output for CI
+pv lint contracts/ --format json
+
+# Lint with binding registry
+pv lint contracts/ --binding contracts/aprender/binding.yaml
+
 # Generate mdBook pages
 pv book contracts/ -o book/src/contracts/
 ```
@@ -201,6 +215,7 @@ pv book contracts/ -o book/src/contracts/
 | `proof-status` | Hierarchical proof level (L1-L5) report              |
 | `score`        | Five-dimension contract quality scoring (A-F)        |
 | `query`        | Semantic search with tier/class/graph filters        |
+| `lint`         | Quality gate: validate + audit + score in one pass   |
 | `book`         | Generate mdBook pages for contracts                  |
 
 ## Contract Registry

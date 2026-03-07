@@ -191,11 +191,7 @@ fn compute_binding_coverage(
         return 0.0;
     };
 
-    let relevant: Vec<_> = binding
-        .bindings
-        .iter()
-        .filter(|b| b.contract == stem)
-        .collect();
+    let relevant = binding.bindings_for(stem);
 
     if relevant.is_empty() {
         return 0.0;

@@ -158,15 +158,11 @@ pub(super) fn build_binding_info(
             })
             .collect();
     };
-    let contract_file = format!("{}.yaml", entry.stem);
     entry
         .equations
         .iter()
         .map(|eq| {
-            let found = binding
-                .bindings
-                .iter()
-                .find(|b| b.contract == contract_file && b.equation == *eq);
+            let found = binding.find_binding(&entry.stem, eq);
             match found {
                 Some(b) => EquationBinding {
                     equation: eq.clone(),

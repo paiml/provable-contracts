@@ -8,6 +8,7 @@ pub mod graph;
 pub mod kani;
 pub mod lean;
 pub mod lean_status;
+pub mod lint;
 pub mod probar;
 pub mod proof_status;
 pub mod query;

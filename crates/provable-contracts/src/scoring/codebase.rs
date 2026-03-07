@@ -208,9 +208,9 @@ fn compute_gaps(
         }
 
         let partial_count = binding
-            .bindings
+            .bindings_for(stem)
             .iter()
-            .filter(|b| b.contract == *stem && b.status == ImplStatus::Partial)
+            .filter(|b| b.status == ImplStatus::Partial)
             .count();
         if partial_count > 0 {
             gaps.push(ScoringGap {
@@ -224,9 +224,9 @@ fn compute_gaps(
         }
 
         let unimpl_count = binding
-            .bindings
+            .bindings_for(stem)
             .iter()
-            .filter(|b| b.contract == *stem && b.status == ImplStatus::NotImplemented)
+            .filter(|b| b.status == ImplStatus::NotImplemented)
             .count();
         if unimpl_count > 0 {
             gaps.push(ScoringGap {

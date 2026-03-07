@@ -410,9 +410,9 @@ fn count_bindings(
 ) -> (u32, u32) {
     let total = contract.equations.len() as u32;
     let implemented = binding
-        .bindings
+        .bindings_for(contract_file)
         .iter()
-        .filter(|b| b.contract == contract_file && b.status == ImplStatus::Implemented)
+        .filter(|b| b.status == ImplStatus::Implemented)
         .count() as u32;
     (implemented, total)
 }

@@ -209,35 +209,142 @@ Each gap maps to a concrete action:
 
 ---
 
-## 5. CI Integration
+## 5. Quality Gate (`pv lint`) [IMPLEMENTED]
 
-### Quality Gate
+`pv lint` is a single-command quality gate that runs validation, audit,
+and scoring across all contracts in a directory. It combines the checks
+that would otherwise require separate `pv validate`, `pv audit`, and
+`pv score` invocations into one pass/fail gate suitable for CI and
+pre-commit hooks.
+
+### Gates
+
+`pv lint` executes three gates sequentially. Each gate produces a
+pass/fail result with timing. If any gate fails, the overall result
+is FAIL and exit code is 1.
+
+| Gate | What it checks | Pass condition |
+|------|---------------|----------------|
+| **validate** | Schema completeness (SCHEMA-001..013, PROVABILITY-001) | 0 errors across all contracts |
+| **audit** | Traceability chain (paper→equation→obligation→test→proof) | 0 audit findings across all contracts |
+| **score** | 5-dimension quality score | All contracts >= `--min-score` threshold |
+
+### CLI
+
+```bash
+# Lint all contracts (default threshold: 0.0 = no score gate)
+pv lint contracts/
+
+# Lint with minimum score gate
+pv lint contracts/ --min-score 0.60
+
+# Include binding registry for D5 (binding coverage) scoring
+pv lint contracts/ --binding contracts/aprender/binding.yaml --min-score 0.75
+
+# JSON output for CI artifact collection
+pv lint contracts/ -f json
+```
+
+#### Flags
+
+| Flag | Description |
+|---|---|
+| `--min-score <f64>` | Minimum composite score (default: 0.0 = skip score gate) |
+| `--binding <path>` | Binding registry YAML for binding coverage scoring |
+| `-f, --format <fmt>` | Output format: text (default), json |
+
+### Output Format (text)
+
+```
+pv lint — contract quality gate
+================================
+
+Gate 1: validate ............... PASS (107 contracts, 0 errors, 12 warnings) [42ms]
+Gate 2: audit .................. PASS (107 contracts, 0 findings) [38ms]
+Gate 3: score .................. PASS (107 contracts, min=0.27, mean=0.50, threshold=0.00) [15ms]
+
+Result: PASS (3/3 gates passed) [95ms]
+```
+
+On failure:
+
+```
+Gate 1: validate ............... FAIL (107 contracts, 3 errors, 12 warnings) [42ms]
+  [ERROR] SCHEMA-001: metadata.references must not be empty (new-kernel-v1.yaml)
+  [ERROR] PROVABILITY-001: missing proof_obligations (new-kernel-v1.yaml)
+  [ERROR] SCHEMA-003: equations must contain at least one equation (stub-v1.yaml)
+
+Gate 2: audit .................. SKIP (validation failed)
+Gate 3: score .................. SKIP (validation failed)
+
+Result: FAIL (0/3 gates passed) [42ms]
+```
+
+### Output Format (json)
+
+```json
+{
+  "passed": true,
+  "gates": [
+    {"name": "validate", "passed": true, "contracts": 107, "errors": 0, "warnings": 12, "duration_ms": 42},
+    {"name": "audit", "passed": true, "contracts": 107, "findings": 0, "duration_ms": 38},
+    {"name": "score", "passed": true, "contracts": 107, "min_score": 0.27, "mean_score": 0.50, "threshold": 0.0, "duration_ms": 15}
+  ],
+  "total_duration_ms": 95
+}
+```
+
+### Makefile Integration
+
+```makefile
+lint: clippy deny pv-lint
+
+pv-lint:
+	cargo run --bin pv -- lint contracts/
+```
+
+### CI Integration
 
 ```yaml
 # .github/workflows/contract-quality.yml
 name: Contract Quality Gate
 on: [push, pull_request]
 jobs:
-  score:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install pv
         run: cargo install --path crates/provable-contracts-cli
-      - name: Score contracts
-        run: pv score contracts/ --min-score 0.75 --exit-code
-      - name: Score codebase
-        run: pv score . --binding contracts/aprender/binding.yaml --min-score 0.60 --exit-code
+      - name: Contract quality gate
+        run: pv lint contracts/ --min-score 0.60
+```
+
+### Relationship to pmat quality-gate
+
+`pv lint` is the **contract-layer** quality gate, analogous to how
+`pmat quality-gate` is the **code-layer** quality gate:
+
+| Concern | Tool | Gates |
+|---------|------|-------|
+| Rust code quality | `pmat quality-gate` | clippy, tests, coverage, complexity |
+| Contract quality | `pv lint` | validate, audit, score |
+
+A complete CI pipeline runs both:
+
+```bash
+pmat quality-gate          # Code: clippy + tests + coverage + complexity
+pv lint contracts/ --min-score 0.60  # Contracts: validate + audit + score
 ```
 
 ### Trend Tracking
 
 ```bash
 # Output JSON for trend tracking
-pv score contracts/ -f json > scores.json
+pv lint contracts/ -f json > lint-report.json
 
-# Compare with previous run
-pv score contracts/ -f json | diff prev-scores.json -
+# Score-only JSON for dashboards
+pv score contracts/ -f json > scores.json
 ```
 
 ---

@@ -275,11 +275,9 @@ fn filter_binding_gaps(
     let Some(binding) = binding else {
         return false;
     };
-    let contract_file = format!("{}.yaml", entry.stem);
-    binding.bindings.iter().any(|b| {
-        b.contract == contract_file
-            && (b.status == crate::binding::ImplStatus::NotImplemented
-                || b.status == crate::binding::ImplStatus::Partial)
+    binding.bindings_for(&entry.stem).iter().any(|b| {
+        b.status == crate::binding::ImplStatus::NotImplemented
+            || b.status == crate::binding::ImplStatus::Partial
     })
 }
 

@@ -1,0 +1,210 @@
+# Binding Registry: provable-contracts <-> realizar
+#
+# Maps kernel contract equations to realizar inference engine functions.
+# These bindings were extracted from aprender/binding.yaml where
+# realizar:: module paths were used as the implementation target.
+#
+# Statistics:
+#   Total bindings: 23
+#   Implemented: 23 (100%)
+#   Partial: 0
+#   Not implemented: 0
+#
+# Refs: paiml/realizar#139, paiml/provable-contracts#11
+
+version: "1.0.0"
+target_crate: realizar
+
+bindings:
+  # ── Quantized Compute ────────────────────────────────────────
+  - contract: matmul-kernel-v1.yaml
+    equation: quantized_dot
+    module_path: "realizar::quantize::fused_k"
+    function: fused_q4k_dot
+    signature: "fn fused_q4k_dot(q4k_data: &[u8], activations: &[f32]) -> Result<f32>"
+    status: implemented
+    notes: "Scalar, AVX2, AVX-512 VNNI variants; also Q6K, Q8_0"
+
+  # ── Flash Attention ──────────────────────────────────────────
+  - contract: flash-attention-v1.yaml
+    equation: flash_attention
+    module_path: "realizar::gguf::inference::attention_part_02"
+    function: flash_attention_tiled
+    signature: "fn flash_attention_tiled(q: &[f32], k: &[f32], v: &[f32], ...) -> Vec<f32>"
+    status: implemented
+    notes: "CPU tiled + CUDA flash attention with causal masking"
+
+  # ── Attention ────────────────────────────────────────────────
+  - contract: attention-kernel-v1.yaml
+    equation: attention
+    module_path: "realizar::apr::helpers"
+    function: simple_attention
+    signature: "fn simple_attention(q: &[f32], k: &[f32], v: &[f32], seq_len: usize, num_heads: usize, num_kv_heads: usize, head_dim: usize) -> Vec<f32>"
+    status: implemented
+    notes: "Multi-sequence causal attention; GQA-aware with head broadcasting"
+
+  - contract: gqa-kernel-v1.yaml
+    equation: gqa
+    module_path: "realizar::apr::helpers"
+    function: simple_attention
+    signature: "fn simple_attention(q: &[f32], k: &[f32], v: &[f32], seq_len: usize, num_heads: usize, num_kv_heads: usize, head_dim: usize) -> Vec<f32>"
+    status: implemented
+    notes: "GQA with head broadcasting (num_heads/num_kv_heads grouping)"
+
+  # ── Gated Delta Net (Linear Attention) ───────────────────────
+  - contract: gated-delta-net-v1.yaml
+    equation: decay
+    module_path: "realizar::gpu::scheduler::linear_attn"
+    function: gated_delta_net_decay
+    signature: "fn gated_delta_net_decay(a_log: &[f32], dt: &[f32]) -> Vec<f32>"
+    status: implemented
+    notes: "decay = exp(g_h), S *= decay"
+
+  - contract: gated-delta-net-v1.yaml
+    equation: read
+    module_path: "realizar::gpu::scheduler::linear_attn"
+    function: gated_delta_net_read
+    signature: "fn gated_delta_net_read(state: &[f32], q: &[f32]) -> Vec<f32>"
+    status: implemented
+    notes: "State read: mem = S^T @ k_norm"
+
+  - contract: gated-delta-net-v1.yaml
+    equation: write
+    module_path: "realizar::gpu::scheduler::linear_attn"
+    function: gated_delta_net_write
+    signature: "fn gated_delta_net_write(state: &mut [f32], k: &[f32], delta: &[f32], decay: &[f32])"
+    status: implemented
+    notes: "State write: S += k (x) delta"
+
+  - contract: gated-delta-net-v1.yaml
+    equation: delta
+    module_path: "realizar::gpu::scheduler::linear_attn"
+    function: gated_delta_net_delta
+    signature: "fn gated_delta_net_delta(v: &[f32], read: &[f32], beta: &[f32]) -> Vec<f32>"
+    status: implemented
+    notes: "Delta rule: delta = beta * (v - mem)"
+
+  - contract: gated-delta-net-v1.yaml
+    equation: output
+    module_path: "realizar::gpu::scheduler::linear_attn"
+    function: gated_delta_net_output
+    signature: "fn gated_delta_net_output(y: &[f32], z: &[f32]) -> Vec<f32>"
+    status: implemented
+    notes: "Output: o = S^T @ q, then rms_norm_gated"
+
+  # ── RoPE Scaling ─────────────────────────────────────────────
+  - contract: rope-extrapolation-v1.yaml
+    equation: ntk_scaled_base
+    module_path: "realizar::layers::position"
+    function: "ScaledRope::new"
+    signature: "fn new(config: RopeConfig) -> Self"
+    status: implemented
+    notes: "RopeScalingType::Ntk and DynamicNtk"
+
+  - contract: rope-extrapolation-v1.yaml
+    equation: linear_interpolation
+    module_path: "realizar::layers::position"
+    function: "ScaledRope::new"
+    signature: "fn new(config: RopeConfig) -> Self"
+    status: implemented
+    notes: "RopeScalingType::Linear; context_multiplier tested"
+
+  - contract: rope-extrapolation-v1.yaml
+    equation: yarn_ramp
+    module_path: "realizar::layers::position"
+    function: "ScaledRope::new"
+    signature: "fn new(config: RopeConfig) -> Self"
+    status: implemented
+    notes: "RopeScalingType::Yarn with ramp function"
+
+  - contract: rope-extrapolation-v1.yaml
+    equation: yarn_mixed_frequency
+    module_path: "realizar::layers::position"
+    function: "ScaledRope::new"
+    signature: "fn new(config: RopeConfig) -> Self"
+    status: implemented
+    notes: "YaRN mixed-frequency applied via ScaledRope::apply()"
+
+  # ── Inference Pipeline ───────────────────────────────────────
+  - contract: inference-pipeline-v1.yaml
+    equation: prefill_phase
+    module_path: "realizar::gguf::inference::forward::batch_part_02_part_03"
+    function: prefill_batch
+    signature: "fn prefill_batch(model: &mut Model, tokens: &[u32], ...) -> Result<Vec<f32>>"
+    status: implemented
+    notes: "Batched and chunked prefill; 8.2x speedup over serial"
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    module_path: "realizar::gguf::inference::forward"
+    function: "Model::forward"
+    signature: "fn forward(&mut self, token: u32, position: usize) -> Result<Vec<f32>>"
+    status: implemented
+    notes: "Single-token forward pass; decode is the default path after prefill"
+
+  # ── KV Cache ─────────────────────────────────────────────────
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: prefill_incremental
+    module_path: "realizar::gguf::inference::forward::batch_part_02_part_03"
+    function: prefill_batch
+    signature: "fn prefill_batch(model: &mut Model, tokens: &[u32], ...) -> Result<Vec<f32>>"
+    status: implemented
+    notes: "KV cache populated incrementally during batched prefill"
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: batched_serial_equivalence
+    module_path: "realizar::gguf::inference::forward"
+    function: generate_with_batched_prefill
+    signature: "fn generate_with_batched_prefill(...) -> Result<Vec<u32>>"
+    status: implemented
+    notes: "Batched prefill produces same KV cache as serial"
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: fused_kernel
+    module_path: "realizar::cuda::executor::kv_cache_part_02_part_03"
+    function: flash_attention_cached
+    signature: "fn flash_attention_cached(q: &CudaSlice, k_cache: &CudaSlice, v_cache: &CudaSlice, ...) -> Result<()>"
+    status: implemented
+    notes: "CUDA flash attention with fused KV cache read"
+
+  # ── Qwen3.5 Hybrid Forward ──────────────────────────────────
+  - contract: qwen35-hybrid-forward-v1.yaml
+    equation: gdn_sublayer
+    module_path: "realizar::gpu::scheduler::linear_attn"
+    function: gated_delta_net_forward
+    signature: "fn gated_delta_net_forward(input: &[f32], weights: &GdnWeights, state: &mut GdnState) -> Vec<f32>"
+    status: implemented
+    notes: "pre-norm -> projections -> causal Conv1D -> SiLU -> gated_delta_rule_step -> RMSNorm_gated -> out_proj -> residual"
+
+  # ── Architecture Validation ──────────────────────────────────
+  - contract: qwen35-shapes-v1.yaml
+    equation: o_projection_transpose
+    module_path: "realizar::gguf::config"
+    function: "ArchConstraints::from_gguf_metadata"
+    signature: "fn from_gguf_metadata(metadata: &GgufMetadata) -> ArchConstraints"
+    status: implemented
+    notes: "O projection shape [hidden, n_h * d_k] validated by ArchConstraints"
+
+  - contract: architecture-requirements-v1.yaml
+    equation: gguf_loader_validation
+    module_path: "realizar::cuda::executor::weights"
+    function: "CudaExecutor::build_indexed_weights"
+    signature: "fn build_indexed_weights(&mut self, num_layers: usize, layer_prefix_fn: F, arch: &ArchConstraints) -> Result<(), GpuError>"
+    status: implemented
+    notes: "GGUF loader path; validates via ValidatedLayerWeights::validate()"
+
+  - contract: architecture-requirements-v1.yaml
+    equation: apr_loader_validation
+    module_path: "realizar::apr::cuda_part_02_part_03"
+    function: "AprV2ModelCuda::upload_quantized_weights_to_gpu"
+    signature: "fn upload_quantized_weights_to_gpu(&mut self) -> Result<usize>"
+    status: implemented
+    notes: "APR loader path; derives ArchConstraints from metadata"
+
+  - contract: architecture-requirements-v1.yaml
+    equation: safetensors_loader_validation
+    module_path: "realizar::safetensors_cuda"
+    function: "SafeTensorsCudaModel::upload_weights"
+    signature: "fn upload_weights(...) -> Result<(Vec<f32>, ...)>"
+    status: implemented
+    notes: "SafeTensors loader; validates completeness + model_load_basic before GPU init"

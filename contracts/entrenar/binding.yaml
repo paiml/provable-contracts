@@ -1,0 +1,821 @@
+# Binding Registry: provable-contracts <-> entrenar
+#
+# Maps each training contract equation/invariant to the entrenar function
+# that implements it. Used by `pv audit --binding` and `pv probar --binding`.
+#
+# Statistics:
+#   Total bindings: 88
+#   Implemented: 80 (90.9%)
+#   Partial: 3
+#   Not implemented: 5
+#
+# Refs: paiml/entrenar#250, paiml/provable-contracts#11
+
+version: "1.0.0"
+target_crate: entrenar
+
+bindings:
+  # ── apr-checkpoint-v1: APR v1.2.0 checkpoint format ──────────
+  - contract: apr-checkpoint-v1.yaml
+    equation: save_checkpoint
+    module_path: "entrenar::finetune::classify_trainer"
+    function: save_checkpoint
+    signature: "fn save_checkpoint(&self, path: &Path) -> Result<()>"
+    status: implemented
+    notes: "APR v1.2.0 format with adapter + training state"
+
+  - contract: apr-checkpoint-v1.yaml
+    equation: load_checkpoint
+    module_path: "entrenar::finetune::classify_trainer"
+    function: load_checkpoint
+    signature: "fn load_checkpoint(&mut self, path: &Path) -> Result<()>"
+    status: implemented
+    notes: "Restores optimizer state, epoch, step counters"
+
+  - contract: apr-checkpoint-v1.yaml
+    equation: apr_writer
+    module_path: "aprender::serialization::apr"
+    function: "AprWriter::write"
+    signature: "fn write(&self, path: &Path, tensors: &[(&str, &Array1<f32>)]) -> Result<()>"
+    status: implemented
+    notes: "Cross-crate; aprender provides APR format I/O"
+
+  - contract: apr-checkpoint-v1.yaml
+    equation: apr_reader
+    module_path: "aprender::serialization::apr"
+    function: "AprReader::read"
+    signature: "fn read(path: &Path) -> Result<Vec<(String, Array1<f32>)>>"
+    status: implemented
+    notes: "Cross-crate; aprender provides APR format I/O"
+
+  # ── attention-head-extraction-v1: Per-head alloc reduction ───
+  - contract: attention-head-extraction-v1.yaml
+    equation: forward_with_lora
+    module_path: "entrenar::transformer::attention"
+    function: "MultiHeadAttention::forward_with_lora"
+    signature: "fn forward_with_lora(&self, x: &Tensor, mask: Option<&Tensor>) -> Tensor"
+    status: implemented
+    notes: "KAIZEN-016: 99.2% reduction in per-head allocations"
+
+  - contract: attention-head-extraction-v1.yaml
+    equation: head_extraction
+    module_path: "entrenar::transformer::attention"
+    function: "MultiHeadAttention::forward"
+    signature: "fn forward(&self, x: &Tensor, mask: Option<&Tensor>) -> Tensor"
+    status: implemented
+    notes: "Pre-allocated head buffers; zero per-head heap alloc"
+
+  # ── backward-cpu-staging-v1: Pre-allocated backward staging ──
+  - contract: backward-cpu-staging-v1.yaml
+    equation: backward_cpu_staging
+    module_path: "entrenar::finetune::classify_pipeline"
+    function: "GpuTrainingState::backward_cpu_staging"
+    signature: "fn backward_cpu_staging(&mut self) -> &[f32]"
+    status: implemented
+    notes: "KAIZEN-061: eliminates 1.25MB/sample heap churn"
+
+  # ── backward-scratch-prealloc-v1: Backward buffer prealloc ───
+  - contract: backward-scratch-prealloc-v1.yaml
+    equation: output_scratch
+    module_path: "entrenar::finetune::classify_pipeline"
+    function: "GpuTrainingState::output_scratch"
+    signature: "fn output_scratch(&self) -> &CudaBuffer"
+    status: implemented
+    notes: "KAIZEN-045: pre-allocated output scratch buffer"
+
+  - contract: backward-scratch-prealloc-v1.yaml
+    equation: grad_upload_buf
+    module_path: "entrenar::finetune::classify_pipeline"
+    function: "GpuTrainingState::grad_upload_buf"
+    signature: "fn grad_upload_buf(&self) -> &CudaBuffer"
+    status: implemented
+    notes: "KAIZEN-045: pre-allocated gradient upload buffer"
+
+  - contract: backward-scratch-prealloc-v1.yaml
+    equation: instruct_output_scratch
+    module_path: "entrenar::finetune::instruct_pipeline"
+    function: "InstructGpuTrainingState::output_scratch"
+    signature: "fn output_scratch(&self) -> &CudaBuffer"
+    status: implemented
+    notes: "Same pattern for instruct pipeline"
+
+  # ── batched-norm-reduction-v1: Batched GPU norm reduction ────
+  - contract: batched-norm-reduction-v1.yaml
+    equation: squared_sum_launch
+    module_path: "entrenar::autograd::cuda_optim"
+    function: squared_sum_launch_cuda
+    signature: "fn squared_sum_launch_cuda(params: &[CudaBuffer], stream: &CudaStream) -> CudaBuffer"
+    status: implemented
+    notes: "KAIZEN-055: 324 to 36 GPU syncs per step for Qwen3-4B"
+
+  - contract: batched-norm-reduction-v1.yaml
+    equation: squared_sum_collect
+    module_path: "entrenar::train::transformer_trainer::cuda_trainer"
+    function: squared_sum_collect
+    signature: "fn squared_sum_collect(partial: &CudaBuffer) -> f32"
+    status: implemented
+    notes: "Collects partial sums from GPU reduction"
+
+  # ── classify-fwd-scratch-v1: Forward ping-pong buffers ───────
+  - contract: classify-fwd-scratch-v1.yaml
+    equation: fwd_scratch_a
+    module_path: "entrenar::finetune::classify_pipeline"
+    function: "GpuTrainingState::fwd_scratch_a"
+    signature: "fn fwd_scratch_a(&self) -> &CudaBuffer"
+    status: implemented
+    notes: "KAIZEN-060: ping-pong eliminates 2x cuMemAlloc/Free per forward"
+
+  - contract: classify-fwd-scratch-v1.yaml
+    equation: fwd_scratch_b
+    module_path: "entrenar::finetune::classify_pipeline"
+    function: "GpuTrainingState::fwd_scratch_b"
+    signature: "fn fwd_scratch_b(&self) -> &CudaBuffer"
+    status: implemented
+    notes: "Second buffer in ping-pong pair"
+
+  # ── cpu-forward-zero-alloc-v1: CPU forward no alloc ──────────
+  - contract: cpu-forward-zero-alloc-v1.yaml
+    equation: forward_backward_single
+    module_path: "entrenar::finetune::classify_pipeline"
+    function: forward_backward_single
+    signature: "fn forward_backward_single(&mut self, sample: &TokenizedSample) -> f32"
+    status: implemented
+    notes: "KAIZEN-035: 897K Vec<u32> allocs eliminated"
+
+  - contract: cpu-forward-zero-alloc-v1.yaml
+    equation: forward_only_tokenized
+    module_path: "entrenar::finetune::classify_pipeline"
+    function: forward_only_tokenized
+    signature: "fn forward_only_tokenized(&self, sample: &TokenizedSample) -> Tensor"
+    status: implemented
+    notes: "Inference-only path; also zero-alloc"
+
+  # ── cuda-classify-training-v1: GPU training parity ───────────
+  - contract: cuda-classify-training-v1.yaml
+    equation: gpu_forward
+    module_path: "entrenar::transformer::cuda_block"
+    function: "CudaTransformerBlock::gpu_forward"
+    signature: "fn gpu_forward(&self, hidden: &CudaBuffer) -> CudaBuffer"
+    status: implemented
+    notes: "GPU forward pass; parity within 1e-3 of CPU"
+
+  - contract: cuda-classify-training-v1.yaml
+    equation: weight_roundtrip
+    module_path: "entrenar::autograd::cuda_training"
+    function: weight_roundtrip
+    signature: "fn weight_roundtrip(cpu: &[f32], device: &CudaDevice) -> Vec<f32>"
+    status: implemented
+    notes: "CPU→GPU→CPU round-trip preserves values exactly"
+
+  - contract: cuda-classify-training-v1.yaml
+    equation: device_dispatch
+    module_path: "entrenar::autograd::cuda_training"
+    function: "ComputeDevice::auto_detect"
+    signature: "fn auto_detect() -> ComputeDevice"
+    status: implemented
+    notes: "Auto-detects CUDA, wgpu, or CPU fallback"
+
+  # ── d2h-staging-buffer-v1: D2H staging ──────────────────────
+  - contract: d2h-staging-buffer-v1.yaml
+    equation: d2h_staging
+    module_path: "entrenar::train::transformer_trainer::cuda_trainer"
+    function: "CudaTransformerTrainer::d2h_staging"
+    signature: "fn d2h_staging(&self) -> &CudaBuffer"
+    status: implemented
+    notes: "KAIZEN-059: 15.6GB to 0 heap churn per step with accumulation"
+
+  # ── data-parallel-zero-copy-v1: Zero-copy weight sync ────────
+  - contract: data-parallel-zero-copy-v1.yaml
+    equation: sync_lora_weights
+    module_path: "entrenar::finetune::data_parallel"
+    function: sync_lora_weights_from_primary
+    signature: "fn sync_lora_weights_from_primary(primary: &LoraWeights, replicas: &mut [LoraWeights])"
+    status: implemented
+    notes: "KAIZEN-034: 10.8MB to 0 alloc per step for 2-GPU sync"
+
+  # ── distributed-training-v1: Distributed sync ────────────────
+  - contract: distributed-training-v1.yaml
+    equation: gradient_allreduce
+    module_path: "entrenar::finetune::data_parallel"
+    function: "DataParallelCoordinator::allreduce"
+    signature: "fn allreduce(&self, grads: &mut [Tensor]) -> Result<()>"
+    status: partial
+    notes: "Phase 1 complete (multi-GPU); Phase 2 in progress (multi-node)"
+
+  - contract: distributed-training-v1.yaml
+    equation: sharding
+    module_path: "entrenar::finetune::data_parallel"
+    function: "DataParallelCoordinator::shard_data"
+    signature: "fn shard_data(&self, dataset: &[Sample]) -> Vec<Vec<Sample>>"
+    status: implemented
+    notes: "Round-robin sharding across GPUs"
+
+  - contract: distributed-training-v1.yaml
+    equation: weighted_loss
+    module_path: "entrenar::finetune::data_parallel"
+    function: weighted_loss_aggregate
+    signature: "fn weighted_loss_aggregate(losses: &[f32], counts: &[usize]) -> f32"
+    status: implemented
+    notes: "Sample-weighted loss aggregation across shards"
+
+  - contract: distributed-training-v1.yaml
+    equation: swiglu_ffn
+    module_path: "entrenar::transformer::cuda_block"
+    function: "CudaTransformerBlock::swiglu_ffn"
+    signature: "fn swiglu_ffn(&self, hidden: &CudaBuffer) -> CudaBuffer"
+    status: implemented
+    notes: "Fused SwiGLU FFN on GPU"
+
+  - contract: distributed-training-v1.yaml
+    equation: lora_gradient_size
+    module_path: "entrenar::finetune::data_parallel"
+    function: lora_gradient_byte_size
+    signature: "fn lora_gradient_byte_size(rank: usize, hidden: usize, layers: usize) -> usize"
+    status: implemented
+    notes: "Compute gradient transfer size for allreduce budget"
+
+  # ── embed-grad-zero-copy-v1: Embedding backward ─────────────
+  - contract: embed-grad-zero-copy-v1.yaml
+    equation: embed_backward
+    module_path: "entrenar::train::transformer_trainer::cuda_trainer"
+    function: embed_backward
+    signature: "fn embed_backward(&mut self, grad_output: &CudaBuffer)"
+    status: implemented
+    notes: "KAIZEN-048: 128MB clones to 0; embed_bwd 145ms to <5ms"
+
+  - contract: embed-grad-zero-copy-v1.yaml
+    equation: grad_cell
+    module_path: "entrenar::train::transformer_trainer::cuda_trainer"
+    function: grad_cell
+    signature: "fn grad_cell(&self) -> &RefCell<CudaBuffer>"
+    status: implemented
+    notes: "Ref-counted gradient buffer; zero-copy sharing"
+
+  # ── embed-original-gpu-resident-v1: GPU-resident embed ───────
+  - contract: embed-original-gpu-resident-v1.yaml
+    equation: embed_original
+    module_path: "entrenar::finetune::instruct_pipeline"
+    function: "InstructGpuTrainingState::embed_original"
+    signature: "fn embed_original(&self) -> &CudaBuffer"
+    status: implemented
+    notes: "KAIZEN-068: 1.45GB H2D per step to 0; ~58ms saved"
+
+  # ── fused-cross-entropy-v1: Fused GPU cross-entropy ──────────
+  - contract: fused-cross-entropy-v1.yaml
+    equation: fused_cross_entropy
+    module_path: "entrenar::autograd::cuda_optim"
+    function: fused_cross_entropy_cuda
+    signature: "fn fused_cross_entropy_cuda(logits: &CudaBuffer, targets: &CudaBuffer) -> (f32, CudaBuffer)"
+    status: implemented
+    notes: "KAIZEN-050: 155MB PCIe eliminated; loss phase 40ms to <5ms"
+
+  - contract: fused-cross-entropy-v1.yaml
+    equation: fused_cross_entropy_kernel
+    module_path: "trueno_gpu::kernels::backward"
+    function: "FusedCrossEntropyKernel::emit_ptx"
+    signature: "fn emit_ptx(&self) -> String"
+    status: implemented
+    notes: "Cross-crate; trueno-gpu provides PTX kernel"
+
+  # ── fused-optimizer-kernel-v1: Fused AdamW/Adam ──────────────
+  - contract: fused-optimizer-kernel-v1.yaml
+    equation: simd_adamw
+    module_path: "entrenar::optim::simd"
+    function: simd_adamw_update
+    signature: "fn simd_adamw_update(params: &mut [f32], grads: &[f32], m: &mut [f32], v: &mut [f32], lr: f32, beta1: f32, beta2: f32, eps: f32, wd: f32, step: usize)"
+    status: implemented
+    notes: "KAIZEN-026: 330MB to 0 temporaries; 14 passes to 1"
+
+  - contract: fused-optimizer-kernel-v1.yaml
+    equation: simd_adam
+    module_path: "entrenar::optim::simd"
+    function: simd_adam_update
+    signature: "fn simd_adam_update(params: &mut [f32], grads: &[f32], m: &mut [f32], v: &mut [f32], lr: f32, beta1: f32, beta2: f32, eps: f32, step: usize)"
+    status: implemented
+    notes: "Same fused pattern without weight decay"
+
+  # ── gpu-l2-norm-reduction-v1: GPU norm reduction ─────────────
+  - contract: gpu-l2-norm-reduction-v1.yaml
+    equation: squared_sum_kernel
+    module_path: "trueno_gpu::kernels::optimizer"
+    function: "SquaredSumKernel::emit_ptx"
+    signature: "fn emit_ptx(&self) -> String"
+    status: implemented
+    notes: "Cross-crate; trueno-gpu provides PTX kernel"
+
+  - contract: gpu-l2-norm-reduction-v1.yaml
+    equation: squared_sum_cuda
+    module_path: "entrenar::autograd::cuda_optim"
+    function: squared_sum_cuda
+    signature: "fn squared_sum_cuda(params: &[CudaBuffer]) -> f32"
+    status: implemented
+    notes: "KAIZEN-049: 128MB D2H to 1KB; 131,072x transfer reduction"
+
+  - contract: gpu-l2-norm-reduction-v1.yaml
+    equation: clip_scale
+    module_path: "entrenar::train::transformer_trainer::cuda_trainer"
+    function: compute_clip_scale_with_norm
+    signature: "fn compute_clip_scale_with_norm(total_norm: f32, max_norm: f32) -> f32"
+    status: implemented
+    notes: "Returns min(max_norm / total_norm, 1.0)"
+
+  # ── gpu-rmsnorm-forward-v1: GPU RMSNorm forward ─────────────
+  - contract: gpu-rmsnorm-forward-v1.yaml
+    equation: rms_norm_forward
+    module_path: "entrenar::autograd::cuda_backward::structured"
+    function: rms_norm_forward
+    signature: "fn rms_norm_forward(input: &CudaBuffer, weight: &CudaBuffer, eps: f32) -> CudaBuffer"
+    status: implemented
+    notes: "KAIZEN-066: 10MB PCIe round-trip to 0; ~1.7ms saved"
+
+  - contract: gpu-rmsnorm-forward-v1.yaml
+    equation: forward_cuda_training
+    module_path: "entrenar::finetune::instruct_pipeline"
+    function: forward_cuda_training
+    signature: "fn forward_cuda_training(&mut self, input_ids: &[u32]) -> CudaBuffer"
+    status: implemented
+    notes: "Full instruct forward using GPU-resident RMSNorm"
+
+  # ── gpu-wait-queue-v1: VRAM wait queue ───────────────────────
+  - contract: gpu-wait-queue-v1.yaml
+    equation: poll_interval
+    module_path: "entrenar::gpu::wait"
+    function: wait_for_vram
+    signature: "fn wait_for_vram(required_mb: usize, timeout_secs: u64) -> Result<()>"
+    status: not_implemented
+    notes: "Draft contract; GPU wait queue not yet implemented"
+
+  - contract: gpu-wait-queue-v1.yaml
+    equation: timeout_bound
+    module_path: "entrenar::gpu::wait"
+    function: timeout_bound
+    signature: ~
+    status: not_implemented
+    notes: "Draft contract; depends on poll_interval"
+
+  - contract: gpu-wait-queue-v1.yaml
+    equation: fairness_via_expiry
+    module_path: "entrenar::gpu::wait"
+    function: fairness_via_expiry
+    signature: ~
+    status: not_implemented
+    notes: "Draft contract; lease-based fairness"
+
+  - contract: gpu-wait-queue-v1.yaml
+    equation: progress_report
+    module_path: "entrenar::gpu::wait"
+    function: progress_report
+    signature: ~
+    status: not_implemented
+    notes: "Draft contract; progress reporting"
+
+  # ── gpu-workspace-clip-v1: Per-block clip ────────────────────
+  - contract: gpu-workspace-clip-v1.yaml
+    equation: clip_workspace_gradients
+    module_path: "entrenar::train::transformer_trainer::cuda_trainer"
+    function: clip_workspace_gradients
+    signature: "fn clip_workspace_gradients(&mut self, max_norm: f32)"
+    status: implemented
+    notes: "KAIZEN-054: re-enables per-block clipping"
+
+  - contract: gpu-workspace-clip-v1.yaml
+    equation: compute_workspace_clip_scale_gpu
+    module_path: "entrenar::train::transformer_trainer::cuda_trainer"
+    function: compute_workspace_clip_scale_gpu
+    signature: "fn compute_workspace_clip_scale_gpu(&self, max_norm: f32) -> f32"
+    status: implemented
+    notes: "GPU-side norm computation for per-block clipping"
+
+  # ── grad-hidden-gpu-resident-v1: GPU-resident grad_hidden ────
+  - contract: grad-hidden-gpu-resident-v1.yaml
+    equation: backward_gpu_resident
+    module_path: "entrenar::finetune::instruct_pipeline"
+    function: backward_nf4_gpu_blocks_gpu_resident
+    signature: "fn backward_nf4_gpu_blocks_gpu_resident(&mut self)"
+    status: implemented
+    notes: "KAIZEN-065: 10MB PCIe round-trip to 0; ~1.5ms saved"
+
+  - contract: grad-hidden-gpu-resident-v1.yaml
+    equation: backward_loop
+    module_path: "entrenar::finetune::instruct_pipeline"
+    function: backward_nf4_gpu_blocks_loop
+    signature: "fn backward_nf4_gpu_blocks_loop(&mut self, blocks: Range<usize>)"
+    status: implemented
+    notes: "Block-level backward loop with GPU-resident grad_hidden"
+
+  # ── gradient-scaling-zero-alloc-v1: In-place grad scaling ────
+  - contract: gradient-scaling-zero-alloc-v1.yaml
+    equation: scale_grad
+    module_path: "entrenar::autograd::tensor"
+    function: "Tensor::scale_grad"
+    signature: "fn scale_grad(&mut self, factor: f32)"
+    status: implemented
+    notes: "KAIZEN-037: in-place via mapv_inplace"
+
+  - contract: gradient-scaling-zero-alloc-v1.yaml
+    equation: scale_all_gradients
+    module_path: "entrenar::finetune::classify_pipeline"
+    function: scale_all_gradients
+    signature: "fn scale_all_gradients(params: &mut [Tensor], factor: f32)"
+    status: implemented
+    notes: "KAIZEN-037: 23MB to 0 alloc per batch; 74 params"
+
+  # ── host-buffer-reuse-v1: Host buffer pooling ────────────────
+  - contract: host-buffer-reuse-v1.yaml
+    equation: compute_workspace_clip_scale
+    module_path: "entrenar::train::transformer_trainer::cuda_trainer"
+    function: compute_workspace_clip_scale
+    signature: "fn compute_workspace_clip_scale(&self, max_norm: f32) -> f32"
+    status: implemented
+    notes: "KAIZEN-044: reuses host buffers for clip computation"
+
+  - contract: host-buffer-reuse-v1.yaml
+    equation: download_workspace_to_accum
+    module_path: "entrenar::train::transformer_trainer::cuda_trainer"
+    function: download_workspace_to_accum
+    signature: "fn download_workspace_to_accum(&mut self)"
+    status: implemented
+    notes: "Reuses staging buffer for D2H gradient download"
+
+  - contract: host-buffer-reuse-v1.yaml
+    equation: cpu_loss_and_grad
+    module_path: "entrenar::train::transformer_trainer::cuda_trainer"
+    function: cpu_loss_and_grad
+    signature: "fn cpu_loss_and_grad(&self, logits: &[f32], targets: &[u32]) -> (f32, Vec<f32>)"
+    status: implemented
+    notes: "CPU fallback loss computation with buffer reuse"
+
+  # ── inplace-cross-entropy-v1: In-place fused cross-entropy ───
+  - contract: inplace-cross-entropy-v1.yaml
+    equation: inplace_fused_xent
+    module_path: "entrenar::autograd::cuda_optim"
+    function: fused_cross_entropy_cuda
+    signature: "fn fused_cross_entropy_cuda(logits: &CudaBuffer, targets: &CudaBuffer) -> (f32, CudaBuffer)"
+    status: implemented
+    notes: "KAIZEN-052: 77.8MB grad_gpu alloc to 0; 6 to 5 kernel params"
+
+  - contract: inplace-cross-entropy-v1.yaml
+    equation: inplace_kernel
+    module_path: "trueno_gpu::kernels::backward"
+    function: "FusedCrossEntropyKernel::emit_ptx"
+    signature: "fn emit_ptx(&self) -> String"
+    status: implemented
+    notes: "Cross-crate; phase 3 in-place variant"
+
+  # ── instruct-buffer-prealloc-v1: Instruct buffer prealloc ────
+  - contract: instruct-buffer-prealloc-v1.yaml
+    equation: instruct_fwd_scratch
+    module_path: "entrenar::finetune::instruct_pipeline"
+    function: "InstructGpuTrainingState::fwd_scratch_a"
+    signature: "fn fwd_scratch_a(&self) -> &CudaBuffer"
+    status: implemented
+    notes: "KAIZEN-062: 3 cuMemAlloc/Free per step to 0"
+
+  - contract: instruct-buffer-prealloc-v1.yaml
+    equation: lm_head_hidden_buf
+    module_path: "entrenar::finetune::instruct_pipeline"
+    function: "InstructGpuTrainingState::lm_head_hidden_buf"
+    signature: "fn lm_head_hidden_buf(&self) -> &CudaBuffer"
+    status: implemented
+    notes: "Pre-allocated LM head hidden state buffer"
+
+  # ── instruct-fused-causal-xent-v1: Fused causal cross-entropy
+  - contract: instruct-fused-causal-xent-v1.yaml
+    equation: fused_causal_xent
+    module_path: "entrenar::autograd::cuda_optim"
+    function: fused_causal_cross_entropy_cuda
+    signature: "fn fused_causal_cross_entropy_cuda(logits: &CudaBuffer, targets: &CudaBuffer, mask: &CudaBuffer) -> (f32, CudaBuffer)"
+    status: implemented
+    notes: "KAIZEN-064: 592MB PCIe per step to ~4KB; 38.5ms savings"
+
+  - contract: instruct-fused-causal-xent-v1.yaml
+    equation: fused_causal_kernel
+    module_path: "trueno_gpu::kernels::backward"
+    function: "FusedCausalCrossEntropyKernel::emit_ptx"
+    signature: "fn emit_ptx(&self) -> String"
+    status: implemented
+    notes: "Cross-crate; trueno-gpu provides causal-masked PTX kernel"
+
+  - contract: instruct-fused-causal-xent-v1.yaml
+    equation: forward_logits_gpu_resident
+    module_path: "entrenar::finetune::instruct_pipeline"
+    function: forward_logits_gpu_resident
+    signature: "fn forward_logits_gpu_resident(&mut self) -> CudaBuffer"
+    status: implemented
+    notes: "GPU-resident logits; no D2H for loss computation"
+
+  # ── lazy-ptx-cache-v1: Lazy PTX generation ───────────────────
+  - contract: lazy-ptx-cache-v1.yaml
+    equation: forward_kernel_cache
+    module_path: "entrenar::autograd::cuda_forward::cache"
+    function: "ForwardKernelCache::get_cached"
+    signature: "fn get_cached(&mut self, key: &str) -> &CudaModule"
+    status: implemented
+    notes: "KAIZEN-058: lazy PTX compile; 0 alloc after pre-warm"
+
+  - contract: lazy-ptx-cache-v1.yaml
+    equation: backward_kernel_cache
+    module_path: "entrenar::autograd::cuda_backward::cache"
+    function: "KernelCache::get_cached"
+    signature: "fn get_cached(&mut self, key: &str) -> &CudaModule"
+    status: implemented
+    notes: "Same pattern for backward kernels"
+
+  - contract: lazy-ptx-cache-v1.yaml
+    equation: optim_kernel_cache
+    module_path: "entrenar::autograd::cuda_optim"
+    function: "OptimKernelCache::get_cached"
+    signature: "fn get_cached(&mut self, key: &str) -> &CudaModule"
+    status: implemented
+    notes: "Same pattern for optimizer kernels; 34 launches optimized"
+
+  # ── lora-gradient-flow-v1: LoRA backward chain ───────────────
+  - contract: lora-gradient-flow-v1.yaml
+    equation: transpose_tracked
+    module_path: "entrenar::autograd::ops::matmul"
+    function: transpose_tracked
+    signature: "fn transpose_tracked(x: &Tensor) -> Tensor"
+    status: implemented
+    notes: "KAIZEN-018: tracked transpose for LoRA gradient flow"
+
+  - contract: lora-gradient-flow-v1.yaml
+    equation: lora_forward
+    module_path: "entrenar::transformer::attention"
+    function: "MultiHeadAttention::forward_with_lora"
+    signature: "fn forward_with_lora(&self, x: &Tensor, mask: Option<&Tensor>) -> Tensor"
+    status: implemented
+    notes: "wgpu LoRA gradients restored; 5K to 5.9M trainable params"
+
+  # ── lora-grad-zero-reuse-v1: Zero buffer pooling ────────────
+  - contract: lora-grad-zero-reuse-v1.yaml
+    equation: nf4_lora_batch_step
+    module_path: "entrenar::finetune::classify_pipeline"
+    function: nf4_lora_batch_optimizer_step
+    signature: "fn nf4_lora_batch_optimizer_step(&mut self)"
+    status: implemented
+    notes: "KAIZEN-043: 216 vec allocs/batch to 1; 18.7MB to 0.16MB churn"
+
+  # ── pre-tokenize-corpus-v1: Pre-tokenization ─────────────────
+  - contract: pre-tokenize-corpus-v1.yaml
+    equation: pre_tokenize
+    module_path: "entrenar::finetune::classification"
+    function: pre_tokenize
+    signature: "fn pre_tokenize(samples: &[Sample], tokenizer: &Tokenizer) -> Vec<TokenizedSample>"
+    status: implemented
+    notes: "KAIZEN-028: 897K BPE encodes to 17K (50x)"
+
+  - contract: pre-tokenize-corpus-v1.yaml
+    equation: train_batch_tokenized
+    module_path: "entrenar::finetune::classify_trainer"
+    function: train_batch_tokenized
+    signature: "fn train_batch_tokenized(&mut self, batch: &[TokenizedSample]) -> f32"
+    status: implemented
+    notes: "Trains on pre-tokenized samples; zero re-encoding"
+
+  # ── pre-tokenize-instruct-v1: Instruct pre-tokenization ─────
+  - contract: pre-tokenize-instruct-v1.yaml
+    equation: prepare_samples
+    module_path: "entrenar::finetune::instruct_trainer"
+    function: prepare_samples_static
+    signature: "fn prepare_samples_static(samples: &[InstructSample], tokenizer: &Tokenizer) -> Vec<PreparedSample>"
+    status: implemented
+    notes: "KAIZEN-029: E-fold BPE reduction per epoch"
+
+  - contract: pre-tokenize-instruct-v1.yaml
+    equation: prepared_sample
+    module_path: "entrenar::finetune::instruct_trainer"
+    function: "PreparedSample::new"
+    signature: "fn new(input_ids: Vec<u32>, label_mask: Vec<bool>) -> PreparedSample"
+    status: implemented
+    notes: "Pre-tokenized instruct sample with label mask"
+
+  # ── qlora-hyperparameters-v1: QLoRA HP constraints ───────────
+  - contract: qlora-hyperparameters-v1.yaml
+    equation: learning_rate_scaling
+    module_path: "entrenar::finetune::qlora_config"
+    function: "QLoraConfig::learning_rate"
+    signature: "fn learning_rate(&self) -> f32"
+    status: not_implemented
+    notes: "HP design pending; contract specifies constraints"
+
+  - contract: qlora-hyperparameters-v1.yaml
+    equation: effective_batch_size
+    module_path: "entrenar::finetune::qlora_config"
+    function: "QLoraConfig::effective_batch_size"
+    signature: "fn effective_batch_size(&self) -> usize"
+    status: implemented
+    notes: "batch_size * gradient_accumulation_steps"
+
+  - contract: qlora-hyperparameters-v1.yaml
+    equation: lora_alpha_ratio
+    module_path: "entrenar::finetune::qlora_config"
+    function: "QLoraConfig::lora_alpha"
+    signature: "fn lora_alpha(&self) -> f32"
+    status: implemented
+    notes: "alpha = 2 * rank (standard scaling)"
+
+  - contract: qlora-hyperparameters-v1.yaml
+    equation: seq_len_from_data
+    module_path: "entrenar::finetune::qlora_config"
+    function: "QLoraConfig::max_seq_len"
+    signature: "fn max_seq_len(&self) -> usize"
+    status: implemented
+    notes: "Derived from P99 of training data lengths"
+
+  - contract: qlora-hyperparameters-v1.yaml
+    equation: warmup_fraction
+    module_path: "entrenar::finetune::qlora_config"
+    function: "QLoraConfig::warmup_steps"
+    signature: "fn warmup_steps(&self) -> usize"
+    status: implemented
+    notes: "3-10% of total steps"
+
+  - contract: qlora-hyperparameters-v1.yaml
+    equation: gradient_clip_bound
+    module_path: "entrenar::finetune::qlora_config"
+    function: "QLoraConfig::gradient_clip_norm"
+    signature: "fn gradient_clip_norm(&self) -> f32"
+    status: implemented
+    notes: "Default 1.0; range [0.1, 10.0]"
+
+  - contract: qlora-hyperparameters-v1.yaml
+    equation: epoch_count_imbalanced
+    module_path: "entrenar::finetune::qlora_config"
+    function: "QLoraConfig::epochs"
+    signature: "fn epochs(&self) -> usize"
+    status: implemented
+    notes: "3-10 epochs; more for imbalanced datasets"
+
+  # ── step-profiler-v1: Step-wise profiling ────────────────────
+  - contract: step-profiler-v1.yaml
+    equation: step_profiler
+    module_path: "entrenar::train::transformer_trainer::step_profiler"
+    function: "StepProfiler::new"
+    signature: "fn new() -> StepProfiler"
+    status: implemented
+    notes: "KAIZEN-047: 11 phases profiled"
+
+  - contract: step-profiler-v1.yaml
+    equation: enable_profiler
+    module_path: "entrenar::train::transformer_trainer::cuda_trainer"
+    function: enable_profiler
+    signature: "fn enable_profiler(&mut self)"
+    status: implemented
+    notes: "Enables step-wise profiling for CUDA trainer"
+
+  - contract: step-profiler-v1.yaml
+    equation: print_profiler_report
+    module_path: "entrenar::train::transformer_trainer::step_profiler"
+    function: "StepProfiler::print_report"
+    signature: "fn print_report(&self)"
+    status: implemented
+    notes: "Prints per-phase timing breakdown"
+
+  # ── tensor-rc-data-v1: Rc<Array1> sharing ────────────────────
+  - contract: tensor-rc-data-v1.yaml
+    equation: tensor_clone
+    module_path: "entrenar::autograd::tensor"
+    function: "Tensor::clone"
+    signature: "fn clone(&self) -> Tensor"
+    status: implemented
+    notes: "KAIZEN-019: Rc bump (O(1)) instead of 16GB deep copies"
+
+  - contract: tensor-rc-data-v1.yaml
+    equation: data_read
+    module_path: "entrenar::autograd::tensor"
+    function: "Tensor::data"
+    signature: "fn data(&self) -> &Array1<f32>"
+    status: implemented
+    notes: "Shared read access via Rc"
+
+  - contract: tensor-rc-data-v1.yaml
+    equation: data_mut
+    module_path: "entrenar::autograd::tensor"
+    function: "Tensor::data_mut"
+    signature: "fn data_mut(&mut self) -> &mut Array1<f32>"
+    status: implemented
+    notes: "Copy-on-write via Rc::make_mut"
+
+  # ── training-alloc-reduction-v1: Dead code + clone elim ──────
+  - contract: training-alloc-reduction-v1.yaml
+    equation: train_epoch
+    module_path: "entrenar::finetune::classify_trainer"
+    function: train_epoch
+    signature: "fn train_epoch(&mut self) -> f32"
+    status: implemented
+    notes: "KAIZEN-031/032/033: 230MB per epoch to 0"
+
+  - contract: training-alloc-reduction-v1.yaml
+    equation: remove_val_cache
+    module_path: "entrenar::finetune::classify_trainer"
+    function: ~
+    signature: ~
+    status: implemented
+    notes: "Dead code removed; val_token_cache was unused"
+
+  - contract: training-alloc-reduction-v1.yaml
+    equation: scale_gradients_inplace
+    module_path: "entrenar::finetune::classify_pipeline"
+    function: scale_all_gradients
+    signature: "fn scale_all_gradients(params: &mut [Tensor], factor: f32)"
+    status: implemented
+    notes: "107K flat_map allocs to 0 via mapv_inplace"
+
+  # ── vram-guard-v1: VRAM budget guard ─────────────────────────
+  - contract: vram-guard-v1.yaml
+    equation: budget_check
+    module_path: "entrenar::autograd::cuda_training"
+    function: "CudaTrainer::check_vram_budget"
+    signature: "fn check_vram_budget(&self) -> Result<()>"
+    status: partial
+    notes: "Draft contract; basic budget check exists"
+
+  - contract: vram-guard-v1.yaml
+    equation: actual_measurement
+    module_path: "entrenar::autograd::cuda_training"
+    function: "CudaTrainer::measure_vram"
+    signature: "fn measure_vram(&self) -> usize"
+    status: partial
+    notes: "Draft contract; measurement exists but guard logic incomplete"
+
+  - contract: vram-guard-v1.yaml
+    equation: budget_overshoot
+    module_path: "entrenar::gpu::guard"
+    function: "VramGuard::check_overshoot"
+    signature: ~
+    status: not_implemented
+    notes: "Draft contract; VramGuard not yet implemented"
+
+  - contract: vram-guard-v1.yaml
+    equation: auto_budget_estimate
+    module_path: "entrenar::gpu::guard"
+    function: "VramGuard::auto_estimate_budget"
+    signature: ~
+    status: not_implemented
+    notes: "Draft contract; auto-estimation not yet implemented"
+
+  # ── vram-ledger-v1: VRAM reservation ledger ──────────────────
+  - contract: vram-ledger-v1.yaml
+    equation: capacity_invariant
+    module_path: "entrenar::gpu::ledger"
+    function: "VramLedger::capacity"
+    signature: ~
+    status: not_implemented
+    notes: "Draft contract; ledger not yet implemented"
+
+  - contract: vram-ledger-v1.yaml
+    equation: atomic_write
+    module_path: "entrenar::gpu::ledger"
+    function: "VramLedger::reserve"
+    signature: ~
+    status: not_implemented
+    notes: "Draft contract; flock-based reservation"
+
+  - contract: vram-ledger-v1.yaml
+    equation: lease_expiry
+    module_path: "entrenar::gpu::ledger"
+    function: "VramLedger::prune_expired"
+    signature: ~
+    status: not_implemented
+    notes: "Draft contract; 24h lease expiry"
+
+  - contract: vram-ledger-v1.yaml
+    equation: pid_liveness
+    module_path: "entrenar::gpu::ledger"
+    function: "VramLedger::prune_dead"
+    signature: ~
+    status: not_implemented
+    notes: "Draft contract; PID liveness check"
+
+  - contract: vram-ledger-v1.yaml
+    equation: reservation_id
+    module_path: "entrenar::gpu::ledger"
+    function: "VramLedger::try_reserve"
+    signature: ~
+    status: not_implemented
+    notes: "Draft contract; returns unique reservation ID"
+
+  # ── wgpu-resident-weights-v1: wgpu weight residency ──────────
+  - contract: wgpu-resident-weights-v1.yaml
+    equation: with_resident_weights
+    module_path: "entrenar::transformer::wgpu_block"
+    function: "WgpuForwardPass::with_resident_weights"
+    signature: "fn with_resident_weights(weights: &GpuWeights) -> WgpuForwardPass"
+    status: implemented
+    notes: "KAIZEN-015: one-time FFN weight upload; frozen during QLoRA"
+
+  - contract: wgpu-resident-weights-v1.yaml
+    equation: import_buffer
+    module_path: "trueno::backends::gpu::batch"
+    function: "GpuCommandBatch::import_buffer"
+    signature: "fn import_buffer(&mut self, buffer: &GpuBuffer)"
+    status: implemented
+    notes: "Cross-crate; trueno provides GPU buffer import"
+
+  - contract: wgpu-resident-weights-v1.yaml
+    equation: vram_budget
+    module_path: "entrenar::finetune::classify_pipeline"
+    function: estimate_wgpu_vram
+    signature: "fn estimate_wgpu_vram(model_params: usize) -> usize"
+    status: implemented
+    notes: "Estimates VRAM needed for wgpu resident weights"

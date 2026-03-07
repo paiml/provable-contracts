@@ -136,10 +136,7 @@ pub fn audit_binding(
         total_obligations += contract.proof_obligations.len();
 
         for eq_name in contract.equations.keys() {
-            let matching = binding
-                .bindings
-                .iter()
-                .find(|b| b.contract == contract_file && b.equation == *eq_name);
+            let matching = binding.find_binding(contract_file, eq_name);
 
             match matching {
                 Some(b) => {

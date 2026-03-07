@@ -9,8 +9,8 @@ intermediaries with Kani bounded model checking verification.
 Available as:
 - **Library** (`provable-contracts`): Contract parsing, validation, scaffold
   generation, Kani harness codegen, probar test generation
-- **CLI** (`provable-contracts-cli`): `pv validate`, `pv scaffold`,
-  `pv verify`, `pv status`, `pv audit`
+- **CLI** (`provable-contracts-cli`): 18 commands including `pv validate`,
+  `pv lint`, `pv score`, `pv query`, `pv lean-status`, `pv proof-status`
 
 Primary consumer: [aprender](https://github.com/paiml/aprender) ML library
 and the broader PAIML Sovereign AI stack.
@@ -25,99 +25,80 @@ and the broader PAIML Sovereign AI stack.
 
 ```
 provable-contracts/
-├── Cargo.toml              # workspace root
+├── Cargo.toml                  # workspace root
 ├── crates/
-│   ├── provable-contracts/     # library crate (PMAT-001)
-│   │   ├── Cargo.toml
+│   ├── provable-contracts/         # library crate
 │   │   └── src/
-│   │       ├── lib.rs          # public API
-│   │       ├── schema/         # YAML contract parser (PMAT-002)
-│   │       │   ├── mod.rs
-│   │       │   ├── parser.rs
-│   │       │   └── validator.rs
-│   │       ├── scaffold/       # Rust trait codegen (PMAT-003)
-│   │       │   ├── mod.rs
-│   │       │   ├── trait_gen.rs
-│   │       │   └── test_gen.rs
-│   │       ├── kani/           # Kani harness codegen (PMAT-004)
-│   │       │   ├── mod.rs
-│   │       │   ├── exhaustive.rs
-│   │       │   ├── stub_float.rs
-│   │       │   └── compositional.rs
-│   │       └── probar/         # probar test codegen (PMAT-016)
-│   │           ├── mod.rs
-│   │           └── generators.rs
-│   └── provable-contracts-cli/ # binary crate (PMAT-005)
-│       ├── Cargo.toml
-│       └── src/
-│           ├── main.rs
-│           └── commands/
-│               ├── validate.rs # pv validate
-│               ├── scaffold.rs # pv scaffold
-│               ├── verify.rs   # pv verify (runs cargo kani)
-│               ├── status.rs   # pv status
-│               └── audit.rs    # pv audit (trace chain)
-├── contracts/                  # YAML contract registry
-│   ├── softmax-kernel-v1.yaml      (PMAT-006)
-│   ├── rmsnorm-kernel-v1.yaml      (PMAT-007)
-│   ├── rope-kernel-v1.yaml         (PMAT-008)
-│   ├── activation-kernel-v1.yaml   (PMAT-009)
-│   ├── attention-kernel-v1.yaml    (PMAT-010)
-│   ├── matmul-kernel-v1.yaml       (PMAT-011)
-│   └── flash-attention-v1.yaml     (PMAT-012)
-├── docs/
-│   ├── specifications/
-│   │   └── provable-contracts.md   # this document
-│   └── roadmaps/
-│       └── roadmap.yaml            # pmat work tickets
-└── .pmat/
-    └── project.toml                # pmat compliance config
+│   │       ├── lib.rs              # public API
+│   │       ├── schema/             # YAML contract parser + validator
+│   │       ├── scaffold/           # Rust trait codegen
+│   │       ├── kani_gen/           # Kani harness codegen
+│   │       ├── probar/             # probar test codegen
+│   │       ├── audit.rs            # traceability audit
+│   │       ├── scoring.rs          # 5-dimension quality scoring
+│   │       ├── lint.rs             # quality gate (validate+audit+score)
+│   │       ├── query.rs            # BM25 semantic search
+│   │       └── lean.rs             # Lean 4 codegen
+│   ├── provable-contracts-cli/     # binary crate (`pv`)
+│   │   └── src/
+│   │       ├── main.rs
+│   │       └── commands/           # 18 CLI commands
+│   └── provable-contracts-macros/  # proc-macro crate
+├── contracts/                      # 167 YAML kernel contracts
+│   ├── softmax-kernel-v1.yaml
+│   ├── aprender/                   # aprender-specific contracts
+│   ├── entrenar/                   # training contracts
+│   └── forjar/                     # forjar contracts
+├── lean/                           # Lean 4 proofs (14/14 proved)
+├── docs/specifications/            # canonical spec + sub-specs
+├── book/                           # mdBook documentation
+└── .pmat/project.toml              # pmat compliance config
 ```
 
 ### Library API (provable-contracts crate)
 
 ```rust
-// provable_contracts::schema — Parse and validate YAML contracts
+// Schema — Parse and validate YAML contracts
 pub fn parse_contract(path: &Path) -> Result<Contract, SchemaError>;
 pub fn validate_contract(contract: &Contract) -> Vec<Violation>;
 
-// provable_contracts::scaffold — Generate Rust code from contracts
+// Codegen — Generate Rust code from contracts
 pub fn generate_trait(contract: &Contract) -> TokenStream;
 pub fn generate_contract_tests(contract: &Contract) -> TokenStream;
 pub fn generate_kani_harnesses(contract: &Contract) -> TokenStream;
 pub fn generate_probar_tests(contract: &Contract) -> TokenStream;
 
-// provable_contracts::audit — Trace paper→code chain
-pub fn audit_contract(contract: &Contract, src: &Path) -> AuditReport;
+// Audit — Trace paper→code chain
+pub fn audit_contract(contract: &Contract) -> AuditReport;
+
+// Scoring — Five-dimension quality metric
+pub fn score_contract(contract: &Contract, binding: Option<&BindingRegistry>, stem: &str) -> ContractScore;
+
+// Lint — Quality gate (validate + audit + score)
+pub fn run_lint(config: &LintConfig) -> LintReport;
 ```
 
 ### CLI Commands (pv binary)
 
 ```
-pv validate contracts/softmax-kernel-v1.yaml
-    Check YAML against contract schema. Report missing fields,
-    invalid cross-references, unreachable falsification tests.
-
-pv scaffold contracts/softmax-kernel-v1.yaml --output src/softmax/
-    Generate trait.rs, contract_tests.rs, kani_proofs.rs, probar_tests.rs.
-    All tests fail initially (Phase 3 scaffold).
-
-pv verify contracts/softmax-kernel-v1.yaml
-    Run cargo kani on all harnesses defined in the contract.
-    Report per-harness pass/fail with counterexamples.
-
-pv status contracts/
-    Show verification level matrix:
-    ┌─────────────┬────────┬────────┬────────┐
-    │ Obligation  │ Type   │ probar │ Kani   │
-    ├─────────────┼────────┼────────┼────────┤
-    │ SM-INV-001  │ L3 ✓   │ L4 ✓   │ PROVEN │
-    │ SM-EQV-001  │ L3 ✓   │ L4 ✗   │ TODO   │
-    └─────────────┴────────┴────────┴────────┘
-
-pv audit contracts/softmax-kernel-v1.yaml --src ../aprender/src/
-    Trace full chain: paper → equation → contract → trait → test → proof.
-    Report gaps (equation without test, test without Kani harness, etc).
+pv validate <contract.yaml>     Validate YAML against contract schema
+pv lint <contracts-dir/>        Quality gate: validate + audit + score
+pv audit <contract.yaml>        Traceability audit (paper → proof chain)
+pv score <path>                 Score contracts or codebase (A-F grades)
+pv query "softmax"              Semantic search across contracts
+pv scaffold <contract.yaml>     Generate Rust trait + test stubs
+pv kani <contract.yaml>         Generate #[kani::proof] harnesses
+pv probar <contract.yaml>       Generate probar property tests
+pv lean <contract.yaml>         Generate Lean 4 theorem stubs
+pv lean-status <contracts-dir/> Report Lean 4 proof status (14/14 proved)
+pv proof-status <contracts-dir/> Hierarchical proof level (L1-L5) report
+pv status <contract.yaml>       Show contract summary
+pv diff <old.yaml> <new.yaml>   Diff versions, suggest semver bump
+pv coverage <contracts-dir/>    Cross-contract obligation coverage
+pv generate <contract.yaml>     Write all codegen artifacts to disk
+pv graph <contracts-dir/>       Dependency DAG (text/dot/json/mermaid)
+pv equations <contract.yaml>    Render equations (text/latex/ptx/asm)
+pv book <contracts-dir/>        Generate mdBook pages
 ```
 
 ---

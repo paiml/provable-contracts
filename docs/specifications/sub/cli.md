@@ -16,7 +16,7 @@ The binary is named `pv`.
 
 ---
 
-## 2. Existing Commands (15)
+## 2. Existing Commands (16)
 
 ### pv validate
 
@@ -164,6 +164,20 @@ pv proof-status contracts/ --format json
 ```
 
 Shows kernel equivalence classes (A-E) when multiple contracts present.
+
+### pv lint
+
+Run all contract quality gates (validate + audit + score) in one pass.
+
+```bash
+pv lint contracts/
+pv lint contracts/ --min-score 0.60
+pv lint contracts/ --binding contracts/aprender/binding.yaml --min-score 0.75
+pv lint contracts/ -f json
+```
+
+Exit code 0 = all gates pass, 1 = any gate fails. See
+[scoring.md](scoring.md) Section 5 for full gate definitions.
 
 ### pv book
 

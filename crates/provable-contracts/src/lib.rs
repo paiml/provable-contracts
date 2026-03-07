@@ -21,6 +21,7 @@
 //! - [`latex`] — LaTeX conversion for contract math notation
 //! - [`book_gen`] — mdBook page generation for contracts
 //! - [`lean_gen`] — Lean 4 definition and theorem stub generation
+//! - [`lint`] — Contract quality gate: validate + audit + score in one pass
 //! - [`kernels`] — Scalar, AVX2, and PTX kernel implementations
 
 pub mod audit;
@@ -36,6 +37,7 @@ pub mod kani_gen;
 pub mod kernels;
 pub mod latex;
 pub mod lean_gen;
+pub mod lint;
 pub mod probar_gen;
 pub mod proof_status;
 pub mod query;

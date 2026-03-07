@@ -88,6 +88,36 @@ pub fn parse_binding_str(yaml: &str) -> Result<BindingRegistry, ContractError> {
     Ok(registry)
 }
 
+/// Normalize a contract identifier by stripping `.yaml`/`.yml` extension.
+///
+/// Both binding entries (`contract: foo-v1.yaml`) and file stems (`foo-v1`)
+/// are normalized to the bare stem so comparisons work regardless of whether
+/// the caller used a filename or stem.
+pub fn normalize_contract_id(id: &str) -> &str {
+    id.strip_suffix(".yaml")
+        .or_else(|| id.strip_suffix(".yml"))
+        .unwrap_or(id)
+}
+
+impl BindingRegistry {
+    /// Find all bindings matching a contract (normalizes both sides).
+    pub fn bindings_for(&self, contract_id: &str) -> Vec<&KernelBinding> {
+        let needle = normalize_contract_id(contract_id);
+        self.bindings
+            .iter()
+            .filter(|b| normalize_contract_id(&b.contract) == needle)
+            .collect()
+    }
+
+    /// Find a specific binding by contract + equation (normalizes contract).
+    pub fn find_binding(&self, contract_id: &str, equation: &str) -> Option<&KernelBinding> {
+        let needle = normalize_contract_id(contract_id);
+        self.bindings
+            .iter()
+            .find(|b| normalize_contract_id(&b.contract) == needle && b.equation == equation)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

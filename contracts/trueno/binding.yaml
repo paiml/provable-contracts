@@ -1,0 +1,200 @@
+# Binding Registry: provable-contracts <-> trueno
+#
+# Maps each BLIS/GPU kernel contract to the trueno function that
+# implements it. Used by `pv audit --binding` and `pv probar --binding`.
+#
+# Statistics:
+#   Total bindings: 21
+#   Implemented: 21 (100%)
+#   Partial: 0
+#   Not implemented: 0
+#
+# Refs: paiml/trueno#176, paiml/provable-contracts#11
+
+version: "1.0.0"
+target_crate: trueno
+
+bindings:
+  # ── batched-matmul-zero-copy-v1: Batched GEMM (KAIZEN-039) ──
+  - contract: batched-matmul-zero-copy-v1.yaml
+    equation: batched_matmul
+    module_path: "trueno::matrix::ops::arithmetic"
+    function: batched_matmul
+    signature: "fn batched_matmul(a: &[Matrix<f32>], b: &[Matrix<f32>]) -> Vec<Matrix<f32>>"
+    status: implemented
+    notes: "Delegates to blis::gemm_blis per sub-slice; zero intermediate Vec alloc"
+
+  - contract: batched-matmul-zero-copy-v1.yaml
+    equation: batched_matmul_4d
+    module_path: "trueno::matrix::ops::arithmetic"
+    function: batched_matmul_4d
+    signature: "fn batched_matmul_4d(a: &Matrix<f32>, b: &Matrix<f32>, batch: usize, heads: usize) -> Matrix<f32>"
+    status: implemented
+    notes: "4D attention-shaped batched matmul"
+
+  # ── blis-profiling-guard-v1: Profiler guard (KAIZEN-038) ─────
+  - contract: blis-profiling-guard-v1.yaml
+    equation: compute_macroblock
+    module_path: "trueno::blis::compute"
+    function: compute_macroblock
+    signature: "fn compute_macroblock(a: &[f32], b: &[f32], c: &mut [f32], mc: usize, nc: usize, kc: usize, profiler: Option<&mut Profiler>)"
+    status: implemented
+    notes: "KAIZEN-038: Instant::now() only called when profiler.is_some()"
+
+  - contract: blis-profiling-guard-v1.yaml
+    equation: record_prof
+    module_path: "trueno::blis::compute"
+    function: record_prof
+    signature: "fn record_prof(profiler: &mut Profiler, phase: &str, elapsed: Duration)"
+    status: implemented
+    notes: "Records timing for a BLIS phase; gated by profiler presence"
+
+  # ── blis-safe-alloc-v1: Safe allocation (KAIZEN-027) ─────────
+  - contract: blis-safe-alloc-v1.yaml
+    equation: relu_alloc
+    module_path: "trueno::blis::elementwise"
+    function: relu_alloc
+    signature: "fn relu_alloc(input: &[f32]) -> Vec<f32>"
+    status: implemented
+    notes: "vec![0.0; n] instead of unsafe set_len(n)"
+
+  - contract: blis-safe-alloc-v1.yaml
+    equation: rms_norm_alloc
+    module_path: "trueno::blis::norms"
+    function: rms_norm_alloc
+    signature: "fn rms_norm_alloc(input: &[f32], weight: &[f32], eps: f32) -> Vec<f32>"
+    status: implemented
+    notes: "Safe allocation for RMSNorm output"
+
+  - contract: blis-safe-alloc-v1.yaml
+    equation: softmax_scalar
+    module_path: "trueno::blis::softmax"
+    function: softmax_scalar
+    signature: "fn softmax_scalar(input: &[f32], output: &mut [f32])"
+    status: implemented
+    notes: "Pass 2 uses safe vec![0.0; n]"
+
+  - contract: blis-safe-alloc-v1.yaml
+    equation: softmax_avx2
+    module_path: "trueno::blis::softmax"
+    function: softmax_avx2
+    signature: "unsafe fn softmax_avx2(input: &[f32], output: &mut [f32])"
+    status: implemented
+    notes: "AVX2 variant; pass 2 uses safe allocation"
+
+  # ── matrix-transpose-blis-v1: Transpose (KAIZEN-040) ─────────
+  - contract: matrix-transpose-blis-v1.yaml
+    equation: transpose
+    module_path: "trueno::matrix::ops::linear"
+    function: "Matrix::transpose"
+    signature: "fn transpose(&self) -> Matrix<f32>"
+    status: implemented
+    notes: "Delegates to blis::transpose; AVX2 8x8 micro-kernel or scalar"
+
+  - contract: matrix-transpose-blis-v1.yaml
+    equation: transpose_avx2
+    module_path: "trueno::blis::transpose"
+    function: transpose_8x8_avx2
+    signature: "unsafe fn transpose_8x8_avx2(src: &[f32], dst: &mut [f32], src_stride: usize, dst_stride: usize)"
+    status: implemented
+    notes: "In-register 8x8 AVX2 transpose micro-kernel"
+
+  # ── vecmat-blis-gemv-v1: Vector-matrix multiply (KAIZEN-041) ─
+  - contract: vecmat-blis-gemv-v1.yaml
+    equation: vecmat
+    module_path: "trueno::matrix::ops::linear"
+    function: "Matrix::vecmat"
+    signature: "fn vecmat(v: &Vector<f32>, m: &Matrix<f32>) -> Result<Vector<f32>, TruenoError>"
+    status: implemented
+    notes: "Delegates to blis::gemv; AVX2 VFMADD with K-unrolling"
+
+  - contract: vecmat-blis-gemv-v1.yaml
+    equation: gemv_avx2
+    module_path: "trueno::blis::gemv"
+    function: gemv_avx2
+    signature: "unsafe fn gemv_avx2(v: &[f32], m: &[f32], out: &mut [f32], m_cols: usize, m_rows: usize)"
+    status: implemented
+    notes: "4-way K-unrolled VFMADD; N-tiled for N > 4096"
+
+  # ── pipeline-cache-v1: GPU pipeline cache (KAIZEN-022) ───────
+  - contract: pipeline-cache-v1.yaml
+    equation: pipeline_cache
+    module_path: "trueno::backends::gpu::batch::execute"
+    function: "PipelineCache::get_or_create"
+    signature: "fn get_or_create(&mut self, shader: &str, device: &Device) -> &ComputePipeline"
+    status: implemented
+    notes: "HashMap keyed by shader source pointer; compile-once semantics"
+
+  - contract: pipeline-cache-v1.yaml
+    equation: single_encoder
+    module_path: "trueno::backends::gpu::batch::execute"
+    function: "GpuCommandBatch::execute"
+    signature: "fn execute(&mut self, device: &Device, queue: &Queue) -> Result<(), GpuError>"
+    status: implemented
+    notes: "Single command encoder per execute() call; N ops batched"
+
+  # ── tiled-matmul-shader-v1: GPU tiled matmul (KAIZEN-021) ────
+  - contract: tiled-matmul-shader-v1.yaml
+    equation: matmul_shader
+    module_path: "trueno::backends::gpu::shaders"
+    function: MATMUL_SHADER
+    signature: "const MATMUL_SHADER: &str"
+    status: implemented
+    notes: "16x16 tiled WGSL shader with shared memory"
+
+  - contract: tiled-matmul-shader-v1.yaml
+    equation: matmul_dispatch
+    module_path: "trueno::backends::gpu::device::linalg::matmul"
+    function: matmul_async
+    signature: "fn matmul_async(a: &GpuBuffer, b: &GpuBuffer, m: u32, n: u32, k: u32) -> GpuBuffer"
+    status: implemented
+    notes: "Dispatch: ceil(M/16) x ceil(N/16) x 1 workgroups"
+
+  - contract: tiled-matmul-shader-v1.yaml
+    equation: execute_matmul_op
+    module_path: "trueno::backends::gpu::batch::execute::dispatch"
+    function: execute_matmul_op
+    signature: "fn execute_matmul_op(batch: &mut GpuCommandBatch, op: &MatmulOp) -> Result<()>"
+    status: implemented
+    notes: "Batched matmul dispatch via pipeline cache"
+
+  # ── gemm-backward-tiled-v1: Backward GEMM (trueno-gpu) ──────
+  - contract: gemm-backward-tiled-v1.yaml
+    equation: backward_a_gemm
+    module_path: "trueno_gpu::kernels::backward::gemm"
+    function: "GemmBackwardAKernel::tiled"
+    signature: "fn tiled(tile_size: u32) -> Self"
+    status: implemented
+    notes: "grad_A = grad_C @ B^T; tiled with shared memory"
+
+  - contract: gemm-backward-tiled-v1.yaml
+    equation: backward_b_gemm
+    module_path: "trueno_gpu::kernels::backward::gemm"
+    function: "GemmBackwardBKernel::tiled"
+    signature: "fn tiled(tile_size: u32) -> Self"
+    status: implemented
+    notes: "grad_B = A^T @ grad_C; tiled with shared memory"
+
+  - contract: gemm-backward-tiled-v1.yaml
+    equation: tiled_gemm_arithmetic_intensity
+    module_path: "trueno_gpu::kernels::backward::gemm"
+    function: "GemmBackwardAKernel::arithmetic_intensity"
+    signature: "fn arithmetic_intensity(&self) -> f32"
+    status: implemented
+    notes: "AI = TILE/sizeof(f32); >= 4.0 for TILE=16"
+
+  - contract: gemm-backward-tiled-v1.yaml
+    equation: shared_memory_per_tile
+    module_path: "trueno_gpu::kernels::backward::gemm"
+    function: "GemmBackwardAKernel::shared_memory_bytes"
+    signature: "fn shared_memory_bytes(&self) -> usize"
+    status: implemented
+    notes: "smem = 2 * TILE^2 * 4 bytes"
+
+  - contract: gemm-backward-tiled-v1.yaml
+    equation: unrolled_instruction_ratio
+    module_path: "trueno_gpu::kernels::backward::gemm"
+    function: "GemmBackwardAKernel::tiled_unrolled"
+    signature: "fn tiled_unrolled(tile_size: u32) -> Self"
+    status: implemented
+    notes: "4x unrolled variant; IPC ratio 0.57"

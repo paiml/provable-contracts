@@ -1,4 +1,4 @@
-.PHONY: build test test-fast test-full lint clippy deny clean coverage \
+.PHONY: build test test-fast test-full lint clippy deny pv-lint clean coverage \
        coverage-html comply quality-gate book book-serve \
        lean-install lean-build lean-check lean-clean
 
@@ -23,13 +23,16 @@ test-full:
 
 # ---------- Lint ----------
 
-lint: clippy deny
+lint: clippy deny pv-lint
 
 clippy:
 	cargo clippy --workspace -- -D warnings
 
 deny:
 	cargo deny check
+
+pv-lint:
+	cargo run --bin pv -- lint contracts/
 
 fmt-check:
 	cargo fmt --all -- --check
