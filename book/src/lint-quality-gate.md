@@ -230,6 +230,7 @@ pv lint contracts/ --min-score 0.50 --diff HEAD --strict
 
 | Rule ID | Severity | Description |
 |---------|----------|-------------|
+| PV-VAL-001 | Error | YAML parse error (malformed or missing required fields) |
 | PV-VAL-001 | Warning | Missing optional schema section (qa_gate, etc.) |
 | PV-VAL-004 | Error | Missing required `metadata.version` |
 | PV-VAL-005 | Error | Missing required `metadata.description` |
