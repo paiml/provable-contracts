@@ -1219,11 +1219,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Trueno binding registry
-  status: planned
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-03-07T12:15:17Z
-  updated: 2026-03-07T12:15:17Z
+  updated: 2026-03-07T12:31:20.522730878+00:00
   spec: null
   acceptance_criteria:
   - Create contracts/trueno/binding.yaml mapping 8 contracts to trueno BLIS/GPU functions
