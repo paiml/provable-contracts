@@ -1306,3 +1306,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-073
+  github_issue: null
+  item_type: task
+  title: Implement pv lint quality gates (SARIF, diff-aware, suppression, config)
+  status: inprogress
+  priority: high
+  assigned_to: null
+  created: 2026-03-07T17:42:27Z
+  updated: 2026-03-07T17:43:34.166757148+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null

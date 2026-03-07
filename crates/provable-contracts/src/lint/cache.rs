@@ -30,6 +30,7 @@ pub struct CacheStats {
 }
 
 impl CacheStats {
+    #[allow(clippy::cast_precision_loss)]
     pub fn hit_rate(&self) -> f64 {
         if self.total == 0 {
             0.0
