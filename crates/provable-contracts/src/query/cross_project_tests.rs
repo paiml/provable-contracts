@@ -147,3 +147,42 @@ fn cross_project_index_accessors() {
     assert!(index.project_count() >= 4, "Should find aprender, trueno, entrenar, bashrs");
     assert!(index.total_call_sites() > 5, "aprender has many contract annotations");
 }
+
+#[test]
+fn commit_refs_discovered() {
+    let index = CrossProjectIndex::build(&repo_root());
+    // The provable-contracts repo itself uses KAIZEN patterns in commit messages
+    // and sibling projects should too
+    let total_commit_refs: usize = index.commit_refs.values().map(Vec::len).sum();
+    assert!(
+        total_commit_refs > 0,
+        "Should find commit refs across projects, found 0"
+    );
+}
+
+#[test]
+fn commit_refs_for_unknown() {
+    let index = CrossProjectIndex::build(&repo_root());
+    let refs = index.commit_refs_for("NONEXISTENT-999");
+    assert!(refs.is_empty());
+}
+
+#[test]
+fn build_with_extra_project() {
+    let root = repo_root();
+    // Build with a non-existent extra path — should not crash
+    let index = CrossProjectIndex::build_with_extra(&root, Some(Path::new("/tmp/nonexistent")));
+    assert!(index.project_count() > 0);
+}
+
+#[test]
+fn build_with_extra_duplicate() {
+    let root = repo_root();
+    // Build with an extra path that's already discovered — should not duplicate
+    let aprender = root.parent().unwrap().join("aprender");
+    if aprender.exists() {
+        let index = CrossProjectIndex::build_with_extra(&root, Some(&aprender));
+        let aprender_count = index.projects.iter().filter(|p| p.name == "aprender").count();
+        assert_eq!(aprender_count, 1, "Should not duplicate aprender");
+    }
+}

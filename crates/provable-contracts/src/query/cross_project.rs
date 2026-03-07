@@ -48,6 +48,14 @@ pub struct KaizenRef {
     pub pattern: String,
 }
 
+/// A contract or KAIZEN reference found in git commit messages.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CommitRef {
+    pub project: String,
+    pub commit_hash: String,
+    pub pattern: String,
+}
+
 /// Cross-project index aggregating all contract references across the stack.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CrossProjectIndex {
@@ -55,6 +63,7 @@ pub struct CrossProjectIndex {
     pub call_sites: HashMap<String, Vec<CallSite>>,
     pub binding_refs: HashMap<String, Vec<BindingRef>>,
     pub kaizen_refs: HashMap<String, Vec<KaizenRef>>,
+    pub commit_refs: HashMap<String, Vec<CommitRef>>,
 }
 
 impl CrossProjectIndex {
@@ -99,11 +108,13 @@ impl CrossProjectIndex {
         let mut call_sites: HashMap<String, Vec<CallSite>> = HashMap::new();
         let mut binding_refs: HashMap<String, Vec<BindingRef>> = HashMap::new();
         let mut kaizen_refs: HashMap<String, Vec<KaizenRef>> = HashMap::new();
+        let mut commit_refs: HashMap<String, Vec<CommitRef>> = HashMap::new();
 
         for project in &projects {
             scan_contract_annotations(project, &mut call_sites);
             scan_binding_refs(project, &mut binding_refs);
             scan_kaizen_refs(project, &mut kaizen_refs);
+            scan_commit_refs(project, &mut commit_refs);
         }
 
         Self {
@@ -111,6 +122,7 @@ impl CrossProjectIndex {
             call_sites,
             binding_refs,
             kaizen_refs,
+            commit_refs,
         }
     }
 
@@ -127,6 +139,11 @@ impl CrossProjectIndex {
     /// Get all KAIZEN references for a given pattern.
     pub fn kaizen_refs_for(&self, pattern: &str) -> &[KaizenRef] {
         self.kaizen_refs.get(pattern).map_or(&[], Vec::as_slice)
+    }
+
+    /// Get all commit message references for a given pattern.
+    pub fn commit_refs_for(&self, pattern: &str) -> &[CommitRef] {
+        self.commit_refs.get(pattern).map_or(&[], Vec::as_slice)
     }
 
     /// Total call sites across all contracts.
@@ -408,6 +425,41 @@ fn extract_patterns(content: &str) -> Vec<String> {
     }
 
     patterns
+}
+
+/// Scan recent git commit messages for KAIZEN-NNN and C-UPPER-DIGITS patterns.
+fn scan_commit_refs(
+    project: &ProjectEntry,
+    refs: &mut HashMap<String, Vec<CommitRef>>,
+) {
+    if !project.path.join(".git").exists() {
+        return;
+    }
+    // Get recent commit messages (last 200 commits)
+    let output = std::process::Command::new("git")
+        .args(["log", "--oneline", "-200", "--format=%H %s"])
+        .current_dir(&project.path)
+        .output();
+
+    let Ok(output) = output else { return };
+    if !output.status.success() {
+        return;
+    }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    for line in stdout.lines() {
+        let Some((hash, subject)) = line.split_once(' ') else {
+            continue;
+        };
+        let short_hash = &hash[..hash.len().min(12)];
+        for pattern in extract_patterns(subject) {
+            refs.entry(pattern.clone()).or_default().push(CommitRef {
+                project: project.name.clone(),
+                commit_hash: short_hash.to_string(),
+                pattern,
+            });
+        }
+    }
 }
 
 #[cfg(test)]
