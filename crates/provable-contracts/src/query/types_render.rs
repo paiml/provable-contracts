@@ -39,10 +39,16 @@ impl QueryResult {
             out.push_str(&format!("- **Papers:** {}\n", self.references.join("; ")));
         }
         if !self.depends_on.is_empty() {
-            out.push_str(&format!("- **Depends on:** {}\n", self.depends_on.join(", ")));
+            out.push_str(&format!(
+                "- **Depends on:** {}\n",
+                self.depends_on.join(", ")
+            ));
         }
         if !self.depended_by.is_empty() {
-            out.push_str(&format!("- **Depended by:** {}\n", self.depended_by.join(", ")));
+            out.push_str(&format!(
+                "- **Depended by:** {}\n",
+                self.depended_by.join(", ")
+            ));
         }
         out.push('\n');
         out
@@ -51,7 +57,11 @@ impl QueryResult {
 
 impl std::fmt::Display for QueryResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "[{}] {} (relevance: {:.2})", self.rank, self.stem, self.relevance)?;
+        writeln!(
+            f,
+            "[{}] {} (relevance: {:.2})",
+            self.rank, self.stem, self.relevance
+        )?;
         writeln!(f, "    {}", self.description)?;
         if !self.equations.is_empty() {
             writeln!(f, "    Equations: {}", self.equations.join(", "))?;
@@ -105,7 +115,10 @@ fn fmt_score(f: &mut std::fmt::Formatter<'_>, score: Option<&ScoreInfo>) -> std:
     )
 }
 
-fn fmt_proof_status(f: &mut std::fmt::Formatter<'_>, ps: Option<&ProofStatusInfo>) -> std::fmt::Result {
+fn fmt_proof_status(
+    f: &mut std::fmt::Formatter<'_>,
+    ps: Option<&ProofStatusInfo>,
+) -> std::fmt::Result {
     let Some(ps) = ps else { return Ok(()) };
     writeln!(
         f,
@@ -115,7 +128,9 @@ fn fmt_proof_status(f: &mut std::fmt::Formatter<'_>, ps: Option<&ProofStatusInfo
 }
 
 fn fmt_bindings(f: &mut std::fmt::Formatter<'_>, bindings: &[EquationBinding]) -> std::fmt::Result {
-    if bindings.is_empty() { return Ok(()) }
+    if bindings.is_empty() {
+        return Ok(());
+    }
     writeln!(f, "    Bindings:")?;
     for b in bindings {
         let loc = b.module_path.as_deref().unwrap_or("unbound");
@@ -126,8 +141,13 @@ fn fmt_bindings(f: &mut std::fmt::Formatter<'_>, bindings: &[EquationBinding]) -
 
 fn fmt_diff(f: &mut std::fmt::Formatter<'_>, diff: Option<&DiffInfo>) -> std::fmt::Result {
     let Some(d) = diff else { return Ok(()) };
-    writeln!(f, "    Last modified: {} ({} days ago, {})",
-        d.last_modified, d.days_ago, &d.commit_hash[..7.min(d.commit_hash.len())])
+    writeln!(
+        f,
+        "    Last modified: {} ({} days ago, {})",
+        d.last_modified,
+        d.days_ago,
+        &d.commit_hash[..7.min(d.commit_hash.len())]
+    )
 }
 
 fn fmt_pagerank(f: &mut std::fmt::Formatter<'_>, pr: Option<f64>) -> std::fmt::Result {
@@ -136,8 +156,14 @@ fn fmt_pagerank(f: &mut std::fmt::Formatter<'_>, pr: Option<f64>) -> std::fmt::R
 }
 
 fn fmt_call_sites(f: &mut std::fmt::Formatter<'_>, sites: &[CallSiteInfo]) -> std::fmt::Result {
-    if sites.is_empty() { return Ok(()) }
-    writeln!(f, "    Call sites ({} projects):", count_unique_projects(sites))?;
+    if sites.is_empty() {
+        return Ok(());
+    }
+    writeln!(
+        f,
+        "    Call sites ({} projects):",
+        count_unique_projects(sites)
+    )?;
     for cs in sites {
         let eq = cs.equation.as_deref().unwrap_or("");
         writeln!(f, "      {}/{}:{} {eq}", cs.project, cs.file, cs.line)?;
@@ -145,8 +171,13 @@ fn fmt_call_sites(f: &mut std::fmt::Formatter<'_>, sites: &[CallSiteInfo]) -> st
     Ok(())
 }
 
-fn fmt_violations(f: &mut std::fmt::Formatter<'_>, violations: &[ViolationInfo]) -> std::fmt::Result {
-    if violations.is_empty() { return Ok(()) }
+fn fmt_violations(
+    f: &mut std::fmt::Formatter<'_>,
+    violations: &[ViolationInfo],
+) -> std::fmt::Result {
+    if violations.is_empty() {
+        return Ok(());
+    }
     writeln!(f, "    Violations ({}):", violations.len())?;
     for v in violations {
         writeln!(f, "      {}: {} — {}", v.project, v.kind, v.detail)?;
@@ -155,12 +186,17 @@ fn fmt_violations(f: &mut std::fmt::Formatter<'_>, violations: &[ViolationInfo])
 }
 
 fn fmt_coverage_map(f: &mut std::fmt::Formatter<'_>, map: &[ProjectCoverage]) -> std::fmt::Result {
-    if map.is_empty() { return Ok(()) }
+    if map.is_empty() {
+        return Ok(());
+    }
     writeln!(f, "    Coverage map:")?;
     for c in map {
         let bar = coverage_bar(c.binding_implemented, c.binding_total);
-        writeln!(f, "      {:<12} {bar} ({} sites, {}/{} bound)",
-            c.project, c.call_sites, c.binding_implemented, c.binding_total)?;
+        writeln!(
+            f,
+            "      {:<12} {bar} ({} sites, {}/{} bound)",
+            c.project, c.call_sites, c.binding_implemented, c.binding_total
+        )?;
     }
     Ok(())
 }
@@ -169,7 +205,10 @@ fn fmt_coverage_map(f: &mut std::fmt::Formatter<'_>, map: &[ProjectCoverage]) ->
 
 fn md_score(out: &mut String, score: Option<&ScoreInfo>) {
     let Some(s) = score else { return };
-    out.push_str(&format!("- **Score:** {:.2} (Grade {})\n", s.composite, s.grade));
+    out.push_str(&format!(
+        "- **Score:** {:.2} (Grade {})\n",
+        s.composite, s.grade
+    ));
     out.push_str(&format!(
         "- Spec: {:.2} | Falsify: {:.2} | Kani: {:.2} | Lean: {:.2} | Bind: {:.2}\n",
         s.spec_depth, s.falsification, s.kani, s.lean, s.binding
@@ -185,7 +224,9 @@ fn md_proof_status(out: &mut String, ps: Option<&ProofStatusInfo>) {
 }
 
 fn md_bindings(out: &mut String, bindings: &[EquationBinding]) {
-    if bindings.is_empty() { return }
+    if bindings.is_empty() {
+        return;
+    }
     out.push_str("- **Bindings:**\n");
     for b in bindings {
         let loc = b.module_path.as_deref().unwrap_or("unbound");
@@ -195,7 +236,10 @@ fn md_bindings(out: &mut String, bindings: &[EquationBinding]) {
 
 fn md_diff(out: &mut String, diff: Option<&DiffInfo>) {
     let Some(d) = diff else { return };
-    out.push_str(&format!("- **Last modified:** {} ({} days ago)\n", d.last_modified, d.days_ago));
+    out.push_str(&format!(
+        "- **Last modified:** {} ({} days ago)\n",
+        d.last_modified, d.days_ago
+    ));
 }
 
 fn md_pagerank(out: &mut String, pr: Option<f64>) {
@@ -204,19 +248,29 @@ fn md_pagerank(out: &mut String, pr: Option<f64>) {
 }
 
 fn md_call_sites(out: &mut String, sites: &[CallSiteInfo]) {
-    if sites.is_empty() { return }
+    if sites.is_empty() {
+        return;
+    }
     out.push_str(&format!(
         "- **Call sites** ({} projects):\n",
         count_unique_projects(sites)
     ));
     for cs in sites {
-        let eq = cs.equation.as_deref().map_or(String::new(), |e| format!(" eq={e}"));
-        out.push_str(&format!("  - `{}/{}:{}`{eq}\n", cs.project, cs.file, cs.line));
+        let eq = cs
+            .equation
+            .as_deref()
+            .map_or(String::new(), |e| format!(" eq={e}"));
+        out.push_str(&format!(
+            "  - `{}/{}:{}`{eq}\n",
+            cs.project, cs.file, cs.line
+        ));
     }
 }
 
 fn md_violations(out: &mut String, violations: &[ViolationInfo]) {
-    if violations.is_empty() { return }
+    if violations.is_empty() {
+        return;
+    }
     out.push_str(&format!("- **Violations ({}):**\n", violations.len()));
     for v in violations {
         out.push_str(&format!("  - `{}`: {} — {}\n", v.project, v.kind, v.detail));
@@ -224,12 +278,16 @@ fn md_violations(out: &mut String, violations: &[ViolationInfo]) {
 }
 
 fn md_coverage_map(out: &mut String, map: &[ProjectCoverage]) {
-    if map.is_empty() { return }
+    if map.is_empty() {
+        return;
+    }
     out.push_str("- **Coverage map:**\n");
     for c in map {
         let pct = if c.binding_total > 0 {
             #[allow(clippy::cast_precision_loss)]
-            { c.binding_implemented as f64 / c.binding_total as f64 * 100.0 }
+            {
+                c.binding_implemented as f64 / c.binding_total as f64 * 100.0
+            }
         } else {
             0.0
         };

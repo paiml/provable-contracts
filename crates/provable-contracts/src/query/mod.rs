@@ -52,14 +52,19 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
     let limited: Vec<_> = filtered.into_iter().take(params.limit).collect();
 
     // Build cross-project index lazily when any cross-project flag is set
-    let needs_xp = params.show_call_sites || params.show_violations
-        || params.show_coverage_map || params.all_projects;
+    let needs_xp = params.show_call_sites
+        || params.show_violations
+        || params.show_coverage_map
+        || params.all_projects;
     let xp_index = if needs_xp {
         index.entries.first().map(|e| {
             let p = std::path::Path::new(&e.path);
             // Go up from contracts/foo.yaml to the repo root
             let contracts_dir = p.parent().unwrap_or(p);
-            let repo_root = if contracts_dir.parent().is_none_or(|p| p.as_os_str().is_empty()) {
+            let repo_root = if contracts_dir
+                .parent()
+                .is_none_or(|p| p.as_os_str().is_empty())
+            {
                 std::path::Path::new(".")
             } else {
                 contracts_dir.parent().unwrap()
@@ -77,8 +82,14 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
         .enumerate()
         .map(|(rank, (idx, relevance))| {
             build_result(
-                index, params, binding.as_ref(), xp_index.as_ref(),
-                project_filter, rank, idx, relevance,
+                index,
+                params,
+                binding.as_ref(),
+                xp_index.as_ref(),
+                project_filter,
+                rank,
+                idx,
+                relevance,
             )
         })
         .collect();
@@ -114,14 +125,24 @@ fn build_result(
         references: opt_vec(&entry.references, params.show_paper),
         depends_on,
         depended_by,
-        score: params.show_score.then(|| query_enrich::build_score_info(entry)).flatten(),
+        score: params
+            .show_score
+            .then(|| query_enrich::build_score_info(entry))
+            .flatten(),
         proof_status: params
             .show_proof_status
             .then(|| query_enrich::build_proof_status_info(entry))
             .flatten(),
         bindings: opt_binding(entry, binding, params.show_binding),
-        diff: params.show_diff.then(|| query_enrich::build_diff_info(entry)).flatten(),
-        pagerank: if params.show_pagerank { index.cached_pagerank(&entry.stem) } else { None },
+        diff: params
+            .show_diff
+            .then(|| query_enrich::build_diff_info(entry))
+            .flatten(),
+        pagerank: if params.show_pagerank {
+            index.cached_pagerank(&entry.stem)
+        } else {
+            None
+        },
         call_sites: filter_by_project(build_call_sites(&entry.stem, xp_index), project_filter),
         violations: filter_violations(
             build_violations(entry, xp_index, params.show_violations),
@@ -147,7 +168,11 @@ fn graph_fields(
         return (Vec::new(), Vec::new());
     }
     let deps = entry.depends_on.clone();
-    let rev = index.depended_by(&entry.stem).into_iter().map(String::from).collect();
+    let rev = index
+        .depended_by(&entry.stem)
+        .into_iter()
+        .map(String::from)
+        .collect();
     (deps, rev)
 }
 
@@ -156,7 +181,11 @@ fn opt_binding(
     binding: Option<&BindingRegistry>,
     show: bool,
 ) -> Vec<EquationBinding> {
-    if show { query_enrich::build_binding_info(entry, binding) } else { Vec::new() }
+    if show {
+        query_enrich::build_binding_info(entry, binding)
+    } else {
+        Vec::new()
+    }
 }
 
 fn apply_filters(
@@ -200,11 +229,9 @@ fn filter_depended_by(
     depended_by: Option<&String>,
 ) -> bool {
     match depended_by {
-        Some(target) => {
-            index
-                .get_by_stem(target)
-                .is_some_and(|t| t.depends_on.contains(&entry.stem))
-        }
+        Some(target) => index
+            .get_by_stem(target)
+            .is_some_and(|t| t.depends_on.contains(&entry.stem)),
         None => true,
     }
 }
@@ -261,8 +288,14 @@ fn filter_min_level(entry: &types::ContractEntry, min_level: Option<&str>) -> bo
 }
 
 #[cfg(test)]
-mod tests { include!("query_tests.rs"); }
+mod tests {
+    include!("query_tests.rs");
+}
 #[cfg(test)]
-mod coverage_tests { include!("query_tests_coverage.rs"); }
+mod coverage_tests {
+    include!("query_tests_coverage.rs");
+}
 #[cfg(test)]
-mod render_tests { include!("query_tests_render.rs"); }
+mod render_tests {
+    include!("query_tests_render.rs");
+}

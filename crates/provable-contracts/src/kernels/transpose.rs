@@ -302,10 +302,7 @@ mod tests {
         transpose_scalar(rows, cols, &a, &mut b_scalar);
         transpose(rows, cols, &a, &mut b_dispatch);
 
-        assert_eq!(
-            b_scalar, b_dispatch,
-            "AVX2 vs scalar mismatch at 2048×128"
-        );
+        assert_eq!(b_scalar, b_dispatch, "AVX2 vs scalar mismatch at 2048×128");
     }
 
     /// FALSIFY-TP-005: Identity matrix

@@ -5,8 +5,8 @@ use std::collections::{BTreeSet, HashMap};
 use crate::binding::{BindingRegistry, ImplStatus};
 use crate::schema::{Contract, LeanStatus};
 
-use super::types::{CodebaseScore, Grade, ScoringGap};
 use super::score_contract;
+use super::types::{CodebaseScore, Grade, ScoringGap};
 
 /// Score a codebase that consumes contracts via a binding registry.
 ///
@@ -124,10 +124,7 @@ pub fn score_codebase_full(
 }
 
 #[allow(clippy::cast_precision_loss)]
-fn compute_proof_depth(
-    contracts: &[(String, &Contract)],
-    bound_stems: &BTreeSet<&str>,
-) -> f64 {
+fn compute_proof_depth(contracts: &[(String, &Contract)], bound_stems: &BTreeSet<&str>) -> f64 {
     let mut total_obligations = 0usize;
     let mut weighted_sum = 0.0;
 
@@ -243,7 +240,11 @@ fn compute_gaps(
         }
     }
 
-    gaps.sort_by(|a, b| b.impact.partial_cmp(&a.impact).unwrap_or(std::cmp::Ordering::Equal));
+    gaps.sort_by(|a, b| {
+        b.impact
+            .partial_cmp(&a.impact)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     gaps.truncate(10);
     gaps
 }
@@ -274,9 +275,7 @@ fn dependency_fanout(
 }
 
 /// Count how many contracts depend on each stem.
-fn compute_reverse_dep_counts<'a>(
-    contracts: &'a [(String, &Contract)],
-) -> HashMap<&'a str, usize> {
+fn compute_reverse_dep_counts<'a>(contracts: &'a [(String, &Contract)]) -> HashMap<&'a str, usize> {
     let mut counts: HashMap<&str, usize> = HashMap::new();
     for (_, contract) in contracts {
         for dep in &contract.metadata.depends_on {
@@ -407,7 +406,10 @@ mod tests {
     fn dependency_fanout_fallback() {
         let rev_deps: HashMap<&str, usize> = HashMap::new();
         let f = super::dependency_fanout("unknown", None, &rev_deps);
-        assert!((f - 1.0).abs() < 1e-9, "Unknown contract should have fanout 1.0");
+        assert!(
+            (f - 1.0).abs() < 1e-9,
+            "Unknown contract should have fanout 1.0"
+        );
 
         let mut rev_deps2: HashMap<&str, usize> = HashMap::new();
         rev_deps2.insert("known", 5);

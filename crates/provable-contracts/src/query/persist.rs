@@ -21,10 +21,7 @@ pub struct PersistedIndex {
 ///
 /// If `contracts_dir` is `foo/contracts`, the `.pv` dir is `foo/.pv`.
 fn pv_dir(contracts_dir: &Path) -> PathBuf {
-    contracts_dir
-        .parent()
-        .unwrap_or(Path::new("."))
-        .join(".pv")
+    contracts_dir.parent().unwrap_or(Path::new(".")).join(".pv")
 }
 
 fn index_path(contracts_dir: &Path) -> PathBuf {
@@ -116,7 +113,10 @@ mod tests {
     fn dir_max_mtime_contracts() {
         let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
         let mtime = dir_max_mtime(&dir);
-        assert!(mtime.is_some(), "contracts/ should have YAML files with mtimes");
+        assert!(
+            mtime.is_some(),
+            "contracts/ should have YAML files with mtimes"
+        );
     }
 
     #[test]
@@ -188,7 +188,11 @@ mod tests {
 
         // Write a stale mtime (1 second in the past) to force staleness
         let mt = mtime_path(&contracts);
-        let current: u64 = std::fs::read_to_string(&mt).unwrap().trim().parse().unwrap();
+        let current: u64 = std::fs::read_to_string(&mt)
+            .unwrap()
+            .trim()
+            .parse()
+            .unwrap();
         std::fs::write(&mt, (current - 1).to_string()).unwrap();
 
         // Touch a file to ensure current mtime > stored

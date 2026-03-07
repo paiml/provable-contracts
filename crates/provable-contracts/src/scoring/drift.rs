@@ -116,8 +116,7 @@ mod tests {
 
     #[test]
     fn detect_stale_with_real_files() {
-        let contract_dir =
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
+        let contract_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
         let binding_path = contract_dir.join("aprender/binding.yaml");
 
         let mut bound = HashSet::new();
@@ -131,8 +130,7 @@ mod tests {
     #[test]
     fn detect_stale_no_git_binding() {
         // Binding path with no git history → early return, no stale contracts
-        let contract_dir =
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
+        let contract_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
         let mut bound = HashSet::new();
         bound.insert("softmax-kernel-v1.yaml");
         let stale = detect_stale_contracts(
@@ -146,8 +144,7 @@ mod tests {
     #[test]
     fn detect_stale_missing_contract_file() {
         // Bound stem that doesn't exist on disk → skip (continue branch)
-        let contract_dir =
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
+        let contract_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
         let binding_path = contract_dir.join("aprender/binding.yaml");
         let mut bound = HashSet::new();
         bound.insert("nonexistent-contract-v1.yaml");

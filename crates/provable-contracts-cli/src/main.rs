@@ -355,12 +355,36 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             format,
             exit_code,
         } => dispatch_query(
-            &contract_dir, &query, regex, literal, case_sensitive, limit,
-            &obligation, min_score, &min_level, &depends_on, &depended_by, unproven,
-            score, graph, paper, proof_status, binding_info, binding_gaps,
-            diff, pagerank, call_sites, violations, coverage_map,
-            &project, &include_project, all_projects, rebuild_index,
-            &binding, &format, exit_code,
+            &contract_dir,
+            &query,
+            regex,
+            literal,
+            case_sensitive,
+            limit,
+            &obligation,
+            min_score,
+            &min_level,
+            &depends_on,
+            &depended_by,
+            unproven,
+            score,
+            graph,
+            paper,
+            proof_status,
+            binding_info,
+            binding_gaps,
+            diff,
+            pagerank,
+            call_sites,
+            violations,
+            coverage_map,
+            &project,
+            &include_project,
+            all_projects,
+            rebuild_index,
+            &binding,
+            &format,
+            exit_code,
         ),
         Commands::Book {
             contract_dir,
@@ -376,7 +400,11 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
-#[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools, clippy::ref_option)]
+#[allow(
+    clippy::too_many_arguments,
+    clippy::fn_params_excessive_bools,
+    clippy::ref_option
+)]
 fn dispatch_query(
     contract_dir: &std::path::Path,
     query: &str,

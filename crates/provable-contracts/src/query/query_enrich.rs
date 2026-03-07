@@ -91,25 +91,29 @@ pub(super) fn build_coverage_map(
 
     // Count call sites per project
     for cs in xp.call_sites_for(stem) {
-        let entry = map.entry(cs.project.clone()).or_insert_with(|| ProjectCoverage {
-            project: cs.project.clone(),
-            call_sites: 0,
-            binding_refs: 0,
-            binding_implemented: 0,
-            binding_total: 0,
-        });
+        let entry = map
+            .entry(cs.project.clone())
+            .or_insert_with(|| ProjectCoverage {
+                project: cs.project.clone(),
+                call_sites: 0,
+                binding_refs: 0,
+                binding_implemented: 0,
+                binding_total: 0,
+            });
         entry.call_sites += 1;
     }
 
     // Count binding refs per project
     for br in xp.binding_refs_for(stem) {
-        let entry = map.entry(br.project.clone()).or_insert_with(|| ProjectCoverage {
-            project: br.project.clone(),
-            call_sites: 0,
-            binding_refs: 0,
-            binding_implemented: 0,
-            binding_total: 0,
-        });
+        let entry = map
+            .entry(br.project.clone())
+            .or_insert_with(|| ProjectCoverage {
+                project: br.project.clone(),
+                call_sites: 0,
+                binding_refs: 0,
+                binding_implemented: 0,
+                binding_total: 0,
+            });
         entry.binding_refs += 1;
         entry.binding_total += 1;
         if br.status == "implemented" {
@@ -123,9 +127,7 @@ pub(super) fn build_coverage_map(
 }
 
 #[allow(clippy::cast_possible_truncation)]
-pub(super) fn build_proof_status_info(
-    entry: &types::ContractEntry,
-) -> Option<ProofStatusInfo> {
+pub(super) fn build_proof_status_info(entry: &types::ContractEntry) -> Option<ProofStatusInfo> {
     let path = std::path::Path::new(&entry.path);
     let contract = crate::schema::parse_contract(path).ok()?;
     let level = crate::proof_status::compute_proof_level(&contract, None);

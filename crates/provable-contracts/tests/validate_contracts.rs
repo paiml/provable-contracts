@@ -2,7 +2,7 @@ use std::path::Path;
 
 use provable_contracts::error::Severity;
 use provable_contracts::graph::dependency_graph;
-use provable_contracts::schema::{parse_contract, validate_contract, Contract};
+use provable_contracts::schema::{Contract, parse_contract, validate_contract};
 
 fn contracts_dir() -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -192,7 +192,10 @@ fn check_falsification_ids(stem: &str, contract: &Contract, errors: &mut Vec<Str
     for (i, ft) in contract.falsification_tests.iter().enumerate() {
         let expected = format!("{prefix}-{:03}", i + 1);
         if ft.id != expected {
-            errors.push(format!("{stem}: test ID gap: expected {expected}, found {}", ft.id));
+            errors.push(format!(
+                "{stem}: test ID gap: expected {expected}, found {}",
+                ft.id
+            ));
             break;
         }
     }
@@ -209,7 +212,9 @@ fn check_pass_criteria(stem: &str, contract: &Contract, ft_count: usize, errors:
         .and_then(|s| s.parse::<usize>().ok());
     if let Some(n) = n {
         if n != ft_count {
-            errors.push(format!("{stem}: pass_criteria says {n} tests, actual {ft_count}"));
+            errors.push(format!(
+                "{stem}: pass_criteria says {n} tests, actual {ft_count}"
+            ));
         }
     }
 }

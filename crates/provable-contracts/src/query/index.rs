@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use crate::schema::{parse_contract, Contract};
+use crate::schema::{Contract, parse_contract};
 use crate::scoring;
 
 use super::persist::{self, PersistedIndex};
@@ -36,7 +36,10 @@ impl ContractIndex {
     }
 
     /// Build an index with option to force rebuild (skip cache).
-    pub fn from_directory_opts(dir: &Path, force_rebuild: bool) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn from_directory_opts(
+        dir: &Path,
+        force_rebuild: bool,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
         // Try loading cached index first (unless force rebuild)
         if !force_rebuild {
             if let Some(cached) = persist::load_cached(dir) {
@@ -303,10 +306,7 @@ fn build_entry(stem: String, path: String, contract: &Contract) -> ContractEntry
     let references = contract.metadata.references.clone();
     let depends_on = contract.metadata.depends_on.clone();
 
-    let mut corpus_parts = vec![
-        stem.clone(),
-        contract.metadata.description.clone(),
-    ];
+    let mut corpus_parts = vec![stem.clone(), contract.metadata.description.clone()];
     for (name, eq) in &contract.equations {
         corpus_parts.push(name.clone());
         corpus_parts.push(eq.formula.clone());

@@ -250,7 +250,11 @@ fn scan_contract_annotations(
 }
 
 /// Parse a grep output line into a `CallSite`.
-fn parse_contract_annotation(line: &str, project_name: &str, project_path: &Path) -> Option<CallSite> {
+fn parse_contract_annotation(
+    line: &str,
+    project_name: &str,
+    project_path: &Path,
+) -> Option<CallSite> {
     // grep output: /abs/path/file.rs:42:content
     let parts: Vec<&str> = line.splitn(3, ':').collect();
     if parts.len() < 3 {
@@ -305,10 +309,7 @@ fn extract_equation(content: &str) -> Option<String> {
 }
 
 /// Scan binding.yaml files for contract references.
-fn scan_binding_refs(
-    project: &ProjectEntry,
-    refs: &mut HashMap<String, Vec<BindingRef>>,
-) {
+fn scan_binding_refs(project: &ProjectEntry, refs: &mut HashMap<String, Vec<BindingRef>>) {
     let Some(binding_path) = &project.binding_path else {
         return;
     };
@@ -337,17 +338,19 @@ fn scan_binding_refs(
 }
 
 /// Scan .rs files for KAIZEN-NNN and C-UPPER-DIGITS patterns.
-fn scan_kaizen_refs(
-    project: &ProjectEntry,
-    refs: &mut HashMap<String, Vec<KaizenRef>>,
-) {
+fn scan_kaizen_refs(project: &ProjectEntry, refs: &mut HashMap<String, Vec<KaizenRef>>) {
     let src_dir = project.path.join("src");
     if !src_dir.exists() {
         return;
     }
 
     let output = std::process::Command::new("grep")
-        .args(["-rn", "-E", r"KAIZEN-[0-9]+|C-[A-Z]+-[0-9]+", "--include=*.rs"])
+        .args([
+            "-rn",
+            "-E",
+            r"KAIZEN-[0-9]+|C-[A-Z]+-[0-9]+",
+            "--include=*.rs",
+        ])
         .arg(&src_dir)
         .output();
 
@@ -405,9 +408,7 @@ fn extract_patterns(content: &str) -> Vec<String> {
     while let Some(idx) = rest.find("C-") {
         let after_c = &rest[idx + 2..];
         // Must match C-<UPPER>+-<DIGIT>+
-        let alpha_end = after_c
-            .find(|c: char| !c.is_ascii_uppercase())
-            .unwrap_or(0);
+        let alpha_end = after_c.find(|c: char| !c.is_ascii_uppercase()).unwrap_or(0);
         if alpha_end > 0 && after_c.get(alpha_end..=alpha_end) == Some("-") {
             let digit_start = alpha_end + 1;
             let digit_rest = &after_c[digit_start..];
@@ -428,10 +429,7 @@ fn extract_patterns(content: &str) -> Vec<String> {
 }
 
 /// Scan recent git commit messages for KAIZEN-NNN and C-UPPER-DIGITS patterns.
-fn scan_commit_refs(
-    project: &ProjectEntry,
-    refs: &mut HashMap<String, Vec<CommitRef>>,
-) {
+fn scan_commit_refs(project: &ProjectEntry, refs: &mut HashMap<String, Vec<CommitRef>>) {
     if !project.path.join(".git").exists() {
         return;
     }

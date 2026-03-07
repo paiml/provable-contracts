@@ -17,8 +17,8 @@ use provable_contracts::query::{self, ContractIndex, QueryParams};
 
 fn main() {
     let contracts_dir = Path::new("contracts");
-    let index = ContractIndex::from_directory(contracts_dir)
-        .expect("contracts/ directory must exist");
+    let index =
+        ContractIndex::from_directory(contracts_dir).expect("contracts/ directory must exist");
 
     // 1. Query with all cross-project enrichment
     println!("=== Cross-Project Query: \"softmax\" ===\n");
@@ -86,7 +86,7 @@ fn main() {
 
     // 6. Rebuild index from scratch (skip cache)
     println!("\n=== Rebuild Index ===\n");
-    let fresh_index = ContractIndex::from_directory_opts(contracts_dir, true)
-        .expect("rebuild should succeed");
+    let fresh_index =
+        ContractIndex::from_directory_opts(contracts_dir, true).expect("rebuild should succeed");
     println!("Rebuilt index with {} contracts", fresh_index.entries.len());
 }

@@ -11,9 +11,7 @@ pub mod drift;
 mod types;
 
 pub use codebase::{score_codebase, score_codebase_full, score_codebase_with_pagerank};
-pub use types::{
-    CodebaseScore, ContractScore, Grade, ScoringGap, ScoringWeights,
-};
+pub use types::{CodebaseScore, ContractScore, Grade, ScoringGap, ScoringWeights};
 
 use crate::binding::{BindingRegistry, ImplStatus};
 use crate::schema::{Contract, KaniHarness, KaniStrategy, LeanStatus};
@@ -75,10 +73,7 @@ fn compute_spec_depth(contract: &Contract) -> f64 {
     }
 
     // Has domains on equations (0.15)
-    let has_domains = contract
-        .equations
-        .values()
-        .any(|eq| eq.domain.is_some());
+    let has_domains = contract.equations.values().any(|eq| eq.domain.is_some());
     if has_domains {
         score += 0.15;
     }

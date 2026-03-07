@@ -87,8 +87,8 @@ bindings:
     // --- 7. Query the contract index ---
     let contracts_dir = Path::new("contracts");
     if contracts_dir.exists() {
-        let index = ContractIndex::from_directory(contracts_dir)
-            .expect("contracts/ directory must exist");
+        let index =
+            ContractIndex::from_directory(contracts_dir).expect("contracts/ directory must exist");
         let params = QueryParams {
             query: "softmax numerical stability".to_string(),
             show_score: true,

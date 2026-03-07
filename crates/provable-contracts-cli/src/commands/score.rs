@@ -5,8 +5,8 @@ use std::path::Path;
 use std::collections::HashSet;
 
 use provable_contracts::binding::BindingRegistry;
-use provable_contracts::schema::parse_contract;
 use provable_contracts::query::ContractIndex;
+use provable_contracts::schema::parse_contract;
 use provable_contracts::scoring;
 use provable_contracts::scoring::drift;
 use provable_contracts::scoring::{ContractScore, ScoringWeights};
@@ -34,7 +34,16 @@ pub fn run(
     };
 
     if path.is_dir() {
-        run_directory(path, binding_registry.as_ref(), binding, format, min_score, summary, top_gaps, &weights)
+        run_directory(
+            path,
+            binding_registry.as_ref(),
+            binding,
+            format,
+            min_score,
+            summary,
+            top_gaps,
+            &weights,
+        )
     } else {
         run_single(path, binding_registry.as_ref(), format, min_score, &weights)
     }
@@ -73,7 +82,11 @@ fn run_single(
     Ok(())
 }
 
-#[allow(clippy::too_many_arguments, clippy::too_many_lines, clippy::cast_precision_loss)]
+#[allow(
+    clippy::too_many_arguments,
+    clippy::too_many_lines,
+    clippy::cast_precision_loss
+)]
 fn run_directory(
     dir: &Path,
     binding: Option<&BindingRegistry>,
@@ -86,12 +99,7 @@ fn run_directory(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut entries: Vec<_> = std::fs::read_dir(dir)?
         .filter_map(Result::ok)
-        .filter(|e| {
-            e.path()
-                .extension()
-                .and_then(|x| x.to_str())
-                == Some("yaml")
-        })
+        .filter(|e| e.path().extension().and_then(|x| x.to_str()) == Some("yaml"))
         .collect();
     entries.sort_by_key(std::fs::DirEntry::path);
 
@@ -105,7 +113,9 @@ fn run_directory(
             .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("unknown");
-        scores.push(scoring::score_contract_weighted(&contract, binding, stem, weights));
+        scores.push(scoring::score_contract_weighted(
+            &contract, binding, stem, weights,
+        ));
     }
 
     let mean: f64 = if scores.is_empty() {
@@ -162,12 +172,7 @@ fn run_directory(
             drift::compute_drift(stale.len(), bound_stems.len())
         });
 
-        let codebase = scoring::score_codebase_full(
-            &refs,
-            binding,
-            pagerank.as_ref(),
-            drift_score,
-        );
+        let codebase = scoring::score_codebase_full(&refs, binding, pagerank.as_ref(), drift_score);
 
         match format {
             "json" => {
@@ -179,7 +184,10 @@ fn run_directory(
                 println!("| Dimension | Value |");
                 println!("|-----------|-------|");
                 println!("| Coverage | {:.0}% |", codebase.contract_coverage * 100.0);
-                println!("| Binding | {:.0}% |", codebase.binding_completeness * 100.0);
+                println!(
+                    "| Binding | {:.0}% |",
+                    codebase.binding_completeness * 100.0
+                );
                 println!("| Mean Score | {:.2} |", codebase.mean_contract_score);
                 println!("| Proof Depth | {:.2} |", codebase.proof_depth_dist);
                 println!("| Drift | {:.2} |", codebase.drift);
@@ -194,10 +202,7 @@ fn run_directory(
 
     if let Some(threshold) = min_score {
         if mean < threshold {
-            return Err(format!(
-                "Mean score {mean:.2} below threshold {threshold:.2}",
-            )
-            .into());
+            return Err(format!("Mean score {mean:.2} below threshold {threshold:.2}",).into());
         }
     }
 
@@ -227,9 +232,14 @@ fn print_directory_scores(
             for s in scores {
                 println!(
                     "| {} | {:.2} | {} | {:.2} | {:.2} | {:.2} | {:.2} | {:.2} |",
-                    s.stem, s.composite, s.grade,
-                    s.spec_depth, s.falsification_coverage,
-                    s.kani_coverage, s.lean_coverage, s.binding_coverage
+                    s.stem,
+                    s.composite,
+                    s.grade,
+                    s.spec_depth,
+                    s.falsification_coverage,
+                    s.kani_coverage,
+                    s.lean_coverage,
+                    s.binding_coverage
                 );
             }
             println!(
@@ -286,7 +296,11 @@ fn print_summary_only(
 
 fn print_top_gaps(scores: &[ContractScore], n: usize, format: &str) {
     let mut sorted: Vec<_> = scores.iter().collect();
-    sorted.sort_by(|a, b| a.composite.partial_cmp(&b.composite).unwrap_or(std::cmp::Ordering::Equal));
+    sorted.sort_by(|a, b| {
+        a.composite
+            .partial_cmp(&b.composite)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     let top: Vec<_> = sorted.into_iter().take(n).collect();
 
     match format {
@@ -309,8 +323,13 @@ fn print_top_gaps(scores: &[ContractScore], n: usize, format: &str) {
 fn score_to_markdown(score: &ContractScore) -> String {
     format!(
         "### {}\n\n- **Score:** {:.2} (Grade {})\n- Spec: {:.2} | Falsify: {:.2} | Kani: {:.2} | Lean: {:.2} | Bind: {:.2}\n",
-        score.stem, score.composite, score.grade,
-        score.spec_depth, score.falsification_coverage,
-        score.kani_coverage, score.lean_coverage, score.binding_coverage
+        score.stem,
+        score.composite,
+        score.grade,
+        score.spec_depth,
+        score.falsification_coverage,
+        score.kani_coverage,
+        score.lean_coverage,
+        score.binding_coverage
     )
 }

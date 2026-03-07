@@ -210,11 +210,11 @@ mod tests {
         let binding_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../contracts/aprender/binding.yaml");
         // WarnOnGaps policy doesn't panic on partial/not_implemented
-        let result = verify_bindings(
-            binding_path.to_str().unwrap(),
-            BindingPolicy::WarnOnGaps,
+        let result = verify_bindings(binding_path.to_str().unwrap(), BindingPolicy::WarnOnGaps);
+        assert!(
+            result.bound_count > 0,
+            "Should have some implemented bindings"
         );
-        assert!(result.bound_count > 0, "Should have some implemented bindings");
     }
 
     #[test]
