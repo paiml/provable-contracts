@@ -13,10 +13,10 @@ use std::time::Instant;
 use serde::Serialize;
 
 use crate::audit::audit_contract;
-use crate::binding::{parse_binding, BindingRegistry};
+use crate::binding::{BindingRegistry, parse_binding};
 use crate::error::Severity;
-use crate::schema::{parse_contract, validate_contract, Contract};
-use crate::scoring::{score_contract, ContractScore};
+use crate::schema::{Contract, parse_contract, validate_contract};
+use crate::scoring::{ContractScore, score_contract};
 
 /// Result of a single gate execution.
 #[derive(Debug, Clone, Serialize)]

@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use provable_contracts::lint::{run_lint, GateDetail, LintConfig, LintReport};
+use provable_contracts::lint::{GateDetail, LintConfig, LintReport, run_lint};
 
 pub fn run(
     contract_dir: &Path,
