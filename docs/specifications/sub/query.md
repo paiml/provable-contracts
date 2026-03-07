@@ -9,7 +9,7 @@
 `pv query` provides instant lookup across all contracts AND their
 consumer projects across the stack. Design goals:
 
-1. **Sub-second response** for 161+ contracts (O(1) via index)
+1. **Sub-second response** for 165+ contracts (O(1) via index)
 2. **Semantic search** — find contracts by intent, not exact name
 3. **Structured filters** — obligation type, proof level, score
 4. **Graph-aware** — dependency traversal
@@ -41,7 +41,7 @@ ContractIndex
 ### Why Not SQLite FTS5?
 
 `pmat query` indexes 42K+ functions and needs FTS5 for scale. Contract
-indexes have 161 entries. In-memory BM25 over a pre-computed corpus is
+indexes have 165 entries. In-memory BM25 over a pre-computed corpus is
 sufficient and avoids the SQLite dependency. If contract count exceeds
 ~1000, migrate to FTS5.
 
@@ -337,7 +337,7 @@ encoder-forward-v1          --        --      --        ████
 
 | Feature | `pmat query` | `pv query` |
 |---|---|---|
-| Index target | Functions (42K+) | Contracts (161+) + consumer projects |
+| Index target | Functions (42K+) | Contracts (165+) + consumer projects |
 | Index backend | SQLite FTS5 | In-memory BM25 |
 | Ranking | BM25 + PageRank | BM25 + dependency DAG |
 | Quality metric | TDG grade | Contract score (A-F) |

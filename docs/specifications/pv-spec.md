@@ -19,7 +19,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 2 | [The Verification Ladder](#2-the-verification-ladder) | — |
 | 3 | [Contract Schema](#3-contract-schema) | [sub/schema.md](sub/schema.md) |
 | 4 | [The Seven-Phase Pipeline](#4-the-seven-phase-pipeline) | [sub/pipeline.md](sub/pipeline.md) |
-| 5 | [CLI Reference (`pv`)](#5-cli-reference) | [sub/cli.md](sub/cli.md) |
+| 5 | [CLI Reference (`pv`)](#5-cli-reference) | [sub/cli.md](sub/cli.md), [sub/lint.md](sub/lint.md) |
 | 6 | [Library API](#6-library-api) | [sub/library.md](sub/library.md) |
 | 7 | [Scoring System (`pv score`)](#7-scoring-system) | [sub/scoring.md](sub/scoring.md) |
 | 8 | [Query Engine (`pv query`)](#8-query-engine) | [sub/query.md](sub/query.md) |
@@ -100,7 +100,7 @@ provable-contracts/
 |   |   +-- error.rs                Error types
 |   +-- provable-contracts-cli/     CLI binary (`pv`)
 |   +-- provable-contracts-macros/  Proc macro (#[contract])
-+-- contracts/                      YAML contract registry (161 contracts)
++-- contracts/                      YAML contract registry (165 contracts)
 +-- docs/specifications/            This spec
 ```
 
@@ -108,11 +108,11 @@ provable-contracts/
 
 | Metric | Value |
 |---|---|
-| YAML contracts | 162 |
-| Binding entries (aprender) | 301 (98.0% implemented) |
+| YAML contracts | 165 |
+| Binding entries (4 crates) | 442 (aprender 301, entrenar 96, realizar 23, trueno 22) |
 | Proof obligation types | 12 |
-| CLI commands | 17 (including score, query) |
-| Consuming projects | 1 Rust dep (aprender) + 3 YAML-only (entrenar, trueno, bashrs) |
+| CLI commands | 18 |
+| Consuming projects | 4 Level 3 (aprender, entrenar, realizar, trueno) + 1 YAML-only (bashrs) |
 | Stack LoC governed | ~900K Rust |
 
 ---
@@ -247,7 +247,7 @@ Kani verification strategies in **[sub/pipeline.md](sub/pipeline.md)**.
 
 ## 5. CLI Reference
 
-The `pv` binary provides 17 commands. Full reference with examples, flags, and output formats in
+The `pv` binary provides 18 commands. Full reference with examples, flags, and output formats in
 **[sub/cli.md](sub/cli.md)**.
 
 ### Command Summary
@@ -269,8 +269,9 @@ The `pv` binary provides 17 commands. Full reference with examples, flags, and o
 | `pv lean-status <dir>` | Lean proof status report |
 | `pv proof-status <dir>` | L1-L5 level report |
 | `pv book <dir>` | Generate mdBook pages |
-| **`pv score <target>`** | **Score contract or codebase [IMPLEMENTED]** |
-| **`pv query <terms>`** | **O(1) contract search [IMPLEMENTED]** |
+| `pv lint <dir>` | Quality gate: validate + audit + score + SARIF |
+| `pv score <target>` | Score contract or codebase (A-F grades) |
+| `pv query <terms>` | Semantic search with tier/class/graph filters |
 
 ---
 
@@ -364,7 +365,7 @@ and grade thresholds in **[sub/scoring.md](sub/scoring.md)**.
 
 ## 8. Query Engine
 
-`pv query` provides O(1) semantic search across all 162+ contracts
+`pv query` provides O(1) semantic search across all 165+ contracts
 AND their consumer projects. Inspired by `pmat query` from
 paiml-mcp-agent-toolkit. Full query architecture, index format, and
 enrichment flags in **[sub/query.md](sub/query.md)**.
@@ -378,7 +379,7 @@ Multi-index hybrid approach for sub-second lookups (modeled on
 |---|---|---|
 | Name index | `HashMap<stem, Vec<idx>>` | O(1) |
 | Equation index | `HashMap<eq_name, Vec<idx>>` | O(1) |
-| Full-text corpus | In-memory BM25 | O(n), n=161 |
+| Full-text corpus | In-memory BM25 | O(n), n=165 |
 | Dependency DAG | `BTreeMap<String, Vec<String>>` | O(1) |
 | Score cache [IMPLEMENTED] | `HashMap<stem, f64>` | O(1) |
 | **Cross-project index** | `HashMap<stem, Vec<ProjectRef>>` | O(1) |
@@ -463,7 +464,7 @@ const ALLOWED_GAPS: &[(&str, &str)] = &[
 
 ## 10. Kernel Contract Registry
 
-Full registry of all 161 contracts, organized by tier and kernel
+Full registry of all 165 contracts, organized by tier and kernel
 equivalence class, in **[sub/registry.md](sub/registry.md)**.
 
 ### Kernel Equivalence Classes
@@ -498,12 +499,13 @@ KAIZEN workflow in **[sub/integration.md](sub/integration.md)**.
 
 ### Consumer Projects
 
-| Project | Commits | LoC | Relationship |
+| Project | Bindings | Policy | Integration |
 |---|---|---|---|
-| aprender | 2,208 | ~585K | Cargo dep: 38 `#[contract]` annotations, 301 bindings |
-| trueno | 1,178 | ~318K | YAML-only: KAIZEN kernel contracts (7 in contracts/trueno/) |
-| entrenar | 820 | ~239K | YAML-only: KAIZEN perf contracts (37 in contracts/entrenar/) |
-| bashrs | 1,549 | ~719K | YAML-only: SSC encoder + classifier contracts |
+| aprender | 301 | AllImplemented | Level 3: `build.rs` + `#[contract]` proc macro |
+| entrenar | 96 | WarnOnGaps | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| realizar | 23 | WarnOnGaps | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| trueno | 22 | AllImplemented | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| bashrs | — | — | YAML-only: SSC encoder + classifier contracts |
 
 ### The KAIZEN Contract-First Workflow
 
@@ -556,3 +558,15 @@ Proven by 32+ KAIZEN tickets with measurable results:
 17. ProofWright (2025). "Agentic Formal Verification of CUDA." arXiv:2511.12294.
 18. Dagstuhl Seminar 26031 (2026). "Software Contracts Meet System Contracts."
 19. VerifyThisBench (2025). arXiv:2505.19271.
+
+### Quality Gates and Toolchain Integration
+
+20. OASIS (2020). *Static Analysis Results Interchange Format (SARIF) Version 2.1.0.*
+21. Feist, J. et al. (2024). "Integrating Static Code Analysis Toolchains." arXiv:2403.05986.
+22. Nachman, L. et al. (2025). "Dealing with SonarQube Cloud." arXiv:2508.18816.
+23. Yang, J. et al. (2025). "CodeCureAgent: Automatic Classification and Repair of Static Analysis Warnings." arXiv:2509.11787.
+24. Shestov, A. et al. (2025). "Augmenting LLMs with Static Code Analysis." arXiv:2506.10330.
+25. Molnar, A. & Motogna, S. (2024). "Versioned Analysis of Software Quality Indicators." arXiv:2407.15967.
+26. Singh, G. et al. (2022). "Interactive Abstract Interpretation." arXiv:2209.10445.
+27. Li, Y. et al. (2025). "Do Large Language Models Respect Contracts?" arXiv:2510.12047.
+28. Bruni, R. et al. (2026). "Agent Behavioral Contracts." arXiv:2602.22302.

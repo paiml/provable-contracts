@@ -17,7 +17,7 @@ contracts/
 +-- attention-kernel-v1.yaml       Tier 2 composite
 +-- matmul-kernel-v1.yaml          Tier 2 composite
 +-- flash-attention-v1.yaml        Tier 2 composite
-+-- ...                            (161 total)
++-- ...                            (165 total)
 +-- aprender/                      aprender-specific
 |   +-- binding.yaml               301 binding entries
 |   +-- tensor-layout-v1.yaml
@@ -186,8 +186,8 @@ pv coverage contracts/ --binding contracts/aprender/binding.yaml
 
 | Metric | Value |
 |---|---|
-| Total contracts | 162 |
-| Total binding entries | 301 |
+| Total contracts | 165 |
+| Total binding entries | 442 (aprender 301, entrenar 96, realizar 23, trueno 22) |
 | Implemented bindings | 295 (98.0%) |
 | Partial bindings | 0 |
 | Not implemented | 6 |

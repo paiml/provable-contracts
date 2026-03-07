@@ -137,9 +137,30 @@ enum Commands {
         /// Path to binding registry YAML
         #[arg(long)]
         binding: Option<PathBuf>,
-        /// Output format: text (default) or json
+        /// Output format: text, json, sarif, github
         #[arg(short, long, default_value = "text")]
         format: String,
+        /// Minimum severity to report: error, warning, info
+        #[arg(long)]
+        severity: Option<String>,
+        /// Promote warnings to errors
+        #[arg(long)]
+        strict: bool,
+        /// Suppress specific finding IDs (comma-separated)
+        #[arg(long)]
+        suppress: Option<String>,
+        /// Suppress all findings for a rule
+        #[arg(long)]
+        suppress_rule: Option<String>,
+        /// Suppress all findings in a file
+        #[arg(long)]
+        suppress_file: Option<String>,
+        /// Override rule severity (e.g. PV-AUD-001=info)
+        #[arg(long)]
+        rule: Vec<String>,
+        /// Path to .pv.toml config file
+        #[arg(long)]
+        config: Option<PathBuf>,
     },
     /// Score contracts or a codebase directory
     Score {
@@ -332,7 +353,26 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             min_score,
             binding,
             format,
-        } => commands::lint::run(&contract_dir, binding.as_deref(), min_score, &format),
+            severity,
+            strict,
+            suppress,
+            suppress_rule,
+            suppress_file,
+            rule,
+            config,
+        } => commands::lint::run(
+            &contract_dir,
+            binding.as_deref(),
+            min_score,
+            &format,
+            severity.as_deref(),
+            strict,
+            suppress.as_deref(),
+            suppress_rule.as_deref(),
+            suppress_file.as_deref(),
+            &rule,
+            config.as_deref(),
+        ),
         Commands::Score {
             path,
             binding,

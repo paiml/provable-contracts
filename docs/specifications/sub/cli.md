@@ -174,10 +174,45 @@ pv lint contracts/
 pv lint contracts/ --min-score 0.60
 pv lint contracts/ --binding contracts/aprender/binding.yaml --min-score 0.75
 pv lint contracts/ -f json
+pv lint contracts/ -f sarif                          # SARIF v2.1.0 output
+pv lint contracts/ --diff main                       # Only lint changed contracts
+pv lint contracts/ --baseline .pv/baseline.sarif     # Suppress known findings
+pv lint contracts/ --severity error                  # Only errors (no warnings)
+pv lint contracts/ --suppress SM-INV-001,KANI-SM-002 # Suppress specific findings
+pv lint contracts/ --suggest                         # Auto-fix suggestions
+pv lint contracts/ --watch                           # Re-lint on file change
+pv lint contracts/ --trend                           # Show quality trend
 ```
 
 Exit code 0 = all gates pass, 1 = any gate fails. See
-[scoring.md](scoring.md) Section 5 for full gate definitions.
+[scoring.md](scoring.md) Section 5 for full gate definitions. See
+[lint.md](lint.md) for the full quality-gate sub-spec including SARIF
+output, diff-aware mode, suppression, and CI integration patterns.
+
+#### Flags
+
+| Flag | Description |
+|---|---|
+| `--min-score <f64>` | Minimum acceptable composite score |
+| `--binding <path>` | Binding registry path |
+| `--exit-code` | Exit 1 on any gate failure |
+| `-f, --format <fmt>` | Output: text, json, markdown, **sarif**, **github** |
+| `--diff <base_ref>` | Only lint contracts changed since base ref |
+| `--baseline <sarif>` | Suppress findings present in baseline SARIF |
+| `--severity <level>` | Minimum severity: error, warning, info |
+| `--strict` | Promote warnings to errors |
+| `--suppress <ids>` | Suppress specific finding IDs (comma-separated) |
+| `--suppress-rule <rule>` | Suppress all findings for a rule |
+| `--suppress-file <path>` | Suppress all findings in a file |
+| `--suggest` | Show auto-fix suggestions (dry run) |
+| `--fix` | Apply deterministic auto-fixes |
+| `--watch` | Re-lint on file change (inotify) |
+| `--trend` | Record snapshot to `.pv/trend/` |
+| `--trend --show` | Display quality trend history |
+| `--no-cache` | Bypass lint cache |
+| `--cache-stats` | Show cache hit/miss statistics |
+| `--config <path>` | Path to `.pv.toml` config file |
+| `--rule <id>=<level>` | Override rule severity for this run |
 
 ### pv book
 
