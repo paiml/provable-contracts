@@ -44,16 +44,19 @@ impl LintFinding {
         }
     }
 
+    #[must_use]
     pub fn with_line(mut self, line: u32) -> Self {
         self.line = Some(line);
         self
     }
 
+    #[must_use]
     pub fn with_stem(mut self, stem: impl Into<String>) -> Self {
         self.contract_stem = Some(stem.into());
         self
     }
 
+    #[must_use]
     pub fn suppress(mut self, reason: impl Into<String>) -> Self {
         self.suppressed = true;
         self.suppression_reason = Some(reason.into());
@@ -77,7 +80,7 @@ impl LintFinding {
         )
     }
 
-    /// Fingerprint for baseline matching: (rule_id, file, message hash).
+    /// Fingerprint for baseline matching: (`rule_id`, file, message hash).
     pub fn fingerprint(&self) -> String {
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};

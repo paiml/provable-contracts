@@ -185,12 +185,12 @@ pub fn find_config(start: &Path) -> Option<PathBuf> {
 pub fn load_config(path: &Path) -> Result<PvConfig, String> {
     let content =
         std::fs::read_to_string(path).map_err(|e| format!("Failed to read {}: {e}", path.display()))?;
-    toml_parse(&content)
+    Ok(toml_parse(&content))
 }
 
-/// Parse TOML string into config. Avoids adding `toml` as a dependency
+/// Parse TOML string into `PvConfig`. Avoids adding `toml` as a dependency
 /// by parsing the subset we need manually.
-fn toml_parse(content: &str) -> Result<PvConfig, String> {
+fn toml_parse(content: &str) -> PvConfig {
     // We parse a deliberately limited TOML subset.
     // Keys we recognise: [lint], [lint.rules], [lint.suppress], [output]
     let mut config = PvConfig::default();
@@ -212,7 +212,7 @@ fn toml_parse(content: &str) -> Result<PvConfig, String> {
         }
     }
 
-    Ok(config)
+    config
 }
 
 fn parse_kv(line: &str) -> Option<(String, String)> {
@@ -286,7 +286,7 @@ mod tests {
 
     #[test]
     fn parse_empty_config() {
-        let config = toml_parse("").unwrap();
+        let config = toml_parse("");
         assert!(config.lint.min_score.is_none());
         assert!(!config.lint.strict);
     }
@@ -301,7 +301,7 @@ strict = true
 contracts_dir = "contracts/"
 binding = "contracts/aprender/binding.yaml"
 "#;
-        let config = toml_parse(toml).unwrap();
+        let config = toml_parse(toml);
         assert_eq!(config.lint.min_score, Some(0.60));
         assert_eq!(config.lint.severity.as_deref(), Some("warning"));
         assert!(config.lint.strict);
@@ -317,7 +317,7 @@ PV-VAL-001 = "error"
 PV-AUD-001 = "info"
 PV-SCR-001 = "warning"
 "#;
-        let config = toml_parse(toml).unwrap();
+        let config = toml_parse(toml);
         assert_eq!(config.lint.rules.get("PV-VAL-001").unwrap(), "error");
         assert_eq!(config.lint.rules.get("PV-AUD-001").unwrap(), "info");
     }
@@ -330,7 +330,7 @@ findings = ["SM-INV-001", "KANI-SM-002"]
 rules = ["PV-AUD-002"]
 files = ["contracts/arch-constraints-v1.yaml"]
 "#;
-        let config = toml_parse(toml).unwrap();
+        let config = toml_parse(toml);
         assert_eq!(config.lint.suppress.findings.len(), 2);
         assert_eq!(config.lint.suppress.rules, vec!["PV-AUD-002"]);
         assert_eq!(config.lint.suppress.files.len(), 1);
@@ -343,7 +343,7 @@ files = ["contracts/arch-constraints-v1.yaml"]
 format = "sarif"
 color = "auto"
 "#;
-        let config = toml_parse(toml).unwrap();
+        let config = toml_parse(toml);
         assert_eq!(config.output.format.as_deref(), Some("sarif"));
         assert_eq!(config.output.color.as_deref(), Some("auto"));
     }
@@ -358,7 +358,7 @@ color = "auto"
 min_score = 0.75
 
 "#;
-        let config = toml_parse(toml).unwrap();
+        let config = toml_parse(toml);
         assert_eq!(config.lint.min_score, Some(0.75));
     }
 

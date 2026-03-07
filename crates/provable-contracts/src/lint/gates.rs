@@ -215,7 +215,6 @@ fn map_validation_rule(rule: &str) -> String {
     match rule {
         "PROVABILITY-001" => "PV-PRV-001".into(),
         r if r.starts_with("SCHEMA-") => match r {
-            "SCHEMA-001" | "SCHEMA-002" | "SCHEMA-003" => "PV-VAL-001".into(),
             "SCHEMA-004" => "PV-VAL-004".into(),
             "SCHEMA-005" => "PV-VAL-005".into(),
             "SCHEMA-006" => "PV-VAL-006".into(),

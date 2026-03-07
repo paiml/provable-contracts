@@ -2,7 +2,7 @@
 //!
 //! Uses `git diff --name-only <base_ref>..HEAD -- contracts/` to find
 //! changed YAML files, then expands to include transitive dependents
-//! (contracts that depend_on any changed contract).
+//! (contracts that `depend_on` any changed contract).
 //!
 //! Spec: `docs/specifications/sub/lint.md` Section 3
 
@@ -18,7 +18,7 @@ pub fn changed_contracts(
 
     let output = Command::new("git")
         .args(["diff", "--name-only", &format!("{base_ref}..HEAD"), "--", "contracts/"])
-        .current_dir(&repo_root)
+        .current_dir(repo_root)
         .output()
         .map_err(|e| format!("Failed to run git diff: {e}"))?;
 
@@ -30,12 +30,16 @@ pub fn changed_contracts(
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stems: Vec<String> = stdout
         .lines()
-        .filter(|line| line.ends_with(".yaml"))
+        .filter(|line| {
+            Path::new(line)
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("yaml"))
+        })
         .filter_map(|line| {
-            let path = std::path::Path::new(line);
-            path.file_stem()
+            Path::new(line)
+                .file_stem()
                 .and_then(|s| s.to_str())
-                .map(|s| s.to_string())
+                .map(ToString::to_string)
         })
         .collect();
 
