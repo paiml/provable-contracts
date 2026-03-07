@@ -175,3 +175,168 @@ fn dispatch_score_custom_weights() {
     });
     assert!(result.is_ok());
 }
+
+#[test]
+fn dispatch_score_markdown() {
+    let result = run_command(Commands::Score {
+        path: test_contract(),
+        binding: None,
+        format: "markdown".to_string(),
+        min_score: None,
+        summary: false,
+        top_gaps: 0,
+        weights: None,
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_score_directory_markdown() {
+    let result = run_command(Commands::Score {
+        path: contracts_dir(),
+        binding: None,
+        format: "markdown".to_string(),
+        min_score: None,
+        summary: false,
+        top_gaps: 3,
+        weights: None,
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_score_summary() {
+    let result = run_command(Commands::Score {
+        path: contracts_dir(),
+        binding: None,
+        format: "text".to_string(),
+        min_score: None,
+        summary: true,
+        top_gaps: 0,
+        weights: None,
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_score_summary_json() {
+    let result = run_command(Commands::Score {
+        path: contracts_dir(),
+        binding: None,
+        format: "json".to_string(),
+        min_score: None,
+        summary: true,
+        top_gaps: 0,
+        weights: None,
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_score_summary_markdown() {
+    let result = run_command(Commands::Score {
+        path: contracts_dir(),
+        binding: None,
+        format: "markdown".to_string(),
+        min_score: None,
+        summary: true,
+        top_gaps: 0,
+        weights: None,
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_score_with_binding() {
+    let binding =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts/aprender/binding.yaml");
+    let result = run_command(Commands::Score {
+        path: contracts_dir(),
+        binding: Some(binding),
+        format: "text".to_string(),
+        min_score: None,
+        summary: false,
+        top_gaps: 3,
+        weights: None,
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_score_with_binding_json() {
+    let binding =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts/aprender/binding.yaml");
+    let result = run_command(Commands::Score {
+        path: contracts_dir(),
+        binding: Some(binding),
+        format: "json".to_string(),
+        min_score: None,
+        summary: false,
+        top_gaps: 0,
+        weights: None,
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_score_with_binding_markdown() {
+    let binding =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts/aprender/binding.yaml");
+    let result = run_command(Commands::Score {
+        path: contracts_dir(),
+        binding: Some(binding),
+        format: "markdown".to_string(),
+        min_score: None,
+        summary: false,
+        top_gaps: 0,
+        weights: None,
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_score_directory_threshold_fails() {
+    let result = run_command(Commands::Score {
+        path: contracts_dir(),
+        binding: None,
+        format: "text".to_string(),
+        min_score: Some(0.99),
+        summary: false,
+        top_gaps: 0,
+        weights: None,
+    });
+    assert!(result.is_err());
+}
+
+#[test]
+fn dispatch_book() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let result = run_command(Commands::Book {
+        contract_dir: contracts_dir(),
+        output: dir.path().to_path_buf(),
+        update_summary: false,
+        summary_path: None,
+    });
+    assert!(result.is_ok());
+    assert!(dir.path().join("softmax-kernel-v1.md").exists());
+}
+
+#[test]
+fn dispatch_lean_with_output_dir() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let result = run_command(Commands::Lean {
+        contract: test_contract(),
+        output_dir: Some(dir.path().to_path_buf()),
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_proof_status_markdown() {
+    let result = run_command(Commands::ProofStatus {
+        path: contracts_dir(),
+        binding: None,
+        format: "markdown".to_string(),
+    });
+    assert!(result.is_ok());
+}
