@@ -22,7 +22,7 @@ pub struct CacheEntry {
 }
 
 /// Cache statistics.
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct CacheStats {
     pub total: usize,
     pub hits: usize,

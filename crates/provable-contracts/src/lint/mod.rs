@@ -74,6 +74,8 @@ pub struct LintReport {
     pub total_duration_ms: u64,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub findings: Vec<LintFinding>,
+    #[serde(skip)]
+    pub cache_stats: cache::CacheStats,
 }
 
 /// Configuration for `pv lint`.
@@ -87,6 +89,8 @@ pub struct LintConfig<'a> {
     pub suppressed_rules: Vec<String>,
     pub suppressed_files: Vec<String>,
     pub strict: bool,
+    pub no_cache: bool,
+    pub cache_stats: bool,
 }
 
 impl<'a> LintConfig<'a> {
@@ -102,6 +106,8 @@ impl<'a> LintConfig<'a> {
             suppressed_rules: Vec::new(),
             suppressed_files: Vec::new(),
             strict: false,
+            no_cache: false,
+            cache_stats: false,
         }
     }
 }
@@ -111,6 +117,13 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
     let overall_start = Instant::now();
     let mut gates = Vec::with_capacity(3);
     let mut all_findings = Vec::new();
+    let mut stats = cache::CacheStats::default();
+
+    let cache_root = if config.no_cache {
+        None
+    } else {
+        Some(cache::cache_dir(config.contract_dir))
+    };
 
     let contracts = load_contracts(config.contract_dir);
     let binding = load_binding(config.binding_path);
@@ -141,6 +154,28 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
 
     all_findings.append(&mut validate_findings);
 
+    // Cache: store findings per-contract for future runs
+    if let Some(ref root) = cache_root {
+        let rule_cfg = format!("{:?}{:?}", config.severity_overrides, config.strict);
+        for (stem, _) in &contracts {
+            stats.total += 1;
+            let yaml_path = config.contract_dir.join(format!("{stem}.yaml"));
+            let yaml_content = std::fs::read_to_string(&yaml_path).unwrap_or_default();
+            let hash = cache::content_hash(&yaml_content, &rule_cfg);
+            if cache::cache_get(root, &hash).is_some() {
+                stats.hits += 1;
+            } else {
+                stats.misses += 1;
+                let contract_findings: Vec<_> = all_findings
+                    .iter()
+                    .filter(|f| f.contract_stem.as_deref() == Some(stem.as_str()))
+                    .cloned()
+                    .collect();
+                let _ = cache::cache_put(root, &hash, &contract_findings);
+            }
+        }
+    }
+
     // Apply suppressions, severity overrides, strict mode, and severity filter
     apply_suppressions(&mut all_findings, config);
     apply_severity_overrides(&mut all_findings, config);
@@ -156,6 +191,7 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
         total_duration_ms: u64::try_from(overall_start.elapsed().as_millis())
             .unwrap_or(u64::MAX),
         findings: all_findings,
+        cache_stats: stats,
     }
 }
 
@@ -315,5 +351,44 @@ mod tests {
         assert_eq!(g.name, "test");
         assert!(!g.passed);
         assert!(g.skipped);
+    }
+
+    #[test]
+    fn lint_cache_populates_stats() {
+        let dir = contracts_dir();
+        let config = LintConfig::new(&dir, None, 0.0);
+        let report = run_lint(&config);
+        // Default config has cache enabled, so stats should be populated
+        assert!(report.cache_stats.total > 0);
+        assert_eq!(
+            report.cache_stats.total,
+            report.cache_stats.hits + report.cache_stats.misses
+        );
+    }
+
+    #[test]
+    fn lint_no_cache_skips_stats() {
+        let dir = contracts_dir();
+        let mut config = LintConfig::new(&dir, None, 0.0);
+        config.no_cache = true;
+        let report = run_lint(&config);
+        assert_eq!(report.cache_stats.total, 0);
+    }
+
+    #[test]
+    fn lint_cache_second_run_hits() {
+        let tmp = tempfile::tempdir().unwrap();
+        let tmp_dir = tmp.path().join("contracts");
+        std::fs::create_dir_all(&tmp_dir).unwrap();
+        // Copy one contract for a small test
+        let src = contracts_dir().join("softmax-kernel-v1.yaml");
+        std::fs::copy(&src, tmp_dir.join("softmax-kernel-v1.yaml")).unwrap();
+
+        let config = LintConfig::new(&tmp_dir, None, 0.0);
+        let r1 = run_lint(&config);
+        assert!(r1.cache_stats.misses > 0);
+
+        let r2 = run_lint(&config);
+        assert!(r2.cache_stats.hits > 0);
     }
 }

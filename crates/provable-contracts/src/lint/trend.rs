@@ -219,6 +219,7 @@ mod tests {
             gates: vec![],
             total_duration_ms: 10,
             findings: vec![],
+            cache_stats: Default::default(),
         };
         let path = record_snapshot(&trend, &report, 107).unwrap();
         assert!(path.exists());

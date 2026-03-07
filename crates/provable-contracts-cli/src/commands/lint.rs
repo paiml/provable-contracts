@@ -23,95 +23,113 @@ pub fn run(
     diff_ref: Option<&str>,
     do_trend: bool,
     show_trend: bool,
-    _no_cache: bool,
-    _cache_stats: bool,
+    no_cache: bool,
+    cache_stats: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    // Show trend history (no lint run needed)
     if show_trend {
-        let trend_root = trend::trend_dir(contract_dir);
-        let snapshots = trend::load_snapshots(&trend_root);
-        if snapshots.is_empty() {
-            println!("No trend data. Run `pv lint --trend` to record snapshots.");
-        } else {
-            println!("{}", trend::format_trend(&snapshots, 30));
-        }
+        show_trend_history(contract_dir);
         return Ok(());
     }
 
-    // Diff-aware: report changed contracts
     if let Some(base) = diff_ref {
-        match provable_contracts::lint::diff::changed_contracts(contract_dir, base) {
-            Ok(changed) if changed.is_empty() => {
-                println!("No contracts changed since {base}. Nothing to lint.");
-                return Ok(());
-            }
-            Ok(changed) => {
-                println!(
-                    "Diff-aware: {} contracts changed since {base}",
-                    changed.len()
-                );
-                for stem in &changed {
-                    println!("  {stem}");
-                }
-                println!();
-            }
-            Err(e) => {
-                eprintln!("Warning: diff-aware mode failed ({e}), linting all contracts");
-            }
+        if let Some(result) = run_diff_check(contract_dir, base) {
+            return result;
         }
     }
 
     let config = build_config(
-        contract_dir,
-        binding_path,
-        min_score,
-        format,
-        severity,
-        strict,
-        suppress,
-        suppress_rule,
-        suppress_file,
-        rule_overrides,
-        config_path,
+        contract_dir, binding_path, min_score, format, severity, strict,
+        suppress, suppress_rule, suppress_file, rule_overrides, config_path,
+        no_cache, cache_stats,
     );
 
     let report = run_lint(&config);
 
-    // Record trend snapshot
+    if cache_stats {
+        print_cache_stats(&report);
+    }
     if do_trend {
-        let trend_root = trend::trend_dir(contract_dir);
-        let contracts_count = count_contracts(&report);
-        match trend::record_snapshot(&trend_root, &report, contracts_count) {
-            Ok(path) => eprintln!("Trend snapshot saved: {}", path.display()),
-            Err(e) => eprintln!("Warning: failed to save trend snapshot: {e}"),
-        }
-
-        // Check for drift
-        let snapshots = trend::load_snapshots(&trend_root);
-        if let Some(drop) = trend::detect_drift(&snapshots, 0.05) {
-            eprintln!("Warning: quality drift detected (score dropped {drop:.3})");
-        }
+        record_trend(contract_dir, &report);
     }
 
     let effective_format = resolve_format(format, config_path, contract_dir);
-    match effective_format.as_str() {
-        "json" => print_json(&report)?,
-        "sarif" => print_sarif(&report),
-        "github" => print_github(&report),
-        _ => print_text(&report),
-    }
+    print_report(&effective_format, &report)?;
 
     if report.passed {
         Ok(())
     } else {
         let passed_count = report.gates.iter().filter(|g| g.passed).count();
-        Err(format!(
-            "lint failed ({}/{} gates passed)",
-            passed_count,
-            report.gates.len()
-        )
-        .into())
+        Err(format!("lint failed ({}/{} gates passed)", passed_count, report.gates.len()).into())
     }
+}
+
+fn show_trend_history(contract_dir: &Path) {
+    let trend_root = trend::trend_dir(contract_dir);
+    let snapshots = trend::load_snapshots(&trend_root);
+    if snapshots.is_empty() {
+        println!("No trend data. Run `pv lint --trend` to record snapshots.");
+    } else {
+        println!("{}", trend::format_trend(&snapshots, 30));
+    }
+}
+
+/// Returns `Some(Ok(()))` to short-circuit when no contracts changed,
+/// or `None` to continue with full lint.
+fn run_diff_check(
+    contract_dir: &Path,
+    base: &str,
+) -> Option<Result<(), Box<dyn std::error::Error>>> {
+    match provable_contracts::lint::diff::changed_contracts(contract_dir, base) {
+        Ok(changed) if changed.is_empty() => {
+            println!("No contracts changed since {base}. Nothing to lint.");
+            Some(Ok(()))
+        }
+        Ok(changed) => {
+            println!("Diff-aware: {} contracts changed since {base}", changed.len());
+            for stem in &changed {
+                println!("  {stem}");
+            }
+            println!();
+            None
+        }
+        Err(e) => {
+            eprintln!("Warning: diff-aware mode failed ({e}), linting all contracts");
+            None
+        }
+    }
+}
+
+fn print_cache_stats(report: &LintReport) {
+    eprintln!(
+        "Cache: {} total, {} hits, {} misses ({:.0}% hit rate)",
+        report.cache_stats.total,
+        report.cache_stats.hits,
+        report.cache_stats.misses,
+        report.cache_stats.hit_rate() * 100.0,
+    );
+}
+
+fn record_trend(contract_dir: &Path, report: &LintReport) {
+    let trend_root = trend::trend_dir(contract_dir);
+    let contracts_count = count_contracts(report);
+    match trend::record_snapshot(&trend_root, report, contracts_count) {
+        Ok(path) => eprintln!("Trend snapshot saved: {}", path.display()),
+        Err(e) => eprintln!("Warning: failed to save trend snapshot: {e}"),
+    }
+    let snapshots = trend::load_snapshots(&trend_root);
+    if let Some(drop) = trend::detect_drift(&snapshots, 0.05) {
+        eprintln!("Warning: quality drift detected (score dropped {drop:.3})");
+    }
+}
+
+fn print_report(format: &str, report: &LintReport) -> Result<(), Box<dyn std::error::Error>> {
+    match format {
+        "json" => print_json(report)?,
+        "sarif" => print_sarif(report),
+        "github" => print_github(report),
+        _ => print_text(report),
+    }
+    Ok(())
 }
 
 fn count_contracts(report: &LintReport) -> usize {
@@ -140,7 +158,7 @@ fn resolve_format(format: &str, config_path: Option<&Path>, contract_dir: &Path)
         .unwrap_or_else(|| "text".into())
 }
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
 fn build_config<'a>(
     contract_dir: &'a Path,
     binding_path: Option<&'a Path>,
@@ -153,6 +171,8 @@ fn build_config<'a>(
     suppress_file: Option<&str>,
     rule_overrides: &[String],
     config_path: Option<&Path>,
+    no_cache: bool,
+    cache_stats: bool,
 ) -> LintConfig<'a> {
     let pv_config = config_path
         .and_then(|cp| load_config(cp).ok())
@@ -208,6 +228,8 @@ fn build_config<'a>(
         suppressed_rules,
         suppressed_files,
         strict: effective_strict,
+        no_cache,
+        cache_stats,
     }
 }
 
