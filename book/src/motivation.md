@@ -15,7 +15,7 @@ violated or which paper assumption was broken.
 
 ## Evidence from Production
 
-Four contracts already exist in aprender, each born from a production incident:
+The earliest contracts were born from production incidents in aprender:
 
 | Contract | Root Cause | Incident |
 |----------|-----------|----------|

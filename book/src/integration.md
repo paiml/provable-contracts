@@ -2,15 +2,55 @@
 
 ## Consumer Projects
 
-| Project | Consumes | Role |
-|---------|----------|------|
-| **trueno** | Tier 1 contracts | SIMD kernel implementations |
-| **aprender** | All contracts | ML algorithm layer |
-| **realizar** | Tier 2-3 contracts | GPU inference engine |
-| **certeza** | QA gates from all contracts | Quality enforcement |
-| **probar** | Proof obligations from all contracts | Property-based testing (Level 3) |
-| **Kani** | Proof obligations from all contracts | Bounded model checking (Level 4) |
-| **pmat** | Contract metadata | Code quality annotations |
+| Project | Consumes | Role | Integration Level |
+|---------|----------|------|-------------------|
+| **aprender** | All contracts | ML algorithm layer | Level 3 (compile-time) |
+| **entrenar** | Training contracts | Training & optimization | Level 3 (compile-time) |
+| **realizar** | Tier 2-3 contracts | GPU inference engine | Level 3 (compile-time) |
+| **trueno** | Tier 1 contracts | SIMD kernel implementations | Level 3 (compile-time) |
+| **certeza** | QA gates from all contracts | Quality enforcement | Level 1 (binding) |
+| **probar** | Proof obligations from all contracts | Property-based testing | Level 2 (wired tests) |
+| **Kani** | Proof obligations from all contracts | Bounded model checking | Level 4 (Kani proofs) |
+| **pmat** | Contract metadata | Code quality annotations | Level 0 (YAML-only) |
+
+## Compile-Time Enforcement (Level 3)
+
+All four primary consumer crates enforce contract bindings at compile
+time via `build.rs`. Each crate's build script reads its binding
+registry from `../provable-contracts/contracts/<crate>/binding.yaml`
+and emits `CONTRACT_*` environment variables consumed by the
+`#[contract]` proc macro.
+
+| Crate | Policy | Bindings | Coverage |
+|-------|--------|----------|----------|
+| **aprender** | AllImplemented | 301 | 100% |
+| **entrenar** | WarnOnGaps | 96 | 84% |
+| **realizar** | WarnOnGaps | 23 | 100% |
+| **trueno** | AllImplemented | 22 | 100% |
+
+**AllImplemented** — Build fails if any binding has status
+`not_implemented` or `partial`. Used by crates with complete coverage.
+
+**WarnOnGaps** — Emits `cargo:warning` for gaps but does not fail
+the build. Used by crates with known gaps tracked via GitHub issues.
+
+### Environment Variable Convention
+
+```
+CONTRACT_<CONTRACT_STEM>_<EQUATION>=<status>
+```
+
+Example: `CONTRACT_SOFTMAX_KERNEL_V1_SOFTMAX=implemented`
+
+### Build Dependencies
+
+Each downstream crate adds to `Cargo.toml`:
+
+```toml
+[build-dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_yaml_ng = "0.10"
+```
 
 ## Batuta Integration
 
@@ -42,8 +82,8 @@ pv status contracts/
 
 ## Library Integration (Rust API)
 
-Consumer crates (trueno, aprender, realizar) add provable-contracts as a
-dev-dependency for contract-driven testing:
+Consumer crates (aprender, entrenar, realizar, trueno) add
+provable-contracts as a dev-dependency for contract-driven testing:
 
 ```toml
 [dev-dependencies]

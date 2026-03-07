@@ -32,7 +32,7 @@ Level   Method                  Tool            What it proves
 | Obligation Type | Level 1 (Types) | Level 3 (probar) | Level 4 (Kani) | Level 5 (Lean) |
 |----------------|-----------------|-------------------|-----------------|----------------|
 | Shape correctness | `ValidatedTensor` newtype | N/A (compile-time) | N/A (compile-time) | N/A |
-| Softmax sums to 1 | N/A | proptest random vectors | `#[kani::proof]` all vectors <= 16 | `sorry` (pending) |
+| Softmax sums to 1 | N/A | proptest random vectors | `#[kani::proof]` all vectors <= 16 | `partition_of_unity` (proved) |
 | SIMD = scalar | N/A | proptest random data | `#[kani::proof]` all data <= 256 | N/A (empirical) |
 | No overflow | N/A | proptest edge cases | Kani automatic (checks ALL paths) | N/A |
 | Quantized bsums correct | N/A | proptest random blocks | `#[kani::proof]` all blocks (integer-exact) | N/A |

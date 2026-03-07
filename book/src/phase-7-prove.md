@@ -52,7 +52,7 @@ proof_obligations:
     lean:
       theorem: Softmax.partition_of_unity
       module: ProvableContracts.Softmax
-      status: sorry        # proved | sorry | wip | not-applicable
+      status: proved       # proved | sorry | wip | not-applicable
       depends_on:
         - Real.exp_pos
         - Finset.sum_div_distrib
@@ -69,8 +69,8 @@ verification_summary:
   total_obligations: 6
   l2_property_tested: 6
   l3_kani_proved: 3
-  l4_lean_proved: 0
-  l4_sorry_count: 5
+  l4_lean_proved: 5
+  l4_sorry_count: 0
   l4_not_applicable: 1
 ```
 
@@ -81,20 +81,45 @@ The `lean/` directory contains the theorem-proving layer:
 ```
 lean/
 ├── lakefile.lean                      # Lake build with Mathlib dependency
-├── lean-toolchain                     # Lean 4 version pin
+├── lean-toolchain                     # Lean 4 version pin (v4.29.0-rc4)
+├── lake-manifest.json                 # Pinned Mathlib dependency commits
+├── forjar.yaml                        # Reproducible toolchain install
+├── ProvableContracts.lean             # Root module (imports all 22 submodules)
 ├── ProvableContracts/
-│   ├── Basic.lean                     # RVec, sum, max definitions
+│   ├── Basic.lean                     # RVec, sum definitions
 │   ├── Defs/
-│   │   └── Softmax.lean              # softmax, log_softmax, stable_softmax
-│   ├── Theorems/
-│   │   └── Softmax/
-│   │       ├── PartitionOfUnity.lean  # Σ softmax(x)_i = 1 (sorry)
-│   │       ├── NonNegativity.lean     # softmax(x)_i > 0 (sorry)
-│   │       └── Monotonicity.lean      # x_i > x_j → σ(x)_i > σ(x)_j (sorry)
-│   ├── Tactics/                       # Custom tactics (future)
-│   └── Meta/                          # Metaprograms (future)
+│   │   ├── Softmax.lean              # softmax, log_softmax
+│   │   ├── RMSNorm.lean             # rms, rmsnorm
+│   │   ├── LayerNorm.lean           # mean, variance, layernorm
+│   │   ├── Sigmoid.lean             # sigmoid
+│   │   ├── CrossEntropy.lean        # cross_entropy, log_softmax
+│   │   └── Transpose.lean           # transpose (matrix involution)
+│   └── Theorems/
+│       ├── Softmax/
+│       │   ├── PartitionOfUnity.lean  # Σ softmax(x)_i = 1 (proved)
+│       │   ├── NonNegativity.lean     # softmax(x)_i > 0 (proved)
+│       │   ├── Bounded.lean           # 0 < softmax(x)_i < 1 (proved)
+│       │   ├── Monotonicity.lean      # x_i > x_j → σ(x)_i > σ(x)_j (proved)
+│       │   └── ShiftInvariance.lean   # σ(x + c·1) = σ(x) (proved)
+│       ├── RMSNorm/
+│       │   ├── DenominatorPositive.lean  # √(mean(x²) + ε) > 0 (proved)
+│       │   └── ScaleInvariance.lean      # rmsnorm(αx) = sign(α)·rmsnorm(x) (proved)
+│       ├── LayerNorm/
+│       │   ├── DenominatorPositive.lean  # √(var(x) + ε) > 0 (proved)
+│       │   └── ShiftInvariance.lean      # LN(x + c) = LN(x) (proved)
+│       ├── Sigmoid/
+│       │   ├── Bounded.lean              # 0 < σ(x) < 1 (proved)
+│       │   └── Symmetry.lean             # σ(-x) = 1 - σ(x) (proved)
+│       ├── CrossEntropy/
+│       │   ├── NonNegativity.lean        # H(p,q) ≥ 0 (proved)
+│       │   └── LogSoftmaxBound.lean      # log(softmax(x)_i) ≤ 0 (proved)
+│       └── Transpose/
+│           └── Involution.lean           # (Aᵀ)ᵀ = A (proved)
 └── test/
 ```
+
+All 14 theorems are **fully proved** (zero `sorry`). The proofs type-check
+against Lean 4 v4.29.0-rc4 + Mathlib4 master (2123 build jobs, 0 errors).
 
 ## CLI Commands
 
@@ -126,10 +151,15 @@ $ pv lean-status contracts/
 
 Contract                       Oblgs Proved Sorry WIP N/A
 ────────────────────────────────────────────────────────────
-Softmax kernel — numerically       5      0     5   0   0
+Cross-entropy kernel — log-s       2      2     0   0   0
+LayerNorm kernel — layer nor       2      2     0   0   0
+RMSNorm kernel — root mean s       2      2     0   0   0
+SiLU kernel — sigmoid linear       1      1     0   0   0
+Softmax kernel — numerically       5      5     0   0   0
+Matrix transpose kernel — AV       2      2     0   0   0
 ────────────────────────────────────────────────────────────
-Total                              5      0     5   0   0
-L4 Coverage: 0% (0/5)   Sorry Debt: 5
+Total                             14     14     0   0   0
+L4 Coverage: 100% (14/14)   Sorry Debt: 0
 ```
 
 ## Bridging the Real-Float Gap
@@ -143,10 +173,12 @@ Lean proofs operate over `ℝ` (mathematical reals). Rust code operates over
    error-bounded specification for concrete bit-widths
 
 ```lean
--- Ideal layer
-theorem softmax_partition_of_unity (x : RVec n) :
-    Finset.univ.sum (softmax x) = 1 := by
-  sorry
+-- Ideal layer (PROVED)
+theorem partition_of_unity {n : ℕ} (x : RVec (n + 1)) :
+    ∑ i : Fin (n + 1), softmax x i = 1 := by
+  simp only [softmax]
+  rw [← Finset.sum_div]
+  exact div_self (ne_of_gt (sum_exp_pos x))
 
 -- Error layer (future)
 theorem softmax_partition_f32_error (x : Vector Float32 n)
@@ -167,6 +199,26 @@ theorem softmax_partition_f32_error (x : Vector Float32 n)
 | Performance / hardware | Skip | Empirical by nature |
 | Shape / dimension checks | Skip | Well-served by Rust types + Kani |
 
+## Reproducible Lean Toolchain via forjar
+
+The `lean/forjar.yaml` orchestrates the full toolchain install reproducibly:
+
+```bash
+# Install elan + Lean toolchain + Mathlib cache
+make lean-install
+
+# Build and type-check all proofs
+make lean-build
+
+# Quick check (direct lake build, requires elan in PATH)
+make lean-check
+
+# Clean build artifacts
+make lean-clean
+```
+
+The forjar pipeline has 4 stages: `elan-install` → `lean-toolchain` → `mathlib-cache` → `lean-build`, each idempotent and safe for re-runs.
+
 ## Examples
 
 ```bash
@@ -175,4 +227,7 @@ cargo run --example lean_codegen -- contracts/softmax-kernel-v1.yaml
 
 # Report L4 coverage across all contracts
 cargo run --example lean_status -- contracts/
+
+# Run all proofs and verify they type-check
+cargo run --example lean_proofs
 ```

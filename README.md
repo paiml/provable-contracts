@@ -53,7 +53,8 @@ intermediaries with Kani bounded model checking verification.
 - **Property Test Generation** -- Emit `proptest` / probar property-based
   tests from both obligations and falsification predicates.
 - **Binding Registry** -- Map contract equations to real crate functions
-  (`aprender`, etc.) for wired integration tests.
+  (`aprender`, `entrenar`, `realizar`, `trueno`) for wired integration
+  tests with compile-time enforcement.
 - **Traceability Audit** -- Verify the full chain from paper reference
   through equation, obligation, falsification test, and Kani harness.
 - **Contract Scoring** -- Five-dimension quality scoring (spec depth,
@@ -158,14 +159,17 @@ pv equations contracts/softmax-kernel-v1.yaml --format latex
 # Generate Lean 4 stubs
 pv lean contracts/softmax-kernel-v1.yaml
 
+# Lean 4 proof status report
+pv lean-status contracts/
+
 # Proof level report (L1-L5)
 pv proof-status contracts/
 
 # Score a contract (five-dimension quality metric)
 pv score contracts/softmax-kernel-v1.yaml
 
-# Score all contracts with CI quality gate
-pv score contracts/ --min-score 0.75 --exit-code
+# Score all contracts with CI quality gate (exits 1 if below threshold)
+pv score contracts/ --min-score 0.75
 
 # Semantic search across contracts
 pv query "softmax numerical stability"
@@ -220,8 +224,8 @@ pv book contracts/ -o book/src/contracts/
 
 ## Contract Registry
 
-167 kernel contracts ship in `contracts/`, organized by seven tiers
-and five equivalence classes (A-E).
+164 contract YAML files ship in `contracts/`, organized by seven tiers,
+five equivalence classes (A-E), and five per-crate directories.
 
 **Tier 1 -- Foundation Kernels**: softmax, rmsnorm, rope, gelu, silu,
 layernorm, batchnorm, cross-entropy, transpose, matmul, embedding,
@@ -243,11 +247,28 @@ cma-es, arima, active-learning.
 **Tier 6 -- Model-Specific**: qwen2/qwen3/qwen35 e2e verification,
 hybrid-layer-dispatch, gated-delta-net, qwen35-hybrid-forward.
 
+**Per-Crate Contracts**: `aprender/` (8), `entrenar/` (37),
+`trueno/` (7), `forjar/` (5), `realizar/` (binding only).
+
 **Equivalence Classes**: A (Llama/Mistral), B (GPT-2/BERT),
 C (BLOOM/MPT), D (Gemma), E (Qwen).
 
-**Totals**: 356 equations, 550 proof obligations, 590 falsification
-tests, 211 Kani harnesses. 100% obligation coverage.
+**Totals** (107 core kernel contracts): 356 equations, 550 proof
+obligations, 590 falsification tests, 211 Kani harnesses. 100%
+obligation coverage.
+
+### Binding Registries
+
+Four downstream crates have binding registries mapping contract
+equations to Rust implementations, each with compile-time enforcement
+via `build.rs` + `#[contract]` proc macro (Level 3 integration):
+
+| Crate | Bindings | Policy | Coverage |
+|-------|----------|--------|----------|
+| **aprender** | 301 | AllImplemented | 100% |
+| **entrenar** | 96 | WarnOnGaps | 84% |
+| **realizar** | 23 | WarnOnGaps | 100% |
+| **trueno** | 22 | AllImplemented | 100% |
 
 ### Qwen 3.5 Verification DAG
 

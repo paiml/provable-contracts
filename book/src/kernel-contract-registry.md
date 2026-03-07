@@ -1,6 +1,7 @@
 # Kernel Contract Registry
 
-48 kernel contracts ship in `contracts/`, organized by tier.
+107 kernel contracts ship in `contracts/`, organized by tier, plus
+57 per-crate contracts in `contracts/{aprender,entrenar,trueno,forjar}/`.
 
 ## Naming Convention
 
@@ -208,13 +209,22 @@ qwen35-e2e-verification-v1
 └── kv-cache-sizing-v1 → model-config-algebra-v1
 ```
 
-## Totals
+## Totals (Core Kernel Contracts)
 
 | Metric | Count |
 |--------|-------|
-| Contracts | 48 |
-| Equations | 166 |
-| Proof Obligations | 262 |
-| Falsification Tests | 276 |
-| Kani Harnesses | 81 |
-| Binding Entries | 174 |
+| Contracts | 107 |
+| Equations | 356 |
+| Proof Obligations | 550 |
+| Falsification Tests | 590 |
+| Kani Harnesses | 211 |
+| Obligation Coverage | 100% |
+
+## Binding Registries
+
+| Crate | Bindings | Policy | Coverage |
+|-------|----------|--------|----------|
+| aprender | 301 | AllImplemented | 100% |
+| entrenar | 96 | WarnOnGaps | 84% |
+| realizar | 23 | WarnOnGaps | 100% |
+| trueno | 22 | AllImplemented | 100% |
