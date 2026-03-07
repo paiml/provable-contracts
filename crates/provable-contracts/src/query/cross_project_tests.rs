@@ -66,8 +66,18 @@ fn repo_root() -> PathBuf {
         .unwrap()
 }
 
+/// Returns true if sibling repos exist (local dev environment).
+/// In CI, only this repo is checked out so siblings are absent.
+fn has_sibling_repos() -> bool {
+    let root = repo_root();
+    root.parent()
+        .map(|p| p.join("aprender").exists())
+        .unwrap_or(false)
+}
+
 #[test]
 fn discover_real_sibling_projects() {
+    if !has_sibling_repos() { return; }
     let root = repo_root();
     let parent = root.parent().unwrap();
     let projects = discover_projects(parent, &root);
@@ -80,6 +90,7 @@ fn discover_real_sibling_projects() {
 
 #[test]
 fn build_cross_project_index() {
+    if !has_sibling_repos() { return; }
     let index = CrossProjectIndex::build(&repo_root());
     assert!(index.project_count() > 0, "Should discover projects");
     assert!(
@@ -90,6 +101,7 @@ fn build_cross_project_index() {
 
 #[test]
 fn call_sites_for_known_contract() {
+    if !has_sibling_repos() { return; }
     let index = CrossProjectIndex::build(&repo_root());
     let sites = index.call_sites_for("metrics-regression-v1");
     assert!(
@@ -101,6 +113,7 @@ fn call_sites_for_known_contract() {
 
 #[test]
 fn binding_refs_for_aprender() {
+    if !has_sibling_repos() { return; }
     let index = CrossProjectIndex::build(&repo_root());
     let refs = index.binding_refs_for("softmax-kernel-v1");
     assert!(!refs.is_empty(), "Should find binding ref for softmax");
@@ -108,6 +121,7 @@ fn binding_refs_for_aprender() {
 
 #[test]
 fn kaizen_refs_in_trueno() {
+    if !has_sibling_repos() { return; }
     let index = CrossProjectIndex::build(&repo_root());
     let refs = index.kaizen_refs_for("KAIZEN-015");
     assert!(!refs.is_empty(), "Should find KAIZEN-015 in trueno");
@@ -143,6 +157,7 @@ fn call_sites_for_unknown_contract() {
 
 #[test]
 fn cross_project_index_accessors() {
+    if !has_sibling_repos() { return; }
     let index = CrossProjectIndex::build(&repo_root());
     assert!(index.project_count() >= 4, "Should find aprender, trueno, entrenar, bashrs");
     assert!(index.total_call_sites() > 5, "aprender has many contract annotations");
@@ -150,9 +165,8 @@ fn cross_project_index_accessors() {
 
 #[test]
 fn commit_refs_discovered() {
+    if !has_sibling_repos() { return; }
     let index = CrossProjectIndex::build(&repo_root());
-    // The provable-contracts repo itself uses KAIZEN patterns in commit messages
-    // and sibling projects should too
     let total_commit_refs: usize = index.commit_refs.values().map(Vec::len).sum();
     assert!(
         total_commit_refs > 0,
@@ -169,6 +183,7 @@ fn commit_refs_for_unknown() {
 
 #[test]
 fn build_with_extra_project() {
+    if !has_sibling_repos() { return; }
     let root = repo_root();
     // Build with a non-existent extra path — should not crash
     let index = CrossProjectIndex::build_with_extra(&root, Some(Path::new("/tmp/nonexistent")));

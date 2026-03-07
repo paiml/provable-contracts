@@ -249,6 +249,9 @@
 
     #[test]
     fn coverage_map_enrichment() {
+        // Coverage map requires sibling repos (aprender) for binding data
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..").canonicalize().unwrap();
+        if !root.parent().map(|p| p.join("aprender").exists()).unwrap_or(false) { return; }
         let index = test_index();
         let params = QueryParams {
             query: "softmax".to_string(),
