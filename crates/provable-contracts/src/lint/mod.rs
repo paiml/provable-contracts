@@ -127,11 +127,11 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
         Some(cache::cache_dir(config.contract_dir))
     };
 
-    let contracts = load_contracts(config.contract_dir);
+    let (contracts, parse_errors) = load_contracts(config.contract_dir);
     let binding = load_binding(config.binding_path);
 
     // Gate 1: validate
-    let (validate_result, mut validate_findings) = run_validate_gate(&contracts);
+    let (validate_result, mut validate_findings) = run_validate_gate(&contracts, &parse_errors);
     let validation_passed = validate_result.passed;
     gates.push(validate_result);
 

@@ -125,7 +125,7 @@ mod tests {
         // Load real contracts and test expand with actual depends_on
         use crate::lint::gates::load_contracts;
         let dir = contracts_dir();
-        let all = load_contracts(&dir);
+        let (all, _) = load_contracts(&dir);
 
         // softmax-kernel-v1 has no deps, but attention-kernel-v1 depends on it
         let changed = vec!["softmax-kernel-v1".to_string()];

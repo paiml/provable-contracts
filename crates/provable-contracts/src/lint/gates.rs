@@ -17,10 +17,14 @@ use super::rules::RuleSeverity;
 use super::{GateDetail, GateResult};
 
 /// Load and parse all YAML contracts from a directory.
-pub(crate) fn load_contracts(dir: &Path) -> Vec<(String, Contract)> {
+///
+/// Returns successfully parsed contracts and a list of parse errors.
+#[allow(clippy::type_complexity)]
+pub(crate) fn load_contracts(dir: &Path) -> (Vec<(String, Contract)>, Vec<(String, String)>) {
     let mut contracts = Vec::new();
+    let mut parse_errors = Vec::new();
     let Ok(entries) = std::fs::read_dir(dir) else {
-        return contracts;
+        return (contracts, parse_errors);
     };
     for entry in entries.flatten() {
         let path = entry.path();
@@ -37,11 +41,11 @@ pub(crate) fn load_contracts(dir: &Path) -> Vec<(String, Contract)> {
             .to_string();
         match parse_contract(&path) {
             Ok(c) => contracts.push((stem, c)),
-            Err(_) => continue,
+            Err(e) => parse_errors.push((stem, e.to_string())),
         }
     }
     contracts.sort_by(|a, b| a.0.cmp(&b.0));
-    contracts
+    (contracts, parse_errors)
 }
 
 /// Load binding registry from an optional path.
@@ -51,12 +55,27 @@ pub(crate) fn load_binding(path: Option<&Path>) -> Option<BindingRegistry> {
 
 pub(crate) fn run_validate_gate(
     contracts: &[(String, Contract)],
+    parse_errors: &[(String, String)],
 ) -> (GateResult, Vec<LintFinding>) {
     let start = Instant::now();
     let mut total_errors = 0usize;
     let mut total_warnings = 0usize;
     let mut error_messages = Vec::new();
     let mut findings = Vec::new();
+
+    for (stem, err) in parse_errors {
+        total_errors += 1;
+        error_messages.push(format!("Parse error: {err} ({stem}.yaml)"));
+        findings.push(
+            LintFinding::new(
+                "PV-VAL-001",
+                RuleSeverity::Error,
+                format!("YAML parse error: {err}"),
+                format!("contracts/{stem}.yaml"),
+            )
+            .with_stem(stem.clone()),
+        );
+    }
 
     for (stem, contract) in contracts {
         let violations = validate_contract(contract);
@@ -92,7 +111,7 @@ pub(crate) fn run_validate_gate(
         skipped: false,
         duration_ms: u64::try_from(start.elapsed().as_millis()).unwrap_or(u64::MAX),
         detail: GateDetail::Validate {
-            contracts: contracts.len(),
+            contracts: contracts.len() + parse_errors.len(),
             errors: total_errors,
             warnings: total_warnings,
             error_messages,
@@ -247,34 +266,56 @@ mod tests {
 
     #[test]
     fn load_contracts_real() {
-        let contracts = load_contracts(&contracts_dir());
+        let (contracts, errors) = load_contracts(&contracts_dir());
         assert!(contracts.len() > 100, "Expected 100+ contracts");
+        assert!(errors.is_empty(), "No parse errors expected: {errors:?}");
     }
 
     #[test]
     fn load_contracts_empty_dir() {
         let tmp = tempfile::tempdir().unwrap();
-        let contracts = load_contracts(tmp.path());
+        let (contracts, errors) = load_contracts(tmp.path());
         assert!(contracts.is_empty());
+        assert!(errors.is_empty());
+    }
+
+    #[test]
+    fn load_contracts_reports_parse_errors() {
+        let tmp = tempfile::tempdir().unwrap();
+        std::fs::write(tmp.path().join("bad.yaml"), "not: valid: yaml: {{{{").unwrap();
+        let (contracts, errors) = load_contracts(tmp.path());
+        assert!(contracts.is_empty());
+        assert_eq!(errors.len(), 1);
+        assert_eq!(errors[0].0, "bad");
+    }
+
+    #[test]
+    fn validate_gate_fails_on_parse_errors() {
+        let parse_errors = vec![("bad".into(), "invalid YAML".into())];
+        let (result, findings) = run_validate_gate(&[], &parse_errors);
+        assert!(!result.passed);
+        assert_eq!(findings.len(), 1);
+        assert_eq!(findings[0].rule_id, "PV-VAL-001");
+        assert!(findings[0].message.contains("parse error"));
     }
 
     #[test]
     fn validate_gate_passes() {
-        let contracts = load_contracts(&contracts_dir());
-        let (result, _findings) = run_validate_gate(&contracts);
+        let (contracts, errors) = load_contracts(&contracts_dir());
+        let (result, _findings) = run_validate_gate(&contracts, &errors);
         assert!(result.passed);
     }
 
     #[test]
     fn audit_gate_passes() {
-        let contracts = load_contracts(&contracts_dir());
+        let (contracts, _) = load_contracts(&contracts_dir());
         let (result, _findings) = run_audit_gate(&contracts);
         assert!(result.passed);
     }
 
     #[test]
     fn score_gate_passes_zero_threshold() {
-        let contracts = load_contracts(&contracts_dir());
+        let (contracts, _) = load_contracts(&contracts_dir());
         let (result, findings) = run_score_gate(&contracts, None, 0.0);
         assert!(result.passed);
         assert!(findings.is_empty());
@@ -282,7 +323,7 @@ mod tests {
 
     #[test]
     fn score_gate_fails_high_threshold() {
-        let contracts = load_contracts(&contracts_dir());
+        let (contracts, _) = load_contracts(&contracts_dir());
         let (result, findings) = run_score_gate(&contracts, None, 0.99);
         assert!(!result.passed);
         assert!(!findings.is_empty());

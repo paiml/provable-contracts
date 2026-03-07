@@ -170,10 +170,11 @@ fn extract_mean_score(report: &LintReport) -> f64 {
 )]
 fn now_iso8601() -> String {
     // UTC timestamp without chrono dependency — manual epoch-to-date conversion
-    let secs = std::time::SystemTime::now()
+    let duration = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_secs();
+        .unwrap_or_default();
+    let secs = duration.as_secs();
+    let millis = duration.subsec_millis();
 
     // Days since epoch
     let days = (secs / 86400) as i64;
@@ -194,7 +195,7 @@ fn now_iso8601() -> String {
     let m = if mp < 10 { mp + 3 } else { mp - 9 };
     let y = if m <= 2 { y + 1 } else { y };
 
-    format!("{y:04}-{m:02}-{d:02}T{hours:02}:{minutes:02}:{seconds:02}Z")
+    format!("{y:04}-{m:02}-{d:02}T{hours:02}:{minutes:02}:{seconds:02}.{millis:03}Z")
 }
 
 fn current_commit() -> Result<String, String> {
