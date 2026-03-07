@@ -184,6 +184,14 @@ validated_results:
       test_recall: 0.909
       ship_gate: "PASS"
       notes: "MLP probe, lr=1e-4, 50 epochs, scale validation"
+    - name: "FULL 17942-entry shell + 350 adv (MLP h=32)"
+      test_mcc: 0.443
+      test_accuracy: 0.930
+      test_precision: 0.248
+      test_recall: 0.870
+      test_f1: 0.386
+      ship_gate: "PASS"
+      notes: "CLF-FULL complete. MLP probe, lr=1e-4, 50 epochs. Train: 14671, Test: 3621."
     - name: "3000-entry shell (linear, no aug)"
       test_mcc: 0.043
       ship_gate: "FAIL"
