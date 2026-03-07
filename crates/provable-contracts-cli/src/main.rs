@@ -140,6 +140,12 @@ enum Commands {
         /// Minimum score threshold (exit 1 if below)
         #[arg(long)]
         min_score: Option<f64>,
+        /// Show aggregate summary only (no per-contract detail)
+        #[arg(long)]
+        summary: bool,
+        /// Show top N gaps by impact (default: 5)
+        #[arg(long, default_value = "5")]
+        top_gaps: usize,
         /// Custom weights as JSON, e.g. `{"spec_depth":0.1,"falsification":0.3,"kani":0.3,"lean":0.1,"binding":0.2}`
         #[arg(long)]
         weights: Option<String>,
@@ -305,8 +311,18 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             binding,
             format,
             min_score,
+            summary,
+            top_gaps,
             weights,
-        } => commands::score::run(&path, binding.as_deref(), &format, min_score, weights.as_deref()),
+        } => commands::score::run(
+            &path,
+            binding.as_deref(),
+            &format,
+            min_score,
+            summary,
+            top_gaps,
+            weights.as_deref(),
+        ),
         Commands::Query {
             query,
             contract_dir,

@@ -16,6 +16,8 @@ pub fn run(
     binding: Option<&Path>,
     format: &str,
     min_score: Option<f64>,
+    summary: bool,
+    top_gaps: usize,
     weights_json: Option<&str>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let binding_registry = binding
@@ -32,7 +34,7 @@ pub fn run(
     };
 
     if path.is_dir() {
-        run_directory(path, binding_registry.as_ref(), binding, format, min_score, &weights)
+        run_directory(path, binding_registry.as_ref(), binding, format, min_score, summary, top_gaps, &weights)
     } else {
         run_single(path, binding_registry.as_ref(), format, min_score, &weights)
     }
@@ -71,13 +73,15 @@ fn run_single(
     Ok(())
 }
 
-#[allow(clippy::cast_precision_loss)]
+#[allow(clippy::too_many_arguments, clippy::too_many_lines, clippy::cast_precision_loss)]
 fn run_directory(
     dir: &Path,
     binding: Option<&BindingRegistry>,
     binding_path: Option<&Path>,
     format: &str,
     min_score: Option<f64>,
+    summary: bool,
+    top_gaps: usize,
     weights: &ScoringWeights,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut entries: Vec<_> = std::fs::read_dir(dir)?
@@ -110,7 +114,16 @@ fn run_directory(
         scores.iter().map(|s| s.composite).sum::<f64>() / scores.len() as f64
     };
 
-    print_directory_scores(&scores, mean, format)?;
+    if summary {
+        print_summary_only(&scores, mean, format)?;
+    } else {
+        print_directory_scores(&scores, mean, format)?;
+    }
+
+    // Show top gaps by lowest score
+    if top_gaps > 0 && !scores.is_empty() {
+        print_top_gaps(&scores, top_gaps, format);
+    }
 
     // Codebase scoring if binding is provided
     if let Some(binding) = binding {
@@ -237,6 +250,60 @@ fn print_directory_scores(
         }
     }
     Ok(())
+}
+
+#[allow(clippy::cast_precision_loss)]
+fn print_summary_only(
+    scores: &[ContractScore],
+    mean: f64,
+    format: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let grade = scoring::Grade::from_score(mean);
+    match format {
+        "json" => {
+            let output = serde_json::json!({
+                "contracts": scores.len(),
+                "mean_score": mean,
+                "mean_grade": grade.to_string(),
+            });
+            println!("{}", serde_json::to_string_pretty(&output)?);
+        }
+        "markdown" => {
+            println!(
+                "**{} contracts** — Mean: {mean:.2} (Grade {grade})",
+                scores.len()
+            );
+        }
+        _ => {
+            println!(
+                "{} contracts — Mean: {mean:.2} (Grade {grade})",
+                scores.len()
+            );
+        }
+    }
+    Ok(())
+}
+
+fn print_top_gaps(scores: &[ContractScore], n: usize, format: &str) {
+    let mut sorted: Vec<_> = scores.iter().collect();
+    sorted.sort_by(|a, b| a.composite.partial_cmp(&b.composite).unwrap_or(std::cmp::Ordering::Equal));
+    let top: Vec<_> = sorted.into_iter().take(n).collect();
+
+    match format {
+        "json" => {} // Already in JSON output
+        "markdown" => {
+            println!("\n### Top {} Gaps\n", top.len());
+            for s in &top {
+                println!("- **{}** — {:.2} ({})", s.stem, s.composite, s.grade);
+            }
+        }
+        _ => {
+            println!("\nTop {} gaps:", top.len());
+            for s in &top {
+                println!("  {} — {:.2} ({})", s.stem, s.composite, s.grade);
+            }
+        }
+    }
 }
 
 fn score_to_markdown(score: &ContractScore) -> String {
