@@ -1274,3 +1274,35 @@ roadmap:
   - integration
   - github
   notes: null
+- id: PMAT-071
+  github_issue: null
+  item_type: task
+  title: 'Entrenar Level 2-3: build.rs binding verification + #[contract] annotations'
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-03-07T12:49:54Z
+  updated: 2026-03-07T12:55:05.423192869+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-072
+  github_issue: null
+  item_type: task
+  title: 'Trueno Level 2-3: build.rs binding verification + #[contract] annotations'
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-03-07T12:49:54Z
+  updated: 2026-03-07T12:49:54Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
