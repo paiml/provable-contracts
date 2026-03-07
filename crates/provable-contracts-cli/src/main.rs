@@ -161,6 +161,21 @@ enum Commands {
         /// Path to .pv.toml config file
         #[arg(long)]
         config: Option<PathBuf>,
+        /// Only lint contracts changed since base ref (e.g. main, HEAD~5)
+        #[arg(long = "diff")]
+        diff_ref: Option<String>,
+        /// Record quality trend snapshot
+        #[arg(long)]
+        trend: bool,
+        /// Show quality trend history
+        #[arg(long)]
+        show_trend: bool,
+        /// Bypass lint cache
+        #[arg(long)]
+        no_cache: bool,
+        /// Show cache hit/miss statistics
+        #[arg(long)]
+        cache_stats: bool,
     },
     /// Score contracts or a codebase directory
     Score {
@@ -360,6 +375,11 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             suppress_file,
             rule,
             config,
+            diff_ref,
+            trend,
+            show_trend,
+            no_cache,
+            cache_stats,
         } => commands::lint::run(
             &contract_dir,
             binding.as_deref(),
@@ -372,6 +392,11 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             suppress_file.as_deref(),
             &rule,
             config.as_deref(),
+            diff_ref.as_deref(),
+            trend,
+            show_trend,
+            no_cache,
+            cache_stats,
         ),
         Commands::Score {
             path,

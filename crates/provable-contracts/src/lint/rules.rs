@@ -5,7 +5,7 @@
 //!
 //! Spec: `docs/specifications/sub/lint.md` Section 12
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 /// A lint rule definition.
 #[derive(Debug, Clone, Serialize)]
@@ -28,7 +28,7 @@ pub enum RuleCategory {
 }
 
 /// Configurable severity levels per rule.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, PartialOrd, Ord)]
 #[serde(rename_all = "lowercase")]
 pub enum RuleSeverity {
     Off,

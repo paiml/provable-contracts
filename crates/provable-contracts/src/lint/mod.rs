@@ -8,11 +8,14 @@
 //! Extended with SARIF output, rule catalog, config file, and findings.
 //! Spec: `docs/specifications/sub/lint.md`
 
+pub mod cache;
 pub mod config;
+pub mod diff;
 pub mod finding;
 mod gates;
 pub mod rules;
 pub mod sarif;
+pub mod trend;
 
 use std::collections::HashMap;
 use std::path::Path;

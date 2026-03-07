@@ -6,12 +6,12 @@
 //!
 //! Spec: `docs/specifications/sub/lint.md` Section 4
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use super::rules::RuleSeverity;
 
 /// A single lint finding (diagnostic).
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LintFinding {
     pub rule_id: String,
     pub severity: RuleSeverity,
