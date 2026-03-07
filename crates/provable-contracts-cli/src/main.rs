@@ -456,3 +456,7 @@ fn main() {
 #[cfg(test)]
 #[path = "../tests/includes/dispatch_tests.rs"]
 mod dispatch_tests;
+
+#[cfg(test)]
+#[path = "../tests/includes/dispatch_query_tests.rs"]
+mod dispatch_query_tests;
