@@ -29,7 +29,7 @@ See `pmat query --help` for full options.
 - `crates/provable-contracts/` — Library crate (schema, scaffold, kani, probar)
 - `crates/provable-contracts-cli/` — CLI binary (`pv` command)
 - `contracts/` — YAML kernel contracts
-- `docs/specifications/provable-contracts.md` — Full specification
+- `docs/specifications/pv-spec.md` — Canonical specification (ONE spec)
 
 ## Work Tracking
 

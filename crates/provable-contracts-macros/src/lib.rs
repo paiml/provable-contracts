@@ -160,9 +160,11 @@ pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
     let expanded = quote! {
         #(#fn_attrs)*
         #fn_vis #fn_sig {
-            // 1. Compile-time contract existence check.
-            //    build.rs must set this env var. Missing = compile error.
-            const #const_name: &str = env!(#env_key);
+            // 1. Compile-time contract binding check.
+            //    build.rs sets this env var when binding.yaml is present.
+            //    On crates.io builds (no sibling repo), gracefully degrades.
+            #[allow(dead_code)]
+            const #const_name: Option<&str> = option_env!(#env_key);
 
             // 2. Binding registration for audit/traceability.
             //    Encodes contract, equation, module, and function name.

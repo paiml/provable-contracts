@@ -744,6 +744,25 @@ falsification_tests:
     if_test_fails: "GH-87 regression - APR GPU not using fused Q4K kernel path"
     reference: "GH-87, LAYOUT-002"
 
+  - id: FALSIFY-012
+    rule: "F-KERNEL-DISPATCH-001 (SafeTensors GPU uses fused Q4K kernels)"
+    prediction: |
+      SafeTensors GPU benchmark achieves within 20% of GGUF GPU benchmark
+      throughput (both using same model, same hardware). SafeTensors is
+      quantized to Q4K in-memory, then uses the same fused kernel path.
+    falsification_test: |
+      #[test]
+      fn falsify_012_safetensors_gpu_fused_kernels() {
+          // 1. Benchmark GGUF model: apr bench model.gguf → record tok/s
+          // 2. Benchmark SafeTensors: apr bench model.safetensors → record tok/s
+          // 3. Assert SafeTensors tok/s >= GGUF tok/s * 0.8 (within 20%)
+          //
+          // If SafeTensorsCudaModel is used instead of OwnedQuantizedModelCuda,
+          // SafeTensors will be ~13x slower and this test MUST fail.
+      }
+    if_test_fails: "GH-88 regression - SafeTensors GPU not using fused Q4K kernel path"
+    reference: "GH-88, LAYOUT-002"
+
 # =============================================================================
 # TOYOTA WAY APPLICATION NOTES
 # =============================================================================
