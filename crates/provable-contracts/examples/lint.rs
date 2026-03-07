@@ -42,10 +42,7 @@ fn main() {
         PathBuf::from,
     );
 
-    let min_score: f64 = args
-        .get(2)
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(0.0);
+    let min_score: f64 = args.get(2).and_then(|s| s.parse().ok()).unwrap_or(0.0);
 
     let format = args.get(3).map_or("text", |s| s.as_str());
 
@@ -64,8 +61,7 @@ fn main() {
         config.suppressed_rules = vec![rule];
     }
     if let Some(ref sev) = severity {
-        config.severity_filter =
-            provable_contracts::lint::rules::RuleSeverity::from_str_opt(sev);
+        config.severity_filter = provable_contracts::lint::rules::RuleSeverity::from_str_opt(sev);
     }
 
     let report = run_lint(&config);
