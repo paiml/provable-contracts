@@ -166,6 +166,10 @@ Filters are applied after search, before ranking.
 | `--depended-by <stem>` | Reverse DAG | `--depended-by attention-kernel-v1` | [IMPLEMENTED] |
 | `--unproven` | Boolean | Shows obligations at L2 or below | [IMPLEMENTED] |
 | `--binding-gaps` | Boolean | Shows not_implemented bindings | [IMPLEMENTED] |
+| `--project <name>` | String | `--project aprender` | [IMPLEMENTED] |
+| `--include-project <path>` | Path | `--include-project ../custom` | [IMPLEMENTED] |
+| `--all-projects` | Boolean | Force full cross-project scan | [IMPLEMENTED] |
+| `--rebuild-index` | Boolean | Force index rebuild | [IMPLEMENTED] |
 | `--tier <n>` | Enum | `--tier 1` | — |
 | `--class <A-E>` | Enum | `--class A` | — |
 
