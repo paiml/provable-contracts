@@ -1195,3 +1195,82 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-067
+  github_issue: null
+  item_type: task
+  title: Entrenar binding registry
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-03-07T12:15:11Z
+  updated: 2026-03-07T12:30:43.601371509+00:00
+  spec: null
+  acceptance_criteria:
+  - Create contracts/entrenar/binding.yaml mapping 37 contracts to entrenar functions
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - binding
+  - entrenar
+  - integration
+  notes: null
+- id: PMAT-068
+  github_issue: null
+  item_type: task
+  title: Trueno binding registry
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-03-07T12:15:17Z
+  updated: 2026-03-07T12:15:17Z
+  spec: null
+  acceptance_criteria:
+  - Create contracts/trueno/binding.yaml mapping 8 contracts to trueno BLIS/GPU functions
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - binding
+  - trueno
+  - integration
+  notes: null
+- id: PMAT-069
+  github_issue: null
+  item_type: task
+  title: Realizar contract extraction and binding registry
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-03-07T12:15:18Z
+  updated: 2026-03-07T12:15:18Z
+  spec: null
+  acceptance_criteria:
+  - Create contracts/realizar/ directory with dedicated contracts and binding.yaml from 62 realizar references
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - binding
+  - realizar
+  - integration
+  notes: null
+- id: PMAT-070
+  github_issue: null
+  item_type: task
+  title: Downstream integration GH issues per repo
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-03-07T12:15:19Z
+  updated: 2026-03-07T12:15:19Z
+  spec: null
+  acceptance_criteria:
+  - Create GitHub issues in paiml/entrenar, paiml/trueno, paiml/realizar, paiml/aprender for Level 3 contract integration
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels:
+  - integration
+  - github
+  notes: null
