@@ -145,21 +145,28 @@ mod tests {
 
     #[test]
     fn changed_contracts_with_range() {
-        // Use a wide range to guarantee files are returned, exercising the filter closures
+        // Use a wide range to guarantee files are returned, exercising the filter closures.
+        // On shallow clones (CI), HEAD~50 may not exist — skip gracefully.
         let result = changed_contracts(&contracts_dir(), "HEAD~50");
-        // Should succeed (may or may not have changes depending on history)
-        assert!(result.is_ok());
-        let stems = result.unwrap();
-        // All returned stems should be valid (no .yaml extension, no path prefix)
-        for stem in &stems {
-            assert!(
-                !stem.ends_with(".yaml"),
-                "Stem should not have extension: {stem}"
-            );
-            assert!(
-                !stem.contains('/'),
-                "Stem should not have path separator: {stem}"
-            );
+        match result {
+            Err(e) if e.contains("git diff failed") => {
+                // Shallow clone — skip test
+                return;
+            }
+            Err(e) => panic!("Unexpected error: {e}"),
+            Ok(stems) => {
+                // All returned stems should be valid (no .yaml extension, no path prefix)
+                for stem in &stems {
+                    assert!(
+                        !stem.ends_with(".yaml"),
+                        "Stem should not have extension: {stem}"
+                    );
+                    assert!(
+                        !stem.contains('/'),
+                        "Stem should not have path separator: {stem}"
+                    );
+                }
+            }
         }
     }
 
