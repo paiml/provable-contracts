@@ -134,10 +134,10 @@ pub enum Commands {
         /// Suppress specific finding IDs (comma-separated)
         #[arg(long)]
         suppress: Option<String>,
-        /// Suppress all findings for a rule
+        /// Suppress all findings for a rule (comma-separated)
         #[arg(long)]
         suppress_rule: Option<String>,
-        /// Suppress all findings in a file
+        /// Suppress all findings matching a file path (comma-separated)
         #[arg(long)]
         suppress_file: Option<String>,
         /// Override rule severity (e.g. PV-AUD-001=info)

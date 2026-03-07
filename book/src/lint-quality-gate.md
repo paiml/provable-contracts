@@ -230,13 +230,16 @@ pv lint contracts/ --min-score 0.50 --diff HEAD --strict
 
 | Rule ID | Severity | Description |
 |---------|----------|-------------|
-| PV-VAL-001 | Error | YAML parse error (malformed or missing required fields) |
-| PV-VAL-001 | Warning | Missing optional schema section (qa_gate, etc.) |
-| PV-VAL-004 | Error | Missing required `metadata.version` |
-| PV-VAL-005 | Error | Missing required `metadata.description` |
+| PV-VAL-001 | Error | Schema validation error (parse failure or missing section) |
+| PV-VAL-004 | Error | Empty equation formula |
+| PV-VAL-005 | Error | Empty proof obligation property |
 | PV-VAL-006 | Warning | Duplicate formal predicate in proof obligations |
-| PV-AUD-001 | Error | Equation referenced but not defined |
-| PV-AUD-002 | Warning | Proof obligation with no test coverage |
+| PV-AUD-001 | Warning | Obligation without falsification test |
+| PV-AUD-002 | Info | Missing paper reference |
 | PV-AUD-003 | Warning | Equations defined but no proof obligations |
-| PV-SCR-001 | Warning | Contract score below threshold |
-| PV-PRV-001 | Error | Kernel contract missing provability requirements |
+| PV-AUD-004 | Warning | Equation without domain specification |
+| PV-AUD-005 | Warning | Missing tolerance for numerical obligation |
+| PV-SCR-001 | Error | Contract score below threshold |
+| PV-PRV-001 | Error | Kernel contract without Kani harnesses |
+| PV-PRV-002 | Error | Kernel contract without falsification tests |
+| PV-TRD-001 | Warning | Mean score dropped >5% from rolling average |

@@ -74,7 +74,7 @@ pub static RULES: &[LintRule] = &[
         id: "PV-VAL-001",
         category: RuleCategory::Validate,
         default_severity: RuleSeverity::Error,
-        description: "Missing required field",
+        description: "Schema validation error (parse failure or missing section)",
     },
     LintRule {
         id: "PV-VAL-002",
@@ -92,19 +92,19 @@ pub static RULES: &[LintRule] = &[
         id: "PV-VAL-004",
         category: RuleCategory::Validate,
         default_severity: RuleSeverity::Error,
-        description: "Invalid cross-reference (obligation -> test)",
+        description: "Empty equation formula",
     },
     LintRule {
         id: "PV-VAL-005",
         category: RuleCategory::Validate,
         default_severity: RuleSeverity::Error,
-        description: "Duplicate obligation/test ID",
+        description: "Empty proof obligation property",
     },
     LintRule {
         id: "PV-VAL-006",
         category: RuleCategory::Validate,
         default_severity: RuleSeverity::Warning,
-        description: "Unreachable test (no obligation references it)",
+        description: "Duplicate formal predicate in proof obligations",
     },
     // Audit rules
     LintRule {
