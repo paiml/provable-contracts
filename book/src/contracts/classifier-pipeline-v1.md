@@ -111,5 +111,5 @@ $$
 
 Classifier pipeline quality gate
 
-**Checks:** 11 unit tests pass (sigmoid, split, train, save/load), Linear probe achieves > 70% accuracy on synthetic data, Embedding extraction produces 768-dimensional vectors, Train/test split is deterministic with same seed, All serialization roundtrips preserve data exactly
+**Checks:** 14 unit tests pass (sigmoid, split, train, save/load, tokenize, mlp_forward), Linear probe achieves > 70% accuracy on synthetic data, MLP probe (Level 0.5) achieves MCC > 0.6 at all tested scales (3k-12k), Embedding extraction produces 768-dimensional vectors, Train/test split is deterministic with same seed, All serialization roundtrips preserve data exactly (LinearProbe + MlpProbeWeights), 45 CLI integration tests pass (assert_cmd)
 
