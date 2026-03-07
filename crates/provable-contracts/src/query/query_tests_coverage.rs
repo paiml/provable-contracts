@@ -33,36 +33,36 @@
     fn parse_iso_days_ago_recent() {
         // 2026-03-06 at epoch ~1772870400
         let now = 1772870400;
-        let days = super::parse_iso_days_ago("2026-03-05", now);
+        let days = super::query_enrich::parse_iso_days_ago("2026-03-05", now);
         assert!(days <= 2, "Yesterday should be ~1 day ago, got {days}");
     }
 
     #[test]
     fn parse_iso_days_ago_invalid() {
-        assert_eq!(super::parse_iso_days_ago("invalid", 1772870400), 0);
-        assert_eq!(super::parse_iso_days_ago("2026-03", 1772870400), 0);
+        assert_eq!(super::query_enrich::parse_iso_days_ago("invalid", 1772870400), 0);
+        assert_eq!(super::query_enrich::parse_iso_days_ago("2026-03", 1772870400), 0);
     }
 
     #[test]
     fn month_days_all_months() {
-        assert_eq!(super::month_days(0), 0);
-        assert_eq!(super::month_days(1), 0);
-        assert_eq!(super::month_days(2), 31);
-        assert_eq!(super::month_days(6), 151);
-        assert_eq!(super::month_days(12), 334);
-        assert_eq!(super::month_days(13), 0); // out of range
+        assert_eq!(super::query_enrich::month_days(0), 0);
+        assert_eq!(super::query_enrich::month_days(1), 0);
+        assert_eq!(super::query_enrich::month_days(2), 31);
+        assert_eq!(super::query_enrich::month_days(6), 151);
+        assert_eq!(super::query_enrich::month_days(12), 334);
+        assert_eq!(super::query_enrich::month_days(13), 0); // out of range
     }
 
     #[test]
     fn parse_proof_level_all_levels() {
         use crate::proof_status::ProofLevel;
-        assert_eq!(super::parse_proof_level("L1"), ProofLevel::L1);
-        assert_eq!(super::parse_proof_level("L2"), ProofLevel::L2);
-        assert_eq!(super::parse_proof_level("L3"), ProofLevel::L3);
-        assert_eq!(super::parse_proof_level("L4"), ProofLevel::L4);
-        assert_eq!(super::parse_proof_level("L5"), ProofLevel::L5);
-        assert_eq!(super::parse_proof_level("l3"), ProofLevel::L3);
-        assert_eq!(super::parse_proof_level("unknown"), ProofLevel::L1);
+        assert_eq!(super::query_enrich::parse_proof_level("L1"), ProofLevel::L1);
+        assert_eq!(super::query_enrich::parse_proof_level("L2"), ProofLevel::L2);
+        assert_eq!(super::query_enrich::parse_proof_level("L3"), ProofLevel::L3);
+        assert_eq!(super::query_enrich::parse_proof_level("L4"), ProofLevel::L4);
+        assert_eq!(super::query_enrich::parse_proof_level("L5"), ProofLevel::L5);
+        assert_eq!(super::query_enrich::parse_proof_level("l3"), ProofLevel::L3);
+        assert_eq!(super::query_enrich::parse_proof_level("unknown"), ProofLevel::L1);
     }
 
     #[test]
@@ -277,4 +277,71 @@
         if let Some(r) = sm {
             assert!(!r.depended_by.is_empty(), "softmax should have dependents");
         }
+    }
+
+    #[test]
+    fn project_filter_restricts_call_sites() {
+        let index = test_index();
+        let params = QueryParams {
+            query: "softmax".to_string(),
+            show_call_sites: true,
+            project_filter: Some("aprender".to_string()),
+            limit: 3,
+            ..Default::default()
+        };
+        let output = execute(&index, &params);
+        // All call sites should be from aprender
+        for r in &output.results {
+            for cs in &r.call_sites {
+                assert_eq!(cs.project, "aprender", "project filter should restrict to aprender");
+            }
+        }
+    }
+
+    #[test]
+    fn project_filter_restricts_violations() {
+        let index = test_index();
+        let params = QueryParams {
+            query: "softmax".to_string(),
+            show_violations: true,
+            project_filter: Some("nonexistent".to_string()),
+            limit: 3,
+            ..Default::default()
+        };
+        let output = execute(&index, &params);
+        // With a nonexistent project filter, no violations should appear
+        for r in &output.results {
+            assert!(r.violations.is_empty(), "nonexistent project should have no violations");
+        }
+    }
+
+    #[test]
+    fn all_projects_triggers_xp_scan() {
+        let index = test_index();
+        let params = QueryParams {
+            query: "softmax".to_string(),
+            all_projects: true,
+            limit: 3,
+            ..Default::default()
+        };
+        // all_projects should trigger the cross-project scan without
+        // requiring show_call_sites/show_violations/show_coverage_map
+        let output = execute(&index, &params);
+        assert!(!output.results.is_empty());
+    }
+
+    #[test]
+    fn rebuild_index_flag() {
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
+        // force rebuild should work (skips cache)
+        let idx = super::ContractIndex::from_directory_opts(&dir, true).unwrap();
+        assert!(idx.entries.len() > 10, "Rebuilt index should have contracts");
+    }
+
+    #[test]
+    fn default_query_params_new_fields() {
+        let params = QueryParams::default();
+        assert!(params.project_filter.is_none());
+        assert!(params.include_project.is_none());
+        assert!(!params.all_projects);
     }

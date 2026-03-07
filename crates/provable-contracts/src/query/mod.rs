@@ -8,6 +8,7 @@
 pub mod cross_project;
 mod index;
 mod persist;
+mod query_enrich;
 mod types;
 mod types_render;
 
@@ -19,7 +20,10 @@ pub use types::{
 };
 
 use crate::binding::BindingRegistry;
-use crate::scoring;
+use query_enrich::{
+    build_call_sites, build_coverage_map, build_violations, filter_by_project, filter_coverage,
+    filter_violations,
+};
 
 /// Execute a query against a contract index.
 pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
@@ -48,7 +52,8 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
     let limited: Vec<_> = filtered.into_iter().take(params.limit).collect();
 
     // Build cross-project index lazily when any cross-project flag is set
-    let needs_xp = params.show_call_sites || params.show_violations || params.show_coverage_map;
+    let needs_xp = params.show_call_sites || params.show_violations
+        || params.show_coverage_map || params.all_projects;
     let xp_index = if needs_xp {
         index.entries.first().map(|e| {
             let p = std::path::Path::new(&e.path);
@@ -59,17 +64,22 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
             } else {
                 contracts_dir.parent().unwrap()
             };
-            cross_project::CrossProjectIndex::build(repo_root)
+            let extra = params.include_project.as_ref().map(std::path::Path::new);
+            cross_project::CrossProjectIndex::build_with_extra(repo_root, extra)
         })
     } else {
         None
     };
 
+    let project_filter = params.project_filter.as_deref();
     let results: Vec<QueryResult> = limited
         .into_iter()
         .enumerate()
         .map(|(rank, (idx, relevance))| {
-            build_result(index, params, binding.as_ref(), xp_index.as_ref(), rank, idx, relevance)
+            build_result(
+                index, params, binding.as_ref(), xp_index.as_ref(),
+                project_filter, rank, idx, relevance,
+            )
         })
         .collect();
 
@@ -80,11 +90,13 @@ pub fn execute(index: &ContractIndex, params: &QueryParams) -> QueryOutput {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_result(
     index: &ContractIndex,
     params: &QueryParams,
     binding: Option<&BindingRegistry>,
     xp_index: Option<&cross_project::CrossProjectIndex>,
+    project_filter: Option<&str>,
     rank: usize,
     idx: usize,
     relevance: f64,
@@ -102,124 +114,24 @@ fn build_result(
         references: opt_vec(&entry.references, params.show_paper),
         depends_on,
         depended_by,
-        score: params.show_score.then(|| build_score_info(entry)).flatten(),
-        proof_status: params.show_proof_status.then(|| build_proof_status_info(entry)).flatten(),
+        score: params.show_score.then(|| query_enrich::build_score_info(entry)).flatten(),
+        proof_status: params
+            .show_proof_status
+            .then(|| query_enrich::build_proof_status_info(entry))
+            .flatten(),
         bindings: opt_binding(entry, binding, params.show_binding),
-        diff: params.show_diff.then(|| build_diff_info(entry)).flatten(),
+        diff: params.show_diff.then(|| query_enrich::build_diff_info(entry)).flatten(),
         pagerank: if params.show_pagerank { index.cached_pagerank(&entry.stem) } else { None },
-        call_sites: build_call_sites(&entry.stem, xp_index),
-        violations: build_violations(entry, xp_index, params.show_violations),
-        coverage_map: build_coverage_map(&entry.stem, xp_index, params.show_coverage_map),
+        call_sites: filter_by_project(build_call_sites(&entry.stem, xp_index), project_filter),
+        violations: filter_violations(
+            build_violations(entry, xp_index, params.show_violations),
+            project_filter,
+        ),
+        coverage_map: filter_coverage(
+            build_coverage_map(&entry.stem, xp_index, params.show_coverage_map),
+            project_filter,
+        ),
     }
-}
-
-fn build_call_sites(
-    stem: &str,
-    xp_index: Option<&cross_project::CrossProjectIndex>,
-) -> Vec<types::CallSiteInfo> {
-    let Some(xp) = xp_index else {
-        return Vec::new();
-    };
-    xp.call_sites_for(stem)
-        .iter()
-        .map(|cs| types::CallSiteInfo {
-            project: cs.project.clone(),
-            file: cs.file.clone(),
-            line: cs.line,
-            equation: cs.equation.clone(),
-        })
-        .collect()
-}
-
-fn build_violations(
-    entry: &types::ContractEntry,
-    xp_index: Option<&cross_project::CrossProjectIndex>,
-    show: bool,
-) -> Vec<types::ViolationInfo> {
-    if !show {
-        return Vec::new();
-    }
-    let Some(xp) = xp_index else {
-        return Vec::new();
-    };
-    let mut violations = Vec::new();
-
-    // Check binding refs for unimplemented / partial bindings
-    for br in xp.binding_refs_for(&entry.stem) {
-        if br.status == "not_implemented" || br.status == "partial" {
-            violations.push(types::ViolationInfo {
-                project: br.project.clone(),
-                kind: "binding_gap".to_string(),
-                detail: format!("{}: {}", br.equation, br.status),
-            });
-        }
-    }
-
-    // If contract has unproven obligations, flag consumer projects
-    if entry.obligation_count > entry.kani_count {
-        let unproven = entry.obligation_count - entry.kani_count;
-        let sites = xp.call_sites_for(&entry.stem);
-        let mut projects: Vec<String> = sites.iter().map(|s| s.project.clone()).collect();
-        projects.sort();
-        projects.dedup();
-        for proj in projects {
-            violations.push(types::ViolationInfo {
-                project: proj,
-                kind: "unproven_obligations".to_string(),
-                detail: format!("{unproven}/{} obligations lack Kani harnesses", entry.obligation_count),
-            });
-        }
-    }
-
-    violations
-}
-
-fn build_coverage_map(
-    stem: &str,
-    xp_index: Option<&cross_project::CrossProjectIndex>,
-    show: bool,
-) -> Vec<types::ProjectCoverage> {
-    if !show {
-        return Vec::new();
-    }
-    let Some(xp) = xp_index else {
-        return Vec::new();
-    };
-
-    let mut map: std::collections::HashMap<String, types::ProjectCoverage> =
-        std::collections::HashMap::new();
-
-    // Count call sites per project
-    for cs in xp.call_sites_for(stem) {
-        let entry = map.entry(cs.project.clone()).or_insert_with(|| types::ProjectCoverage {
-            project: cs.project.clone(),
-            call_sites: 0,
-            binding_refs: 0,
-            binding_implemented: 0,
-            binding_total: 0,
-        });
-        entry.call_sites += 1;
-    }
-
-    // Count binding refs per project
-    for br in xp.binding_refs_for(stem) {
-        let entry = map.entry(br.project.clone()).or_insert_with(|| types::ProjectCoverage {
-            project: br.project.clone(),
-            call_sites: 0,
-            binding_refs: 0,
-            binding_implemented: 0,
-            binding_total: 0,
-        });
-        entry.binding_refs += 1;
-        entry.binding_total += 1;
-        if br.status == "implemented" {
-            entry.binding_implemented += 1;
-        }
-    }
-
-    let mut result: Vec<_> = map.into_values().collect();
-    result.sort_by(|a, b| a.project.cmp(&b.project));
-    result
 }
 
 fn opt_vec(source: &[String], include: bool) -> Vec<String> {
@@ -244,7 +156,7 @@ fn opt_binding(
     binding: Option<&BindingRegistry>,
     show: bool,
 ) -> Vec<EquationBinding> {
-    if show { build_binding_info(entry, binding) } else { Vec::new() }
+    if show { query_enrich::build_binding_info(entry, binding) } else { Vec::new() }
 }
 
 fn apply_filters(
@@ -268,20 +180,14 @@ fn apply_filters(
         .collect()
 }
 
-fn filter_obligation(
-    entry: &types::ContractEntry,
-    obligation: Option<&String>,
-) -> bool {
+fn filter_obligation(entry: &types::ContractEntry, obligation: Option<&String>) -> bool {
     match obligation {
         Some(ot) => entry.obligation_types.iter().any(|t| t == ot),
         None => true,
     }
 }
 
-fn filter_depends_on(
-    entry: &types::ContractEntry,
-    depends_on: Option<&String>,
-) -> bool {
+fn filter_depends_on(entry: &types::ContractEntry, depends_on: Option<&String>) -> bool {
     match depends_on {
         Some(dep) => entry.depends_on.iter().any(|d| d == dep),
         None => true,
@@ -295,7 +201,6 @@ fn filter_depended_by(
 ) -> bool {
     match depended_by {
         Some(target) => {
-            // entry must be depended-on by `target`
             index
                 .get_by_stem(target)
                 .is_some_and(|t| t.depends_on.contains(&entry.stem))
@@ -312,11 +217,10 @@ fn filter_min_score(
     let Some(threshold) = min_score else {
         return true;
     };
-    // Use score cache (O(1)) when available, fall back to re-computing
     if let Some(cached) = index.cached_score(&entry.stem) {
         return cached >= threshold;
     }
-    build_score_info(entry).is_some_and(|s| s.composite >= threshold)
+    query_enrich::build_score_info(entry).is_some_and(|s| s.composite >= threshold)
 }
 
 fn filter_binding_gaps(
@@ -328,7 +232,7 @@ fn filter_binding_gaps(
         return true;
     }
     let Some(binding) = binding else {
-        return false; // No binding registry = can't check gaps
+        return false;
     };
     let contract_file = format!("{}.yaml", entry.stem);
     binding.bindings.iter().any(|b| {
@@ -342,151 +246,18 @@ fn filter_unproven(entry: &types::ContractEntry, unproven_only: bool) -> bool {
     if !unproven_only {
         return true;
     }
-    // Show contracts with more obligations than kani harnesses
     entry.obligation_count > entry.kani_count
 }
 
 fn filter_min_level(entry: &types::ContractEntry, min_level: Option<&str>) -> bool {
     let Some(min) = min_level else { return true };
-    let threshold = parse_proof_level(min);
+    let threshold = query_enrich::parse_proof_level(min);
     let path = std::path::Path::new(&entry.path);
     let Ok(contract) = crate::schema::parse_contract(path) else {
         return false;
     };
     let level = crate::proof_status::compute_proof_level(&contract, None);
     level >= threshold
-}
-
-fn parse_proof_level(s: &str) -> crate::proof_status::ProofLevel {
-    match s.to_uppercase().as_str() {
-        "L5" => crate::proof_status::ProofLevel::L5,
-        "L4" => crate::proof_status::ProofLevel::L4,
-        "L3" => crate::proof_status::ProofLevel::L3,
-        "L2" => crate::proof_status::ProofLevel::L2,
-        _ => crate::proof_status::ProofLevel::L1,
-    }
-}
-
-#[allow(clippy::cast_possible_truncation)]
-fn build_proof_status_info(entry: &types::ContractEntry) -> Option<ProofStatusInfo> {
-    let path = std::path::Path::new(&entry.path);
-    let contract = crate::schema::parse_contract(path).ok()?;
-    let level = crate::proof_status::compute_proof_level(&contract, None);
-    Some(ProofStatusInfo {
-        level: level.to_string(),
-        obligations: entry.obligation_count as u32,
-        falsification_tests: entry.falsification_count as u32,
-        kani_harnesses: entry.kani_count as u32,
-        lean_proved: contract
-            .verification_summary
-            .as_ref()
-            .map_or(0, |vs| vs.l4_lean_proved),
-    })
-}
-
-fn build_binding_info(
-    entry: &types::ContractEntry,
-    binding: Option<&BindingRegistry>,
-) -> Vec<EquationBinding> {
-    let Some(binding) = binding else {
-        return entry
-            .equations
-            .iter()
-            .map(|eq| EquationBinding {
-                equation: eq.clone(),
-                status: "no binding registry".into(),
-                module_path: None,
-            })
-            .collect();
-    };
-    let contract_file = format!("{}.yaml", entry.stem);
-    entry
-        .equations
-        .iter()
-        .map(|eq| {
-            let found = binding
-                .bindings
-                .iter()
-                .find(|b| b.contract == contract_file && b.equation == *eq);
-            match found {
-                Some(b) => EquationBinding {
-                    equation: eq.clone(),
-                    status: b.status.to_string(),
-                    module_path: b.module_path.clone(),
-                },
-                None => EquationBinding {
-                    equation: eq.clone(),
-                    status: "unbound".into(),
-                    module_path: None,
-                },
-            }
-        })
-        .collect()
-}
-
-fn build_diff_info(entry: &types::ContractEntry) -> Option<DiffInfo> {
-    let output = std::process::Command::new("git")
-        .args(["log", "-1", "--format=%H %aI", "--"])
-        .arg(&entry.path)
-        .output()
-        .ok()?;
-    if !output.status.success() {
-        return None;
-    }
-    let line = String::from_utf8(output.stdout).ok()?;
-    let line = line.trim();
-    let (hash, date) = line.split_once(' ')?;
-    let date_part = date.split('T').next().unwrap_or(date);
-    // Calculate days ago from ISO date
-    let now = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .ok()?
-        .as_secs();
-    let days_ago = parse_iso_days_ago(date_part, now);
-    Some(DiffInfo {
-        last_modified: date_part.to_string(),
-        days_ago,
-        commit_hash: hash.to_string(),
-    })
-}
-
-fn parse_iso_days_ago(date: &str, now_epoch: u64) -> u64 {
-    // Simple ISO date parsing: YYYY-MM-DD
-    let parts: Vec<&str> = date.split('-').collect();
-    if parts.len() != 3 {
-        return 0;
-    }
-    let y: u64 = parts[0].parse().unwrap_or(0);
-    let m: usize = parts[1].parse().unwrap_or(0);
-    let d: u64 = parts[2].parse().unwrap_or(0);
-    // Approximate epoch seconds for the date
-    let days_from_epoch = y.saturating_sub(1970) * 365
-        + y.saturating_sub(1969) / 4
-        + month_days(m)
-        + d.saturating_sub(1);
-    let date_epoch = days_from_epoch * 86400;
-    now_epoch.saturating_sub(date_epoch) / 86400
-}
-
-fn month_days(m: usize) -> u64 {
-    const CUMULATIVE: [u64; 13] = [0, 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
-    CUMULATIVE.get(m).copied().unwrap_or(0)
-}
-
-fn build_score_info(entry: &types::ContractEntry) -> Option<ScoreInfo> {
-    // Parse the contract to compute the score
-    let path = std::path::Path::new(&entry.path);
-    let contract = crate::schema::parse_contract(path).ok()?;
-    let score = scoring::score_contract(&contract, None, &entry.stem);
-    Some(ScoreInfo {
-        composite: score.composite,
-        grade: score.grade.to_string(),
-        spec_depth: score.spec_depth,
-        falsification: score.falsification_coverage,
-        kani: score.kani_coverage,
-        lean: score.lean_coverage,
-        binding: score.binding_coverage,
-    })
 }
 
 #[cfg(test)]

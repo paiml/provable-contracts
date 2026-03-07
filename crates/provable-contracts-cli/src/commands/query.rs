@@ -31,12 +31,16 @@ pub struct QueryCliParams<'a> {
     pub show_call_sites: bool,
     pub show_violations: bool,
     pub show_coverage_map: bool,
+    pub project_filter: Option<&'a str>,
+    pub include_project: Option<&'a Path>,
+    pub all_projects: bool,
+    pub rebuild_index: bool,
     pub format: &'a str,
     pub exit_code: bool,
 }
 
 pub fn run(p: &QueryCliParams<'_>) -> Result<(), Box<dyn std::error::Error>> {
-    let index = ContractIndex::from_directory(p.contract_dir)?;
+    let index = ContractIndex::from_directory_opts(p.contract_dir, p.rebuild_index)?;
 
     let mode = if p.regex {
         SearchMode::Regex
@@ -69,6 +73,9 @@ pub fn run(p: &QueryCliParams<'_>) -> Result<(), Box<dyn std::error::Error>> {
         show_violations: p.show_violations,
         show_coverage_map: p.show_coverage_map,
         min_level: p.min_level.clone(),
+        project_filter: p.project_filter.map(String::from),
+        include_project: p.include_project.map(|p| p.display().to_string()),
+        all_projects: p.all_projects,
     };
 
     let output = query::execute(&index, &params);

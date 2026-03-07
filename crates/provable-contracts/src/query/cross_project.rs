@@ -64,12 +64,37 @@ impl CrossProjectIndex {
     /// walks `../` for sibling projects with `Cargo.toml`, and scans them
     /// for contract references.
     pub fn build(contracts_repo_root: &Path) -> Self {
+        Self::build_with_extra(contracts_repo_root, None)
+    }
+
+    /// Build with an optional extra project path to include.
+    pub fn build_with_extra(contracts_repo_root: &Path, extra_path: Option<&Path>) -> Self {
         let root = contracts_repo_root
             .canonicalize()
             .unwrap_or_else(|_| contracts_repo_root.to_path_buf());
         let parent = root.parent().unwrap_or(&root);
 
-        let projects = discover_projects(parent, &root);
+        let mut projects = discover_projects(parent, &root);
+
+        // Add explicit extra project if provided and not already discovered
+        if let Some(extra) = extra_path {
+            let extra_canon = extra.canonicalize().unwrap_or_else(|_| extra.to_path_buf());
+            if extra_canon.is_dir() && !projects.iter().any(|p| p.path == extra_canon) {
+                let name = extra_canon
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("unknown")
+                    .to_string();
+                let binding_path = find_binding_path(&extra_canon, &name);
+                projects.push(ProjectEntry {
+                    name,
+                    has_cargo_toml: extra_canon.join("Cargo.toml").exists(),
+                    has_binding: binding_path.is_some(),
+                    binding_path,
+                    path: extra_canon,
+                });
+            }
+        }
 
         let mut call_sites: HashMap<String, Vec<CallSite>> = HashMap::new();
         let mut binding_refs: HashMap<String, Vec<BindingRef>> = HashMap::new();

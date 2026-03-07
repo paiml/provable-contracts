@@ -58,6 +58,12 @@ pub struct QueryParams {
     pub show_violations: bool,
     pub show_coverage_map: bool,
     pub min_level: Option<String>,
+    /// Filter cross-project results to a named project (e.g., "aprender").
+    pub project_filter: Option<String>,
+    /// Explicit additional project path to include in cross-project scan.
+    pub include_project: Option<String>,
+    /// Force cross-project scan even when no cross-project flags are set.
+    pub all_projects: bool,
 }
 
 impl Default for QueryParams {
@@ -85,6 +91,9 @@ impl Default for QueryParams {
             show_violations: false,
             show_coverage_map: false,
             min_level: None,
+            project_filter: None,
+            include_project: None,
+            all_projects: false,
         }
     }
 }

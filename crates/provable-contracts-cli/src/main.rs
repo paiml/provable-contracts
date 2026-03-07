@@ -214,6 +214,18 @@ enum Commands {
         /// Show cross-project coverage matrix
         #[arg(long)]
         coverage_map: bool,
+        /// Filter cross-project results to a named project (aprender, trueno, etc.)
+        #[arg(long)]
+        project: Option<String>,
+        /// Add an explicit project path to the cross-project scan
+        #[arg(long)]
+        include_project: Option<PathBuf>,
+        /// Force full cross-project scan even without --call-sites/--violations/--coverage-map
+        #[arg(long)]
+        all_projects: bool,
+        /// Force rebuild of the contract index (ignore cache)
+        #[arg(long)]
+        rebuild_index: bool,
         /// Path to binding registry YAML (for --binding-info)
         #[arg(long)]
         binding: Option<PathBuf>,
@@ -242,6 +254,7 @@ enum Commands {
 }
 
 /// Dispatch a parsed CLI subcommand to its handler
+#[allow(clippy::too_many_lines)]
 fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
     match command {
         Commands::Validate { contract } => commands::validate::run(&contract),
@@ -318,6 +331,10 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             call_sites,
             violations,
             coverage_map,
+            project,
+            include_project,
+            all_projects,
+            rebuild_index,
             binding,
             format,
             exit_code,
@@ -326,6 +343,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             &obligation, min_score, &min_level, &depends_on, &depended_by, unproven,
             score, graph, paper, proof_status, binding_info, binding_gaps,
             diff, pagerank, call_sites, violations, coverage_map,
+            &project, &include_project, all_projects, rebuild_index,
             &binding, &format, exit_code,
         ),
         Commands::Book {
@@ -367,6 +385,10 @@ fn dispatch_query(
     call_sites: bool,
     violations: bool,
     coverage_map: bool,
+    project: &Option<String>,
+    include_project: &Option<PathBuf>,
+    all_projects: bool,
+    rebuild_index: bool,
     binding: &Option<PathBuf>,
     format: &str,
     exit_code: bool,
@@ -395,6 +417,10 @@ fn dispatch_query(
         show_call_sites: call_sites,
         show_violations: violations,
         show_coverage_map: coverage_map,
+        project_filter: project.as_deref(),
+        include_project: include_project.as_deref(),
+        all_projects,
+        rebuild_index,
         binding: binding.as_deref(),
         format,
         exit_code,

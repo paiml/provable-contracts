@@ -32,12 +32,19 @@ impl ContractIndex {
     /// Uses cached index from `.pv/contracts.idx` when fresh,
     /// otherwise rebuilds and caches for next time.
     pub fn from_directory(dir: &Path) -> Result<Self, Box<dyn std::error::Error>> {
-        // Try loading cached index first
-        if let Some(cached) = persist::load_cached(dir) {
-            let mut index = Self::from_entries(cached.entries);
-            index.score_cache = cached.score_cache;
-            index.pagerank_cache = cached.pagerank_cache;
-            return Ok(index);
+        Self::from_directory_opts(dir, false)
+    }
+
+    /// Build an index with option to force rebuild (skip cache).
+    pub fn from_directory_opts(dir: &Path, force_rebuild: bool) -> Result<Self, Box<dyn std::error::Error>> {
+        // Try loading cached index first (unless force rebuild)
+        if !force_rebuild {
+            if let Some(cached) = persist::load_cached(dir) {
+                let mut index = Self::from_entries(cached.entries);
+                index.score_cache = cached.score_cache;
+                index.pagerank_cache = cached.pagerank_cache;
+                return Ok(index);
+            }
         }
 
         let index = Self::build_from_directory(dir)?;
