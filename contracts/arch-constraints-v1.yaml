@@ -35,7 +35,7 @@ metadata:
 equations:
   arch_constraint_lookup:
     formula: "constraints(arch) = { norm_type, activation, pos_enc, mlp_type, weight_layout, has_bias, tied_emb, has_qk_norm, eps }"
-    domain: "arch ∈ { llama, mistral, phi3, qwen2, qwen3, deepseek2, gemma, gemma2, gpt2, bloom, stablelm, falcon, yi, internlm2, command-r, mamba }"
+    domain: "arch ∈ { llama, mistral, phi3, qwen2, qwen3, deepseek2, gemma, gemma2, gpt2, bloom, stablelm, falcon, falcon_7b, falcon_40b, yi, internlm2, command-r, mamba, smollm, olmo, granite, starcoder }"
     codomain: "ArchConstraints struct"
     invariants:
       - "Every GGUF general.architecture value maps to exactly one constraint set"
@@ -61,6 +61,7 @@ enums:
   PositionalEncoding:
     Absolute: "Learned absolute position embeddings"
     Rope: "Rotary Position Embedding"
+    Alibi: "Attention with Linear Biases"
     None: "No positional encoding (SSM/recurrence)"
 
   MlpType:
@@ -168,7 +169,7 @@ architectures:
   # ── Phi-3 / Phi-3.5 ──────────────────────────────────────────────────────
   # Source: aprender/contracts/model-families/phi.yaml
   phi:
-    aliases: ["phi3"]
+    aliases: ["phi3", "phi4"]
     norm_type: LayerNorm
     activation: Silu
     positional_encoding: Rope
@@ -182,7 +183,7 @@ architectures:
   # ── Google Gemma ──────────────────────────────────────────────────────────
   # Source: aprender/contracts/model-families/gemma.yaml
   gemma:
-    aliases: ["gemma2"]
+    aliases: ["gemma2", "gemma3"]
     norm_type: RmsNorm
     activation: Gelu
     positional_encoding: Rope
@@ -319,6 +320,132 @@ architectures:
     mlp_type: GeluMlp
     weight_layout: Linear
     has_bias: false
+    tied_embeddings: false
+    has_qk_norm: false
+    default_eps: 1.0e-5
+
+  # ── Falcon 7B ─────────────────────────────────────────────────────────────
+  # P1: Wrong defaults — uses LayerNorm + GELU + RoPE (not LLaMA defaults)
+  falcon_7b:
+    aliases: ["falcon-7b", "falcon7b"]
+    norm_type: LayerNorm
+    activation: Gelu
+    positional_encoding: Rope
+    mlp_type: GeluMlp
+    weight_layout: Linear
+    has_bias: true
+    tied_embeddings: false
+    has_qk_norm: false
+    default_eps: 1.0e-5
+
+  # ── Falcon 40B ───────────────────────────────────────────────────────────
+  # P1: Wrong defaults — uses LayerNorm + GELU + ALiBi (not LLaMA defaults)
+  falcon_40b:
+    aliases: ["falcon-40b", "falcon40b", "falcon"]
+    norm_type: LayerNorm
+    activation: Gelu
+    positional_encoding: Alibi
+    mlp_type: GeluMlp
+    weight_layout: Linear
+    has_bias: true
+    tied_embeddings: false
+    has_qk_norm: false
+    default_eps: 1.0e-5
+
+  # ── StableLM ─────────────────────────────────────────────────────────────
+  # P1: Wrong defaults — uses LayerNorm (not RmsNorm)
+  stablelm:
+    aliases: ["stable-lm", "stable_lm"]
+    norm_type: LayerNorm
+    activation: Silu
+    positional_encoding: Rope
+    mlp_type: SwiGlu
+    weight_layout: Linear
+    has_bias: true
+    tied_embeddings: false
+    has_qk_norm: false
+    default_eps: 1.0e-5
+
+  # ── Yi ───────────────────────────────────────────────────────────────────
+  # P2: Same constraints as LLaMA (correct by coincidence, explicit is better)
+  yi:
+    aliases: ["yi-coder"]
+    norm_type: RmsNorm
+    activation: Silu
+    positional_encoding: Rope
+    mlp_type: SwiGlu
+    weight_layout: Linear
+    has_bias: false
+    tied_embeddings: false
+    has_qk_norm: false
+    default_eps: 1.0e-5
+
+  # ── InternLM2 ────────────────────────────────────────────────────────────
+  # P2: Same as LLaMA but has_bias=true
+  internlm2:
+    aliases: ["internlm", "internlm2.5"]
+    norm_type: RmsNorm
+    activation: Silu
+    positional_encoding: Rope
+    mlp_type: SwiGlu
+    weight_layout: Linear
+    has_bias: true
+    tied_embeddings: false
+    has_qk_norm: false
+    default_eps: 1.0e-5
+
+  # ── SmolLM ───────────────────────────────────────────────────────────────
+  # P2: Same constraints as LLaMA (correct by coincidence, explicit is better)
+  smollm:
+    aliases: ["smollm2"]
+    norm_type: RmsNorm
+    activation: Silu
+    positional_encoding: Rope
+    mlp_type: SwiGlu
+    weight_layout: Linear
+    has_bias: false
+    tied_embeddings: false
+    has_qk_norm: false
+    default_eps: 1.0e-5
+
+  # ── OLMo ─────────────────────────────────────────────────────────────────
+  # P2: Same constraints as LLaMA (correct by coincidence, explicit is better)
+  olmo:
+    aliases: ["olmo2"]
+    norm_type: RmsNorm
+    activation: Silu
+    positional_encoding: Rope
+    mlp_type: SwiGlu
+    weight_layout: Linear
+    has_bias: false
+    tied_embeddings: false
+    has_qk_norm: false
+    default_eps: 1.0e-5
+
+  # ── Granite ──────────────────────────────────────────────────────────────
+  # P2: Same constraints as LLaMA (correct by coincidence, explicit is better)
+  granite:
+    aliases: ["granite-code"]
+    norm_type: RmsNorm
+    activation: Silu
+    positional_encoding: Rope
+    mlp_type: SwiGlu
+    weight_layout: Linear
+    has_bias: false
+    tied_embeddings: false
+    has_qk_norm: false
+    default_eps: 1.0e-5
+
+  # ── StarCoder ────────────────────────────────────────────────────────────
+  # P2: LayerNorm + GELU + Absolute positional encoding
+  starcoder:
+    aliases: ["starcoder1"]
+    norm_type: LayerNorm
+    activation: Gelu
+    positional_encoding: Absolute
+    mlp_type: GeluMlp
+    weight_layout: Linear
+    has_bias: true
     tied_embeddings: false
     has_qk_norm: false
     default_eps: 1.0e-5
