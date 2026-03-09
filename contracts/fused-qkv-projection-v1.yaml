@@ -1,0 +1,92 @@
+metadata:
+  version: "1.0.0"
+  created: "2026-03-09"
+  author: "PAIML Engineering"
+  description: "Fused QKV projection — concatenated weight matrix for single-matvec attention projection"
+  references:
+    - "Vaswani et al. (2017) Attention Is All You Need"
+    - "Whisper decoder: pre-norm transformer with separate Q/K/V weight matrices"
+  depends_on:
+    - "linear-projection-v1.yaml"
+    - "layernorm-kernel-v1.yaml"
+
+equations:
+  separate_qkv:
+    formula: |
+      Standard (3 separate matvecs):
+        normed = LayerNorm(x)
+        q = W_q @ normed + b_q    (d_model → d_model)
+        k = W_k @ normed + b_k    (d_model → d_model)
+        v = W_v @ normed + b_v    (d_model → d_model)
+    domain: "x ∈ ℝ^{d_model}"
+    codomain: "q, k, v ∈ ℝ^{d_model}"
+
+  fused_qkv:
+    formula: |
+      Fused (1 matvec with concatenated weights):
+        W_qkv = [W_q; W_k; W_v]   ∈ ℝ^{3·d_model × d_model}
+        b_qkv = [b_q; b_k; b_v]   ∈ ℝ^{3·d_model}
+        normed = LayerNorm(x)
+        qkv = W_qkv @ normed + b_qkv    (d_model → 3·d_model)
+        q = qkv[0..d_model]
+        k = qkv[d_model..2·d_model]
+        v = qkv[2·d_model..3·d_model]
+    domain: "x ∈ ℝ^{d_model}"
+    codomain: "q, k, v ∈ ℝ^{d_model} (sliced from ℝ^{3·d_model})"
+    invariants:
+      - "W_qkv rows [0..d) = W_q rows, [d..2d) = W_k rows, [2d..3d) = W_v rows"
+      - "Contiguous memory layout for prefetch-friendly sequential access"
+
+proof_obligations:
+  - type: equivalence
+    property: "Fused matches separate QKV"
+    formal: "|fused_qkv(x) - separate_qkv(x)| < ε element-wise"
+    tolerance: 1.0e-6
+    applies_to: all
+  - type: invariant
+    property: "Output dimension correct"
+    formal: "len(qkv) = 3 * d_model"
+    applies_to: all
+  - type: invariant
+    property: "Weight concatenation preserves values"
+    formal: "W_qkv[i*d..(i+1)*d, :] = W_i for i ∈ {q,k,v}"
+    applies_to: all
+  - type: invariant
+    property: "Bias concatenation preserves values"
+    formal: "b_qkv[i*d..(i+1)*d] = b_i for i ∈ {q,k,v}"
+    applies_to: all
+  - type: invariant
+    property: "Single matvec call"
+    formal: "Exactly one tiled_matvec_f16_into call for Q+K+V combined"
+    applies_to: all
+
+kernel_structure:
+  phases:
+    - name: weight_fusion
+      description: "At load time: concatenate W_q, W_k, W_v into contiguous W_qkv"
+      invariant: "W_qkv layout matches concatenation spec"
+    - name: projection
+      description: "At inference: single matvec producing 3·d_model output, then slice"
+      invariant: "q = qkv[0..d], k = qkv[d..2d], v = qkv[2d..3d]"
+
+falsification_tests:
+  - id: FALSIFY-QKV-001
+    rule: "Equivalence to separate projections"
+    prediction: "|fused_qkv(x) - [w_q@x; w_k@x; w_v@x]| < 1e-6 element-wise"
+    test: "deterministic test with Whisper tiny dimensions (d_model=384)"
+    if_fails: "Weight concatenation order or slicing error"
+  - id: FALSIFY-QKV-002
+    rule: "Weight layout verification"
+    prediction: "W_qkv[0..d*d] = W_q.flatten(), W_qkv[d*d..2*d*d] = W_k.flatten()"
+    test: "byte-level comparison after fusion"
+    if_fails: "Row-major vs column-major confusion in concatenation"
+  - id: FALSIFY-QKV-003
+    rule: "Bias correctness"
+    prediction: "b_qkv[0..d] = b_q, b_qkv[d..2d] = b_k, b_qkv[2d..3d] = b_v"
+    test: "exact equality test"
+    if_fails: "Bias vector ordering error"
+  - id: FALSIFY-QKV-004
+    rule: "Whisper-specific dimensions"
+    prediction: "Correct for d_model ∈ {384, 512, 768, 1024, 1280}"
+    test: "deterministic test with all Whisper model sizes"
+    if_fails: "Dimension-specific edge case"
