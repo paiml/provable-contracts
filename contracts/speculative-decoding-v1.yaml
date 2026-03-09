@@ -1,0 +1,156 @@
+metadata:
+  version: "1.0.0"
+  created: "2026-03-09"
+  author: "PAIML Engineering"
+  description: "Speculative decoding with early-exit drafting — use shallow layers as draft model, verify in one batched full-depth pass (Leviathan et al. 2023, adapted for Whisper)"
+  references:
+    - "Leviathan, Kalman & Matias (2023) Fast Inference from Transformers via Speculative Decoding"
+    - "Chen, Borgeaud et al. (2023) Accelerating Large Language Model Decoding with Speculative Sampling"
+    - "Radford et al. (2023) Robust Speech Recognition via Large-Scale Weak Supervision (Whisper)"
+  depends_on:
+    - "online-softmax-v1.yaml"
+    - "attention-kernel-v1.yaml"
+
+equations:
+  draft_decode:
+    formula: |
+      Early-exit draft using layers 0..D (D < N_layers):
+        For t in [t_0, t_0+1, ..., t_0+K-1]:
+          h_t = Embedding(y_{t-1}) + PositionalEncoding(t)
+          for l in 0..D:
+            h_t = DecoderLayer_l(h_t, encoder_out)
+          y_draft[t] = argmax(LMHead(LayerNorm(h_t)))
+      Where D = 2, N_layers = 4, K = draft speculation length.
+    domain: "y_{t-1} ∈ V (vocabulary), encoder_out ∈ ℝ^{S×d_model}, D ∈ {1,..,N_layers-1}, K ≥ 1"
+    codomain: "y_draft ∈ V^K"
+    invariants:
+      - "D < N_layers (draft uses strict subset of layers)"
+      - "K ≥ 1 (at least one candidate token drafted)"
+      - "Draft and full model share identical layer weights for layers 0..D"
+
+  batched_verify:
+    formula: |
+      Full-depth batched verification of K draft tokens:
+        X = [x_{t_0}, x_{t_0+1}, ..., x_{t_0+K-1}]  (K token embeddings, causal-masked)
+        for l in 0..N_layers:
+          X = DecoderLayer_l(X, encoder_out)          (batched, causal attention)
+        y_verify[t_0..t_0+K-1] = argmax(LMHead(LayerNorm(X)), dim=-1)
+      Cost: 1 forward pass through all N_layers with batch size K.
+    domain: "X ∈ ℝ^{K×d_model}, encoder_out ∈ ℝ^{S×d_model}"
+    codomain: "y_verify ∈ V^K"
+    invariants:
+      - "Verify uses all N_layers (no layer skipping)"
+      - "Causal mask ensures position i attends only to positions ≤ i"
+      - "y_verify[i] is identical to sequential greedy decode at position t_0+i given same prefix"
+
+  acceptance:
+    formula: |
+      Accept longest matching prefix plus one bonus token:
+        n_match = max { n : y_draft[i] == y_verify[i] for all i in [0, n) }
+        accepted_tokens = y_verify[0..n_match]  ∪  { y_verify[n_match] }
+        num_accepted = n_match + 1
+      Cases:
+        - All K match: accept K draft tokens + 1 bonus = K+1 tokens total
+        - First mismatch at i=0: reject all drafts, accept y_verify[0] = 1 token
+        - Mismatch at i=j (0 < j < K): accept j draft tokens + y_verify[j] bonus = j+1 tokens
+    domain: "y_draft ∈ V^K, y_verify ∈ V^K"
+    codomain: "num_accepted ∈ {1, 2, ..., K+1}"
+    invariants:
+      - "num_accepted ≥ 1 (at least the bonus token is always accepted)"
+      - "All accepted tokens are from y_verify (never from y_draft alone)"
+      - "Accepted prefix is consistent with full-model greedy decode"
+
+  speedup_condition:
+    formula: |
+      Speculative decoding is faster when:
+        E[num_accepted] * cost_full_sequential > cost_draft_K + cost_verify_batch
+      Where:
+        cost_draft_K   = K * (D / N_layers) * cost_full_sequential   (K sequential shallow passes)
+        cost_verify_batch ≈ cost_full_sequential * β(K)               (batched, β ≈ 1..2 for small K)
+      Simplifying, speedup > 1 when:
+        E[num_accepted] > K * (D / N_layers) + β(K)
+      For D=2, N=4, K=5, β≈1.2: need E[num_accepted] > 5*(2/4) + 1.2 = 3.7 tokens/step.
+    domain: "K ≥ 1, D < N_layers, β ≥ 1"
+    codomain: "speedup ∈ ℝ+"
+    invariants:
+      - "E[num_accepted] ≥ 1 guarantees worst-case is bounded"
+      - "Speedup increases with acceptance rate α = P(draft == verify)"
+      - "For α > D/N_layers, speculative decoding is always beneficial"
+
+proof_obligations:
+  - type: equivalence
+    property: "Output tokens identical to non-speculative greedy decode"
+    formal: "speculative_decode(x) == greedy_decode(x) token-by-token for all inputs x"
+    tolerance: 0
+    applies_to: all
+  - type: invariant
+    property: "Acceptance count lower bound"
+    formal: "num_accepted ≥ 1 for every draft-verify step"
+    applies_to: all
+  - type: invariant
+    property: "Draft uses strict subset of layers"
+    formal: "draft_layers ⊂ full_layers, |draft_layers| = D < N_layers"
+    applies_to: all
+  - type: invariant
+    property: "Verify uses all layers"
+    formal: "|verify_layers| = N_layers, verify_layers = {0, 1, ..., N_layers-1}"
+    applies_to: all
+  - type: invariant
+    property: "Bonus token always accepted"
+    formal: "y_output includes y_verify[n_match] even when n_match = 0"
+    applies_to: all
+  - type: monotonicity
+    property: "Acceptance rate monotonicity with draft quality"
+    formal: "If P_A(draft == verify) > P_B(draft == verify) then E_A[num_accepted] > E_B[num_accepted]"
+    applies_to: all
+  - type: invariant
+    property: "Weight sharing between draft and verify"
+    formal: "draft.layer[l].params == verify.layer[l].params for all l in 0..D"
+    applies_to: all
+
+kernel_structure:
+  phases:
+    - name: draft_speculation
+      description: "Run K sequential forward passes through layers 0..D to produce K candidate tokens"
+      invariant: "Each draft token uses only the first D layers; autoregressive dependency on previous draft tokens"
+    - name: batched_verification
+      description: "Run one batched forward pass through all N_layers with K positions, causal-masked"
+      invariant: "Produces K logits identical to K sequential full-model passes given the same prefix"
+    - name: prefix_acceptance
+      description: "Compare draft vs verify tokens, find longest matching prefix, emit prefix + bonus"
+      invariant: "num_accepted = (longest matching prefix length) + 1, always ≥ 1"
+    - name: state_advance
+      description: "Advance KV cache by num_accepted positions, set next input to last accepted token"
+      invariant: "KV cache contains exactly the accepted prefix; no speculative state leaks into cache"
+
+falsification_tests:
+  - id: FALSIFY-SPEC-001
+    rule: "Output equivalence with greedy decode"
+    prediction: "speculative_decode(x) == greedy_decode(x) for all test inputs"
+    test: "Deterministic test on 50 Whisper decoder sequences (English, multilingual, edge cases); compare token-by-token with non-speculative greedy baseline"
+    if_fails: "Acceptance logic admits tokens not produced by full-model verify, or bonus token selection is incorrect"
+  - id: FALSIFY-SPEC-002
+    rule: "Acceptance rate > 1.0 on typical English text"
+    prediction: "E[num_accepted] > 1.0 averaged over ≥100 English speech segments"
+    test: "Run speculative decode with D=2, N=4, K=5 on LibriSpeech test-clean subset; measure mean accepted tokens per step"
+    if_fails: "Draft model (layers 0-1) has zero predictive power; early-exit representation is degenerate"
+  - id: FALSIFY-SPEC-003
+    rule: "Single-token sequences handled correctly"
+    prediction: "Speculative decode produces correct output for sequences of length 1 (e.g., <|endoftext|> immediately)"
+    test: "Feed silence / empty audio; verify <|endoftext|> emitted and K-1 unused draft tokens cause no crash"
+    if_fails: "Edge case in acceptance loop when all drafts rejected or sequence terminates before K tokens"
+  - id: FALSIFY-SPEC-004
+    rule: "Draft-verify dimension consistency"
+    prediction: "LMHead(LayerNorm(h)) produces identical logit shape for D-layer and N-layer outputs"
+    test: "Assert draft logits.shape == verify logits.shape == (K, |V|) for K in {1, 2, 5, 10}"
+    if_fails: "Layer norm or LM head expects full-depth residual stream statistics; early-exit hidden states have incompatible scale"
+  - id: FALSIFY-SPEC-005
+    rule: "KV cache consistency after partial acceptance"
+    prediction: "After accepting n < K tokens, KV cache length == prefix_len + n and contains no speculative entries"
+    test: "Inject deliberate draft-verify mismatch at position j; verify cache is truncated to prefix_len + j + 1"
+    if_fails: "Cache rollback logic retains speculative KV entries, corrupting subsequent decode steps"
+  - id: FALSIFY-SPEC-006
+    rule: "Full-match bonus token correctness"
+    prediction: "When all K drafts match, the (K+1)-th bonus token equals greedy_decode at position t_0+K"
+    test: "Construct input where draft model perfectly predicts K=5 tokens; verify 6 tokens emitted and token 6 matches sequential baseline"
+    if_fails: "Bonus token generated from stale logits or wrong position index"
