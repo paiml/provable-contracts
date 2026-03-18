@@ -171,7 +171,14 @@ fn generate_wired_obligation_test(
         | ObligationType::Conservation
         | ObligationType::Ordering
         | ObligationType::Completeness
-        | ObligationType::Soundness => {
+        | ObligationType::Soundness
+        | ObligationType::Involution
+        | ObligationType::Determinism
+        | ObligationType::Roundtrip
+        | ObligationType::StateMachine
+        | ObligationType::Classification
+        | ObligationType::Independence
+        | ObligationType::Termination => {
             generate_wired_generic(out, ob);
         }
     }

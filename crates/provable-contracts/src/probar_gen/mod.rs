@@ -90,7 +90,16 @@ fn generate_obligation_test(out: &mut String, ob: &ProofObligation, index: usize
 
     // Body based on obligation type
     match ob.obligation_type {
-        ObligationType::Completeness | ObligationType::Soundness | ObligationType::Invariant => {
+        ObligationType::Completeness
+        | ObligationType::Soundness
+        | ObligationType::Invariant
+        | ObligationType::Involution
+        | ObligationType::Determinism
+        | ObligationType::Roundtrip
+        | ObligationType::StateMachine
+        | ObligationType::Classification
+        | ObligationType::Independence
+        | ObligationType::Termination => {
             generate_invariant_body(out, ob);
         }
         ObligationType::Equivalence => {
@@ -155,6 +164,14 @@ fn obligation_pattern(ot: ObligationType) -> &'static str {
         ObligationType::Ordering => "a ≤ b → f(a) ≤ f(b) — order relation maintained",
         ObligationType::Completeness => "∀ required elements present — completeness verified",
         ObligationType::Soundness => "∀x: P(x) → Q(f(x)) — soundness of transformation",
+        ObligationType::Involution => "f(f(x)) = x — involution (self-inverse)",
+        ObligationType::Determinism => "f(x) = f(x) — deterministic output for same input",
+        ObligationType::Roundtrip => "decode(encode(x)) = x — roundtrip fidelity",
+        ObligationType::StateMachine => "S × A → S — valid state transitions",
+        ObligationType::Classification => "f(x) ∈ C — output belongs to valid class set",
+        ObligationType::Independence | ObligationType::Termination => {
+            "P(A∩B) = P(A)·P(B) — statistical independence"
+        }
     }
 }
 

@@ -5,10 +5,10 @@
 # realizar:: module paths were used as the implementation target.
 #
 # Statistics:
-#   Total bindings: 23
-#   Implemented: 23 (100%)
+#   Total bindings: 33
+#   Implemented: 27 (82%)
 #   Partial: 0
-#   Not implemented: 0
+#   Not implemented: 6 (PMAT-051/052/053 — paged KV + continuous batching)
 #
 # Refs: paiml/realizar#139, paiml/provable-contracts#11
 
@@ -208,3 +208,92 @@ bindings:
     signature: "fn upload_weights(...) -> Result<(Vec<f32>, ...)>"
     status: implemented
     notes: "SafeTensors loader; validates completeness + model_load_basic before GPU init"
+
+  # ── PTX Target Parity (PMAT-044) ───────────────────────────
+  - contract: ptx-target-parity-v1.yaml
+    equation: target_parity
+    module_path: "realizar::cuda::gpu_profile"
+    function: "GpuProfile::detect"
+    signature: "fn detect(context: &CudaContext) -> GpuProfile"
+    status: implemented
+    notes: "sm_target set from context.compute_capability() at executor init"
+
+  - contract: ptx-target-parity-v1.yaml
+    equation: no_hardcoded_targets
+    module_path: "realizar::cuda::kernel_generator"
+    function: "CudaKernels::generate_ptx"
+    signature: "fn generate_ptx(&self, kernel_type: &KernelType) -> String"
+    status: implemented
+    notes: "All PTX generation uses self.sm_target — no emit_ptx() calls in executor/"
+
+  - contract: ptx-target-parity-v1.yaml
+    equation: jit_compilation_success
+    module_path: "realizar::cuda::executor::core"
+    function: "CudaExecutor::compile_ptx"
+    signature: "fn compile_ptx(&self, ptx: &str) -> Result<CudaModule, GpuError>"
+    status: implemented
+    notes: "PTX JIT with blocklist; target parity ensures CUDA_SUCCESS"
+
+  # ── Fused QKV Activation Quantization (PMAT-054A) ──────────
+  - contract: fused-qkv-projection-v1.yaml
+    equation: shared_q8_qkv
+    module_path: "realizar::cuda::executor::q4k_mwv_gemv"
+    function: "CudaExecutor::batched_qkv_dp4a_q4k_gemv_into"
+    signature: "fn batched_qkv_dp4a_q4k_gemv_into(&mut self, q_w: u64, k_w: u64, v_w: u64, input: &GpuBuffer<f32>, q_out: &GpuBuffer<f32>, k_out: &GpuBuffer<f32>, v_out: &GpuBuffer<f32>, m: u32, q_dim: u32, kv_dim: u32, k: u32) -> Result<(), GpuError>"
+    status: implemented
+    notes: "PMAT-054A: Q8_1 quantize once, 3x GEMV reuse. Saves 56 kernel launches per token."
+
+  # ── Paged KV Cache (PMAT-052 — not yet implemented) ────────
+  - contract: paged-kv-cache-v1.yaml
+    equation: slot_mapping
+    module_path: "realizar::cuda::executor::kv_cache"
+    function: "PagedKvCache::slot"
+    signature: "fn slot(&self, req: usize, pos: usize) -> usize"
+    status: not_implemented
+    notes: "PMAT-052: Requires block table allocator. Currently stride-based."
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: block_allocation
+    module_path: "realizar::cuda::executor::kv_cache"
+    function: "BlockAllocator::allocate"
+    signature: "fn allocate(&mut self, num_blocks: usize) -> Result<Vec<u32>, GpuError>"
+    status: not_implemented
+    notes: "PMAT-052: Free list block allocator. Currently contiguous allocation."
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: paged_contiguous_equivalence
+    module_path: "realizar::cuda::executor::attention"
+    function: "paged_attention_into"
+    signature: "fn paged_attention_into(&self, q: &GpuBuffer, block_table: &GpuBuffer, ...) -> Result<(), GpuError>"
+    status: not_implemented
+    notes: "PMAT-053: Paged attention kernel. Currently incremental_attention_into."
+
+  # ── Continuous Batching (PMAT-051 — not yet implemented) ────
+  - contract: continuous-batching-v1.yaml
+    equation: token_budget
+    module_path: "realizar::api::cuda_batch_scheduler"
+    function: "CudaBatchScheduler::schedule_step"
+    signature: "fn schedule_step(&mut self) -> SchedulerOutput"
+    status: not_implemented
+    notes: "PMAT-051: Token budget scheduler. Currently 10ms accumulation window."
+
+  - contract: continuous-batching-v1.yaml
+    equation: chunked_prefill
+    module_path: "realizar::cuda::executor::layers::prefill"
+    function: "CudaExecutor::chunked_prefill"
+    signature: "fn chunked_prefill(&mut self, tokens: &[u32], chunk_size: usize) -> Result<(), GpuError>"
+    status: not_implemented
+    notes: "PMAT-051: Chunked prefill to avoid blocking decode. Currently full prefill."
+
+  - contract: continuous-batching-v1.yaml
+    equation: correctness_under_batching
+    module_path: "realizar::gguf::cuda::generate_batched_streaming"
+    function: "generate_batched_streaming"
+    signature: "fn generate_batched_streaming(&mut self, slots: &[BatchSlot]) -> Result<(), GpuError>"
+    status: not_implemented
+    notes: |
+      CORRECTNESS-013: FALSIFIED. c=4 slots 1-3 produce constant tokens per step.
+      Confirmed in BOTH HGEMM (token 585) and DP4A (tokens 198/88648/198) paths.
+      Root cause in common path: prefill_multi_prompt → decode_batched transition.
+      PMAT-070: Fix batched decode frozen slots. PMAT-071: Wire FALSIFY-CB-006.
+      Instrument: probador llm test c=1 vs c=4, X-Trace-Level: brick, PMAT051_TRACE=1.

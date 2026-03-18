@@ -133,6 +133,14 @@ pub enum ObligationType {
     Ordering,
     Completeness,
     Soundness,
+    Involution,
+    Determinism,
+    Roundtrip,
+    #[serde(rename = "state_machine")]
+    StateMachine,
+    Classification,
+    Independence,
+    Termination,
 }
 
 impl std::fmt::Display for ObligationType {
@@ -150,6 +158,13 @@ impl std::fmt::Display for ObligationType {
             Self::Ordering => "ordering",
             Self::Completeness => "completeness",
             Self::Soundness => "soundness",
+            Self::Involution => "involution",
+            Self::Determinism => "determinism",
+            Self::Roundtrip => "roundtrip",
+            Self::StateMachine => "state_machine",
+            Self::Classification => "classification",
+            Self::Independence => "independence",
+            Self::Termination => "termination",
         };
         write!(f, "{s}")
     }
@@ -345,6 +360,13 @@ mod tests {
         assert_eq!(ObligationType::Ordering.to_string(), "ordering");
         assert_eq!(ObligationType::Completeness.to_string(), "completeness");
         assert_eq!(ObligationType::Soundness.to_string(), "soundness");
+        assert_eq!(ObligationType::Involution.to_string(), "involution");
+        assert_eq!(ObligationType::Determinism.to_string(), "determinism");
+        assert_eq!(ObligationType::Roundtrip.to_string(), "roundtrip");
+        assert_eq!(ObligationType::StateMachine.to_string(), "state_machine");
+        assert_eq!(ObligationType::Classification.to_string(), "classification");
+        assert_eq!(ObligationType::Independence.to_string(), "independence");
+        assert_eq!(ObligationType::Termination.to_string(), "termination");
     }
 
     #[test]
