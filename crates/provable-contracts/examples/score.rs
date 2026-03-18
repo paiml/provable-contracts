@@ -11,10 +11,10 @@ fn main() {
 
     let mut entries: Vec<_> = std::fs::read_dir(contracts_dir)
         .expect("contracts/ directory must exist")
-        .filter_map(|e| e.ok())
+        .filter_map(std::result::Result::ok)
         .filter(|e| e.path().extension().and_then(|x| x.to_str()) == Some("yaml"))
         .collect();
-    entries.sort_by_key(|e| e.path());
+    entries.sort_by_key(std::fs::DirEntry::path);
 
     let mut scores = Vec::new();
     for entry in &entries {

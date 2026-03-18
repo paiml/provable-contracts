@@ -175,7 +175,7 @@ fn falsify_cma_006_identity_cholesky() {
 
 /// FALSIFY-GDN-001: Output shape
 /// Contract: gated-delta-net-v1.yaml
-/// Prediction: output length = seq_len * v_dim
+/// Prediction: output length = `seq_len` * `v_dim`
 /// If fails: output dimension calculation is incorrect
 #[test]
 fn falsify_gdn_001_output_shape() {

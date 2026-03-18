@@ -1,7 +1,7 @@
 //! Phase 5 falsification tests for activation and gated kernels.
 //!
-//! Covers: Activation (ReLU, GELU, SiLU), SiLU Standalone, SwiGLU,
-//! Cross-Entropy, and RoPE kernels.
+//! Covers: Activation (`ReLU`, GELU, `SiLU`), `SiLU` Standalone, `SwiGLU`,
+//! Cross-Entropy, and `RoPE` kernels.
 //!
 //! 28 tests total: FALSIFY-ACT-001..006, FALSIFY-SI-001..006,
 //! FALSIFY-SG-001..006, FALSIFY-CE-001..006, FALSIFY-RP-001..004.

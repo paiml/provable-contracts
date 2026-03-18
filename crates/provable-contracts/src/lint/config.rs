@@ -347,14 +347,14 @@ color = "auto"
 
     #[test]
     fn parse_comments_and_blank_lines() {
-        let toml = r#"
+        let toml = r"
 # This is a comment
 
 [lint]
 # Another comment
 min_score = 0.75
 
-"#;
+";
         let config = toml_parse(toml);
         assert_eq!(config.lint.min_score, Some(0.75));
     }
@@ -472,12 +472,12 @@ base_ref = "main"
 
     #[test]
     fn parse_trend_section() {
-        let toml = r#"
+        let toml = r"
 [lint.trend]
 enabled = true
 retention_days = 30
 drift_threshold = 0.10
-"#;
+";
         let config = toml_parse(toml);
         assert!(config.lint.trend.enabled);
         assert_eq!(config.lint.trend.retention_days, 30);

@@ -168,7 +168,7 @@ fn isolation_gqa_through_matmul() {
     );
 }
 
-/// Isolation: flash_attention vs attention — tile_size can affect numerical path
+/// Isolation: `flash_attention` vs attention — `tile_size` can affect numerical path
 #[test]
 fn isolation_flash_through_attention() {
     let q = [1.0f32, 0.5, 0.3, 0.7, 0.2, 0.9, 0.8, 0.1];
@@ -239,7 +239,7 @@ fn isolation_swiglu_through_silu() {
     );
 }
 
-/// Isolation: softmax vs log_softmax — different functions
+/// Isolation: softmax vs `log_softmax` — different functions
 #[test]
 fn isolation_cross_entropy_through_softmax() {
     let logits = [1.0f32, 2.0, 3.0, 4.0];
@@ -319,7 +319,7 @@ fn isolation_adamw_through_lbfgs() {
 fn isolation_conv1d_through_matmul() {
     let input = [1.0f32, 2.0, 3.0, 4.0];
     let weight = [1.0f32, 1.0];
-    let out_len = (4 + 0 - 2) / 1 + 1;
+    let out_len = ((4 - 2)) + 1;
     let mut conv_out = vec![0.0f32; out_len];
     conv1d_scalar(&input, &weight, None, 1, 1, 4, 2, 1, 0, &mut conv_out);
 
@@ -344,7 +344,7 @@ fn isolation_ssm_through_conv1d() {
     ssm_scan_scalar(&a_bar, &b_bar, &c, &x, state_dim, seq_len, &mut ssm_out);
 
     let weight = [1.0f32, 1.0];
-    let conv_out_len = (4 + 0 - 2) / 1 + 1;
+    let conv_out_len = ((4 - 2)) + 1;
     let mut conv_out = vec![0.0f32; conv_out_len];
     conv1d_scalar(&x, &weight, None, 1, 1, 4, 2, 1, 0, &mut conv_out);
 

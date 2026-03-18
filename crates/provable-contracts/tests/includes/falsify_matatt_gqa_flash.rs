@@ -200,7 +200,7 @@ proptest! {
 
 /// FALSIFY-GQ-006
 /// Contract: gqa-kernel-v1.yaml
-/// Prediction: num_heads must be divisible by num_kv_heads; valid combos work
+/// Prediction: `num_heads` must be divisible by `num_kv_heads`; valid combos work
 /// Failure: valid head divisibility combinations rejected
 #[test]
 fn falsify_gq_006_head_divisibility() {

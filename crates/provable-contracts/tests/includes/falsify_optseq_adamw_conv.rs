@@ -4,7 +4,7 @@
 
 /// FALSIFY-AW-001: Decoupled weight decay
 /// Contract: adamw-kernel-v1.yaml
-/// Prediction: with weight_decay > 0 and zero gradients, params decrease by factor (1 - lr*wd)
+/// Prediction: with `weight_decay` > 0 and zero gradients, params decrease by factor (1 - lr*wd)
 /// If fails: weight decay is not decoupled from adaptive learning rate
 #[test]
 fn falsify_aw_001_decoupled_weight_decay() {
@@ -199,7 +199,7 @@ proptest! {
 
 /// FALSIFY-CV-001: Output shape
 /// Contract: conv1d-kernel-v1.yaml
-/// Prediction: output length = floor((length + 2*padding - kernel_size) / stride) + 1
+/// Prediction: output length = floor((length + 2*padding - `kernel_size`) / stride) + 1
 /// If fails: output dimension calculation is incorrect
 #[test]
 fn falsify_cv_001_output_shape() {
@@ -283,8 +283,8 @@ proptest! {
 
 /// FALSIFY-CV-003: Im2col equivalence (pointwise)
 /// Contract: conv1d-kernel-v1.yaml
-/// Prediction: conv1d with kernel_size=1, stride=1 acts as pointwise multiplication
-/// If fails: kernel_size=1 edge case is handled incorrectly
+/// Prediction: conv1d with `kernel_size=1`, stride=1 acts as pointwise multiplication
+/// If fails: `kernel_size=1` edge case is handled incorrectly
 #[test]
 fn falsify_cv_003_pointwise_equivalence() {
     let c_in = 1;
@@ -401,7 +401,7 @@ proptest! {
 
 /// FALSIFY-CV-006: Identity kernel
 /// Contract: conv1d-kernel-v1.yaml
-/// Prediction: conv1d with kernel_size=1, c_in=c_out=1, weight=[1.0], bias=None reproduces input
+/// Prediction: conv1d with `kernel_size=1`, `c_in=c_out=1`, weight=[1.0], bias=None reproduces input
 /// If fails: identity convolution does not preserve input
 #[test]
 fn falsify_cv_006_identity_kernel() {

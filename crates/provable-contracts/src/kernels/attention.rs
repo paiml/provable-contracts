@@ -154,7 +154,7 @@ mod tests {
         attention_scalar(&q, &k, &v, n, m, d_k, d_v, &mut output);
 
         // Mean of V rows: [(3+6+9)/3, (6+9+12)/3] = [6.0, 9.0]
-        let expected = vec![6.0, 9.0];
+        let expected = [6.0, 9.0];
         for (a, b) in output.iter().zip(expected.iter()) {
             assert!((a - b).abs() < 1e-5, "expected ~{b}, got {a}");
         }

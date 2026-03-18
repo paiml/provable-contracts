@@ -3,7 +3,7 @@
 //! Demonstrates the Phase 7 verification hierarchy reporting.
 //!
 //! Usage:
-//!   cargo run --example lean_status -- contracts/
+//!   cargo run --example `lean_status` -- contracts/
 
 use std::path::PathBuf;
 use std::process;

@@ -214,7 +214,7 @@ proptest! {
 
 /// FALSIFY-ATT-003
 /// Contract: attention-kernel-v1.yaml
-/// Prediction: scaling factor 1/sqrt(d_k) changes output when d_k changes
+/// Prediction: scaling factor `1/sqrt(d_k)` changes output when `d_k` changes
 /// Failure: scaling dimension has no effect on attention output
 #[test]
 fn falsify_att_003_scaling() {

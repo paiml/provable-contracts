@@ -414,7 +414,7 @@ bindings:
         assert!(code.contains("1e-6"));
     }
 
-    /// Verify emit_imports deduplicates identical module paths
+    /// Verify `emit_imports` deduplicates identical module paths
     #[test]
     fn emit_imports_deduplicates() {
         let binding_yaml = r#"

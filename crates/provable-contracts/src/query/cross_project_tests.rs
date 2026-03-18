@@ -71,8 +71,7 @@ fn repo_root() -> PathBuf {
 fn has_sibling_repos() -> bool {
     let root = repo_root();
     root.parent()
-        .map(|p| p.join("aprender").exists())
-        .unwrap_or(false)
+        .is_some_and(|p| p.join("aprender").exists())
 }
 
 #[test]

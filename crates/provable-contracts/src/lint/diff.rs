@@ -151,7 +151,6 @@ mod tests {
         match result {
             Err(e) if e.contains("git diff failed") => {
                 // Shallow clone — skip test
-                return;
             }
             Err(e) => panic!("Unexpected error: {e}"),
             Ok(stems) => {

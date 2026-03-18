@@ -1,6 +1,6 @@
 //! Phase 5 falsification tests for optimizer, sequence, and classical ML kernels.
 //!
-//! Covers AdamW, Conv1d, SSM, KMeans, PageRank, LBFGS, CMA-ES, and Gated Delta Net
+//! Covers `AdamW`, Conv1d, SSM, `KMeans`, `PageRank`, LBFGS, CMA-ES, and Gated Delta Net
 //! with 47 tests total. Each test targets a specific mathematical invariant that
 //! would break if the implementation contains a common bug class.
 

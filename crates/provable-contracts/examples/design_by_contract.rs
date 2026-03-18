@@ -5,7 +5,7 @@
 //! versions, and check binding status from a registry.
 //!
 //! Run from the workspace root:
-//!   cargo run --example design_by_contract
+//!   cargo run --example `design_by_contract`
 
 use std::path::Path;
 

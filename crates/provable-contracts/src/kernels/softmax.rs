@@ -232,7 +232,7 @@ mod tests {
             softmax_scalar(&v, &mut out);
             for (i, &o) in out.iter().enumerate() {
                 prop_assert!(
-                    o >= 0.0 && o <= 1.0,
+                    (0.0..=1.0).contains(&o),
                     "output[{i}] = {o} not in [0,1]"
                 );
             }

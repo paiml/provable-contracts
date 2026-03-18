@@ -5,7 +5,7 @@
 /// FALSIFY-SG-001: Zero gate
 /// Contract: swiglu-kernel-v1.yaml
 /// Prediction: swiglu(gate=[0,...], value=anything) = [0,...] since silu(0)=0
-/// If fails: SwiGLU with zero gate does not produce zero output
+/// If fails: `SwiGLU` with zero gate does not produce zero output
 #[test]
 fn falsify_sg_001_zero_gate() {
     let gate = [0.0f32; 8];
@@ -95,7 +95,7 @@ proptest! {
 /// FALSIFY-SG-005: Symmetry check
 /// Contract: swiglu-kernel-v1.yaml
 /// Prediction: swiglu with value=[1,1,...] equals silu of gate
-/// If fails: SwiGLU with unit value does not reduce to SiLU
+/// If fails: `SwiGLU` with unit value does not reduce to `SiLU`
 #[test]
 fn falsify_sg_005_symmetry_check() {
     let gate = [-3.0f32, -1.0, 0.0, 0.5, 1.0, 2.0, 5.0, 10.0];

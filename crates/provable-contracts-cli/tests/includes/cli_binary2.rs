@@ -111,7 +111,7 @@
         assert!(stdout.contains("digraph contracts {"));
         assert!(stdout.contains("rankdir=LR"));
         assert!(stdout.contains("->"));
-        assert!(stdout.contains("}"));
+        assert!(stdout.contains('}'));
     }
 
     #[test]

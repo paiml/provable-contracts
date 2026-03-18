@@ -3,7 +3,7 @@
 //! Demonstrates Phase 7 codegen: contract YAML → Lean 4 source.
 //!
 //! Usage:
-//!   cargo run --example lean_codegen -- contracts/softmax-kernel-v1.yaml
+//!   cargo run --example `lean_codegen` -- contracts/softmax-kernel-v1.yaml
 
 use std::path::PathBuf;
 use std::process;

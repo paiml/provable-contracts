@@ -15,7 +15,7 @@ fn mutation_softmax_detect_no_max_subtraction() {
     }
     let sum: f32 = mutated.iter().sum();
     if sum.is_finite() && sum > 0.0 {
-        for m in mutated.iter_mut() {
+        for m in &mut mutated {
             *m /= sum;
         }
     }
@@ -74,7 +74,7 @@ fn mutation_layernorm_detect_no_eps() {
     );
 }
 
-/// Mutation: batchnorm — no running stat update leaves running_mean at 0
+/// Mutation: batchnorm — no running stat update leaves `running_mean` at 0
 #[test]
 fn mutation_batchnorm_detect_no_running_update() {
     let input = [1.0f32, 2.0, 3.0, 4.0];
@@ -232,7 +232,7 @@ fn mutation_matmul_detect_swap_indices() {
     );
 }
 
-/// Mutation: attention — use 1/d_k instead of 1/sqrt(d_k) gives different output
+/// Mutation: attention — use `1/d_k` instead of `1/sqrt(d_k)` gives different output
 #[test]
 fn mutation_attention_detect_wrong_scaling() {
     let q = [1.0f32, 0.5, 0.3, 0.7];

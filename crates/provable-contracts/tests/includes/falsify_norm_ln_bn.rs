@@ -31,8 +31,8 @@ proptest! {
         v in proptest::collection::vec(-10.0_f32..10.0, 4..=32)
     ) {
         // Skip constant vectors (variance = 0 means output is all zeros)
-        let vmin = v.iter().cloned().fold(f32::INFINITY, f32::min);
-        let vmax = v.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
+        let vmin = v.iter().copied().fold(f32::INFINITY, f32::min);
+        let vmax = v.iter().copied().fold(f32::NEG_INFINITY, f32::max);
         if (vmax - vmin).abs() < 1e-6 {
             return Ok(());
         }
@@ -82,8 +82,8 @@ proptest! {
         v in proptest::collection::vec(-10.0_f32..10.0, 4..=32)
     ) {
         // Skip constant vectors
-        let vmin = v.iter().cloned().fold(f32::INFINITY, f32::min);
-        let vmax = v.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
+        let vmin = v.iter().copied().fold(f32::INFINITY, f32::min);
+        let vmax = v.iter().copied().fold(f32::NEG_INFINITY, f32::max);
         if (vmax - vmin).abs() < 1e-6 {
             return Ok(());
         }
@@ -262,7 +262,7 @@ proptest! {
 
 /// FALSIFY-BN-002: Running variance update
 /// Contract: batchnorm-kernel-v1.yaml
-/// Prediction: after training step, running_var differs from initial
+/// Prediction: after training step, `running_var` differs from initial
 /// If fails: EMA update for running statistics is not implemented
 #[test]
 fn falsify_bn_002_running_variance_update() {
@@ -400,7 +400,7 @@ fn falsify_bn_005_eval_vs_train_mode() {
 
 /// FALSIFY-BN-006: Running stats updated
 /// Contract: batchnorm-kernel-v1.yaml
-/// Prediction: after training, running_mean and running_var differ from zero initialization
+/// Prediction: after training, `running_mean` and `running_var` differ from zero initialization
 /// If fails: EMA update is not being applied to running statistics
 #[test]
 fn falsify_bn_006_running_stats_updated() {

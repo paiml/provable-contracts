@@ -1,6 +1,6 @@
 //! Phase 5 falsification tests for normalization kernels.
 //!
-//! Covers Softmax, RMSNorm, LayerNorm, and BatchNorm with 24 tests total.
+//! Covers Softmax, `RMSNorm`, `LayerNorm`, and `BatchNorm` with 24 tests total.
 //! Each test targets a specific mathematical invariant that would break
 //! if the implementation contains a common bug class.
 

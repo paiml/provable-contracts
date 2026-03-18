@@ -6,7 +6,7 @@
 //! - Lean-aware scoring dimension
 //!
 //! Run from the workspace root:
-//!   cargo run --example lean_proofs
+//!   cargo run --example `lean_proofs`
 
 use std::path::Path;
 

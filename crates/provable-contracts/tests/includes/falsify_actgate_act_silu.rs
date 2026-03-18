@@ -57,10 +57,10 @@ proptest! {
     }
 }
 
-/// FALSIFY-ACT-004: SiLU zero preservation
+/// FALSIFY-ACT-004: `SiLU` zero preservation
 /// Contract: activation-kernel-v1.yaml
 /// Prediction: silu([0.0]) = [0.0]
-/// If fails: SiLU does not preserve zero
+/// If fails: `SiLU` does not preserve zero
 #[test]
 fn falsify_act_004_silu_zero_preservation() {
     let input = [0.0f32];
@@ -124,8 +124,8 @@ proptest! {
 
 /// FALSIFY-SI-001: Zero preservation
 /// Contract: silu-kernel-v1.yaml
-/// Prediction: silu_standalone([0.0]) = [0.0]
-/// If fails: standalone SiLU does not preserve zero
+/// Prediction: `silu_standalone`([0.0]) = [0.0]
+/// If fails: standalone `SiLU` does not preserve zero
 #[test]
 fn falsify_si_001_zero_preservation() {
     let input = [0.0f32];

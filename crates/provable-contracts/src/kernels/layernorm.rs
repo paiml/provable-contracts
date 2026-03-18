@@ -257,8 +257,8 @@ mod tests {
             v in proptest::collection::vec(-10.0_f32..10.0, 4..64)
         ) {
             // Check that not all elements are the same (skip constant vectors)
-            let min = v.iter().cloned().fold(f32::INFINITY, f32::min);
-            let max = v.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
+            let min = v.iter().copied().fold(f32::INFINITY, f32::min);
+            let max = v.iter().copied().fold(f32::NEG_INFINITY, f32::max);
             if (max - min).abs() < 1e-6 {
                 return Ok(());
             }

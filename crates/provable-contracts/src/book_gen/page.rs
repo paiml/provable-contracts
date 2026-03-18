@@ -618,6 +618,6 @@ falsification_tests: []
 
         assert!(page.contains("```mermaid"));
         // b depends on a, so b should appear in a's dependency graph
-        assert!(page.contains("b"));
+        assert!(page.contains('b'));
     }
 }

@@ -9,7 +9,7 @@
 //! - `--rebuild-index`: Skip cache and rebuild
 //!
 //! Run from the workspace root:
-//!   cargo run --example cross_project_query
+//!   cargo run --example `cross_project_query`
 
 use std::path::Path;
 

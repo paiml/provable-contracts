@@ -313,7 +313,7 @@ mod tests {
         // input = [1, 2, 3, 4, 5], kernel = [1, 0, -1], stride=1, padding=0
         let input = [1.0_f32, 2.0, 3.0, 4.0, 5.0];
         let weight = [1.0_f32, 0.0, -1.0];
-        let out_length = (5 + 0 - 3) / 1 + 1; // 3
+        let out_length = (5 - 3) + 1; // 3
         let mut output = vec![0.0_f32; out_length];
 
         conv1d_scalar(&input, &weight, None, 1, 1, 5, 3, 1, 0, &mut output);
@@ -329,7 +329,7 @@ mod tests {
         let input = [1.0_f32, 2.0, 3.0];
         let weight = [1.0_f32, 1.0];
         let bias = [10.0_f32];
-        let out_length = (3 - 2) / 1 + 1; // 2
+        let out_length = (3 - 2) + 1; // 2
         let mut output = vec![0.0_f32; out_length];
 
         conv1d_scalar(&input, &weight, Some(&bias), 1, 1, 3, 2, 1, 0, &mut output);
@@ -344,7 +344,7 @@ mod tests {
         // input = [1, 2, 3], kernel = [1, 1, 1], padding=1, stride=1
         let input = [1.0_f32, 2.0, 3.0];
         let weight = [1.0_f32, 1.0, 1.0];
-        let out_length = (3 + 2 - 3) / 1 + 1; // 3
+        let out_length = (3 + 2 - 3) + 1; // 3
         let mut output = vec![0.0_f32; out_length];
 
         conv1d_scalar(&input, &weight, None, 1, 1, 3, 3, 1, 1, &mut output);
