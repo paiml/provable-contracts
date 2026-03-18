@@ -436,7 +436,7 @@ mod tests {
         let deps = index.depended_by("softmax-kernel-v1");
         // At minimum attention contracts depend on softmax
         assert!(
-            !deps.is_empty() || true,
+            true,
             "May or may not have dependents depending on contracts"
         );
     }

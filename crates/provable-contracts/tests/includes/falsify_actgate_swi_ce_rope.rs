@@ -9,6 +9,7 @@
 #[test]
 fn falsify_sg_001_zero_gate() {
     let gate = [0.0f32; 8];
+    #[allow(clippy::approx_constant)]
     let value = [1.0f32, -2.5, 3.14, 100.0, -0.001, 42.0, 0.0, -99.9];
     let mut output = [0.0f32; 8];
     swiglu_scalar(&gate, &value, &mut output);

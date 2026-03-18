@@ -317,6 +317,7 @@ proptest! {
 #[test]
 fn falsify_lb_006_gradient_recovery() {
     let d = 4;
+    #[allow(clippy::approx_constant)]
     let gradient = [3.14_f32, -2.71, 1.41, -0.57];
     let s_history: [f32; 0] = [];
     let y_history: [f32; 0] = [];

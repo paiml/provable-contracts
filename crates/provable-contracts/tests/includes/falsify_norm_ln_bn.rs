@@ -163,6 +163,7 @@ fn falsify_ln_007_constant_input() {
     let c = 7.5_f32;
     let input = vec![c; n];
     let gamma = vec![1.0_f32; n];
+    #[allow(clippy::approx_constant)]
     let beta_val = 3.14_f32;
     let beta = vec![beta_val; n];
     let mut output = vec![0.0_f32; n];
