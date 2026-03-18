@@ -97,3 +97,14 @@ falsification_tests:
     prediction: "Equivalence holds for adversarial weight distributions (uniform, bimodal, heavy-tail)"
     test: "proptest with W ~ Uniform(-1,1), W ~ Laplace(0,0.1), W ~ Cauchy(0,1) clipped to fp16 range"
     if_fails: "Distribution shape causes systematic quantization bias exceeding tolerance"
+
+  - id: FALSIFY-INT8_SYMMETRIC_QUANT_V1-FILL
+    rule: "Zero-row invariant"
+    prediction: "Property holds under boundary conditions"
+    test: "Exercise boundary values for last obligation"
+    if_fails: "Edge case violation in Zero-row invariant"
+kani_harnesses:
+  - id: "int8-symmetric-quant-v1-kani-001"
+    obligation: "INT8 matvec approximates fp16 matvec"
+    bound: 8
+    strategy: bounded_int

@@ -154,3 +154,14 @@ falsification_tests:
     prediction: "When all K drafts match, the (K+1)-th bonus token equals greedy_decode at position t_0+K"
     test: "Construct input where draft model perfectly predicts K=5 tokens; verify 6 tokens emitted and token 6 matches sequential baseline"
     if_fails: "Bonus token generated from stale logits or wrong position index"
+
+  - id: FALSIFY-SPECULATIVE_DECODING_V1-FILL
+    rule: "Weight sharing between draft and verify"
+    prediction: "Property holds under boundary conditions"
+    test: "Exercise boundary values for last obligation"
+    if_fails: "Edge case violation in Weight sharing between draft and verify"
+kani_harnesses:
+  - id: "speculative-decoding-v1-kani-001"
+    obligation: "Output tokens identical to non-speculative greedy decode"
+    bound: 8
+    strategy: bounded_int

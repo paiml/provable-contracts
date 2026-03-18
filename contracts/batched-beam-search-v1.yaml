@@ -135,3 +135,14 @@ falsification_tests:
     prediction: "beam_search returns within max_len steps for all inputs; all returned beams have length ≤ max_len"
     test: "proptest with adversarial inputs: all-zero logits, uniform logits, logits biased away from EOS, max_len in {1, 10, 100, 448}"
     if_fails: "Termination condition fails to count completed beams or step counter not incremented"
+
+  - id: FALSIFY-BATCHED_BEAM_SEARCH_V1-FILL
+    rule: "Beam search termination"
+    prediction: "Property holds under boundary conditions"
+    test: "Exercise boundary values for last obligation"
+    if_fails: "Edge case violation in Beam search termination"
+kani_harnesses:
+  - id: "batched-beam-search-v1-kani-001"
+    obligation: "Batched projection matches sequential projection"
+    bound: 8
+    strategy: bounded_int
