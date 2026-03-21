@@ -310,8 +310,7 @@ The provable-contracts methodology follows seven phases:
 
 ## Documentation
 
-- **Specification**: [`docs/specifications/pv-spec.md`](
-  docs/specifications/pv-spec.md) (canonical, ONE spec)
+- **Specification**: [`docs/specifications/pv-spec.md`](docs/specifications/pv-spec.md) (canonical, ONE spec)
 - **Sub-specs**: `docs/specifications/sub/` (schema, CLI, query,
   scoring, registry, pipeline, library, integration)
 - **mdBook**: Run `mdbook serve` from the repository root, or build
