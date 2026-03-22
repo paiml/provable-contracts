@@ -108,10 +108,9 @@ pub struct Equation {
 
 /// A proof obligation derived from an equation.
 ///
-/// Maps to one of the types in the Proof Obligation Taxonomy
-/// (spec Section 12): invariant, equivalence, bound, monotonicity,
-/// idempotency, linearity, symmetry, associativity, conservation,
-/// ordering, completeness.
+/// 26 obligation types: 19 property types plus 7 Design by Contract
+/// types (`precondition`, `postcondition`, `frame`, `loop_invariant`,
+/// `loop_variant`, `old_state`, `subcontract`).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProofObligation {
     #[serde(rename = "type")]
@@ -126,6 +125,15 @@ pub struct ProofObligation {
     /// Phase 7: Lean 4 theorem proving metadata.
     #[serde(default)]
     pub lean: Option<LeanProof>,
+    /// Postcondition only: links to a precondition obligation ID.
+    #[serde(default)]
+    pub requires: Option<String>,
+    /// Loop invariant/variant only: references a `kernel_structure.phases[]` name.
+    #[serde(default)]
+    pub applies_to_phase: Option<String>,
+    /// Subcontract only: contract stem being refined (must be in `metadata.depends_on`).
+    #[serde(default)]
+    pub parent_contract: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -151,6 +159,17 @@ pub enum ObligationType {
     Classification,
     Independence,
     Termination,
+    // Eiffel DbC types (Meyer 1997)
+    Precondition,
+    Postcondition,
+    Frame,
+    #[serde(rename = "loop_invariant")]
+    LoopInvariant,
+    #[serde(rename = "loop_variant")]
+    LoopVariant,
+    #[serde(rename = "old_state")]
+    OldState,
+    Subcontract,
 }
 
 impl std::fmt::Display for ObligationType {
@@ -175,6 +194,13 @@ impl std::fmt::Display for ObligationType {
             Self::Classification => "classification",
             Self::Independence => "independence",
             Self::Termination => "termination",
+            Self::Precondition => "precondition",
+            Self::Postcondition => "postcondition",
+            Self::Frame => "frame",
+            Self::LoopInvariant => "loop_invariant",
+            Self::LoopVariant => "loop_variant",
+            Self::OldState => "old_state",
+            Self::Subcontract => "subcontract",
         };
         write!(f, "{s}")
     }
@@ -377,6 +403,14 @@ mod tests {
         assert_eq!(ObligationType::Classification.to_string(), "classification");
         assert_eq!(ObligationType::Independence.to_string(), "independence");
         assert_eq!(ObligationType::Termination.to_string(), "termination");
+        // Eiffel DbC types
+        assert_eq!(ObligationType::Precondition.to_string(), "precondition");
+        assert_eq!(ObligationType::Postcondition.to_string(), "postcondition");
+        assert_eq!(ObligationType::Frame.to_string(), "frame");
+        assert_eq!(ObligationType::LoopInvariant.to_string(), "loop_invariant");
+        assert_eq!(ObligationType::LoopVariant.to_string(), "loop_variant");
+        assert_eq!(ObligationType::OldState.to_string(), "old_state");
+        assert_eq!(ObligationType::Subcontract.to_string(), "subcontract");
     }
 
     #[test]

@@ -178,7 +178,14 @@ fn generate_wired_obligation_test(
         | ObligationType::StateMachine
         | ObligationType::Classification
         | ObligationType::Independence
-        | ObligationType::Termination => {
+        | ObligationType::Termination
+        | ObligationType::Precondition
+        | ObligationType::Postcondition
+        | ObligationType::Frame
+        | ObligationType::LoopInvariant
+        | ObligationType::LoopVariant
+        | ObligationType::OldState
+        | ObligationType::Subcontract => {
             generate_wired_generic(out, ob);
         }
     }

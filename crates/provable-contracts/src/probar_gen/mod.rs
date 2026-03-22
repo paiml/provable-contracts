@@ -99,7 +99,14 @@ fn generate_obligation_test(out: &mut String, ob: &ProofObligation, index: usize
         | ObligationType::StateMachine
         | ObligationType::Classification
         | ObligationType::Independence
-        | ObligationType::Termination => {
+        | ObligationType::Termination
+        | ObligationType::Precondition
+        | ObligationType::Postcondition
+        | ObligationType::Frame
+        | ObligationType::LoopInvariant
+        | ObligationType::LoopVariant
+        | ObligationType::OldState
+        | ObligationType::Subcontract => {
             generate_invariant_body(out, ob);
         }
         ObligationType::Equivalence => {
@@ -169,9 +176,16 @@ fn obligation_pattern(ot: ObligationType) -> &'static str {
         ObligationType::Roundtrip => "decode(encode(x)) = x — roundtrip fidelity",
         ObligationType::StateMachine => "S × A → S — valid state transitions",
         ObligationType::Classification => "f(x) ∈ C — output belongs to valid class set",
-        ObligationType::Independence | ObligationType::Termination => {
-            "P(A∩B) = P(A)·P(B) — statistical independence"
-        }
+        ObligationType::Independence => "P(A∩B) = P(A)·P(B) — statistical independence",
+        ObligationType::Termination => "algorithm terminates in finite steps",
+        // Eiffel DbC types
+        ObligationType::Precondition => "P(input) — caller must guarantee before call",
+        ObligationType::Postcondition => "P(in) → Q(out) — kernel guarantees if pre holds",
+        ObligationType::Frame => "modifies(S) ∧ preserves(T\\S) — only S may change",
+        ObligationType::LoopInvariant => "∀ iter i: P(state_i) — maintained across iterations",
+        ObligationType::LoopVariant => "V(state) ∈ ℕ, strictly decreasing — termination witness",
+        ObligationType::OldState => "Q(old(state), new(state)) — relates pre to post state",
+        ObligationType::Subcontract => "weaken(pre) ∧ strengthen(post) — behavioral subtyping",
     }
 }
 
