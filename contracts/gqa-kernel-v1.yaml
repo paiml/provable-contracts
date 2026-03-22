@@ -9,6 +9,7 @@ metadata:
   depends_on:
     - "softmax-kernel-v1"
     - "matmul-kernel-v1"
+    - "attention-kernel-v1"
 
 equations:
   gqa:
@@ -22,6 +23,11 @@ equations:
       - "num_heads must be divisible by num_kv_heads"
 
 proof_obligations:
+  # Eiffel DbC: GQA is a behavioral subtype of standard attention
+  - type: subcontract
+    property: "GQA refines standard MHA — accepts same Q/K/V shapes, produces compatible output"
+    formal: "pre(MHA) → pre(GQA) ∧ post(GQA) → post(MHA) when n_kv_heads = n_heads"
+    parent_contract: "attention-kernel-v1"
   - type: invariant
     property: "Attention weight normalization"
     formal: "|sum(attn_weights[i, :]) - 1.0| < eps per query position i"

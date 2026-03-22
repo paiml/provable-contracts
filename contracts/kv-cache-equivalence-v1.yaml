@@ -33,6 +33,15 @@ equations:
       - "Epsilon depends on quantization (Q4K: 1e-3, F16: 1e-5)"
 
 proof_obligations:
+  # Eiffel DbC: frame condition — cache append must not corrupt existing entries
+  - type: frame
+    property: "Cache append modifies only new entries; existing KV pairs unchanged"
+    formal: "modifies(cache[seq_len..seq_len+new_len]) ∧ preserves(cache[0..seq_len])"
+  # Eiffel DbC: old_state — cache length grows by exactly the new token count
+  - type: old_state
+    property: "Cache length increases by exactly the number of new tokens"
+    formal: "new(cache.len) = old(cache.len) + new_token_count"
+  # Original obligations
   - type: equivalence
     property: "Prefill/incremental equivalence"
     formal: "|cached - full| < 1e-5"
@@ -75,6 +84,18 @@ falsification_tests:
     test: "Requires trueno API — currently ignored"
     if_fails: "Fused kernel computation error"
 
+  # DbC falsification tests
+  - id: FALSIFY-KCE-005
+    rule: "Frame condition — existing entries preserved"
+    prediction: "After cache append, all entries at positions < old_len are byte-identical"
+    test: "Snapshot cache before append, append new tokens, compare old entries"
+    if_fails: "Cache append overwrites existing entries (off-by-one in slot index)"
+  - id: FALSIFY-KCE-006
+    rule: "Old state — length growth"
+    prediction: "cache.len after append = cache.len before append + new_token_count"
+    test: "proptest: random initial cache + random new tokens, verify length delta"
+    if_fails: "Cache append writes wrong number of entries"
+
 kani_harnesses:
   - id: KANI-KCE-001
     obligation: KCE-INV-001
@@ -93,5 +114,5 @@ qa_gate:
     - "page_shape"
     - "batched_serial"
     - "fused_kernel"
-  pass_criteria: "All 4 falsification tests pass"
+  pass_criteria: "All 6 falsification tests pass"
   falsification: "Corrupt one KV cache entry to break equivalence"

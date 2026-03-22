@@ -30,6 +30,26 @@ equations:
     codomain: "(0,1)^n"
 
 proof_obligations:
+  # Eiffel DbC: loop invariant on the online scan phase
+  - type: loop_invariant
+    property: "Running max tracks true max of elements seen"
+    formal: "∀k ≤ i: m_i ≥ x_k ∧ m_i = max(x_1, ..., x_i)"
+    applies_to_phase: "online_scan"
+  # Eiffel DbC: loop invariant on the normalizer
+  - type: loop_invariant
+    property: "Running sum_exp is correct partial sum"
+    formal: "d_i = Σ_{j=1}^{i} exp(x_j - m_i)"
+    applies_to_phase: "online_scan"
+  # Eiffel DbC: loop variant proving termination
+  - type: loop_variant
+    property: "Remaining elements decreases each iteration"
+    formal: "V(state) = n - i, V ≥ 0, V strictly decreasing"
+    applies_to_phase: "online_scan"
+  # Eiffel DbC: old_state for the normalizer update
+  - type: old_state
+    property: "Normalizer update preserves equivalence to full recomputation"
+    formal: "d_i = old(d_{i-1}) · exp(old(m_{i-1}) - m_i) + exp(x_i - m_i)"
+  # Original obligations
   - type: equivalence
     property: "Online matches standard softmax"
     formal: "|online_softmax(x) - standard_softmax(x)| < ε element-wise"
@@ -97,6 +117,28 @@ falsification_tests:
     prediction: "online_softmax([x]) = [1.0] for any finite x"
     test: "exact equality test"
     if_fails: "Base case handling"
+
+  # DbC falsification tests
+  - id: FALSIFY-OSM-007
+    rule: "Loop invariant — running max"
+    prediction: "After processing x_1..x_i, m_i = max(x_1..x_i)"
+    test: "Instrument online_scan loop, assert invariant at each step for random vectors"
+    if_fails: "Running max not updated correctly when new element is smaller"
+  - id: FALSIFY-OSM-008
+    rule: "Loop variant — termination"
+    prediction: "Loop counter advances by exactly 1 per iteration, terminates at n"
+    test: "Verify n - i strictly decreasing and reaches 0"
+    if_fails: "Off-by-one in loop bounds or infinite loop"
+  - id: FALSIFY-OSM-009
+    rule: "Old state — normalizer update"
+    prediction: "d_i computed from old d_{i-1} matches full recomputation Σ exp(x_j - m_i)"
+    test: "proptest: compute d both ways at each step, assert equality within ε"
+    if_fails: "Normalizer rescaling factor exp(m_{i-1} - m_i) incorrect"
+  - id: FALSIFY-OSM-010
+    rule: "Loop invariant — partial sum correctness"
+    prediction: "d_i = Σ_{j=1}^{i} exp(x_j - m_i) holds after processing each element"
+    test: "Instrument scan loop, recompute partial sum from scratch at each step"
+    if_fails: "Running sum accumulation diverges from recomputed sum"
 
 kani_harnesses:
   - id: "online-softmax-v1-kani-001"
