@@ -197,6 +197,8 @@ mod tests {
             kani_harnesses: vec![],
             qa_gate: None,
             verification_summary: None,
+            type_invariants: vec![],
+            coq_spec: None,
         };
         let generated = generate_from_contract("test", &contract);
         assert_eq!(generated.precondition_count, 0);

@@ -192,6 +192,12 @@ pv lint contracts/
 pv lint contracts/ --min-score 0.60 --format sarif
 pv lint contracts/ --binding contracts/aprender/binding.yaml
 
+# Generate type invariant trait + Kani preservation harnesses
+pv invariants contracts/validated-tensor-v1.yaml
+
+# Generate Coq theorem stubs
+pv coq contracts/softmax-kernel-v1.yaml
+
 # Generate mdBook pages
 pv book contracts/ -o book/src/contracts/
 ```
@@ -220,6 +226,8 @@ pv book contracts/ -o book/src/contracts/
 | `score`            | Five-dimension contract quality scoring (A-F)            |
 | `query`            | Semantic search with tier/class/graph filters            |
 | `lint`             | Quality gate: validate + audit + score + verify + enforce|
+| `invariants`       | Generate type invariant trait + Kani preservation harness |
+| `coq`              | Generate Coq theorem stubs from contract obligations     |
 | `book`             | Generate mdBook pages for contracts                      |
 
 ## Contract Registry

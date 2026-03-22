@@ -314,6 +314,16 @@ pub enum Commands {
         #[arg(long)]
         exit_code: bool,
     },
+    /// Generate type invariant trait + Kani preservation harnesses
+    Invariants {
+        /// Path to the contract YAML file
+        contract: PathBuf,
+    },
+    /// Generate Coq theorem stubs from a contract
+    Coq {
+        /// Path to the contract YAML file
+        contract: PathBuf,
+    },
     /// Generate mdBook pages for contracts
     Book {
         /// Directory containing contract YAML files

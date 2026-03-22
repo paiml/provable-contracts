@@ -26,6 +26,12 @@ pub struct Contract {
     /// Phase 7: Lean 4 verification summary across all obligations.
     #[serde(default)]
     pub verification_summary: Option<VerificationSummary>,
+    /// Type-level invariants (Meyer's class invariants).
+    #[serde(default)]
+    pub type_invariants: Vec<TypeInvariant>,
+    /// Coq verification specification.
+    #[serde(default)]
+    pub coq_spec: Option<CoqSpec>,
 }
 
 impl Contract {
@@ -376,6 +382,61 @@ pub struct QaGate {
     pub pass_criteria: Option<String>,
     #[serde(default)]
     pub falsification: Option<String>,
+}
+
+/// A type-level invariant (Meyer's class invariant).
+///
+/// Asserts a predicate that must hold for every instance of `type_name`
+/// at every stable state — after construction and after every public method.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TypeInvariant {
+    pub name: String,
+    /// Rust type name (e.g., `ValidatedTensor`).
+    #[serde(rename = "type")]
+    pub type_name: String,
+    /// Rust boolean expression over `self` (e.g., `!self.dims.is_empty()`).
+    pub predicate: String,
+    #[serde(default)]
+    pub description: Option<String>,
+}
+
+/// Coq verification specification for a contract.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CoqSpec {
+    /// Coq module name (e.g., `SoftmaxSpec`).
+    pub module: String,
+    /// Coq import statements.
+    #[serde(default)]
+    pub imports: Vec<String>,
+    /// Coq definitions generated from equations.
+    #[serde(default)]
+    pub definitions: Vec<CoqDefinition>,
+    /// Links from proof obligations to Coq lemmas.
+    #[serde(default)]
+    pub obligations: Vec<CoqObligation>,
+}
+
+/// A Coq definition derived from a contract equation.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CoqDefinition {
+    pub name: String,
+    pub statement: String,
+}
+
+/// A link between a proof obligation and a Coq lemma.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CoqObligation {
+    /// References a proof obligation property or ID.
+    pub links_to: String,
+    /// Coq lemma name.
+    pub coq_lemma: String,
+    /// Current status of the Coq proof.
+    #[serde(default = "coq_status_default")]
+    pub status: String,
+}
+
+fn coq_status_default() -> String {
+    "stub".to_string()
 }
 
 #[cfg(test)]

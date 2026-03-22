@@ -199,6 +199,8 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             format: &format,
             exit_code,
         }),
+        Commands::Invariants { contract } => commands::invariants::run(&contract),
+        Commands::Coq { contract } => commands::coq::run(&contract),
         Commands::Book {
             contract_dir,
             output,
