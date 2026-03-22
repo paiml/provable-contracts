@@ -463,6 +463,23 @@ fn write_obligations(out: &mut String, contract: &Contract) {
             }
         }
 
+        // DbC-specific fields
+        if let Some(ref req) = ob.requires {
+            let _ = writeln!(
+                out,
+                "     Requires: {req} (postcondition conditional on this precondition)"
+            );
+        }
+        if let Some(ref phase) = ob.applies_to_phase {
+            let _ = writeln!(out, "     Phase: {phase} (from kernel_structure)");
+        }
+        if let Some(ref parent) = ob.parent_contract {
+            let _ = writeln!(
+                out,
+                "     Refines: {parent} (behavioral subtyping — pre weakened, post strengthened)"
+            );
+        }
+
         // Cross-reference to falsification tests
         let matching_ft: Vec<&str> = contract
             .falsification_tests
@@ -880,6 +897,40 @@ falsification_tests: []
         assert_eq!(parsed["obligations"].as_array().unwrap().len(), 2);
         assert_eq!(parsed["obligations"][0]["type"], "precondition");
         assert_eq!(parsed["obligations"][1]["requires"], "PRE-001");
+    }
+
+    #[test]
+    fn explain_renders_dbc_fields() {
+        let contract = parse_contract_str(
+            r#"
+metadata:
+  version: "1.0.0"
+  description: "DbC fields test"
+  references: ["Meyer (1997)"]
+  depends_on: ["parent-v1"]
+equations:
+  f:
+    formula: "f(x) = x"
+proof_obligations:
+  - type: postcondition
+    property: "output bounded"
+    requires: "PRE-001"
+  - type: loop_invariant
+    property: "max tracks"
+    applies_to_phase: "find_max"
+  - type: subcontract
+    property: "refines parent"
+    parent_contract: "parent-v1"
+falsification_tests: []
+"#,
+        )
+        .unwrap();
+
+        let output = explain_contract(&contract, "dbc-v1", None);
+        assert!(output.contains("Requires: PRE-001"));
+        assert!(output.contains("Phase: find_max"));
+        assert!(output.contains("Refines: parent-v1"));
+        assert!(output.contains("behavioral subtyping"));
     }
 
     #[test]
