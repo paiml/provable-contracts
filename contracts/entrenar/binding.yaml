@@ -197,10 +197,10 @@ bindings:
   - contract: distributed-training-v1.yaml
     equation: gradient_allreduce
     module_path: "entrenar::finetune::data_parallel"
-    function: "DataParallelCoordinator::allreduce"
+    function: "RingAllReduceWorker::allreduce"
     signature: "fn allreduce(&self, grads: &mut [Tensor]) -> Result<()>"
-    status: partial
-    notes: "Phase 1 complete (multi-GPU); Phase 2 in progress (multi-node)"
+    status: implemented
+    notes: "Implemented via RingAllReduceWorker + DistributedCudaTrainer"
 
   - contract: distributed-training-v1.yaml
     equation: sharding
@@ -341,33 +341,33 @@ bindings:
     equation: poll_interval
     module_path: "entrenar::gpu::wait"
     function: wait_for_vram
-    signature: "fn wait_for_vram(required_mb: usize, timeout_secs: u64) -> Result<()>"
-    status: not_implemented
-    notes: "Draft contract; GPU wait queue not yet implemented"
+    signature: "fn wait_for_vram(ledger, budget_mb, task, config, profiler) -> Result<u64>"
+    status: implemented
+    notes: "Fully implemented in gpu/wait.rs with exponential backoff"
 
   - contract: gpu-wait-queue-v1.yaml
     equation: timeout_bound
     module_path: "entrenar::gpu::wait"
     function: timeout_bound
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; depends on poll_interval"
+    signature: "fn timeout_bound(config: &WaitConfig) -> Duration"
+    status: implemented
+    notes: "Returns timeout + max_interval worst-case bound"
 
   - contract: gpu-wait-queue-v1.yaml
     equation: fairness_via_expiry
     module_path: "entrenar::gpu::wait"
     function: fairness_via_expiry
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; lease-based fairness"
+    signature: "fn fairness_via_expiry(ledger: &mut VramLedger) -> Vec<u32>"
+    status: implemented
+    notes: "Returns PIDs of expired reservations via ledger.expired_reservation_ids()"
 
   - contract: gpu-wait-queue-v1.yaml
     equation: progress_report
     module_path: "entrenar::gpu::wait"
     function: progress_report
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; progress reporting"
+    signature: "fn progress_report(...) -> WaitProgress"
+    status: implemented
+    notes: "Structured WaitProgress with attempt/elapsed/remaining/budget/available"
 
   # ── gpu-workspace-clip-v1: Per-block clip ────────────────────
   - contract: gpu-workspace-clip-v1.yaml
@@ -593,10 +593,10 @@ bindings:
   - contract: qlora-hyperparameters-v1.yaml
     equation: learning_rate_scaling
     module_path: "entrenar::finetune::qlora_config"
-    function: "QLoraConfig::learning_rate"
+    function: "InstructPipeline::learning_rate"
     signature: "fn learning_rate(&self) -> f32"
-    status: not_implemented
-    notes: "HP design pending; contract specifies constraints"
+    status: implemented
+    notes: "QLoRA config on InstructConfig; accessor on InstructPipeline"
 
   - contract: qlora-hyperparameters-v1.yaml
     equation: effective_batch_size
@@ -742,58 +742,58 @@ bindings:
     equation: budget_overshoot
     module_path: "entrenar::gpu::guard"
     function: "VramGuard::check_overshoot"
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; VramGuard not yet implemented"
+    signature: "fn check_overshoot(&self) -> Option<(usize, usize)>"
+    status: implemented
+    notes: "Returns Some((actual, budget)) if overshoot detected"
 
   - contract: vram-guard-v1.yaml
     equation: auto_budget_estimate
     module_path: "entrenar::gpu::guard"
     function: "VramGuard::auto_estimate_budget"
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; auto-estimation not yet implemented"
+    signature: "fn auto_estimate_budget(param_count: usize) -> usize"
+    status: implemented
+    notes: "Rule of thumb: 2 bytes/param + 20% overhead"
 
   # ── vram-ledger-v1: VRAM reservation ledger ──────────────────
   - contract: vram-ledger-v1.yaml
     equation: capacity_invariant
     module_path: "entrenar::gpu::ledger"
-    function: "VramLedger::capacity"
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; ledger not yet implemented"
+    function: "VramLedger::capacity_mb"
+    signature: "fn capacity_mb(&self) -> usize"
+    status: implemented
+    notes: "Returns (total_mb * reserve_factor) as usize"
 
   - contract: vram-ledger-v1.yaml
     equation: atomic_write
     module_path: "entrenar::gpu::ledger"
-    function: "VramLedger::reserve"
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; flock-based reservation"
+    function: "VramLedger::try_reserve"
+    signature: "fn try_reserve(&mut self, budget_mb: usize, task: &str) -> Result<u64>"
+    status: implemented
+    notes: "Flock-based atomic write via temp file + rename"
 
   - contract: vram-ledger-v1.yaml
     equation: lease_expiry
     module_path: "entrenar::gpu::ledger"
-    function: "VramLedger::prune_expired"
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; 24h lease expiry"
+    function: "LedgerData::prune_dead"
+    signature: "fn prune_dead(&mut self)"
+    status: implemented
+    notes: "Combined with PID liveness; checks Reservation::is_expired()"
 
   - contract: vram-ledger-v1.yaml
     equation: pid_liveness
     module_path: "entrenar::gpu::ledger"
-    function: "VramLedger::prune_dead"
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; PID liveness check"
+    function: "LedgerData::prune_dead"
+    signature: "fn prune_dead(&mut self)"
+    status: implemented
+    notes: "Uses Reservation::is_alive() to check /proc/{pid}/stat"
 
   - contract: vram-ledger-v1.yaml
     equation: reservation_id
     module_path: "entrenar::gpu::ledger"
     function: "VramLedger::try_reserve"
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; returns unique reservation ID"
+    signature: "fn try_reserve(&mut self, budget_mb: usize, task: &str) -> Result<u64>"
+    status: implemented
+    notes: "Returns u64 reservation ID via deterministic hash"
 
   # ── wgpu-resident-weights-v1: wgpu weight residency ──────────
   - contract: wgpu-resident-weights-v1.yaml
