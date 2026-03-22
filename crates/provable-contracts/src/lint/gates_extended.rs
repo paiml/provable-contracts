@@ -145,7 +145,9 @@ pub(crate) fn run_enforce_gate(contracts: &[(String, Contract)]) -> (GateResult,
                 findings.push(LintFinding {
                     rule_id: "PV-ENF-002".into(),
                     severity: RuleSeverity::Warning,
-                    message: format!("Equation `{eq_name}` has no lean_theorem — proof recommended"),
+                    message: format!(
+                        "Equation `{eq_name}` has no lean_theorem — proof recommended"
+                    ),
                     file: format!("contracts/{stem}.yaml"),
                     line: None,
                     contract_stem: Some(stem.clone()),

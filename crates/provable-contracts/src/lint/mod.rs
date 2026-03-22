@@ -25,7 +25,9 @@ use std::time::Instant;
 use serde::Serialize;
 
 use self::finding::LintFinding;
-use self::gates::{load_binding, load_contracts, run_audit_gate, run_score_gate, run_validate_gate};
+use self::gates::{
+    load_binding, load_contracts, run_audit_gate, run_score_gate, run_validate_gate,
+};
 use self::gates_extended::{run_enforce_gate, run_verify_gate};
 use self::rules::RuleSeverity;
 

@@ -120,9 +120,8 @@ fn count_contracts(report: &LintReport) -> usize {
             GateDetail::Validate { contracts, .. }
             | GateDetail::Audit { contracts, .. }
             | GateDetail::Score { contracts, .. } => return *contracts,
-            GateDetail::Skipped { .. }
-            | GateDetail::Verify { .. }
-            | GateDetail::Enforce { .. } => {}
+            GateDetail::Skipped { .. } | GateDetail::Verify { .. } | GateDetail::Enforce { .. } => {
+            }
         }
     }
     0
@@ -208,7 +207,9 @@ fn gate_summary(detail: &GateDetail) -> String {
             equations_with_post,
             ..
         } => {
-            format!("{equations_total} equations, {equations_with_pre} pre, {equations_with_post} post")
+            format!(
+                "{equations_total} equations, {equations_with_pre} pre, {equations_with_post} post"
+            )
         }
     }
 }
