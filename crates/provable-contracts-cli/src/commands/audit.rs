@@ -17,6 +17,49 @@ pub fn run(path: &Path, binding_path: Option<&Path>) -> Result<(), Box<dyn std::
     println!("Proof obligations:  {}", report.obligations);
     println!("Falsification tests: {}", report.falsification_tests);
     println!("Kani harnesses:     {}", report.kani_harnesses);
+    println!("Type invariants:    {}", contract.type_invariants.len());
+
+    // Lean status
+    let lean_proved = contract
+        .verification_summary
+        .as_ref()
+        .map_or(0, |vs| vs.l4_lean_proved);
+    if lean_proved > 0 {
+        println!(
+            "Lean proved:        {}/{}",
+            lean_proved,
+            contract
+                .verification_summary
+                .as_ref()
+                .map_or(0, |vs| vs.total_obligations)
+        );
+    }
+
+    // Coq status
+    if let Some(ref spec) = contract.coq_spec {
+        let total = spec.obligations.len();
+        let proved = spec
+            .obligations
+            .iter()
+            .filter(|o| o.status == "proved")
+            .count();
+        let admitted = spec
+            .obligations
+            .iter()
+            .filter(|o| o.status == "admitted")
+            .count();
+        let stubs = total - proved - admitted;
+        println!(
+            "Coq ({}):{} {proved} proved, {admitted} admitted, {stubs} stub",
+            spec.module,
+            if total > 0 {
+                format!("  {total} obligations —")
+            } else {
+                " no obligation links".to_string()
+            }
+        );
+    }
+
     println!();
 
     if report.violations.is_empty() {
