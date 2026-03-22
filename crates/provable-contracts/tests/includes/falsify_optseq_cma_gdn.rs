@@ -44,7 +44,7 @@ fn falsify_cma_002_symmetry() {
 
     // (out_pos + out_neg) / 2 should equal mean
     for i in 0..d {
-        let midpoint = (out_pos[i] + out_neg[i]) / 2.0;
+        let midpoint = f32::midpoint(out_pos[i], out_neg[i]);
         assert!(
             (midpoint - mean[i]).abs() < 1e-5,
             "FALSIFY-CMA-002 failed: midpoint[{i}] = {midpoint}, expected mean[{i}] = {}",

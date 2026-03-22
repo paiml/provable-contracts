@@ -153,8 +153,8 @@ mod tests {
         let cache = tmp.path().join("cache");
 
         let finding = LintFinding::new("PV-VAL-001", RuleSeverity::Error, "t", "f.yaml");
-        cache_put(&cache, "hash1", &[finding.clone()]).unwrap();
-        cache_put(&cache, "hash2", &[finding]).unwrap();
+        cache_put(&cache, "hash1", std::slice::from_ref(&finding)).unwrap();
+        cache_put(&cache, "hash2", std::slice::from_ref(&finding)).unwrap();
 
         let count = cache_clear(&cache).unwrap();
         assert_eq!(count, 2);
