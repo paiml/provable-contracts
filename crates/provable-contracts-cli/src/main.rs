@@ -25,6 +25,11 @@ struct Cli {
 #[allow(clippy::too_many_lines)]
 fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
     match command {
+        Commands::Explain {
+            contract,
+            format,
+            binding,
+        } => commands::explain::run(&contract, binding.as_deref(), &format),
         Commands::Validate { contract } => commands::validate::run(&contract),
         Commands::Scaffold { contract } => commands::scaffold::run(&contract),
         Commands::ExtractPytorch { target, output } => {

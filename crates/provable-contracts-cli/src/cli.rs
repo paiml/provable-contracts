@@ -5,6 +5,18 @@ use clap::Subcommand;
 /// Available subcommands for the `pv` CLI
 #[derive(Subcommand)]
 pub enum Commands {
+    /// Explain a contract in detail — narrative walkthrough of equations,
+    /// obligations, verification chain, and falsification strategy
+    Explain {
+        /// Path to the contract YAML file
+        contract: PathBuf,
+        /// Output format: text (default), markdown, or json
+        #[arg(long, default_value = "text")]
+        format: String,
+        /// Path to binding registry YAML (adds binding context)
+        #[arg(long)]
+        binding: Option<PathBuf>,
+    },
     /// Validate a YAML kernel contract
     Validate {
         /// Path to the contract YAML file

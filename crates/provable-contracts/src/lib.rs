@@ -32,6 +32,7 @@ pub mod codegen;
 pub mod coverage;
 pub mod diff;
 pub mod error;
+pub mod explain;
 pub mod extract;
 pub mod generate;
 pub mod graph;
