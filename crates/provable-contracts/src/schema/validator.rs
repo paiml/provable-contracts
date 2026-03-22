@@ -79,6 +79,8 @@ fn validate_equations(contract: &Contract, violations: &mut Vec<Violation>) {
 }
 
 fn validate_proof_obligations(contract: &Contract, violations: &mut Vec<Violation>) {
+    use crate::schema::types::ObligationType;
+
     let mut seen_ids = HashSet::new();
     for (i, ob) in contract.proof_obligations.iter().enumerate() {
         if ob.property.is_empty() {
@@ -96,6 +98,66 @@ fn validate_proof_obligations(contract: &Contract, violations: &mut Vec<Violatio
                     rule: "SCHEMA-006".to_string(),
                     message: format!("Duplicate formal predicate: {formal}"),
                     location: Some(format!("proof_obligations[{i}].formal")),
+                });
+            }
+        }
+
+        // DbC field/type constraints
+        if ob.requires.is_some() && ob.obligation_type != ObligationType::Postcondition {
+            violations.push(Violation {
+                severity: Severity::Error,
+                rule: "SCHEMA-014".to_string(),
+                message: format!(
+                    "proof_obligations[{i}].requires is only valid on \
+                     postcondition obligations (found on {})",
+                    ob.obligation_type
+                ),
+                location: Some(format!("proof_obligations[{i}].requires")),
+            });
+        }
+
+        if ob.applies_to_phase.is_some()
+            && ob.obligation_type != ObligationType::LoopInvariant
+            && ob.obligation_type != ObligationType::LoopVariant
+        {
+            violations.push(Violation {
+                severity: Severity::Error,
+                rule: "SCHEMA-015".to_string(),
+                message: format!(
+                    "proof_obligations[{i}].applies_to_phase is only valid on \
+                     loop_invariant or loop_variant obligations (found on {})",
+                    ob.obligation_type
+                ),
+                location: Some(format!("proof_obligations[{i}].applies_to_phase")),
+            });
+        }
+
+        if ob.parent_contract.is_some() && ob.obligation_type != ObligationType::Subcontract {
+            violations.push(Violation {
+                severity: Severity::Error,
+                rule: "SCHEMA-016".to_string(),
+                message: format!(
+                    "proof_obligations[{i}].parent_contract is only valid on \
+                     subcontract obligations (found on {})",
+                    ob.obligation_type
+                ),
+                location: Some(format!("proof_obligations[{i}].parent_contract")),
+            });
+        }
+
+        // Subcontract parent_contract must be in depends_on
+        if let Some(ref parent) = ob.parent_contract {
+            if ob.obligation_type == ObligationType::Subcontract
+                && !contract.metadata.depends_on.contains(parent)
+            {
+                violations.push(Violation {
+                    severity: Severity::Error,
+                    rule: "SCHEMA-017".to_string(),
+                    message: format!(
+                        "proof_obligations[{i}].parent_contract \"{parent}\" \
+                         must be listed in metadata.depends_on"
+                    ),
+                    location: Some(format!("proof_obligations[{i}].parent_contract")),
                 });
             }
         }
