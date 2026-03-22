@@ -39,4 +39,8 @@ theorem rms_pos {n : ℕ} (x : RVec (n + 1)) (eps : ℝ) (heps : eps > 0) :
   apply Real.sqrt_pos_of_pos
   linarith [mean_sq_nonneg x]
 
+-- Tests
+#check @mean_sq_nonneg
+#check @rms_pos
+
 end ProvableContracts.RMSNorm

@@ -30,4 +30,8 @@ theorem transpose_element {m n : ℕ} (A : Matrix (Fin m) (Fin n) ℝ)
     Aᵀ j i = A i j :=
   rfl
 
+-- Tests
+#check @transpose_involution
+#check @transpose_element
+
 end ProvableContracts.Transpose

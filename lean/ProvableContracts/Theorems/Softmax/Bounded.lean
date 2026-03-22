@@ -41,4 +41,8 @@ theorem softmax_bounded {n : ℕ} (x : RVec (n + 2)) (i : Fin (n + 2)) :
     0 < softmax x i ∧ softmax x i < 1 :=
   ⟨softmax_pos x i, softmax_lt_one x i⟩
 
+-- Tests
+#check @softmax_lt_one
+#check @softmax_bounded
+
 end ProvableContracts.Softmax

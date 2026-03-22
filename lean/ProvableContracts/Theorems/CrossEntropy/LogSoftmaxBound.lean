@@ -45,4 +45,9 @@ theorem log_softmax_le_zero {n : ℕ} (x : RVec (n + 1)) (i : Fin (n + 1)) :
   linarith [Real.log_le_log (Real.exp_pos (x i)) (exp_le_sum x i),
             Real.log_exp (x i)]
 
+-- Tests
+#check @partition_pos
+#check @exp_le_sum
+#check @log_softmax_le_zero
+
 end ProvableContracts.CrossEntropy

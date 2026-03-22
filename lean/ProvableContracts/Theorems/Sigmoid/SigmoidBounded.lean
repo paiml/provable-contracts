@@ -39,4 +39,14 @@ theorem sigmoid_lt_one (x : ℝ) : sigmoid x < 1 := by
 theorem sigmoid_bounded (x : ℝ) : 0 < sigmoid x ∧ sigmoid x < 1 :=
   ⟨sigmoid_pos x, sigmoid_lt_one x⟩
 
+-- Tests
+#check @sigmoid_pos
+#check @sigmoid_lt_one
+#check @sigmoid_bounded
+
+example : sigmoid 0 > 0 := sigmoid_pos 0
+example : sigmoid 0 < 1 := sigmoid_lt_one 0
+example : sigmoid 100 > 0 := sigmoid_pos 100
+example : sigmoid (-100) < 1 := sigmoid_lt_one (-100)
+
 end ProvableContracts.Sigmoid

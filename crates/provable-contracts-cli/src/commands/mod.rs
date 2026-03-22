@@ -1,8 +1,10 @@
 pub mod audit;
 pub mod book;
+pub mod codegen;
 pub mod coverage;
 pub mod diff;
 pub mod equations;
+pub mod extract;
 pub mod generate;
 pub mod graph;
 pub mod kani;

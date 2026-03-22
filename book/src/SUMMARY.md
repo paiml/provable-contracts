@@ -13,6 +13,7 @@
 - [Phase 5: Falsify](./phase-5-falsify.md)
 - [Phase 6: Verify](./phase-6-verify.md)
 - [Phase 7: Prove](./phase-7-prove.md)
+- [Lean + Kani Composition](./lean-kani-composition.md)
 - [Proof Obligation Taxonomy](./proof-obligation-taxonomy.md)
 - [Kernel Contract Registry](./kernel-contract-registry.md)
 - [Qwen 3.5 Verification](./qwen35-verification.md)

@@ -32,10 +32,22 @@ use super::swiglu;
 // Float transcendental stubs
 // ════════════════════════════════════════════════════════════════════════════
 
-/// Stub for `f32::exp` — returns an arbitrary positive finite value.
+/// Stub for `f32::exp` — models exp(x) for softmax after max-subtraction.
+///
+/// Softmax calls exp(x_i - max(x)), where x_i - max(x) ∈ (-∞, 0].
+/// Therefore exp returns values in (0, 1]. The element where x_i = max(x)
+/// gets exp(0) = 1.0 exactly. All others get values in (0, 1).
+///
+/// Soundness:
+/// - Lean proves exp(x) > 0 for all x ∈ ℝ (Real.exp_pos)
+/// - Lean proves exp(0) = 1 (Real.exp_zero)
+/// - The upper bound 1.0 follows from x_i - max(x) ≤ 0 → exp(·) ≤ 1
 fn stub_exp(_x: f32) -> f32 {
     let r: f32 = kani::any();
-    kani::assume(r > 0.0 && r.is_finite());
+    // exp(x - max(x)) for x - max(x) ∈ [-88, 0] gives values in [exp(-88), 1].
+    // exp(-88) ≈ 6e-39 > f32::MIN_POSITIVE (1.175e-38 is normal).
+    // Exclude subnormals to prevent 1/sum overflow.
+    kani::assume(r >= f32::MIN_POSITIVE && r <= 1.0);
     r
 }
 

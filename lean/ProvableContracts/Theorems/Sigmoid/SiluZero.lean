@@ -20,4 +20,9 @@ theorem silu_zero : silu 0 = 0 := by
   unfold silu
   ring
 
+-- Tests
+#check @silu_zero
+
+example : silu 0 = 0 := silu_zero
+
 end ProvableContracts.Sigmoid

@@ -1355,3 +1355,20 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-076
+  github_issue: null
+  item_type: task
+  title: 'KANI-WIRE: Wire Kani harnesses to actual kernel functions'
+  status: completed
+  priority: medium
+  assigned_to: null
+  created: 2026-03-22T08:33:20Z
+  updated: 2026-03-22T10:11:48Z
+  spec: null
+  acceptance_criteria:
+  - 'Connect the 45 scaffolded Kani #[kani::proof] harnesses to call actual kernel functions instead of unimplemented!(). Start with 3 softmax harnesses as template, then replicate across domains. Use stub_float strategy with Lean-proven transcendental stubs.'
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null

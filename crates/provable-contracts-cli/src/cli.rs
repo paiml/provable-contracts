@@ -15,6 +15,24 @@ pub enum Commands {
         /// Path to the contract YAML file
         contract: PathBuf,
     },
+    /// Extract kernel equations from `PyTorch` source into YAML contract
+    #[command(name = "extract-pytorch")]
+    ExtractPytorch {
+        /// `PyTorch` source target (`file.py::function_name`)
+        target: String,
+        /// Output YAML file path
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+    },
+    /// Generate Rust `debug_assert`!() from YAML contract preconditions/postconditions
+    Codegen {
+        /// Directory containing contract YAML files
+        #[arg(default_value = "contracts")]
+        contract_dir: PathBuf,
+        /// Output Rust file path
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+    },
     /// Generate Kani proof harnesses from a contract
     Kani {
         /// Path to the contract YAML file

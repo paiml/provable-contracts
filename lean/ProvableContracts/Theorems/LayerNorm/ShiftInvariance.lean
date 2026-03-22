@@ -53,4 +53,9 @@ theorem variance_shift {n : ℕ} (x : RVec (n + 1)) (c : ℝ) :
   intro i _
   rw [show shift x c i - mean (shift x c) = x i - mean x from centered_shift x c i]
 
+-- Tests
+#check @mean_shift
+#check @centered_shift
+#check @variance_shift
+
 end ProvableContracts.LayerNorm

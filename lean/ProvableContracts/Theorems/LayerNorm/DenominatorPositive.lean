@@ -37,4 +37,8 @@ theorem ln_denom_pos {n : ℕ} (x : RVec (n + 1)) (eps : ℝ) (heps : eps > 0) :
   apply Real.sqrt_pos_of_pos
   linarith [variance_nonneg x]
 
+-- Tests
+#check @variance_nonneg
+#check @ln_denom_pos
+
 end ProvableContracts.LayerNorm

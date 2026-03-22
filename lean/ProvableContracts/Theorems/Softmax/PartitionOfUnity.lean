@@ -29,4 +29,7 @@ theorem partition_of_unity {n : ℕ} (x : RVec (n + 1)) :
   rw [← Finset.sum_div]
   exact div_self (ne_of_gt (sum_exp_pos x))
 
+-- Tests
+#check @partition_of_unity
+
 end ProvableContracts.Softmax

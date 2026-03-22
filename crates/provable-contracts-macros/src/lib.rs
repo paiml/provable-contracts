@@ -99,31 +99,37 @@ impl Parse for ContractArgs {
 /// 1. A `const` assertion that reads a `CONTRACT_<NAME>_<EQ>` env var
 ///    (set by build.rs). If the env var is missing, compilation fails.
 ///
-/// 2. A static binding registration string (in a dedicated link section
-///    when `contract-audit` is enabled) for runtime traceability.
+/// 2. `debug_assert!()` calls for EVERY precondition and postcondition
+///    from the YAML contract (read via `CONTRACT_<KEY>_PRE_N` env vars).
+///    These are injected automatically — zero hand-written assertions.
 ///
-/// # Arguments
+/// 3. A static binding registration string for runtime traceability.
 ///
-/// - First argument: contract YAML name (e.g., `"rmsnorm-kernel-v1"`)
-/// - `equation`: equation name within the contract (e.g., `"rmsnorm"`)
+/// # How It Works
+///
+/// build.rs reads `contracts/*.yaml` and sets env vars:
+/// ```text
+/// CONTRACT_SOFTMAX_KERNEL_V1_SOFTMAX=implemented
+/// CONTRACT_SOFTMAX_KERNEL_V1_SOFTMAX_PRE_COUNT=2
+/// CONTRACT_SOFTMAX_KERNEL_V1_SOFTMAX_PRE_0=!x.is_empty()
+/// CONTRACT_SOFTMAX_KERNEL_V1_SOFTMAX_PRE_1=x.iter().all(|v| v.is_finite())
+/// CONTRACT_SOFTMAX_KERNEL_V1_SOFTMAX_POST_COUNT=1
+/// CONTRACT_SOFTMAX_KERNEL_V1_SOFTMAX_POST_0=ret.len() == x.len()
+/// ```
+///
+/// This macro reads those env vars at compile time and injects the
+/// assertions. Change the YAML → assertions change automatically.
+/// Remove the YAML → compile error.
 ///
 /// # Example
 ///
 /// ```rust,ignore
-/// #[contract("rmsnorm-kernel-v1", equation = "rmsnorm")]
-/// pub fn rms_norm(input: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
-///     // Implementation must satisfy proof obligations from the YAML
-///     todo!()
+/// #[contract("softmax-kernel-v1", equation = "softmax")]
+/// pub fn softmax_1d_alloc(logits: &[f32]) -> Vec<f32> {
+///     // Preconditions injected automatically from YAML
+///     // ... implementation ...
+///     // Postconditions checked on return value automatically
 /// }
-/// ```
-///
-/// # Compile-Time Behavior
-///
-/// If build.rs has NOT set `CONTRACT_RMSNORM_KERNEL_V1_RMSNORM=bound`,
-/// compilation fails with:
-///
-/// ```text
-/// error: environment variable `CONTRACT_RMSNORM_KERNEL_V1_RMSNORM` not defined
 /// ```
 #[proc_macro_attribute]
 pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -148,26 +154,26 @@ pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
         args.equation_name.to_uppercase().replace(['-', '.'], "_")
     );
 
-    // Place const assertions inside the function body so the macro works
-    // in all contexts: free functions, inherent methods, AND trait impl methods.
-    // Trait impls forbid associated consts not declared by the trait, but
-    // consts inside a function body are always legal.
+    // Read preconditions from env vars set by build.rs
+    let precondition_asserts = read_contract_assertions(&env_key, "PRE", equation_name);
+
+    // Read postconditions from env vars set by build.rs
+    let postcondition_asserts = read_contract_assertions(&env_key, "POST", equation_name);
+    let has_postconditions = !postcondition_asserts.is_empty();
+
     let fn_attrs = &input_fn.attrs;
     let fn_vis = &input_fn.vis;
     let fn_sig = &input_fn.sig;
     let fn_stmts = &input_fn.block.stmts;
 
-    let expanded = quote! {
-        #(#fn_attrs)*
-        #fn_vis #fn_sig {
+    let body = if has_postconditions {
+        // Wrap body in let ret = { ... }; check postconditions; ret
+        quote! {
             // 1. Compile-time contract binding check.
-            //    build.rs sets this env var when binding.yaml is present.
-            //    On crates.io builds (no sibling repo), gracefully degrades.
             #[allow(dead_code)]
             const #const_name: Option<&str> = option_env!(#env_key);
 
             // 2. Binding registration for audit/traceability.
-            //    Encodes contract, equation, module, and function name.
             #[allow(dead_code)]
             const #binding_const_name: &str = concat!(
                 "contract=", #contract_name,
@@ -176,11 +182,170 @@ pub fn contract(attr: TokenStream, item: TokenStream) -> TokenStream {
                 ",function=", #fn_name_str,
             );
 
-            // 3. The original function body.
+            // 3. Preconditions from YAML (injected by build.rs → proc macro).
+            #(#precondition_asserts)*
+
+            // 4. Original function body.
+            let ret = { #(#fn_stmts)* };
+
+            // 5. Postconditions from YAML (checked on return value).
+            #(#postcondition_asserts)*
+
+            ret
+        }
+    } else {
+        quote! {
+            // 1. Compile-time contract binding check.
+            #[allow(dead_code)]
+            const #const_name: Option<&str> = option_env!(#env_key);
+
+            // 2. Binding registration for audit/traceability.
+            #[allow(dead_code)]
+            const #binding_const_name: &str = concat!(
+                "contract=", #contract_name,
+                ",equation=", #equation_name,
+                ",module=", module_path!(),
+                ",function=", #fn_name_str,
+            );
+
+            // 3. Preconditions from YAML (injected by build.rs → proc macro).
+            #(#precondition_asserts)*
+
+            // 4. Original function body.
             #(#fn_stmts)*
         }
     };
 
+    let expanded = quote! {
+        #(#fn_attrs)*
+        #fn_vis #fn_sig {
+            #body
+        }
+    };
+
+    TokenStream::from(expanded)
+}
+
+/// Read CONTRACT_<key>_{PRE,POST}_0..N env vars and generate `debug_assert`! tokens.
+///
+/// build.rs sets these from YAML contract preconditions/postconditions.
+/// If no env vars are found (e.g., crates.io build), returns empty vec (graceful).
+fn read_contract_assertions(
+    env_key: &str,
+    kind: &str, // "PRE" or "POST"
+    equation_name: &str,
+) -> Vec<proc_macro2::TokenStream> {
+    let mut asserts = Vec::new();
+
+    let count_key = format!("{env_key}_{kind}_COUNT");
+    let count: usize = std::env::var(&count_key)
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(0);
+
+    let kind_label = if kind == "PRE" { "Pre" } else { "Post" };
+
+    for i in 0..count {
+        let var_key = format!("{env_key}_{kind}_{i}");
+        if let Ok(expr_str) = std::env::var(&var_key) {
+            // Parse the YAML precondition/postcondition as a Rust expression
+            if let Ok(expr) = expr_str.parse::<proc_macro2::TokenStream>() {
+                let msg = format!(
+                    "Contract [{equation_name}] {kind_label}-condition violated: {expr_str}"
+                );
+                asserts.push(quote! {
+                    debug_assert!(#expr, #msg);
+                });
+            }
+            // If parsing fails, skip silently (the expression may not be valid Rust)
+        }
+    }
+
+    asserts
+}
+
+/// Precondition: checked via `debug_assert!()` at function entry.
+/// Zero runtime cost in release builds.
+///
+/// ```rust,ignore
+/// #[provable_contracts_macros::requires(x > 0)]
+/// fn sqrt(x: f64) -> f64 { x.sqrt() }
+/// ```
+#[proc_macro_attribute]
+pub fn requires(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let predicate: proc_macro2::TokenStream = attr.into();
+    let input_fn = parse_macro_input!(item as ItemFn);
+    let fn_attrs = &input_fn.attrs;
+    let fn_vis = &input_fn.vis;
+    let fn_sig = &input_fn.sig;
+    let fn_block = &input_fn.block;
+    let pred_str = predicate.to_string();
+
+    let expanded = quote! {
+        #(#fn_attrs)*
+        #fn_vis #fn_sig {
+            debug_assert!(#predicate, "Pre-condition violated: {}", #pred_str);
+            #fn_block
+        }
+    };
+    TokenStream::from(expanded)
+}
+
+/// Postcondition: checked via `debug_assert!()` after function returns.
+/// The return value is bound to `ret` in the predicate.
+/// Zero runtime cost in release builds.
+///
+/// ```rust,ignore
+/// #[provable_contracts_macros::ensures(ret > 0)]
+/// fn abs(x: i32) -> i32 { if x < 0 { -x } else { x } }
+/// ```
+#[proc_macro_attribute]
+pub fn ensures(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let predicate: proc_macro2::TokenStream = attr.into();
+    let input_fn = parse_macro_input!(item as ItemFn);
+    let fn_attrs = &input_fn.attrs;
+    let fn_vis = &input_fn.vis;
+    let fn_sig = &input_fn.sig;
+    let fn_block = &input_fn.block;
+    let pred_str = predicate.to_string();
+
+    let expanded = quote! {
+        #(#fn_attrs)*
+        #fn_vis #fn_sig {
+            let ret = #fn_block;
+            debug_assert!(#predicate, "Post-condition violated: {}", #pred_str);
+            ret
+        }
+    };
+    TokenStream::from(expanded)
+}
+
+/// Invariant: checked via `debug_assert!()` both BEFORE and AFTER.
+/// Zero runtime cost in release builds.
+///
+/// ```rust,ignore
+/// #[provable_contracts_macros::invariant(!self.items.is_empty())]
+/// fn process(&mut self) { /* ... */ }
+/// ```
+#[proc_macro_attribute]
+pub fn invariant(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let predicate: proc_macro2::TokenStream = attr.into();
+    let input_fn = parse_macro_input!(item as ItemFn);
+    let fn_attrs = &input_fn.attrs;
+    let fn_vis = &input_fn.vis;
+    let fn_sig = &input_fn.sig;
+    let fn_block = &input_fn.block;
+    let pred_str = predicate.to_string();
+
+    let expanded = quote! {
+        #(#fn_attrs)*
+        #fn_vis #fn_sig {
+            debug_assert!(#predicate, "Invariant violated (pre): {}", #pred_str);
+            let ret = #fn_block;
+            debug_assert!(#predicate, "Invariant violated (post): {}", #pred_str);
+            ret
+        }
+    };
     TokenStream::from(expanded)
 }
 

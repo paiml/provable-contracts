@@ -155,7 +155,7 @@ falsification_tests:
     test: "Construct input where draft model perfectly predicts K=5 tokens; verify 6 tokens emitted and token 6 matches sequential baseline"
     if_fails: "Bonus token generated from stale logits or wrong position index"
 
-  - id: FALSIFY-SPECULATIVE_DECODING_V1-FILL
+  - id: FALSIFY-SPEC-007
     rule: "Weight sharing between draft and verify"
     prediction: "Property holds under boundary conditions"
     test: "Exercise boundary values for last obligation"

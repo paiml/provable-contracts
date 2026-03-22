@@ -31,4 +31,8 @@ theorem softmax_pos {n : ℕ} (x : RVec (n + 1)) (i : Fin (n + 1)) :
   unfold softmax
   exact div_pos (Real.exp_pos _) (sum_exp_pos x)
 
+-- Tests
+#check @sum_exp_pos
+#check @softmax_pos
+
 end ProvableContracts.Softmax

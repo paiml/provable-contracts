@@ -38,4 +38,8 @@ theorem rms_scale_zero_eps {n : ℕ} (x : RVec (n + 1)) (α : ℝ) :
   rw [Real.sqrt_mul (sq_nonneg α)]
   rw [Real.sqrt_sq_eq_abs]
 
+-- Tests
+#check @mean_sq_scale
+#check @rms_scale_zero_eps
+
 end ProvableContracts.RMSNorm

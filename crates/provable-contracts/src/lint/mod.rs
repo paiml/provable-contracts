@@ -13,6 +13,7 @@ pub mod config;
 pub mod diff;
 pub mod finding;
 mod gates;
+mod gates_extended;
 pub mod rules;
 pub mod sarif;
 pub mod trend;
@@ -24,9 +25,8 @@ use std::time::Instant;
 use serde::Serialize;
 
 use self::finding::LintFinding;
-use self::gates::{
-    load_binding, load_contracts, run_audit_gate, run_score_gate, run_validate_gate,
-};
+use self::gates::{load_binding, load_contracts, run_audit_gate, run_score_gate, run_validate_gate};
+use self::gates_extended::{run_enforce_gate, run_verify_gate};
 use self::rules::RuleSeverity;
 
 /// Result of a single gate execution.
@@ -63,6 +63,19 @@ pub enum GateDetail {
         mean_score: f64,
         threshold: f64,
         below_threshold: Vec<String>,
+    },
+    #[serde(rename = "verify")]
+    Verify {
+        total_refs: usize,
+        existing: usize,
+        missing: usize,
+    },
+    #[serde(rename = "enforce")]
+    Enforce {
+        equations_total: usize,
+        equations_with_pre: usize,
+        equations_with_post: usize,
+        equations_with_lean: usize,
     },
     #[serde(rename = "skipped")]
     Skipped { reason: String },
@@ -152,6 +165,25 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
         all_findings.append(&mut score_findings);
     } else {
         gates.push(skipped_gate("score", "validation failed"));
+    }
+
+    // Gate 4: verify (source code fulfillment)
+    if validation_passed {
+        let project_root = config.contract_dir.parent().unwrap_or(config.contract_dir);
+        let (verify_result, mut verify_findings) = run_verify_gate(&contracts, project_root);
+        gates.push(verify_result);
+        all_findings.append(&mut verify_findings);
+    } else {
+        gates.push(skipped_gate("verify", "validation failed"));
+    }
+
+    // Gate 5: enforce (equations must have preconditions/postconditions)
+    if validation_passed {
+        let (enforce_result, mut enforce_findings) = run_enforce_gate(&contracts);
+        gates.push(enforce_result);
+        all_findings.append(&mut enforce_findings);
+    } else {
+        gates.push(skipped_gate("enforce", "validation failed"));
     }
 
     all_findings.append(&mut validate_findings);
@@ -256,7 +288,7 @@ mod tests {
         let config = LintConfig::new(&dir, None, 0.0);
         let report = run_lint(&config);
         assert!(report.passed, "lint should pass: {report:?}");
-        assert_eq!(report.gates.len(), 3);
+        assert_eq!(report.gates.len(), 5);
     }
 
     #[test]
@@ -407,11 +439,13 @@ mod tests {
         let config = LintConfig::new(tmp.path(), None, 0.0);
         let report = run_lint(&config);
         assert!(!report.passed);
-        // validate should fail, audit and score should be skipped
-        assert_eq!(report.gates.len(), 3);
+        // validate should fail, audit/score/verify/enforce should be skipped
+        assert_eq!(report.gates.len(), 5);
         assert!(!report.gates[0].passed); // validate failed
         assert!(report.gates[1].skipped); // audit skipped
         assert!(report.gates[2].skipped); // score skipped
+        assert!(report.gates[3].skipped); // verify skipped
+        assert!(report.gates[4].skipped); // enforce skipped
     }
 
     #[test]

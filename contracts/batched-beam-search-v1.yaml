@@ -136,7 +136,7 @@ falsification_tests:
     test: "proptest with adversarial inputs: all-zero logits, uniform logits, logits biased away from EOS, max_len in {1, 10, 100, 448}"
     if_fails: "Termination condition fails to count completed beams or step counter not incremented"
 
-  - id: FALSIFY-BATCHED_BEAM_SEARCH_V1-FILL
+  - id: FALSIFY-BATCH-005
     rule: "Beam search termination"
     prediction: "Property holds under boundary conditions"
     test: "Exercise boundary values for last obligation"

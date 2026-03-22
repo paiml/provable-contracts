@@ -27,6 +27,8 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 10 | [Kernel Contract Registry](#10-kernel-contract-registry) | [sub/registry.md](sub/registry.md) |
 | 11 | [Stack Integration](#11-stack-integration) | [sub/integration.md](sub/integration.md) |
 | 12 | [References](#12-references) | — |
+| 13 | [Escape-Proof Enforcement](#13-escape-proof-enforcement) | [sub/escape-proof-enforcement.md](sub/escape-proof-enforcement.md) |
+| 14 | [Lean 4 + Kani Composition](#14-lean-kani-composition) | [sub/lean-kani-composition.md](sub/lean-kani-composition.md) |
 
 ---
 
@@ -184,6 +186,19 @@ no reason to exist.
 | SIMD = scalar | N/A | proptest random | kani::proof <=256 | N/A |
 | No overflow | N/A | proptest edges | Kani auto | N/A |
 | Quantized bsums | N/A | proptest blocks | kani::proof exact | N/A |
+
+### How L4 and L5 Compose
+
+Lean and Kani are NOT alternatives — they verify different things about
+the SAME obligation. See **[sub/lean-kani-composition.md](sub/lean-kani-composition.md)**
+for the full design.
+
+**Short version:** Lean proves the algorithm over ℝ. Kani proves the Rust
+code over f32. The `stub_float` strategy bridges them: Kani replaces
+transcendentals (exp, log) with arbitrary-but-constrained values (what
+Lean proved valid), then verifies the surrounding code preserves the
+invariant. This is compositional: Lean discharges the hard math, Kani
+verifies the structural code.
 
 ---
 
@@ -570,3 +585,18 @@ Proven by 32+ KAIZEN tickets with measurable results:
 26. Singh, G. et al. (2022). "Interactive Abstract Interpretation." arXiv:2209.10445.
 27. Li, Y. et al. (2025). "Do Large Language Models Respect Contracts?" arXiv:2510.12047.
 28. Bruni, R. et al. (2026). "Agent Behavioral Contracts." arXiv:2602.22302.
+
+---
+
+## 13. Escape-Proof Enforcement
+
+**Sub-spec**: [sub/escape-proof-enforcement.md](sub/escape-proof-enforcement.md)
+
+Six-stage pipeline where each stage gates the next. Skip one → compile error.
+Equation (YAML) → Lean 4 proof (no sorry) → YAML validation (pv lint) →
+build.rs codegen (debug_assert from preconditions) → #[contract] macro
+(compile-time binding check) → test execution (falsification tests pass).
+
+Zero runtime cost. Release binary identical to one built without contracts.
+Inspired by SPARK/Ada (proof discharge), Eiffel (contract inheritance),
+Dafny (verification conditions), Lean 4 (theorem proving).

@@ -94,6 +94,16 @@ pub struct Equation {
     pub codomain: Option<String>,
     #[serde(default)]
     pub invariants: Vec<String>,
+    /// Rust preconditions — compiled to `debug_assert!()` by `build.rs`.
+    #[serde(default)]
+    pub preconditions: Vec<String>,
+    /// Rust postconditions — compiled to `debug_assert!()` by `build.rs`.
+    #[serde(default)]
+    pub postconditions: Vec<String>,
+    /// Lean 4 theorem name that proves this equation correct.
+    /// Example: "ProvableContracts.Theorems.Softmax.PartitionOfUnity"
+    #[serde(default)]
+    pub lean_theorem: Option<String>,
 }
 
 /// A proof obligation derived from an equation.

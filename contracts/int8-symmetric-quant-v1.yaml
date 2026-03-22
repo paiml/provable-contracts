@@ -98,7 +98,7 @@ falsification_tests:
     test: "proptest with W ~ Uniform(-1,1), W ~ Laplace(0,0.1), W ~ Cauchy(0,1) clipped to fp16 range"
     if_fails: "Distribution shape causes systematic quantization bias exceeding tolerance"
 
-  - id: FALSIFY-INT8_SYMMETRIC_QUANT_V1-FILL
+  - id: FALSIFY-I8Q-005
     rule: "Zero-row invariant"
     prediction: "Property holds under boundary conditions"
     test: "Exercise boundary values for last obligation"

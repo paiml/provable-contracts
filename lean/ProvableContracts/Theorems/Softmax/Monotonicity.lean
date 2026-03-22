@@ -26,4 +26,7 @@ theorem monotone {n : ℕ} (x : RVec (n + 1)) (i j : Fin (n + 1))
   unfold softmax
   exact div_lt_div_of_pos_right (Real.exp_strictMono h) (sum_exp_pos x)
 
+-- Tests
+#check @monotone
+
 end ProvableContracts.Softmax

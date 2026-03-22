@@ -2,6 +2,8 @@
 //!
 //! Each gate runs a specific quality check and returns a `GateResult`
 //! plus a list of `LintFinding`s for downstream rendering.
+//!
+//! Extended gates (verify, enforce) are in `gates_extended.rs`.
 
 use std::path::Path;
 use std::time::Instant;

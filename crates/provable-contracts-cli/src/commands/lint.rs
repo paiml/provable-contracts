@@ -156,7 +156,8 @@ fn count_contracts(report: &LintReport) -> usize {
             GateDetail::Validate { contracts, .. }
             | GateDetail::Audit { contracts, .. }
             | GateDetail::Score { contracts, .. } => return *contracts,
-            GateDetail::Skipped { .. } => {}
+            GateDetail::Verify { .. } | GateDetail::Enforce { .. } | GateDetail::Skipped { .. } => {
+            }
         }
     }
     0
@@ -331,6 +332,19 @@ fn gate_summary(detail: &GateDetail) -> String {
         } => format!(
             "{contracts} contracts, min={min_score:.2}, mean={mean_score:.2}, threshold={threshold:.2}"
         ),
+        GateDetail::Verify {
+            total_refs,
+            existing,
+            missing,
+        } => format!("{existing}/{total_refs} tests found, {missing} missing"),
+        GateDetail::Enforce {
+            equations_total,
+            equations_with_pre,
+            equations_with_post,
+            equations_with_lean,
+        } => format!(
+            "{equations_total} eqs, {equations_with_pre} pre, {equations_with_post} post, {equations_with_lean} lean"
+        ),
         GateDetail::Skipped { reason } => reason.clone(),
     }
 }
@@ -344,7 +358,9 @@ fn print_gate_errors(detail: &GateDetail) {
         GateDetail::Score {
             below_threshold, ..
         } => below_threshold,
-        GateDetail::Skipped { .. } => return,
+        GateDetail::Verify { .. } | GateDetail::Enforce { .. } | GateDetail::Skipped { .. } => {
+            return;
+        }
     };
     for msg in messages.iter().take(10) {
         println!("  {msg}");

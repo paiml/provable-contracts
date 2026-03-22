@@ -35,4 +35,7 @@ theorem sigmoid_symmetry (x : ℝ) :
   field_simp
   ring
 
+-- Tests
+#check @sigmoid_symmetry
+
 end ProvableContracts.Sigmoid

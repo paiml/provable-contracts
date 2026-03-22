@@ -31,4 +31,7 @@ theorem cross_entropy_nonneg {n : ℕ} (targets : RVec (n + 1)) (logits : RVec (
   intro i _
   exact mul_nonpos_of_nonneg_of_nonpos (ht i) (log_softmax_le_zero logits i)
 
+-- Tests
+#check @cross_entropy_nonneg
+
 end ProvableContracts.CrossEntropy

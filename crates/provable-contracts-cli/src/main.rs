@@ -27,6 +27,13 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
     match command {
         Commands::Validate { contract } => commands::validate::run(&contract),
         Commands::Scaffold { contract } => commands::scaffold::run(&contract),
+        Commands::ExtractPytorch { target, output } => {
+            commands::extract::run(&target, output.as_deref())
+        }
+        Commands::Codegen {
+            contract_dir,
+            output,
+        } => commands::codegen::run(&contract_dir, output.as_deref()),
         Commands::Kani { contract } => commands::kani::run(&contract),
         Commands::Probar { contract, binding } => {
             commands::probar::run(&contract, binding.as_deref())

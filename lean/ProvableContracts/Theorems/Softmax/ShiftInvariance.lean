@@ -35,4 +35,7 @@ theorem shift_invariance {n : ℕ} (x : RVec (n + 1)) (c : ℝ) (i : Fin (n + 1)
   rw [← Finset.sum_mul]
   exact mul_div_mul_right _ _ (ne_of_gt (Real.exp_pos c))
 
+-- Tests
+#check @shift_invariance
+
 end ProvableContracts.Softmax
