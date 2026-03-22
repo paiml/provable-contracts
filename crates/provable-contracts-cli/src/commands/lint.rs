@@ -304,10 +304,7 @@ fn print_text(report: &LintReport) {
         let contracts = count_contracts(report);
         println!("Contracts analyzed: {contracts}");
         for gate in &report.gates {
-            println!(
-                "  {}: {}ms",
-                gate.name, gate.duration_ms
-            );
+            println!("  {}: {}ms", gate.name, gate.duration_ms);
         }
     }
 }

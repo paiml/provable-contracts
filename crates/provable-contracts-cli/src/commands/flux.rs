@@ -16,9 +16,7 @@ pub fn run(path: &Path, verify: bool) -> Result<(), Box<dyn std::error::Error>> 
     if verify {
         eprintln!();
         eprintln!("Running `cargo flux` to verify annotations...");
-        let status = std::process::Command::new("cargo")
-            .arg("flux")
-            .status();
+        let status = std::process::Command::new("cargo").arg("flux").status();
         match status {
             Ok(s) if s.success() => eprintln!("Flux verification: PASS"),
             Ok(s) => {

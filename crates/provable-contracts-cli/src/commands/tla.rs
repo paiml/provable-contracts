@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use provable_contracts::graph::dependency_graph;
-use provable_contracts::schema::{parse_contract, Contract};
+use provable_contracts::schema::{Contract, parse_contract};
 use provable_contracts::tla_gen::generate_tla_module;
 
 pub fn run(
@@ -70,7 +70,10 @@ pub fn run(
     if check {
         eprintln!();
         eprintln!("Running TLC model checker...");
-        let status = std::process::Command::new("tlc").arg("-workers").arg("auto").status();
+        let status = std::process::Command::new("tlc")
+            .arg("-workers")
+            .arg("auto")
+            .status();
         match status {
             Ok(s) if s.success() => eprintln!("TLC verification: PASS"),
             Ok(s) => {

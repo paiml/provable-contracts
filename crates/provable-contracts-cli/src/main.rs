@@ -151,9 +151,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
                         let baseline_ids: std::collections::HashSet<String> = sarif_json
                             .lines()
                             .filter(|l| l.contains("\"ruleId\""))
-                            .filter_map(|l| {
-                                l.split('"').nth(3).map(ToString::to_string)
-                            })
+                            .filter_map(|l| l.split('"').nth(3).map(ToString::to_string))
                             .collect();
                         if !baseline_ids.is_empty() {
                             eprintln!(
@@ -184,7 +182,8 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
                             continue;
                         }
                         if let Ok(content) = std::fs::read_to_string(&path) {
-                            if !content.contains("qa_gate:") && content.contains("kani_harnesses:") {
+                            if !content.contains("qa_gate:") && content.contains("kani_harnesses:")
+                            {
                                 // This contract has harnesses but no qa_gate — it's a kernel contract
                                 // Skip auto-fix for now (would need careful YAML serialization)
                                 fixed += 1;
@@ -194,14 +193,19 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
                 }
                 if fixed > 0 {
                     println!("  Found {fixed} contracts eligible for qa_gate addition.");
-                    println!("  (Dry run — YAML auto-editing requires serde_yaml roundtrip. Use `pv generate` instead.)");
+                    println!(
+                        "  (Dry run — YAML auto-editing requires serde_yaml roundtrip. Use `pv generate` instead.)"
+                    );
                 } else {
                     println!("  No auto-fixable findings found.");
                 }
             }
 
             if watch {
-                println!("Watching {} for changes (Ctrl+C to stop)...", contract_dir.display());
+                println!(
+                    "Watching {} for changes (Ctrl+C to stop)...",
+                    contract_dir.display()
+                );
                 loop {
                     std::thread::sleep(std::time::Duration::from_secs(2));
                     // Poll for mtime changes
