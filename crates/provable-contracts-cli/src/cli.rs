@@ -70,6 +70,12 @@ pub enum Commands {
         /// Path to binding registry YAML (adds binding audit)
         #[arg(long)]
         binding: Option<PathBuf>,
+        /// Show Coq proof tier per obligation (kani-only / lean-proved / coq-admit / coq-proved)
+        #[arg(long)]
+        coq: bool,
+        /// Show which shape obligations are Flux-discharged vs Kani-needed
+        #[arg(long)]
+        flux: bool,
     },
     /// Diff two contract versions and suggest semver bump
     Diff {
@@ -86,6 +92,9 @@ pub enum Commands {
         /// Path to binding registry YAML (adds binding coverage)
         #[arg(long)]
         binding: Option<PathBuf>,
+        /// Include fuzz coverage data alongside probar coverage
+        #[arg(long)]
+        fuzz: bool,
     },
     /// Generate all artifacts (scaffold, kani, probar) to disk
     Generate {
@@ -203,6 +212,12 @@ pub enum Commands {
         /// Suppress findings present in baseline SARIF file
         #[arg(long)]
         baseline: Option<PathBuf>,
+        /// Apply deterministic auto-fixes
+        #[arg(long)]
+        fix: bool,
+        /// Re-lint on file change (polling)
+        #[arg(long)]
+        watch: bool,
     },
     /// Score contracts or a codebase directory
     Score {
@@ -227,6 +242,9 @@ pub enum Commands {
         /// Custom weights as JSON
         #[arg(long)]
         weights: Option<String>,
+        /// Exit with status 1 if any contract below --min-score
+        #[arg(long)]
+        exit_code: bool,
     },
     /// Search contracts by intent, regex, or literal match
     Query {
@@ -330,32 +348,71 @@ pub enum Commands {
     Invariants {
         /// Path to the contract YAML file
         contract: PathBuf,
+        /// Use Rust nightly `#[contracts::invariant]` attributes
+        #[arg(long)]
+        nightly: bool,
+        /// Use stable `Invariant` trait (default)
+        #[arg(long)]
+        stable: bool,
+        /// Also generate Kani preservation proof harnesses
+        #[arg(long)]
+        harnesses: bool,
     },
     /// Generate Coq theorem stubs from a contract
     Coq {
         /// Path to the contract YAML file
         contract: PathBuf,
+        /// Output directory for generated .v files
+        #[arg(short, long)]
+        output_dir: Option<PathBuf>,
+        /// Output format: vernacular (default) or json
+        #[arg(long, default_value = "vernacular")]
+        format: String,
     },
     /// Generate libfuzzer fuzz targets from a contract
     Fuzz {
         /// Path to the contract YAML file
         contract: PathBuf,
+        /// Sanitizer to enable: address, memory, or thread
+        #[arg(long)]
+        sanitizer: Option<String>,
+        /// Maximum input length for the fuzzer
+        #[arg(long)]
+        max_len: Option<usize>,
+        /// Timeout in seconds for the fuzzer
+        #[arg(long)]
+        timeout: Option<u64>,
     },
     /// Generate MIRAI abstract interpretation annotations from a contract
     Mirai {
         /// Path to the contract YAML file
         contract: PathBuf,
+        /// Generate tag structs for taint analysis
+        #[arg(long)]
+        emit_tags: bool,
     },
     /// Generate Flux refinement type annotations from a contract
     Flux {
         /// Path to the contract YAML file
         contract: PathBuf,
+        /// Invoke Flux checker inline via `cargo flux`
+        #[arg(long)]
+        verify: bool,
     },
     /// Generate TLA+ system-level specification from contract dependency DAG
     Tla {
         /// Directory containing contract YAML files
         #[arg(default_value = "contracts")]
         contract_dir: PathBuf,
+        /// Output .tla file path
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+        /// Invoke TLC model checker if installed
+        #[arg(long)]
+        check: bool,
+        /// Emit Alloy .als instead of TLA+
+        #[arg(long)]
+        alloy: bool,
     },
     /// Generate mdBook pages for contracts
     Book {

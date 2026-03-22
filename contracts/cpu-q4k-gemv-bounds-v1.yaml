@@ -1,0 +1,89 @@
+metadata:
+  version: "1.0.0"
+  created: "2026-03-22"
+  author: "PAIML Engineering"
+  description: "PMAT-313: Bounds safety for CPU Q4K GEMV raw pointer dispatch"
+  references:
+    - "realizar src/quantize/q4k_dot_ggml_style.rs — ggml_style_q4k_q8k_dot_avx2_raw"
+    - "realizar src/quantize/q5k_q6k_matvec.rs — lean dispatch with raw pointers"
+    - "PMAT-306/308: unsafe raw pointer arithmetic eliminates bounds checks"
+  depends_on:
+    - "cpu-q4k-activation-quant-v1.yaml"
+
+equations:
+  pointer_arithmetic:
+    formula: |
+      For row r in 0..out_dim:
+        weight_ptr(r) = base + r * bytes_per_row
+        max_access = weight_ptr(r) + 143  (last byte of SB header + qs)
+      Safety: max_access < base + weight_data.len()
+    domain: "Q4K weight buffer pointer arithmetic"
+
+  q8k_indexing:
+    formula: |
+      For super-block sb in 0..num_sb:
+        q8_offset = sb * 256
+        max_q8_access = q8_offset + 255
+      Safety: max_q8_access < q8k_quants.len()
+    domain: "Q8K activation buffer indexing"
+
+preconditions:
+  - id: PRE-GEMV-001
+    description: "Weight data is large enough for all rows"
+    assertion: "weight_data.len() >= out_dim * bytes_per_row"
+    where: "bytes_per_row = ceil(in_dim / 256) * 144"
+
+  - id: PRE-GEMV-002
+    description: "Q8K scales buffer covers all super-blocks"
+    assertion: "q8k_scales.len() >= num_super_blocks"
+    where: "num_super_blocks = ceil(in_dim / 256)"
+
+  - id: PRE-GEMV-003
+    description: "Q8K quants buffer covers all activation values"
+    assertion: "q8k_quants.len() >= padded_in_dim"
+    where: "padded_in_dim = num_super_blocks * 256"
+
+  - id: PRE-GEMV-004
+    description: "Output buffer is large enough"
+    assertion: "output.len() >= out_dim"
+
+  - id: PRE-GEMV-005
+    description: "Bsums buffer covers all sub-blocks"
+    assertion: "q8k_bsums.len() >= num_super_blocks * 16"
+
+postconditions:
+  - id: POST-GEMV-001
+    description: "All output values are finite"
+    assertion: "output[0..out_dim].iter().all(|x| x.is_finite())"
+
+  - id: POST-GEMV-002
+    description: "No out-of-bounds memory access during dot product"
+    assertion: "for each row in 0..out_dim: weight_ptr + row * bytes_per_row + 143 < weight_end"
+
+  - id: POST-GEMV-003
+    description: "Inner loop accesses within Q8K bounds"
+    assertion: "for each sb in 0..num_sb: q8_ptr + sb * 256 + 255 < q8_end"
+
+kani_harnesses:
+  - id: KANI-GEMV-001
+    obligation: PRE-GEMV-001
+    property: "Weight buffer bounds verified for all valid dimensions"
+    bound: 4
+    strategy: stub_float
+    solver: cadical
+    harness: verify_weight_bounds
+
+  - id: KANI-GEMV-002
+    obligation: POST-GEMV-002
+    property: "No OOB in raw pointer inner loop"
+    bound: 4
+    strategy: stub_float
+    solver: cadical
+    harness: verify_inner_loop_bounds
+
+falsification_tests:
+  - id: FALSIFY-GEMV-001
+    rule: "Raw pointer path produces identical results to safe path"
+    prediction: "max_abs_diff(raw_output, safe_output) < 1e-4"
+    test: "Run both paths on Qwen 1.5B layer 0 Q projection"
+    if_fails: "Raw pointer arithmetic has an off-by-one error"

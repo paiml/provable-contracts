@@ -281,6 +281,15 @@ fn parse_csv(s: Option<&str>) -> Vec<String> {
 }
 
 fn print_text(report: &LintReport) {
+    if crate::verbosity::is_quiet() {
+        // Quiet mode: only the result line
+        let passed = report.gates.iter().filter(|g| g.passed).count();
+        let total = report.gates.len();
+        let status = if report.passed { "PASS" } else { "FAIL" };
+        println!("{status} ({passed}/{total} gates)");
+        return;
+    }
+
     println!("pv lint — contract quality gate");
     println!("================================\n");
     for (i, gate) in report.gates.iter().enumerate() {
@@ -288,6 +297,19 @@ fn print_text(report: &LintReport) {
     }
     print_findings(report);
     print_summary(report);
+
+    if crate::verbosity::is_verbose() {
+        // Verbose: also print per-contract details
+        println!("\nVerbose: {} total findings", report.findings.len());
+        let contracts = count_contracts(report);
+        println!("Contracts analyzed: {contracts}");
+        for gate in &report.gates {
+            println!(
+                "  {}: {}ms",
+                gate.name, gate.duration_ms
+            );
+        }
+    }
 }
 
 fn print_gate(num: usize, gate: &provable_contracts::lint::GateResult) {

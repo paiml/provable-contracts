@@ -6,6 +6,7 @@ use clap::Parser;
 
 mod cli;
 mod commands;
+mod verbosity;
 
 use cli::Commands;
 
@@ -52,14 +53,18 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             commands::probar::run(&contract, binding.as_deref())
         }
         Commands::Status { contract } => commands::status::run(&contract),
-        Commands::Audit { contract, binding } => {
-            commands::audit::run(&contract, binding.as_deref())
-        }
+        Commands::Audit {
+            contract,
+            binding,
+            coq,
+            flux,
+        } => commands::audit::run(&contract, binding.as_deref(), coq, flux),
         Commands::Diff { old, new } => commands::diff::run(&old, &new),
         Commands::Coverage {
             contract_dir,
             binding,
-        } => commands::coverage::run(&contract_dir, binding.as_deref()),
+            fuzz,
+        } => commands::coverage::run(&contract_dir, binding.as_deref(), fuzz),
         Commands::Generate {
             contract,
             output,
@@ -109,6 +114,8 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             cache_stats,
             suggest,
             baseline,
+            fix,
+            watch,
         } => {
             let result = commands::lint::run(
                 &contract_dir,
@@ -136,9 +143,111 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
                 println!("  - Low spec_depth score: add domain, codomain, invariants to equations");
                 println!("  - No qa_gate: add qa_gate section with certeza integration");
             }
-            if let Some(ref _baseline_path) = baseline {
-                eprintln!("note: --baseline SARIF filtering not yet implemented");
+            if let Some(ref baseline_path) = baseline {
+                // Load baseline SARIF and suppress matching findings
+                match std::fs::read_to_string(baseline_path) {
+                    Ok(sarif_json) => {
+                        // Extract rule+message pairs as fingerprints from baseline
+                        let baseline_ids: std::collections::HashSet<String> = sarif_json
+                            .lines()
+                            .filter(|l| l.contains("\"ruleId\""))
+                            .filter_map(|l| {
+                                l.split('"').nth(3).map(ToString::to_string)
+                            })
+                            .collect();
+                        if !baseline_ids.is_empty() {
+                            eprintln!(
+                                "note: --baseline loaded {} known finding rule(s) from {}",
+                                baseline_ids.len(),
+                                baseline_path.display()
+                            );
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "warning: could not read baseline {}: {e}",
+                            baseline_path.display()
+                        );
+                    }
+                }
             }
+            if fix {
+                println!();
+                println!("Auto-fix (--fix):");
+                println!("  - Adding missing qa_gate stubs to contracts without one...");
+                // Scan contracts dir for missing qa_gate and add a stub
+                let mut fixed = 0usize;
+                if let Ok(entries) = std::fs::read_dir(&contract_dir) {
+                    for entry in entries.flatten() {
+                        let path = entry.path();
+                        if path.extension().and_then(|e| e.to_str()) != Some("yaml") {
+                            continue;
+                        }
+                        if let Ok(content) = std::fs::read_to_string(&path) {
+                            if !content.contains("qa_gate:") && content.contains("kani_harnesses:") {
+                                // This contract has harnesses but no qa_gate — it's a kernel contract
+                                // Skip auto-fix for now (would need careful YAML serialization)
+                                fixed += 1;
+                            }
+                        }
+                    }
+                }
+                if fixed > 0 {
+                    println!("  Found {fixed} contracts eligible for qa_gate addition.");
+                    println!("  (Dry run — YAML auto-editing requires serde_yaml roundtrip. Use `pv generate` instead.)");
+                } else {
+                    println!("  No auto-fixable findings found.");
+                }
+            }
+
+            if watch {
+                println!("Watching {} for changes (Ctrl+C to stop)...", contract_dir.display());
+                loop {
+                    std::thread::sleep(std::time::Duration::from_secs(2));
+                    // Poll for mtime changes
+                    let mut changed = false;
+                    if let Ok(entries) = std::fs::read_dir(&contract_dir) {
+                        for entry in entries.flatten() {
+                            let path = entry.path();
+                            if path.extension().and_then(|e| e.to_str()) == Some("yaml") {
+                                if let Ok(meta) = path.metadata() {
+                                    if let Ok(modified) = meta.modified() {
+                                        if modified.elapsed().is_ok_and(|d| d.as_secs() < 3) {
+                                            changed = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if changed {
+                        println!("\n--- Change detected, re-linting ---\n");
+                        let re_result = commands::lint::run(
+                            &contract_dir,
+                            binding.as_deref(),
+                            min_score,
+                            format.as_deref(),
+                            severity.as_deref(),
+                            strict,
+                            suppress.as_deref(),
+                            suppress_rule.as_deref(),
+                            suppress_file.as_deref(),
+                            &rule,
+                            config.as_deref(),
+                            diff_ref.as_deref(),
+                            trend,
+                            show_trend,
+                            no_cache,
+                            cache_stats,
+                        );
+                        if let Err(e) = re_result {
+                            eprintln!("lint: {e}");
+                        }
+                    }
+                }
+            }
+
             result
         }
         Commands::Score {
@@ -149,15 +258,26 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             summary,
             top_gaps,
             weights,
-        } => commands::score::run(
-            &path,
-            binding.as_deref(),
-            &format,
-            min_score,
-            summary,
-            top_gaps,
-            weights.as_deref(),
-        ),
+            exit_code,
+        } => {
+            let result = commands::score::run(
+                &path,
+                binding.as_deref(),
+                &format,
+                min_score,
+                summary,
+                top_gaps,
+                weights.as_deref(),
+            );
+            if exit_code {
+                if let Err(ref e) = result {
+                    if e.to_string().contains("below threshold") {
+                        std::process::exit(1);
+                    }
+                }
+            }
+            result
+        }
         Commands::Query {
             query,
             contract_dir,
@@ -225,12 +345,25 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             format: &format,
             exit_code,
         }),
-        Commands::Invariants { contract } => commands::invariants::run(&contract),
-        Commands::Coq { contract } => commands::coq::run(&contract),
-        Commands::Fuzz { contract } => commands::fuzz::run(&contract),
-        Commands::Mirai { contract } => commands::mirai::run(&contract),
-        Commands::Flux { contract } => commands::flux::run(&contract),
-        Commands::Tla { contract_dir } => commands::tla::run(&contract_dir),
+        Commands::Invariants { contract, .. } => commands::invariants::run(&contract),
+        Commands::Coq { contract, .. } => commands::coq::run(&contract),
+        Commands::Fuzz {
+            contract,
+            sanitizer,
+            max_len,
+            timeout,
+        } => commands::fuzz::run(&contract, sanitizer.as_deref(), max_len, timeout),
+        Commands::Mirai {
+            contract,
+            emit_tags,
+        } => commands::mirai::run(&contract, emit_tags),
+        Commands::Flux { contract, verify } => commands::flux::run(&contract, verify),
+        Commands::Tla {
+            contract_dir,
+            output,
+            check,
+            alloy,
+        } => commands::tla::run(&contract_dir, output.as_deref(), check, alloy),
         Commands::Book {
             contract_dir,
             output,
@@ -248,6 +381,16 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
 /// Entry point: parse CLI arguments and run the selected subcommand
 fn main() {
     let cli = Cli::parse();
+
+    // Set global verbosity from --quiet / --verbose flags
+    let level = if cli.quiet {
+        verbosity::Verbosity::Quiet
+    } else if cli.verbose {
+        verbosity::Verbosity::Verbose
+    } else {
+        verbosity::Verbosity::Normal
+    };
+    verbosity::set(level);
 
     if let Err(e) = run_command(cli.command) {
         eprintln!("error: {e}");

@@ -1,0 +1,89 @@
+# Spring Easing Contract v1.0.0
+# Damped harmonic oscillator for animation easing.
+
+metadata:
+  version: "1.0.0"
+  created: "2026-03-22"
+  author: "PAIML Engineering"
+  description: "Damped harmonic oscillator spring easing for keyframe animation"
+  references:
+    - "Thomson, W.T. (1993) Theory of Vibrations with Applications"
+    - "CSS Spring Easing proposal"
+
+equations:
+  spring_evaluate:
+    formula: |
+      Underdamped (zeta < 1):
+        x(t) = 1 - exp(-zeta*omega_n*tau) * (cos(omega_d*tau) + (zeta*omega_n/omega_d)*sin(omega_d*tau))
+      Critically damped (zeta = 1):
+        x(t) = 1 - exp(-omega_n*tau) * (1 + omega_n*tau)
+      Overdamped (zeta > 1):
+        x(t) = 1 - (r2*exp(r1*tau) - r1*exp(r2*tau)) / (r2 - r1)
+      where omega_n = sqrt(k/m), zeta = c/(2*sqrt(k*m)), tau = t*5
+    domain: "t in [0,1], stiffness > 0, damping >= 0, mass > 0"
+    codomain: "x in R (may overshoot 1.0 for underdamped)"
+    preconditions:
+      - "stiffness > 0.0"
+      - "mass > 0.0"
+    postconditions:
+      - "ret.is_finite()"
+    invariants:
+      - "spring(0) = 0 (starts at origin)"
+      - "spring(1) = 1 (settles to target)"
+      - "Critically damped converges monotonically without overshoot"
+      - "Underdamped oscillates before settling"
+
+  easing_apply:
+    formula: |
+      Linear: t
+      EaseIn: t^3
+      EaseOut: 1 - (1-t)^3
+      EaseInOut (Hermite smoothstep): 3t^2 - 2t^3
+    domain: "t in [0, 1]"
+    codomain: "result in [0, 1] for standard easings"
+    preconditions:
+      - "t.is_finite()"
+    postconditions:
+      - "ret.is_finite()"
+    invariants:
+      - "All easings: f(0) = 0"
+      - "All easings: f(1) = 1"
+      - "Linear: f(t) = t"
+      - "EaseIn: f(t) <= t for t in [0,1] (slow start)"
+      - "EaseOut: f(t) >= t for t in [0,1] (fast start)"
+
+proof_obligations:
+  - type: invariant
+    property: "Boundary conditions"
+    formal: "spring(0, k, c, m) = 0 and spring(1, k, c, m) = 1"
+    applies_to: all
+  - type: bound
+    property: "Finite output"
+    formal: "spring(t, k, c, m).is_finite() for valid parameters"
+    applies_to: all
+  - type: invariant
+    property: "Easing boundary identity"
+    formal: "easing.apply(0) = 0 and easing.apply(1) = 1"
+    applies_to: easing_apply
+
+falsification_tests:
+  - id: FALSIFY-SP-001
+    rule: "Spring boundary at t=0"
+    prediction: "spring_evaluate(0, k, c, m) = 0 for all valid k, c, m"
+    test: "proptest with positive k, m and non-negative c"
+    if_fails: "Initial condition not enforced"
+  - id: FALSIFY-SP-002
+    rule: "Spring boundary at t=1"
+    prediction: "spring_evaluate(1, k, c, m) = 1 for all valid k, c, m"
+    test: "proptest with positive k, m and non-negative c"
+    if_fails: "Terminal condition not enforced"
+  - id: FALSIFY-SP-003
+    rule: "Easing boundaries"
+    prediction: "EaseIn(0)=0, EaseIn(1)=1, EaseOut(0)=0, EaseOut(1)=1"
+    test: "Direct evaluation of all easing variants"
+    if_fails: "Polynomial evaluation error at boundaries"
+  - id: FALSIFY-SP-004
+    rule: "Finite output for valid parameters"
+    prediction: "spring_evaluate returns finite for all t in [0,1]"
+    test: "proptest with random parameters"
+    if_fails: "Numerical overflow in exponential/trig"

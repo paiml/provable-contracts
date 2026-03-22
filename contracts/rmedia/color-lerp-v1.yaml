@@ -1,0 +1,77 @@
+# Color Linear Interpolation Contract v1.0.0
+# sRGB per-channel linear interpolation for color animation.
+
+metadata:
+  version: "1.0.0"
+  created: "2026-03-22"
+  author: "PAIML Engineering"
+  description: "sRGB per-channel linear interpolation for color animation keyframes"
+  references:
+    - "CSS Color Level 4 - color interpolation"
+
+equations:
+  lerp_u8:
+    formula: "lerp(a, b, t) = round(clamp(a + t * (b - a), 0, 255))"
+    domain: "a in [0,255], b in [0,255], t in [0,1]"
+    codomain: "result in [0, 255]"
+    preconditions:
+      - "t.is_finite()"
+    postconditions:
+      - "ret <= 255"
+    invariants:
+      - "lerp(a, b, 0) = a (identity at t=0)"
+      - "lerp(a, b, 1) = b (identity at t=1)"
+      - "lerp(a, a, t) = a (constant interpolation)"
+      - "Result is always in [0, 255] (clamped)"
+
+  color_lerp:
+    formula: "Color::lerp(c1, c2, t) = Color { r: lerp(c1.r, c2.r, t), g: lerp(c1.g, c2.g, t), b: lerp(c1.b, c2.b, t) }"
+    domain: "c1: Color, c2: Color, t in [0,1]"
+    codomain: "Color with channels in [0, 255]"
+    preconditions:
+      - "t.is_finite()"
+    postconditions:
+      - "ret.r <= 255"
+      - "ret.g <= 255"
+      - "ret.b <= 255"
+    invariants:
+      - "lerp(c, c, t) = c for any t"
+      - "lerp(c1, c2, 0) = c1"
+      - "lerp(c1, c2, 1) = c2"
+      - "Per-channel operation: no cross-channel contamination"
+
+proof_obligations:
+  - type: invariant
+    property: "Boundary identity at t=0"
+    formal: "lerp(a, b, 0.0) = a"
+    applies_to: all
+  - type: invariant
+    property: "Boundary identity at t=1"
+    formal: "lerp(a, b, 1.0) = b"
+    applies_to: all
+  - type: bound
+    property: "Output clamped to [0, 255]"
+    formal: "0 <= lerp(a, b, t) <= 255 for all t in R"
+    applies_to: all
+
+falsification_tests:
+  - id: FALSIFY-CL-001
+    rule: "Boundary t=0"
+    prediction: "lerp_u8(a, b, 0.0) = a for all a, b"
+    test: "proptest with random a, b"
+    if_fails: "Rounding error at boundary"
+  - id: FALSIFY-CL-002
+    rule: "Boundary t=1"
+    prediction: "lerp_u8(a, b, 1.0) = b for all a, b"
+    test: "proptest with random a, b"
+    if_fails: "Floating point precision loss"
+  - id: FALSIFY-CL-003
+    rule: "Clamping"
+    prediction: "lerp_u8(a, b, t) in [0, 255] for t outside [0, 1]"
+    test: "proptest with t in [-10, 10]"
+    if_fails: "Missing clamp on intermediate result"
+  - id: FALSIFY-CL-004
+    rule: "Midpoint symmetry"
+    prediction: "lerp(0, 255, 0.5) = 128"
+    test: "Direct evaluation"
+    if_fails: "Rounding bias"

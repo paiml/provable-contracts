@@ -1,0 +1,118 @@
+name: Lean 4 Proofs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lean/**'
+      - 'contracts/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'lean/**'
+      - 'contracts/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Lean Build (no sorry)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install elan (Lean toolchain manager)
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Cache lake packages
+        uses: actions/cache@v4
+        with:
+          path: lean/lake-packages
+          key: lean-packages-${{ hashFiles('lean/lean-toolchain', 'lean/lakefile.lean') }}
+
+      - name: Build all proofs
+        working-directory: lean
+        run: lake build
+
+      - name: Check for sorry (MUST be zero)
+        working-directory: lean
+        run: |
+          SORRY_COUNT=$(grep -rn "sorry" ProvableContracts/ --include="*.lean" | grep -v "^--" | grep -v "/--" | grep -cv "sorry_count\|sorry_free\|no_sorry\|sorry_detection\|SorryDB")
+          if [ "$SORRY_COUNT" -gt 0 ]; then
+            echo "::error::SORRY DETECTED ($SORRY_COUNT occurrences) — proofs incomplete"
+            grep -rn "sorry" ProvableContracts/ --include="*.lean" | grep -v "^--" | grep -v "/--" | grep -v "sorry_count\|sorry_free\|no_sorry"
+            exit 1
+          fi
+          echo "✅ Zero sorry — all proofs complete"
+
+      - name: Verify theorem count
+        working-directory: lean
+        run: |
+          THEOREMS=$(grep -rn "^theorem \|^lemma " ProvableContracts/ --include="*.lean" | wc -l)
+          echo "Proven theorems: $THEOREMS"
+          if [ "$THEOREMS" -lt 30 ]; then
+            echo "::error::Expected at least 30 theorems, found $THEOREMS"
+            exit 1
+          fi
+          echo "✅ $THEOREMS theorems proven"
+
+  pv-lint:
+    name: Contract Lint (5 gates)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install pv
+        run: cargo install --path crates/provable-contracts-cli --locked
+
+      - name: Run pv lint (all 5 gates must pass)
+        run: pv lint --format json > pv-lint.json || true
+
+      - name: Verify all gates pass
+        run: |
+          PASSED=$(python3 -c "import json; d=json.load(open('pv-lint.json')); print(d['passed'])")
+          if [ "$PASSED" != "True" ]; then
+            echo "::error::pv lint FAILED"
+            cat pv-lint.json
+            exit 1
+          fi
+          echo "✅ All 5 gates pass"
+
+      - name: Upload lint results
+        uses: actions/upload-artifact@v4
+        with:
+          name: pv-lint-results
+          path: pv-lint.json
+        if: always()
+
+  tdg:
+    name: Lean TDG (A+ required)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install elan
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Install pmat
+        run: cargo install --path . --locked 2>/dev/null || cargo install pmat --locked
+
+      - name: Lean TDG analysis
+        run: |
+          pmat analyze tdg --path lean 2>&1 | tee tdg-output.txt
+          GRADE=$(grep "Average Score" tdg-output.txt | grep -oP "\d+\.\d+")
+          echo "TDG Grade: $GRADE"
+          # Must be A+ (95+)
+          python3 -c "assert float('$GRADE') >= 95.0, f'TDG {$GRADE} < 95.0 (A+)'"
+          echo "✅ Lean TDG: $GRADE (A+)"

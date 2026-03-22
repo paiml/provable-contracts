@@ -1,0 +1,88 @@
+# Biquad IIR Filter Contract v1.0.0
+# Direct Form I second-order IIR filter
+#
+# Coefficients from Robert Bristow-Johnson's Audio EQ Cookbook.
+# Used by loudnorm (K-weighting), audio cleanup (highpass, peaking EQ, bandpass).
+
+metadata:
+  version: "1.0.0"
+  created: "2026-03-22"
+  author: "PAIML Engineering"
+  description: "Biquad IIR filter (Direct Form I) for audio DSP"
+  references:
+    - "Bristow-Johnson, R. Audio EQ Cookbook (2005)"
+    - "ITU-R BS.1770-4 (K-weighting filter chain)"
+
+equations:
+  biquad_process:
+    formula: "y[n] = b0*x[n] + b1*x[n-1] + b2*x[n-2] - a1*y[n-1] - a2*y[n-2]"
+    domain: "x in R (f64 sample)"
+    codomain: "y in R (f64 sample)"
+    preconditions:
+      - "x.is_finite()"
+      - "self.b0.is_finite()"
+      - "self.a1.is_finite()"
+    postconditions:
+      - "ret.is_finite()"
+    invariants:
+      - "All-pass filter (b=[1,0,0], a=[1,0,0]) passes DC unchanged"
+      - "Highpass filter blocks DC (output converges to 0 for constant input)"
+      - "Coefficients are pre-normalized by a[0]"
+
+  highpass:
+    formula: "2nd-order Butterworth highpass: w0 = 2*pi*freq/sample_rate, alpha = sin(w0)/(2*sqrt(2))"
+    domain: "freq > 0, sample_rate > 0"
+    codomain: "Biquad with finite coefficients"
+    preconditions:
+      - "freq > 0.0"
+      - "sample_rate > 0.0"
+      - "freq < sample_rate / 2.0"
+    postconditions:
+      - "ret.b0.is_finite()"
+      - "ret.a1.is_finite()"
+    invariants:
+      - "Cutoff frequency must be below Nyquist (sample_rate / 2)"
+      - "Butterworth Q = 1/sqrt(2) for maximally flat passband"
+
+  bandpass:
+    formula: "Bandpass (constant skirt gain): alpha = sin(w0)/(2*Q), b=[alpha, 0, -alpha]"
+    domain: "freq > 0, q > 0, sample_rate > 0"
+    codomain: "Biquad with finite coefficients"
+    preconditions:
+      - "freq > 0.0"
+      - "q > 0.0"
+      - "sample_rate > 0.0"
+    postconditions:
+      - "ret.b0.is_finite()"
+      - "ret.a1.is_finite()"
+
+proof_obligations:
+  - type: invariant
+    property: "DC passthrough for all-pass"
+    formal: "biquad([1,0,0],[1,0,0]).process(c) = c after settling"
+    applies_to: all
+  - type: bound
+    property: "Finite output for finite input"
+    formal: "x.is_finite() implies process(x).is_finite()"
+    applies_to: all
+  - type: invariant
+    property: "Highpass blocks DC"
+    formal: "lim_{n->inf} highpass.process(c) = 0"
+    applies_to: highpass
+
+falsification_tests:
+  - id: FALSIFY-BQ-001
+    rule: "DC passthrough"
+    prediction: "All-pass biquad returns input unchanged"
+    test: "Feed constant 1.0 for 10 steps, all outputs = 1.0"
+    if_fails: "Coefficient normalization broken"
+  - id: FALSIFY-BQ-002
+    rule: "Finite output"
+    prediction: "Finite input always produces finite output"
+    test: "proptest with random finite f64 samples"
+    if_fails: "Numerical overflow in feedback path"
+  - id: FALSIFY-BQ-003
+    rule: "Highpass DC rejection"
+    prediction: "Highpass output < 0.01 after 5000 DC samples"
+    test: "Feed 5001 samples of 1.0 through highpass(80, 48000)"
+    if_fails: "Coefficient calculation error"

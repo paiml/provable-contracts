@@ -1,10 +1,19 @@
 use std::path::Path;
 
 use provable_contracts::graph::dependency_graph;
-use provable_contracts::schema::{Contract, parse_contract};
+use provable_contracts::schema::{parse_contract, Contract};
 use provable_contracts::tla_gen::generate_tla_module;
 
-pub fn run(contract_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
+pub fn run(
+    contract_dir: &Path,
+    output: Option<&Path>,
+    check: bool,
+    alloy: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if alloy {
+        eprintln!("note: Alloy (.als) output not yet implemented — generating TLA+ instead");
+    }
+
     let mut contracts: Vec<(String, Contract)> = Vec::new();
 
     let entries = std::fs::read_dir(contract_dir)?;
@@ -42,7 +51,6 @@ pub fn run(contract_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let module_name = if module_name.is_empty() {
         "Contracts".to_string()
     } else {
-        // Capitalize first letter
         let mut chars = module_name.chars();
         match chars.next() {
             None => "Contracts".to_string(),
@@ -50,8 +58,32 @@ pub fn run(contract_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
-    let output = generate_tla_module(&module_name, &refs, &graph);
-    print!("{output}");
+    let tla_output = generate_tla_module(&module_name, &refs, &graph);
+
+    if let Some(out_path) = output {
+        std::fs::write(out_path, &tla_output)?;
+        eprintln!("Wrote TLA+ spec to {}", out_path.display());
+    } else {
+        print!("{tla_output}");
+    }
+
+    if check {
+        eprintln!();
+        eprintln!("Running TLC model checker...");
+        let status = std::process::Command::new("tlc").arg("-workers").arg("auto").status();
+        match status {
+            Ok(s) if s.success() => eprintln!("TLC verification: PASS"),
+            Ok(s) => {
+                eprintln!("TLC verification: FAIL (exit {})", s.code().unwrap_or(-1));
+                return Err("TLC model checking failed".into());
+            }
+            Err(e) => {
+                eprintln!("Could not run `tlc`: {e}");
+                eprintln!("Install TLC: https://lamport.azurewebsites.net/tla/tools.html");
+                return Err("tlc not found".into());
+            }
+        }
+    }
 
     Ok(())
 }

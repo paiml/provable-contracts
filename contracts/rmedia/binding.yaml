@@ -1,0 +1,53 @@
+# Binding Registry: provable-contracts <-> rmedia
+#
+# Maps each contract equation to the rmedia function that implements it.
+#
+# Statistics:
+#   Total bindings: 5
+#   Implemented: 5 (100%)
+
+version: "1.0.0"
+target_crate: rmedia-core
+
+bindings:
+  # --- biquad-filter-v1: IIR filter DSP ---
+  - contract: biquad-filter-v1.yaml
+    equation: biquad_process
+    module_path: "rmedia_core::biquad"
+    function: "Biquad::process"
+    signature: "fn process(&mut self, x: f64) -> f64"
+    status: implemented
+    notes: "Direct Form I, coefficients pre-normalized by a[0]"
+
+  - contract: biquad-filter-v1.yaml
+    equation: highpass
+    module_path: "rmedia_core::biquad"
+    function: "Biquad::highpass"
+    signature: "fn highpass(freq: f64, sample_rate: f64) -> Self"
+    status: implemented
+    notes: "2nd-order Butterworth, Q = 1/sqrt(2)"
+
+  - contract: biquad-filter-v1.yaml
+    equation: bandpass
+    module_path: "rmedia_core::biquad"
+    function: "Biquad::bandpass"
+    signature: "fn bandpass(freq: f64, q: f64, sample_rate: f64) -> Self"
+    status: implemented
+
+  # --- color-lerp-v1: sRGB color interpolation ---
+  - contract: color-lerp-v1.yaml
+    equation: color_lerp
+    module_path: "rmedia_core::color_interp"
+    function: "Color::lerp"
+    signature: "fn lerp(self, other: Self, t: f64) -> Self"
+    status: implemented
+    notes: "Per-channel sRGB interpolation, t clamped to [0, 1]"
+
+  # --- spring-easing-v1: Animation easing ---
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    module_path: "rmedia_core::keyframe"
+    function: "Easing::apply"
+    signature: "fn apply(self, t: f64) -> f64"
+    status: implemented
+    notes: "Dispatches to Linear, EaseIn, EaseOut, EaseInOut, CubicBezier, Spring"

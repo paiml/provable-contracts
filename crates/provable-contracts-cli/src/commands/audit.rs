@@ -3,9 +3,14 @@ use std::path::Path;
 use provable_contracts::audit::{audit_binding, audit_contract};
 use provable_contracts::binding::parse_binding;
 use provable_contracts::error::Severity;
-use provable_contracts::schema::parse_contract;
+use provable_contracts::schema::{Contract, parse_contract};
 
-pub fn run(path: &Path, binding_path: Option<&Path>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn run(
+    path: &Path,
+    binding_path: Option<&Path>,
+    show_coq_tiers: bool,
+    show_flux_coverage: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
     let contract = parse_contract(path)?;
 
     // Standard traceability audit
@@ -60,6 +65,13 @@ pub fn run(path: &Path, binding_path: Option<&Path>) -> Result<(), Box<dyn std::
         );
     }
 
+    if show_coq_tiers {
+        print_coq_tiers(&contract);
+    }
+    if show_flux_coverage {
+        print_flux_coverage(&contract);
+    }
+
     println!();
 
     if report.violations.is_empty() {
@@ -77,51 +89,100 @@ pub fn run(path: &Path, binding_path: Option<&Path>) -> Result<(), Box<dyn std::
         .count();
 
     // Binding audit (if --binding provided)
-    if let Some(bp) = binding_path {
-        let binding = parse_binding(bp)?;
+    let binding_errors = if let Some(bp) = binding_path {
+        print_binding_audit(path, &contract, bp)?
+    } else {
+        0
+    };
 
-        let contract_file = path
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("unknown");
-
-        let binding_report = audit_binding(&[(contract_file, &contract)], &binding);
-
-        println!();
-        println!("Binding Audit");
-        println!("=============");
-        println!("Total equations:    {}", binding_report.total_equations);
-        println!("Bound equations:    {}", binding_report.bound_equations);
-        println!("Implemented:        {}", binding_report.implemented);
-        println!("Partial:            {}", binding_report.partial);
-        println!("Not implemented:    {}", binding_report.not_implemented);
-        println!("Obligations total:  {}", binding_report.total_obligations);
-        println!(
-            "Obligations covered: {}",
-            binding_report.covered_obligations
-        );
-        println!();
-
-        if binding_report.violations.is_empty() {
-            println!("No binding gaps found.");
-        } else {
-            for v in &binding_report.violations {
-                println!("{v}");
-            }
-        }
-
-        let binding_errors = binding_report
-            .violations
-            .iter()
-            .filter(|v| v.severity == Severity::Error)
-            .count();
-
-        if errors + binding_errors > 0 {
-            return Err(format!("Audit found {} error(s)", errors + binding_errors).into());
-        }
-    } else if errors > 0 {
-        return Err(format!("Audit found {errors} error(s)").into());
+    let total_errors = errors + binding_errors;
+    if total_errors > 0 {
+        return Err(format!("Audit found {total_errors} error(s)").into());
     }
 
     Ok(())
+}
+
+fn print_binding_audit(
+    path: &Path,
+    contract: &Contract,
+    bp: &Path,
+) -> Result<usize, Box<dyn std::error::Error>> {
+    let binding = parse_binding(bp)?;
+    let contract_file = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("unknown");
+    let report = audit_binding(&[(contract_file, contract)], &binding);
+
+    println!();
+    println!("Binding Audit");
+    println!("=============");
+    println!("Total equations:    {}", report.total_equations);
+    println!("Bound equations:    {}", report.bound_equations);
+    println!("Implemented:        {}", report.implemented);
+    println!("Partial:            {}", report.partial);
+    println!("Not implemented:    {}", report.not_implemented);
+    println!("Obligations total:  {}", report.total_obligations);
+    println!("Obligations covered: {}", report.covered_obligations);
+    println!();
+
+    if report.violations.is_empty() {
+        println!("No binding gaps found.");
+    } else {
+        for v in &report.violations {
+            println!("{v}");
+        }
+    }
+
+    Ok(report
+        .violations
+        .iter()
+        .filter(|v| v.severity == Severity::Error)
+        .count())
+}
+
+fn print_coq_tiers(contract: &Contract) {
+    println!();
+    println!("Coq Proof Tiers");
+    println!("===============");
+    for ob in &contract.proof_obligations {
+        let has_kani = !contract.kani_harnesses.is_empty();
+        let has_lean = ob
+            .lean
+            .as_ref()
+            .is_some_and(|l| l.status == provable_contracts::schema::LeanStatus::Proved);
+        let coq_status = contract.coq_spec.as_ref().and_then(|spec| {
+            spec.obligations
+                .iter()
+                .find(|co| co.links_to == ob.property)
+                .map(|co| co.status.as_str())
+        });
+        let tier = match (has_lean, coq_status) {
+            (_, Some("proved")) => "coq-proved",
+            (_, Some("admit")) => "coq-admit",
+            (true, _) => "lean-proved",
+            _ if has_kani => "kani-only",
+            _ => "unverified",
+        };
+        println!("  [{tier}] {}", ob.property);
+    }
+}
+
+fn print_flux_coverage(contract: &Contract) {
+    println!();
+    println!("Flux Shape Coverage");
+    println!("===================");
+    let shape_keywords = ["shape", "dim", "len", "size", "rows", "cols"];
+    for ob in &contract.proof_obligations {
+        let is_shape = shape_keywords
+            .iter()
+            .any(|kw| ob.property.to_lowercase().contains(kw));
+        let status = if is_shape {
+            "flux-dischargeable"
+        } else {
+            "kani-needed"
+        };
+        println!("  [{status}] {}", ob.property);
+    }
 }

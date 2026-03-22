@@ -1388,3 +1388,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-078
+  github_issue: null
+  item_type: task
+  title: 'Wire all remaining CLI stubs: quiet/verbose, baseline SARIF, lint --fix/--watch, verification command flags'
+  status: inprogress
+  priority: high
+  assigned_to: null
+  created: 2026-03-22T15:02:03Z
+  updated: 2026-03-22T15:02:16.210397593+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
