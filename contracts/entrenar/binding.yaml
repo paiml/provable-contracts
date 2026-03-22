@@ -197,10 +197,10 @@ bindings:
   - contract: distributed-training-v1.yaml
     equation: gradient_allreduce
     module_path: "entrenar::finetune::data_parallel"
-    function: "DataParallelCoordinator::allreduce"
+    function: "RingAllReduceWorker::allreduce"
     signature: "fn allreduce(&self, grads: &mut [Tensor]) -> Result<()>"
-    status: partial
-    notes: "Phase 1 complete (multi-GPU); Phase 2 in progress (multi-node)"
+    status: implemented
+    notes: "Implemented via RingAllReduceWorker + DistributedCudaTrainer allreduce"
 
   - contract: distributed-training-v1.yaml
     equation: sharding
@@ -342,8 +342,8 @@ bindings:
     module_path: "entrenar::gpu::wait"
     function: wait_for_vram
     signature: "fn wait_for_vram(required_mb: usize, timeout_secs: u64) -> Result<()>"
-    status: not_implemented
-    notes: "Draft contract; GPU wait queue not yet implemented"
+    status: implemented
+    notes: "Implemented in gpu/wait.rs with exponential backoff polling"
 
   - contract: gpu-wait-queue-v1.yaml
     equation: timeout_bound
@@ -593,10 +593,10 @@ bindings:
   - contract: qlora-hyperparameters-v1.yaml
     equation: learning_rate_scaling
     module_path: "entrenar::finetune::qlora_config"
-    function: "QLoraConfig::learning_rate"
+    function: "InstructPipeline::learning_rate"
     signature: "fn learning_rate(&self) -> f32"
-    status: not_implemented
-    notes: "HP design pending; contract specifies constraints"
+    status: implemented
+    notes: "QLoRA config lives on InstructConfig; learning_rate() accessor on InstructPipeline"
 
   - contract: qlora-hyperparameters-v1.yaml
     equation: effective_batch_size
@@ -758,42 +758,42 @@ bindings:
   - contract: vram-ledger-v1.yaml
     equation: capacity_invariant
     module_path: "entrenar::gpu::ledger"
-    function: "VramLedger::capacity"
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; ledger not yet implemented"
+    function: "VramLedger::capacity_mb"
+    signature: "fn capacity_mb(&self) -> usize"
+    status: implemented
+    notes: "Renamed to capacity_mb() in gpu/ledger.rs"
 
   - contract: vram-ledger-v1.yaml
     equation: atomic_write
     module_path: "entrenar::gpu::ledger"
-    function: "VramLedger::reserve"
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; flock-based reservation"
+    function: "VramLedger::try_reserve"
+    signature: "fn try_reserve(&self, label: &str, mb: usize) -> Result<u64>"
+    status: implemented
+    notes: "Implemented as try_reserve() with flock-based atomic write"
 
   - contract: vram-ledger-v1.yaml
     equation: lease_expiry
     module_path: "entrenar::gpu::ledger"
-    function: "VramLedger::prune_expired"
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; 24h lease expiry"
+    function: "LedgerData::prune_dead"
+    signature: "fn prune_dead(&mut self)"
+    status: implemented
+    notes: "Combined with PID liveness in prune_dead() — checks is_expired()"
 
   - contract: vram-ledger-v1.yaml
     equation: pid_liveness
     module_path: "entrenar::gpu::ledger"
-    function: "VramLedger::prune_dead"
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; PID liveness check"
+    function: "LedgerData::prune_dead"
+    signature: "fn prune_dead(&mut self)"
+    status: implemented
+    notes: "Uses Reservation::is_alive() to check /proc/{pid}/stat"
 
   - contract: vram-ledger-v1.yaml
     equation: reservation_id
     module_path: "entrenar::gpu::ledger"
     function: "VramLedger::try_reserve"
-    signature: ~
-    status: not_implemented
-    notes: "Draft contract; returns unique reservation ID"
+    signature: "fn try_reserve(&self, label: &str, mb: usize) -> Result<u64>"
+    status: implemented
+    notes: "Returns u64 reservation ID via atomic file-based ledger"
 
   # ── wgpu-resident-weights-v1: wgpu weight residency ──────────
   - contract: wgpu-resident-weights-v1.yaml
