@@ -280,7 +280,7 @@ fn generate_theorem_file(
     content.push_str(&format!("\nend ProvableContracts.{module_name}\n"));
 
     // Derive file path from theorem name
-    let theorem_file = lean.theorem.split('.').last().unwrap_or(&lean.theorem);
+    let theorem_file = lean.theorem.split('.').next_back().unwrap_or(&lean.theorem);
     LeanFile {
         path: format!("ProvableContracts/Theorems/{module_name}/{theorem_file}.lean"),
         content,

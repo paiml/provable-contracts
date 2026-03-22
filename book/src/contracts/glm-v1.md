@@ -81,7 +81,7 @@ $$
 | 1 | invariant | Link function invertible | $g(g^{-1}(eta)) = eta for all eta in domain$ |
 | 2 | bound | Predicted mean in valid range | $Poisson: mu > 0, Gamma: mu > 0, Binomial: 0 < p < 1$ |
 | 3 | invariant | IRLS convergence | $D^{(k+1)} <= D^{(k)} (deviance non-increasing)$ |
-| 4 | invariant | Predictions finite | $forall i: \|y_hat_i\| < infinity for bounded input$ |
+| 4 | invariant | Predictions finite | `forall i: \|y_hat_i\| < infinity for bounded input` |
 
 ## Falsification Tests
 

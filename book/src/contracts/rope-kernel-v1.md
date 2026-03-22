@@ -19,9 +19,9 @@ graph LR
 
 ### rope
 
-$$
-RoPE(x, m)_{2k} = x_{2k}·cos(m\theta_k) - x_{2k+1}·sin(m\theta_k), RoPE(x, m)_{2k+1} = x_{2k}·sin(m\theta_k) + x_{2k+1}·cos(m\theta_k)
-$$
+```
+RoPE(x, m)_{2k} = x_{2k}·cos(mθ_k) - x_{2k+1}·sin(mθ_k), RoPE(x, m)_{2k+1} = x_{2k}·sin(mθ_k) + x_{2k+1}·cos(mθ_k)
+```
 
 **Domain:** $x \in \mathbb{R}^d, m \in ℕ, \theta_k = 10000^(-2k/d)$
 
@@ -36,10 +36,13 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Norm preservation | $\|‖RoPE(x, m)‖ - ‖x‖\| < \varepsilon$ |
-| 2 | invariant | Relative position encoding | $⟨RoPE(q, m), RoPE(k, n)⟩ = f(q, k, m-n)$ |
-| 3 | equivalence | SIMD matches scalar |  |
-| 4 | bound | Output bounded by input norm | $‖RoPE(x, m)‖ \leq ‖x‖ + \varepsilon$ |
+| 1 | precondition | Input dimension is even, position non-negative | $d mod 2 = 0 ∧ d > 0 ∧ m \geq 0 ∧ \forall i: isFinite(x_i)$ |
+| 2 | postcondition | Output has same dimension as input, all elements finite | $len(out) = len(x) ∧ \forall i: isFinite(out_i)$ |
+| 3 | frame | Input vector and position unchanged | $modifies(output) ∧ preserves(x, m, \theta)$ |
+| 4 | invariant | Norm preservation | $\|‖RoPE(x, m)‖ - ‖x‖\| < \varepsilon$ |
+| 5 | invariant | Relative position encoding | $⟨RoPE(q, m), RoPE(k, n)⟩ = f(q, k, m-n)$ |
+| 6 | equivalence | SIMD matches scalar |  |
+| 7 | bound | Output bounded by input norm | $‖RoPE(x, m)‖ \leq ‖x‖ + \varepsilon$ |
 
 ## Kernel Phases
 
@@ -63,6 +66,9 @@ $$
 | FALSIFY-RP-002 | Relative position | dot(RoPE(q,m), RoPE(k,n)) = dot(RoPE(q,0), RoPE(k,n-m)) | Incorrect frequency computation |
 | FALSIFY-RP-003 | SIMD equivalence | \|rope_avx2(x) - rope_scalar(x)\| < 4 ULP | SIMD sincos approximation differs |
 | FALSIFY-RP-004 | Zero position | RoPE(x, 0) = x (identity at position 0) | Off-by-one in position indexing |
+| FALSIFY-RP-005 | Precondition - odd dimension | RoPE with odd d panics or returns Err | Missing even-dimension validation |
+| FALSIFY-RP-006 | Frame condition | Input vector unchanged after RoPE application | RoPE modifies input buffer |
+| FALSIFY-RP-007 | Postcondition - output length | len(RoPE(x, m)) = len(x) | Output allocation mismatch |
 
 ## Kani Harnesses
 
@@ -76,5 +82,5 @@ $$
 
 **Checks:** norm_preservation, relative_position
 
-**Pass criteria:** All 4 falsification tests pass
+**Pass criteria:** All 7 falsification tests pass
 

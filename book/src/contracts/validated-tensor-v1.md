@@ -13,9 +13,9 @@ Validated tensor type invariants (embedding density, NaN/Inf rejection, L2 norm)
 
 ### density_gate
 
-$$
+```
 density(E) = count(E_ij != 0) / numel(E)
-$$
+```
 
 **Domain:** $E \in \mathbb{R}^{m×n}$
 
@@ -40,9 +40,9 @@ $$
 
 ### nan_inf_rejection
 
-$$
+```
 count(isnan(E)) == 0 AND count(isinf(E)) == 0
-$$
+```
 
 **Domain:** $E \in \mathbb{R}^{m×n}$
 
@@ -56,7 +56,7 @@ $$
 | # | Type | Property | Formal |
 |---|------|----------|--------|
 | 1 | bound | Density gate | $density(E) > 0.055 for valid embeddings$ |
-| 2 | invariant | NaN/Inf rejection | $count(isnan) == 0 AND count(isinf) == 0$ |
+| 2 | invariant | NaN/Inf rejection | `count(isnan) == 0 AND count(isinf) == 0` |
 | 3 | invariant | L2 norm non-degeneracy | $forall row i: \|\|E[i,:]\|\|_2 > 0$ |
 | 4 | equivalence | SIMD validation equivalence |  |
 

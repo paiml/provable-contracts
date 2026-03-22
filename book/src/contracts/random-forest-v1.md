@@ -13,11 +13,11 @@ Random Forest -- bagged ensemble of decision trees with feature subsampling
 
 ### bootstrap_sample
 
-$$
+```
 D_b = {(x_{i_j}, y_{i_j}) : j=1..n, i_j ~ Uniform(1,n)} (sample with replacement)
-$$
+```
 
-**Domain:** $D = {(x_i, y_i)}_{i=1}^n, n >= 1$
+**Domain:** `D = {(x_i, y_i)}_{i=1}^n, n >= 1`
 
 **Codomain:** $D_b with |D_b| = n (same size as original)$
 
@@ -60,9 +60,9 @@ $$
 
 ### predict
 
-$$
+```
 y_hat_i = majority_vote(h_1(x_i), ..., h_B(x_i)) for classification
-$$
+```
 
 **Domain:** $X in R^{m x d}, fitted forest of B trees$
 

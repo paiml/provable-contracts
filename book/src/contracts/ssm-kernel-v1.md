@@ -54,13 +54,13 @@ $$
 **Invariants:**
 
 - $Linear recurrence: output is linear in input for fixed parameters$
-- $Causal: y_t depends only on x_1..x_t$
+- `Causal: y_t depends only on x_1..x_t`
 
 ## Proof Obligations
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Causality | $y_t depends only on x_1..x_t, not x_{t+1}..x_L$ |
+| 1 | invariant | Causality | `y_t depends only on x_1..x_t, not x_{t+1}..x_L` |
 | 2 | bound | Softplus positivity | $Delta_t = softplus(z) > 0 for all z$ |
 | 3 | invariant | Scan linearity | $SSM(alpha*x + beta*z) = alpha*SSM(x) + beta*SSM(z) for fixed params$ |
 | 4 | equivalence | Parallel scan matches sequential scan | $\|parallel_scan(x) - sequential_scan(x)\| < eps$ |

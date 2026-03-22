@@ -49,7 +49,7 @@ $$
 MCC = (TP*TN - FP*FN) / \sqrt{(TP+FP)(TP+FN)(TN+FP)(TN+FN)}
 $$
 
-**Domain:** $predictions in Vec<(u8, u8)>$
+**Domain:** `predictions in Vec<(u8, u8)>`
 
 **Codomain:** $MCC in [-1, 1]$
 
@@ -79,11 +79,11 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Embedding determinism | $extract(model, script) == extract(model, script) for same inputs$ |
-| 2 | invariant | Split determinism | $split(data, seed) == split(data, seed) for same seed$ |
+| 1 | invariant | Embedding determinism | `extract(model, script) == extract(model, script) for same inputs` |
+| 2 | invariant | Split determinism | `split(data, seed) == split(data, seed) for same seed` |
 | 3 | invariant | Probe convergence | $train_accuracy(epoch=N) >= train_accuracy(epoch=0) for N >= 10$ |
 | 4 | invariant | Ship gate C-CLF-001 | $test_mcc > 0.3 (beats keyword) AND test_mcc > 0.0 (beats majority)$ |
-| 5 | invariant | No empty embeddings | $for all e in embeddings: e.embedding.len() == hidden_size AND any(e != 0.0)$ |
+| 5 | invariant | No empty embeddings | `for all e in embeddings: e.embedding.len() == hidden_size AND any(e != 0.0)` |
 
 ## Falsification Tests
 

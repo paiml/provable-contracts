@@ -25,15 +25,15 @@ graph LR
 
 ### head_dim_consistency
 
-$$
+```
 d_k = hidden_size / num_attention_heads = 3584 / 28 = 128
-$$
+```
 
 **Domain:** $Qwen2.5-7B config$
 
 **Invariants:**
 
-- $hidden_size is evenly divisible by num_attention_heads$
+- `hidden_size is evenly divisible by num_attention_heads`
 - $d_k = 128 (standard head dimension)$
 
 ### kv_projection_shape
@@ -50,9 +50,9 @@ $$
 
 ### o_projection_transpose
 
-$$
+```
 shape(o_proj) == transpose(shape(q_proj)) = [hidden, n_h * d_k]
-$$
+```
 
 **Domain:** $Standard transformer$
 
@@ -109,8 +109,8 @@ $$
 | 2 | invariant | KV projection shape | $n_kv * d_k = 512 for Qwen2.5-7B$ |
 | 3 | invariant | GQA divisibility | $n_h mod n_kv = 28 mod 4 = 0$ |
 | 4 | invariant | SwiGLU gate/up shape | $gate_proj.shape = up_proj.shape = [18944, 3584]$ |
-| 5 | invariant | O projection transpose | $shape(o_proj) == reverse(shape(q_proj))$ |
-| 6 | invariant | RoPE frequency vector length | $len(freqs) == d_k / 2 = 64$ |
+| 5 | invariant | O projection transpose | `shape(o_proj) == reverse(shape(q_proj))` |
+| 6 | invariant | RoPE frequency vector length | `len(freqs) == d_k / 2 = 64` |
 | 7 | monotonicity | RoPE frequency decreasing | $freq_i > freq_{i+1} for all i$ |
 | 8 | invariant | Head dimension consistency | $3584 mod 28 = 0 and 3584 / 28 = 128$ |
 | 9 | equivalence | SIMD shape equivalence |  |

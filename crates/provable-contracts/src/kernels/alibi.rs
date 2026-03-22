@@ -43,7 +43,7 @@ pub fn alibi_bias_scalar(scores: &mut [f32], num_heads: usize, seq_len: usize) {
 
         for i in 0..seq_len {
             for j in 0..seq_len {
-                let dist = if i >= j { i - j } else { j - i };
+                let dist = i.abs_diff(j);
                 scores[base + i * seq_len + j] -= slope * (dist as f32);
             }
         }

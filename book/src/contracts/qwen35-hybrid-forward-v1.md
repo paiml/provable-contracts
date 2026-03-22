@@ -36,9 +36,9 @@ graph LR
 
 ### activation_magnitude
 
-$$
+```
 ||h_l||_inf <= M * ||h_0||_inf for some bound M
-$$
+```
 
 **Domain:** $Hidden state magnitude through L layers$
 
@@ -50,9 +50,9 @@ $$
 
 ### attention_sublayer
 
-$$
+```
 y = x + attn(qk_norm(q_proj(rmsnorm(x))), kv_proj(rmsnorm(x)))
-$$
+```
 
 **Domain:** $x \in R^{seq_len × d_model}, attention layer with QK-norm$
 
@@ -92,9 +92,9 @@ $$
 
 ### gradient_flow
 
-$$
-∂L/∂h_0 = \sum_l (∂L/∂h_l * ∂h_l/∂h_0) with skip connections
-$$
+```
+∂L/∂h_0 = Σ_l (∂L/∂h_l * ∂h_l/∂h_0) with skip connections
+```
 
 **Domain:** $Gradient through residual stream$
 
@@ -106,9 +106,9 @@ $$
 
 ### hybrid_block
 
-$$
+```
 block_l(x) = ffn_sublayer(attn_or_gdn_sublayer_l(x))
-$$
+```
 
 **Domain:** $Complete transformer block at layer l$
 
@@ -126,7 +126,7 @@ $$
 | 2 | invariant | GDN sublayer shape preservation | $\forall x: shape(gdn_sublayer(x)) = shape(x)$ |
 | 3 | invariant | FFN sublayer shape preservation | $\forall x: shape(ffn_sublayer(x)) = shape(x)$ |
 | 4 | invariant | Block outputs from exactly one attention type | $\forall l: is_attention(l) XOR is_gdn(l)$ |
-| 5 | bound | Activation magnitude bounded | $\forall l: \|\|h_l\|\|_inf <= M for finite M$ |
+| 5 | bound | Activation magnitude bounded | `∀l: \|\|h_l\|\|_inf <= M for finite M` |
 | 6 | invariant | RMSNorm precedes each sublayer | $pre-norm architecture: norm before attention/GDN and before FFN$ |
 | 7 | conservation | Residual identity component | $h_{l+1} - h_l = sublayer(norm(h_l))$ |
 

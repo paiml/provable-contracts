@@ -40,11 +40,11 @@ $$
 
 ### cross_constraint
 
-$$
+```
 rope_theta > 0 ∧ rope_theta.is_finite() ∧ rms_norm_eps > 0 ∧ rms_norm_eps < 0.1
-$$
+```
 
-**Domain:** $rope_theta \in \mathbb{R}^{+}, rms_norm_eps \in (0, 0.1)$
+**Domain:** `rope_theta ∈ ℝ⁺, rms_norm_eps ∈ (0, 0.1)`
 
 **Invariants:**
 
@@ -53,16 +53,16 @@ $$
 
 ### divisibility
 
-$$
-hidden_dim \% num_heads == 0 ∧ num_heads \% num_kv_heads == 0 ∧ head_dim \% 2 == 0
-$$
+```
+hidden_dim % num_heads == 0 ∧ num_heads % num_kv_heads == 0 ∧ head_dim % 2 == 0
+```
 
-**Domain:** $hidden_dim, num_heads, num_kv_heads, head_dim \in \mathbb{Z}^{+}$
+**Domain:** `hidden_dim, num_heads, num_kv_heads, head_dim ∈ ℤ⁺`
 
 **Invariants:**
 
 - $head_dim = hidden_dim / num_heads (exact integer division)$
-- $GQA group size = num_heads / num_kv_heads (exact integer division)$
+- `GQA group size = num_heads / num_kv_heads (exact integer division)`
 - $RoPE pairing requires head_dim divisible by 2$
 
 ### non_degeneracy
@@ -79,9 +79,9 @@ $$
 
 ### ordering
 
-$$
+```
 d_ff > hidden_dim ∧ num_kv_heads <= num_heads ∧ max_position > 0
-$$
+```
 
 **Domain:** $all config parameters \in \mathbb{Z}^{+}$
 
@@ -94,11 +94,11 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Divisibility constraints | $h \% n_h == 0 ∧ n_h \% n_kv == 0 ∧ d_k \% 2 == 0$ |
+| 1 | invariant | Divisibility constraints | `h % n_h == 0 ∧ n_h % n_kv == 0 ∧ d_k % 2 == 0` |
 | 2 | bound | Dimension bounds | $d_k >= h/n_h, d_k <= 2*(h/n_h)$ |
 | 3 | ordering | Parameter ordering | $d_ff > h, n_kv <= n_h, max_pos > 0$ |
 | 4 | invariant | Non-degeneracy | $h>0, L>0, n_h>0, V>0, n_kv>0, d_k>0$ |
-| 5 | invariant | Cross-parameter constraints | $rope_theta > 0 ∧ finite ∧ rms_norm_eps \in (0, 0.1)$ |
+| 5 | invariant | Cross-parameter constraints | `rope_theta > 0 ∧ finite ∧ rms_norm_eps ∈ (0, 0.1)` |
 | 6 | equivalence | SIMD config equivalence |  |
 
 ## Falsification Tests

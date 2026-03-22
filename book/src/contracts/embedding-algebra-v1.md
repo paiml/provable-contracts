@@ -25,9 +25,9 @@ graph LR
 
 ### embedding_lookup
 
-$$
+```
 embed(token_id) = W_e[token_id, :]
-$$
+```
 
 **Domain:** $token_id \in [0, V), W_e \in R^{V × d_model}$
 

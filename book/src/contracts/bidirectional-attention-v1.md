@@ -46,7 +46,7 @@ $$
 |---|------|----------|--------|
 | 1 | equivalence | Causal parity on single-token input | $\|BiAttn(q, k, v) - CausalAttn(q, k, v)\| < eps for n=1$ |
 | 2 | invariant | Full attention density | $attn_weights[i][j] > 0 for all i, j in 0..n$ |
-| 3 | invariant | Weight normalization | $sum_j(attn_weights[i][j]) = 1 for all i$ |
+| 3 | invariant | Weight normalization | `sum_j(attn_weights[i][j]) = 1 for all i` |
 | 4 | invariant | No causal mask applied | $attn_weights[i][j] > 0 for j > i (upper triangle non-zero)$ |
 
 ## Falsification Tests

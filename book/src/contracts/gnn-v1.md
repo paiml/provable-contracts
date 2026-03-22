@@ -79,11 +79,11 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | GCN preserves node count | $output.shape[0] == input.shape[0] for GCN forward$ |
-| 2 | invariant | Message passing preserves node count | $propagate(x, adj).shape[0] == x.shape[0]$ |
-| 3 | bound | Global mean pool output is finite | $forall j: r_j.is_finite() when all h_ij are finite$ |
+| 1 | invariant | GCN preserves node count | `output.shape[0] == input.shape[0] for GCN forward` |
+| 2 | invariant | Message passing preserves node count | `propagate(x, adj).shape[0] == x.shape[0]` |
+| 3 | bound | Global mean pool output is finite | `forall j: r_j.is_finite() when all h_ij are finite` |
 | 4 | bound | Global max pool bounded by node features | $forall j: r_j <= max_{i in V}(h_{ij})$ |
-| 5 | invariant | Pooling output dimension matches feature dimension | $pool(H).shape[1] == H.shape[1]$ |
+| 5 | invariant | Pooling output dimension matches feature dimension | `pool(H).shape[1] == H.shape[1]` |
 
 ## Falsification Tests
 

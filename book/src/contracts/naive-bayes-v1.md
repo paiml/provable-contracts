@@ -29,9 +29,9 @@ $$
 
 ### gaussian_likelihood
 
-$$
-P(x_j | C_k) = (1/√(2\pi\sigma²_jk)) \exp(-(x_j - μ_jk)²/(2\sigma²_jk))
-$$
+```
+P(x_j | C_k) = (1/√(2πσ²_jk)) exp(-(x_j - μ_jk)²/(2σ²_jk))
+```
 
 **Domain:** $x_j \in \mathbb{R}, μ_jk \in \mathbb{R}, \sigma²_jk > 0$
 

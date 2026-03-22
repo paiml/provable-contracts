@@ -203,6 +203,10 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
         }),
         Commands::Invariants { contract } => commands::invariants::run(&contract),
         Commands::Coq { contract } => commands::coq::run(&contract),
+        Commands::Fuzz { contract } => commands::fuzz::run(&contract),
+        Commands::Mirai { contract } => commands::mirai::run(&contract),
+        Commands::Flux { contract } => commands::flux::run(&contract),
+        Commands::Tla { contract_dir } => commands::tla::run(&contract_dir),
         Commands::Book {
             contract_dir,
             output,

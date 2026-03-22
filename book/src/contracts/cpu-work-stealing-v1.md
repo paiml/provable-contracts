@@ -28,9 +28,9 @@ graph LR
 
 ### l1_tiling
 
-$$
+```
 L1 cache tiling for quantized matmul:
-  L1_size \approx 32-48 KB (per core)
+  L1_size ≈ 32-48 KB (per core)
   Q4K super-block: 144 bytes (256 values)
   Tile size: 16 output rows × 1 input vector
   Tile footprint: 16 × ceil(in_dim/256) × 144 bytes
@@ -40,7 +40,7 @@ L2 cache tiling (Rayon current):
   Tile size: 64 output rows (MIDI_TILE_M)
   Tile footprint: 64 × 6 × 144 = 55,296 bytes (exceeds L1, fits L2)
 
-$$
+```
 
 **Domain:** $x86_64 with 32KB L1d, 256-512KB L2$
 
@@ -51,10 +51,10 @@ $$
 
 ### rayon_overhead
 
-$$
+```
 Current Rayon dispatch cost per matmul:
   overhead = rayon_spawn_cost × ceil(out_dim / MIDI_TILE_M)
-  rayon_spawn_cost \approx 1-5 μs per task (crossbeam deque)
+  rayon_spawn_cost ≈ 1-5 μs per task (crossbeam deque)
   For hidden_dim=1536: ceil(1536/64) = 24 tasks
   Per-matmul overhead: ~24-120 μs
 
@@ -63,11 +63,11 @@ Per-token overhead (7 matmuls × 28 layers):
 
 Lightweight atomic work-stealing:
   overhead = N_threads × atomic_fetch_add_cost
-  atomic_fetch_add \approx 10-50 ns (relaxed ordering)
-  For 8 threads, 24 chunks: 24 × 10-50 ns \approx 0.24-1.2 μs per matmul
+  atomic_fetch_add ≈ 10-50 ns (relaxed ordering)
+  For 8 threads, 24 chunks: 24 × 10-50 ns ≈ 0.24-1.2 μs per matmul
   Per-token overhead: 196 × 0.24-1.2 μs = 47-235 μs
 
-$$
+```
 
 **Domain:** $Multi-core x86_64, 8+ threads$
 
@@ -80,9 +80,9 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | bound | Dispatch overhead under budget | $work_stealing_overhead < 0.01 × matmul_compute_time$ |
+| 1 | bound | Dispatch overhead under budget | `work_stealing_overhead < 0.01 × matmul_compute_time` |
 | 2 | invariant | No false sharing | $All atomic counters aligned to 64-byte cache lines$ |
-| 3 | bound | L1 tile fits | $tile_footprint_bytes \leq 32768 (32KB L1d)$ |
+| 3 | bound | L1 tile fits | `tile_footprint_bytes ≤ 32768 (32KB L1d)` |
 | 4 | equivalence | Work-stealing output matches Rayon output | $matvec_worksteal(W, x) ≡ matvec_rayon(W, x)$ |
 
 ## Falsification Tests

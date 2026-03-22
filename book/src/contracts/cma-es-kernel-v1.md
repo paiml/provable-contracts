@@ -13,9 +13,9 @@ CMA-ES kernel — covariance matrix adaptation evolution strategy
 
 ### covariance_update
 
-$$
+```
 C_{t+1} = (1-c1-cmu)*C_t + c1*p_c*p_c^T + cmu*sum(w_i*(x_i-m)*(x_i-m)^T/sigma^2)
-$$
+```
 
 **Domain:** $C_t positive definite, c1 >= 0, cmu >= 0, c1+cmu <= 1$
 

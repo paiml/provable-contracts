@@ -38,9 +38,9 @@ $$
 
 ### qk_norm_score_bound
 
-$$
-|pre_softmax_score| <= \sqrt{head_dim}
-$$
+```
+|pre_softmax_score| <= sqrt(head_dim)
+```
 
 **Domain:** $After QK normalization$
 
@@ -68,7 +68,7 @@ $$
 | 1 | monotonicity | GPU threshold monotonic | $n1 >= threshold AND n2 > n1 => n2 >= threshold$ |
 | 2 | invariant | Garbage oracle detects repetition | $repetition_ratio > 0.3 => is_garbage$ |
 | 3 | bound | QK norm score bound | $\|score\| <= \sqrt{d_k} after L2 normalization$ |
-| 4 | equivalence | BPE roundtrip | $decode(encode(text)) == text for representable strings$ |
+| 4 | equivalence | BPE roundtrip | `decode(encode(text)) == text for representable strings` |
 | 5 | equivalence | SIMD dispatch equivalence |  |
 
 ## Falsification Tests

@@ -79,10 +79,10 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | equivalence | Greedy = argmax | $greedy(logits) == argmax(logits)$ |
+| 1 | equivalence | Greedy = argmax | `greedy(logits) == argmax(logits)` |
 | 2 | bound | Top-K cardinality | $count(nonzero(top_k(p, K))) <= K$ |
 | 3 | bound | Top-P cumulative | $sum(top_p(p, threshold)) >= threshold$ |
-| 4 | equivalence | Temperature identity | $softmax(l/1) == softmax(l)$ |
+| 4 | equivalence | Temperature identity | `softmax(l/1) == softmax(l)` |
 | 5 | equivalence | SIMD sampling equivalence |  |
 
 ## Falsification Tests

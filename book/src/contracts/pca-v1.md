@@ -13,9 +13,9 @@ Principal Component Analysis — eigendecomposition-based dimensionality reducti
 
 ### explained_variance
 
-$$
-explained_ratio_j = \lambda_j / \sum \lambda_i
-$$
+```
+explained_ratio_j = λ_j / Σ λ_i
+```
 
 **Domain:** $eigenvalues \lambda_1 \geq \lambda_2 \geq ... \geq \lambda_d \geq 0$
 

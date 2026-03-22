@@ -28,9 +28,9 @@ $$
 
 ### hinge_loss
 
-$$
+```
 L = max(0, 1 - y_i(w·x_i + b))
-$$
+```
 
 **Domain:** $w \in \mathbb{R}^d, x_i \in \mathbb{R}^d, y_i \in {-1, +1}, b \in \mathbb{R}$
 
@@ -39,7 +39,7 @@ $$
 **Invariants:**
 
 - $L \geq 0 (non-negative by construction)$
-- $L = 0 when y_i(w·x_i + b) \geq 1 (correct with margin)$
+- `L = 0 when y_i(w·x_i + b) ≥ 1 (correct with margin)`
 
 ### margin
 

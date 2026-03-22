@@ -10,15 +10,22 @@ Per-architecture inference constraints — source of truth
 - realizar/src/gguf/config.rs: Consumer
 - aprender/contracts/model-families/*.yaml: Source data
 
+## Dependency Graph
+
+```mermaid
+graph LR
+    qk_norm_apr_loader_v1["qk-norm-apr-loader-v1"] --> arch_constraints_v1["arch-constraints-v1"]
+```
+
 ## Equations
 
 ### arch_constraint_lookup
 
-$$
+```
 constraints(arch) = { norm_type, activation, pos_enc, mlp_type, weight_layout, has_bias, tied_emb, has_qk_norm, eps }
-$$
+```
 
-**Domain:** $arch \in { llama, mistral, phi3, qwen2, qwen3, deepseek2, gemma, gemma2, gpt2, bloom, stablelm, falcon, yi, internlm2, command-r, mamba }$
+**Domain:** $arch \in { llama, mistral, phi3, qwen2, qwen3, deepseek2, gemma, gemma2, gpt2, bloom, stablelm, falcon, falcon_7b, falcon_40b, yi, internlm2, command-r, mamba, smollm, olmo, granite, starcoder }$
 
 **Codomain:** $ArchConstraints struct$
 

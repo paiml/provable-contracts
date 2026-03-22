@@ -23,7 +23,7 @@ $$
 
 **Invariants:**
 
-- $d_k is a descent direction: g_k^T d_k < 0 (when g_k != 0)$
+- `d_k is a descent direction: g_k^T d_k < 0 (when g_k != 0)`
 - $beta_k >= 0 (Fletcher-Reeves always non-negative)$
 - $Reduces to steepest descent when beta_k = 0$
 
@@ -55,8 +55,8 @@ $$
 
 **Invariants:**
 
-- $Sufficient decrease (Armijo): f(x_k + alpha*d_k) <= f(x_k) + c1*alpha*g_k^T*d_k$
-- $Curvature condition: g(x_k + alpha*d_k)^T*d_k >= c2*g_k^T*d_k$
+- `Sufficient decrease (Armijo): f(x_k + alpha*d_k) <= f(x_k) + c1*alpha*g_k^T*d_k`
+- `Curvature condition: g(x_k + alpha*d_k)^T*d_k >= c2*g_k^T*d_k`
 - $alpha_k > 0 (positive step size)$
 
 ## Proof Obligations

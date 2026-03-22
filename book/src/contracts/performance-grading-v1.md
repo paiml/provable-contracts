@@ -38,6 +38,21 @@ $$
 - $Grade boundaries: F(<10\%), D[10\%,20\%), C[20\%,40\%), B[40\%,50\%), A(>=50\%)$
 - $Monotonic: higher efficiency => same or better grade$
 
+### llamacpp_parity
+
+$$
+ratio = apr_tps / llamacpp_tps; grade = classify(ratio)
+$$
+
+**Domain:** $ratio \in [0, ∞)$
+
+**Codomain:** $grade \in {F, D, C, B, A, A+}$
+
+**Invariants:**
+
+- $Same grade boundaries as ollama_parity$
+- $Measured at c=1 (single request) and c=4 (concurrent)$
+
 ### ollama_parity
 
 $$
@@ -53,6 +68,22 @@ $$
 - $Grade boundaries: F(<0.5), D[0.5,0.75), C[0.75,1.0), B[1.0,1.5), A[1.5,2.0), A+(>=2.0)$
 - $Monotonic: higher ratio => same or better grade$
 - $Boundaries are exhaustive and non-overlapping$
+
+### vllm_parity
+
+$$
+ratio = apr_tps / vllm_tps; grade = classify(ratio)
+$$
+
+**Domain:** $ratio \in [0, ∞), vLLM uses AWQ INT4 (not GGUF)$
+
+**Codomain:** $grade \in {F, D, C, B, A, A+}$
+
+**Invariants:**
+
+- $Same grade boundaries as ollama_parity$
+- $vLLM is the ceiling for continuous batching (c>=4)$
+- $Compare at c=4+ where vLLM's PagedAttention advantage matters$
 
 ## Proof Obligations
 

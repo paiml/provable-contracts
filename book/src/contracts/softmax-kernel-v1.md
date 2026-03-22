@@ -46,12 +46,15 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Output sums to 1 | $\|\sum \sigma(x)_i - 1.0\| < \varepsilon$ |
-| 2 | invariant | All outputs strictly positive | $\sigma(x)_i > 0 for all i$ |
-| 3 | bound | Each output bounded in (0,1) | $0 < \sigma(x)_i < 1 for all i$ |
-| 4 | monotonicity | Order preservation | $x_i > x_j ⟹ \sigma(x)_i > \sigma(x)_j$ |
-| 5 | equivalence | SIMD matches scalar within ULP |  |
-| 6 | invariant | Translation invariance | $\sigma(x + c·1) = \sigma(x) for any scalar c$ |
+| 1 | precondition | Input vector is finite and non-empty | $\forall i: ¬isNaN(x_i) ∧ ¬isInf(x_i) ∧ len(x) > 0$ |
+| 2 | postcondition | Output is a valid probability distribution | $len(\sigma(x)) = len(x) ∧ \forall i: 0 < \sigma(x)_i < 1 ∧ \|\sum \sigma(x)_i - 1\| < \varepsilon$ |
+| 3 | frame | Only output buffer is modified; input vector unchanged | $modifies(output) ∧ preserves(input)$ |
+| 4 | invariant | Output sums to 1 | $\|\sum \sigma(x)_i - 1.0\| < \varepsilon$ |
+| 5 | invariant | All outputs strictly positive | $\sigma(x)_i > 0 for all i$ |
+| 6 | bound | Each output bounded in (0,1) | $0 < \sigma(x)_i < 1 for all i$ |
+| 7 | monotonicity | Order preservation | $x_i > x_j ⟹ \sigma(x)_i > \sigma(x)_j$ |
+| 8 | equivalence | SIMD matches scalar within ULP |  |
+| 9 | invariant | Translation invariance | $\sigma(x + c·1) = \sigma(x) for any scalar c$ |
 
 ## Kernel Phases
 
@@ -78,6 +81,9 @@ $$
 | FALSIFY-SM-004 | SIMD equivalence | \|softmax_avx2(x) - softmax_scalar(x)\| < 8 ULP | SIMD reduction order differs from scalar |
 | FALSIFY-SM-005 | Boundary - single element | softmax([x]) = [1.0] for any x | Edge case in loop bounds |
 | FALSIFY-SM-006 | Boundary - identical elements | softmax([c,c,...,c]) = [1/n, 1/n, ..., 1/n] | Rounding error accumulation |
+| FALSIFY-SM-007 | Precondition violation | softmax([]) panics or returns Err; softmax([NaN]) returns NaN | Missing input validation — kernel silently produces garbage |
+| FALSIFY-SM-008 | Postcondition completeness | len(softmax(x)) = len(x) for all valid inputs | Output buffer allocation mismatch |
+| FALSIFY-SM-009 | Frame condition | Input vector byte-identical before and after softmax call | Kernel corrupts input buffer (in-place mutation bug) |
 
 ## Kani Harnesses
 
@@ -95,5 +101,5 @@ Numerically stable softmax kernel quality gate
 
 **Checks:** normalization, positivity, order_preservation, simd_equivalence
 
-**Pass criteria:** All 6 falsification tests pass + Kani harnesses verify
+**Pass criteria:** All 9 falsification tests pass + Kani harnesses verify
 

@@ -13,13 +13,13 @@ ARIMA -- Autoregressive Integrated Moving Average time series forecasting
 
 ### ar_forecast
 
-$$
+```
 y_hat_t = sum_{i=1}^{p} phi_i * y_{t-i}
-$$
+```
 
 **Domain:** $phi in R^p, y in R^T, t > p$
 
-**Codomain:** $y_hat_t in R$
+**Codomain:** `y_hat_t in R`
 
 **Invariants:**
 
@@ -44,9 +44,9 @@ $$
 
 ### forecast_finite
 
-$$
+```
 y_hat_{T+h} in R for h = 1, ..., n_periods
-$$
+```
 
 **Domain:** $fitted ARIMA(p,d,q) model, n_periods >= 1$
 
@@ -77,7 +77,7 @@ $$
 | # | Type | Property | Formal |
 |---|------|----------|--------|
 | 1 | invariant | Forecast length equals n_periods | $\|forecast(model, n_periods)\| = n_periods$ |
-| 2 | bound | All forecasts finite | $forall h in 1..n_periods: \|y_hat_{T+h}\| < infinity$ |
+| 2 | bound | All forecasts finite | `forall h in 1..n_periods: \|y_hat_{T+h}\| < infinity` |
 | 3 | invariant | Differencing reduces order | $\|Delta^d y\| = \|y\| - d$ |
 | 4 | invariant | Forecast deterministic | $forecast(model, n) = forecast(model, n) for same model and data$ |
 

@@ -55,8 +55,8 @@ fn every_contract_generates_book_page() {
             "Book page for {stem} missing Equations section"
         );
         assert!(
-            page.contains("$$"),
-            "Book page for {stem} missing KaTeX block"
+            page.contains("$$") || page.contains("```\n"),
+            "Book page for {stem} missing math or code block"
         );
     }
 }

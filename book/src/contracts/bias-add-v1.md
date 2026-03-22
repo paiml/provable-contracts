@@ -24,7 +24,7 @@ $$
 
 - $Output shape equals input shape: shape(y) = shape(x) = (B, D)$
 - $Zero-bias identity: y = x when bias = 0$
-- $Additivity: bias_add(bias_add(x, b1), b2) = bias_add(x, b1 + b2)$
+- `Additivity: bias_add(bias_add(x, b1), b2) = bias_add(x, b1 + b2)`
 - $Broadcast: same bias vector applied to every batch element$
 
 ## Proof Obligations
@@ -33,8 +33,8 @@ $$
 |---|------|----------|--------|
 | 1 | invariant | Shape preservation | $shape(bias_add(x, bias)) = shape(x) = (B, D)$ |
 | 2 | invariant | Zero-bias identity | $bias_add(x, 0) = x for all x$ |
-| 3 | invariant | Additivity | $bias_add(bias_add(x, b1), b2) = bias_add(x, b1 + b2)$ |
-| 4 | equivalence | SIMD matches scalar | $\|bias_add_avx2(x, b) - bias_add_scalar(x, b)\| = 0 (exact for addition)$ |
+| 3 | invariant | Additivity | `bias_add(bias_add(x, b1), b2) = bias_add(x, b1 + b2)` |
+| 4 | equivalence | SIMD matches scalar | `\|bias_add_avx2(x, b) - bias_add_scalar(x, b)\| = 0 (exact for addition)` |
 
 ## Kernel Phases
 

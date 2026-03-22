@@ -38,9 +38,9 @@ $$
 
 ### eckart_young
 
-$$
+```
 ||delta - delta_r||_F <= sigma_{r+1}
-$$
+```
 
 **Domain:** $delta_r = U_r @ diag(sigma_1..r) @ V_r^T, rank-r truncated SVD$
 
@@ -66,9 +66,9 @@ $$
 
 ### shape_preservation
 
-$$
+```
 shape(merged[t]) == shape(base[t]) for all tensors t
-$$
+```
 
 **Domain:** $Any merge strategy$
 
@@ -88,17 +88,17 @@ $$
 
 **Invariants:**
 
-- $Additive: W_base + delta == W_fine (roundtrip)$
+- `Additive: W_base + delta == W_fine (roundtrip)`
 
 ## Proof Obligations
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Task vector roundtrip | $base + (fine - base) == fine within ULP$ |
-| 2 | bound | Eckart-Young bound | $\|\|M - M_r\|\|_F <= sigma_{r+1}$ |
+| 1 | invariant | Task vector roundtrip | `base + (fine - base) == fine within ULP` |
+| 2 | bound | Eckart-Young bound | `\|\|M - M_r\|\|_F <= sigma_{r+1}` |
 | 3 | invariant | LoRA shape compatibility | $A=[m,r], B=[r,n] => A@B=[m,n]$ |
 | 4 | invariant | DARE unbiasedness | $E[DARE(delta, p)] = delta$ |
-| 5 | invariant | Shape preservation | $merged shape == base shape$ |
+| 5 | invariant | Shape preservation | `merged shape == base shape` |
 | 6 | equivalence | SIMD LoRA equivalence |  |
 
 ## Falsification Tests

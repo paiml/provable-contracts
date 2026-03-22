@@ -28,9 +28,9 @@ $$
 
 ### objective
 
-$$
+```
 J = sum_{i=1}^{N} ||x_i - mu_{c_i}||^2
-$$
+```
 
 **Domain:** $x in R^{N x d}, mu in R^{K x d}, c in {0..K-1}^N$
 
@@ -60,7 +60,7 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Nearest centroid assignment | $\|\|x_i - mu_{c_i}\|\| <= \|\|x_i - mu_j\|\| for all j$ |
+| 1 | invariant | Nearest centroid assignment | `\|\|x_i - mu_{c_i}\|\| <= \|\|x_i - mu_j\|\| for all j` |
 | 2 | monotonicity | Objective non-increasing | $J_{t+1} <= J_t after each assignment+update step$ |
 | 3 | bound | Objective non-negative | $J >= 0$ |
 | 4 | invariant | Valid cluster indices | $c_i in {0, ..., K-1} for all i$ |

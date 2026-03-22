@@ -13,9 +13,9 @@ Tensor inventory algebra and parameter count decomposition
 
 ### architecture_delta
 
-$$
+```
 delta = L * (per_layer_B - per_layer_A)
-$$
+```
 
 **Domain:** $Two model configs A, B with same L$
 
@@ -43,11 +43,11 @@ $$
 
 ### quantization_bytes
 
-$$
+```
 bytes = params * block_bytes / elements_per_block
-$$
+```
 
-**Domain:** $params \in \mathbb{Z}^{+}, block_bytes/elements_per_block from quantization scheme$
+**Domain:** `params ∈ ℤ⁺, block_bytes/elements_per_block from quantization scheme`
 
 **Codomain:** $bytes \in \mathbb{Z}^{+}$
 
@@ -88,7 +88,7 @@ $$
 | # | Type | Property | Formal |
 |---|------|----------|--------|
 | 1 | invariant | Tensor count formula | $total = base + L * per_layer for valid configs$ |
-| 2 | invariant | Architecture delta linear | $delta(A,B) = L * (per_layer_B - per_layer_A)$ |
+| 2 | invariant | Architecture delta linear | `delta(A,B) = L * (per_layer_B - per_layer_A)` |
 | 3 | invariant | Parameter decomposition exact | $sum of component params = total_params$ |
 | 4 | invariant | Tied embedding count | $tied => count(untied) - count(tied) = 1$ |
 | 5 | monotonicity | Quantization byte ordering | $Q4K < Q6K < Q8 < F16 < F32 bytes for same params$ |

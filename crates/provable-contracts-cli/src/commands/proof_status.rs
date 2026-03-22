@@ -48,7 +48,7 @@ pub fn run(
             .to_string();
         let c = parse_contract(path)?;
         contracts.push((stem, c));
-    };
+    }
 
     contracts.sort_by(|a, b| a.0.cmp(&b.0));
 

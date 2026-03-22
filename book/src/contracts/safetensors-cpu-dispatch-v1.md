@@ -27,19 +27,19 @@ graph LR
 
 ### format_parity
 
-$$
-After SafeTensors \to Q4K runtime conversion:
+```
+After SafeTensors → Q4K runtime conversion:
   tensor_type(converted) == Q4_K
-  matmul_dispatch(converted, acts) \to fused_q4k_parallel_matvec
+  matmul_dispatch(converted, acts) → fused_q4k_parallel_matvec
 
 If dispatch falls through to float path:
   float16_matmul operates on F32 weights (4× more memory traffic)
-  throughput_loss = sizeof(f32) / sizeof(q4k_effective) \approx 4-8×
+  throughput_loss = sizeof(f32) / sizeof(q4k_effective) ≈ 4-8×
 
-Measured gap: 6.0 / 9.5 = 0.63 (37\% slower)
-Expected if F32 fallback: 9.5 / 4 \approx 2.4 (consistent with partial fallback)
+Measured gap: 6.0 / 9.5 = 0.63 (37% slower)
+Expected if F32 fallback: 9.5 / 4 ≈ 2.4 (consistent with partial fallback)
 
-$$
+```
 
 **Domain:** $SafeTensors \to Q4K conversion, CPU inference$
 
@@ -54,7 +54,7 @@ $$
 |---|------|----------|--------|
 | 1 | equivalence | SafeTensors CPU matches GGUF CPU throughput | $tok/s(SafeTensors CPU) \geq 0.9 × tok/s(GGUF CPU)$ |
 | 2 | invariant | Quantized dispatch after conversion | $All weight tensors have type Q4_K after SafeTensors\to Q4K conversion$ |
-| 3 | equivalence | Output parity across formats | $argmax(logits_safetensors) == argmax(logits_gguf) for same prompts$ |
+| 3 | equivalence | Output parity across formats | `argmax(logits_safetensors) == argmax(logits_gguf) for same prompts` |
 
 ## Falsification Tests
 

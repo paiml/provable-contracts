@@ -31,7 +31,7 @@ $$
 
 **Domain:** $Conversation$
 
-**Codomain:** $Vec<Turn> with len == 3$
+**Codomain:** `Vec<Turn> with len == 3`
 
 **Invariants:**
 
@@ -41,9 +41,9 @@ $$
 
 ### conversation_types
 
-$$
+```
 type(entry) = D if safe(entry) else C if !deterministic(entry) else B if SEC(entry) && even(seed) else A
-$$
+```
 
 **Domain:** $entry in CorpusEntry, seed in u64$
 
@@ -57,11 +57,11 @@ $$
 
 ### quality_gate
 
-$$
-pass = type_d_pct >= 30\% AND empty_responses == 0 AND variant_balanced
-$$
+```
+pass = type_d_pct >= 30% AND empty_responses == 0 AND variant_balanced
+```
 
-**Domain:** $conversations in Vec<Conversation>$
+**Domain:** `conversations in Vec<Conversation>`
 
 **Codomain:** $bool$
 
@@ -75,11 +75,11 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | ChatML structure | $conversation.turns.len() == 3 AND turns[0].role == 'system' AND turns[1].role == 'user' AND turns[2].role == 'assistant'$ |
-| 2 | invariant | Type D minimum | $type_d_count / total >= 0.30$ |
+| 1 | invariant | ChatML structure | `conversation.turns.len() == 3 AND turns[0].role == 'system' AND turns[1].role == 'user' AND turns[2].role == 'assistant'` |
+| 2 | invariant | Type D minimum | `type_d_count / total >= 0.30` |
 | 3 | invariant | No empty responses | $for all conv: all turns have non-empty content$ |
 | 4 | invariant | System prompt honesty | $SYSTEM_PROMPT contains 'not a replacement' AND 'pattern matching'$ |
-| 5 | invariant | Deterministic generation | $generate(entries, seed) == generate(entries, seed) for same inputs$ |
+| 5 | invariant | Deterministic generation | `generate(entries, seed) == generate(entries, seed) for same inputs` |
 
 ## Falsification Tests
 

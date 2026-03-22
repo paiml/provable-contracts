@@ -62,10 +62,10 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Shape preservation | $output.shape == input.shape for each encoder layer$ |
+| 1 | invariant | Shape preservation | `output.shape == input.shape for each encoder layer` |
 | 2 | bound | No NaN/Inf | $is_finite(output[i][j]) for all i, j$ |
 | 3 | equivalence | Reference parity | $\|entrenar_output - reference_output\| < tolerance$ |
-| 4 | invariant | CLS pooling correctness | $cls_embedding == encoder_output[0]$ |
+| 4 | invariant | CLS pooling correctness | `cls_embedding == encoder_output[0]` |
 
 ## Falsification Tests
 

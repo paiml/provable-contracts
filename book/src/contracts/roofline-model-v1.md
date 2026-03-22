@@ -14,11 +14,11 @@ Roofline model — performance bound analysis for LLM inference
 
 ### bandwidth_ceiling
 
-$$
+```
 bw_ceiling = effective_bandwidth_GB_s / (model_bytes / 1e9)
-$$
+```
 
-**Domain:** $effective_bandwidth_GB_s > 0, model_bytes > 0$
+**Domain:** `effective_bandwidth_GB_s > 0, model_bytes > 0`
 
 **Codomain:** $bw_ceiling > 0 (tokens/second)$
 
@@ -29,11 +29,11 @@ $$
 
 ### compute_ceiling
 
-$$
+```
 compute_ceiling = effective_GFLOPS / ops_per_token
-$$
+```
 
-**Domain:** $effective_GFLOPS > 0, ops_per_token > 0$
+**Domain:** `effective_GFLOPS > 0, ops_per_token > 0`
 
 **Codomain:** $compute_ceiling > 0 (tokens/second)$
 
@@ -43,11 +43,11 @@ $$
 
 ### model_bytes
 
-$$
+```
 model_bytes = total_params × bits_per_weight / 8
-$$
+```
 
-**Domain:** $total_params \in \mathbb{Z}^{+}, bits_per_weight \in {2, 4, 8, 16, 32}$
+**Domain:** `total_params ∈ ℤ⁺, bits_per_weight ∈ {2, 4, 8, 16, 32}`
 
 **Invariants:**
 

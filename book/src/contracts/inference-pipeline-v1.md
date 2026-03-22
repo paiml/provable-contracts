@@ -27,6 +27,7 @@ graph LR
     inference_pipeline_v1["inference-pipeline-v1"] --> gated_delta_net_v1["gated-delta-net-v1"]
     inference_pipeline_v1["inference-pipeline-v1"] --> embedding_algebra_v1["embedding-algebra-v1"]
     inference_pipeline_v1["inference-pipeline-v1"] --> rmsnorm_kernel_v1["rmsnorm-kernel-v1"]
+    continuous_batching_v1["continuous-batching-v1"] --> inference_pipeline_v1["inference-pipeline-v1"]
     qwen2_e2e_verification_v1["qwen2-e2e-verification-v1"] --> inference_pipeline_v1["inference-pipeline-v1"]
     qwen3_e2e_verification_v1["qwen3-e2e-verification-v1"] --> inference_pipeline_v1["inference-pipeline-v1"]
     qwen35_e2e_verification_v1["qwen35-e2e-verification-v1"] --> inference_pipeline_v1["inference-pipeline-v1"]
@@ -37,9 +38,9 @@ graph LR
 
 ### decode_step
 
-$$
+```
 h_t = layer_L(... layer_1(embed(token_t), kv_cache_{t-1}))
-$$
+```
 
 **Domain:** $Single new token, reading from and appending to KV cache$
 
@@ -65,9 +66,9 @@ $$
 
 ### kv_cache_growth
 
-$$
+```
 cache_size(t) = sum_{l in A} 2 * n_kv * d_k * t * bytes_per_element
-$$
+```
 
 **Domain:** $Only attention layers contribute to KV cache$
 
@@ -128,7 +129,7 @@ $$
 | 4 | conservation | Residual is pure addition | $h_{l+1} - h_l = sublayer(norm(h_l))$ |
 | 5 | invariant | Layer schedule partition | $\|A\| + \|L\| = num_layers, A ∩ L = ∅$ |
 | 6 | monotonicity | KV cache monotonically growing | $t1 < t2 \to cache_size(t1) < cache_size(t2)$ |
-| 7 | bound | All activations finite | $\forall l,t: is_finite(h_l(t))$ |
+| 7 | bound | All activations finite | `∀l,t: is_finite(h_l(t))` |
 
 ## Falsification Tests
 

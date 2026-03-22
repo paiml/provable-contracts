@@ -13,9 +13,9 @@ Active learning query strategies for label-efficient training
 
 ### entropy_score
 
-$$
+```
 H(p) = -sum_i(p_i * ln(p_i))
-$$
+```
 
 **Domain:** $p in R^k, p_i in [0, 1], sum(p_i) = 1, 0*ln(0) defined as 0$
 
@@ -61,9 +61,9 @@ $$
 
 ### uncertainty_score
 
-$$
+```
 u(p) = 1 - max_i(p_i)
-$$
+```
 
 **Domain:** $p in R^k, p_i in [0, 1], sum(p_i) = 1$
 

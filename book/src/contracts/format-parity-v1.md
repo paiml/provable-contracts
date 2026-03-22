@@ -15,11 +15,11 @@ Format parity — cross-format tensor equivalence (GGUF, SafeTensors, APR)
 
 ### element_count
 
-$$
+```
 product(gguf_shape) == product(apr_shape)
-$$
+```
 
-**Domain:** $gguf_shape, apr_shape \in \mathbb{Z}^{+}^n$
+**Domain:** $gguf_shape, apr_shape \in \mathbb{Z}^{+n}$
 
 **Invariants:**
 
@@ -28,11 +28,11 @@ $$
 
 ### identity_1d
 
-$$
+```
 1D tensors: apr_shape == gguf_shape (no transpose)
-$$
+```
 
-**Domain:** $shape \in \mathbb{Z}^{+}^1$
+**Domain:** $shape \in \mathbb{Z}^{+1}$
 
 **Invariants:**
 
@@ -54,9 +54,9 @@ $$
 
 ### transpose_involution
 
-$$
+```
 swap(swap(shape)) == shape
-$$
+```
 
 **Domain:** $shape \in \mathbb{Z}^{+} × \mathbb{Z}^{+} (2D tensors)$
 
@@ -69,9 +69,9 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Transpose involution | $swap(swap([a, b])) == [a, b]$ |
-| 2 | invariant | Element count preserved | $product(gguf_shape) == product(apr_shape) for all tensors$ |
-| 3 | invariant | 1D no transpose | $len(shape) == 1 ⟹ apr_shape == gguf_shape$ |
+| 1 | invariant | Transpose involution | `swap(swap([a, b])) == [a, b]` |
+| 2 | invariant | Element count preserved | `product(gguf_shape) == product(apr_shape) for all tensors` |
+| 3 | invariant | 1D no transpose | `len(shape) == 1 ⟹ apr_shape == gguf_shape` |
 | 4 | equivalence | Roundtrip equivalence | $\|convert(convert(tensor, GGUF\to APR), APR\to GGUF) - tensor\| < \varepsilon$ |
 | 5 | equivalence | SIMD format equivalence |  |
 

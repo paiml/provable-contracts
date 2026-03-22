@@ -17,7 +17,7 @@ $$
 waste = L * P * ceil(D/256) * C
 $$
 
-**Domain:** $L=layers, P=passes_per_layer, D=hidden_dim, C=cycles_per_bsum$
+**Domain:** `L=layers, P=passes_per_layer, D=hidden_dim, C=cycles_per_bsum`
 
 **Codomain:** $waste \in \mathbb{Z}^{+} (wasted cycles)$
 

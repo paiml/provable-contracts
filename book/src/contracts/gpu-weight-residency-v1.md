@@ -28,10 +28,10 @@ graph LR
 
 ### pcie_overhead
 
-$$
+```
 Per-inference PCIe transfer cost:
   transfer_time = model_bytes / pcie_bandwidth
-  Qwen2.5-1.5B Q4K: 1.1 GB / 32 GB/s (PCIe 4.0 x16) \approx 34ms
+  Qwen2.5-1.5B Q4K: 1.1 GB / 32 GB/s (PCIe 4.0 x16) ≈ 34ms
 
 Per-token overhead (28 layers, 7 matmuls/layer):
   matmul_transfers = 196 × weight_slab_bytes / pcie_bandwidth
@@ -40,7 +40,7 @@ With persistent VRAM residency:
   transfer_time = 0 (weights already in VRAM)
   Only activations + KV cache cross PCIe (negligible for batch=1)
 
-$$
+```
 
 **Domain:** $PCIe 4.0 x16, model_bytes > 0$
 
@@ -72,10 +72,10 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | All weights resident in VRAM after startup | $gpu_memory_used \geq model_bytes after Benchmark::new()$ |
+| 1 | invariant | All weights resident in VRAM after startup | `gpu_memory_used ≥ model_bytes after Benchmark::new()` |
 | 2 | bound | GPU throughput reaches target | $tok/s(apr GPU) \geq 180 on RTX 4090 with Qwen2.5-1.5B Q4K$ |
 | 3 | invariant | Zero PCIe transfers during inference | $cudaMemcpy count during forward() = 0 for weight tensors$ |
-| 4 | equivalence | Output parity with CPU path | $argmax(logits_gpu) == argmax(logits_cpu) for greedy decoding$ |
+| 4 | equivalence | Output parity with CPU path | `argmax(logits_gpu) == argmax(logits_cpu) for greedy decoding` |
 
 ## Falsification Tests
 

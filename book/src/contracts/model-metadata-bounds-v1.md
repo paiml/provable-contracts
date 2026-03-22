@@ -17,14 +17,14 @@ $$
 validate(cfg) = all(field_min <= cfg.field <= field_max for field in required_fields)
 $$
 
-**Domain:** $cfg: ModelConfig with hidden_dim, num_layers, num_heads, num_kv_heads, vocab_size, intermediate_dim, context_length, rope_theta, eps$
+**Domain:** `cfg: ModelConfig with hidden_dim, num_layers, num_heads, num_kv_heads, vocab_size, intermediate_dim, context_length, rope_theta, eps`
 
 **Codomain:** $Result<ValidatedModelConfig, ConfigError>$
 
 **Invariants:**
 
 - $hidden_dim \in [1, 65536] and divisible by num_heads$
-- $num_kv_heads divides num_heads evenly (GQA ratio)$
+- `num_kv_heads divides num_heads evenly (GQA ratio)`
 - $eps \in [1e-10, 0.01] when configured$
 - $rope_theta \in [1.0, 1e8] when configured$
 
@@ -33,8 +33,8 @@ $$
 | # | Type | Property | Formal |
 |---|------|----------|--------|
 | 1 | bound | All required fields within min/max bounds | $\forall field \in required: field.min \leq cfg[field] \leq field.max$ |
-| 2 | invariant | hidden_dim divisible by num_heads | $cfg.hidden_dim \% cfg.num_heads == 0$ |
-| 3 | invariant | num_kv_heads divides num_heads | $cfg.num_heads \% cfg.num_kv_heads == 0$ |
+| 2 | invariant | hidden_dim divisible by num_heads | `cfg.hidden_dim % cfg.num_heads == 0` |
+| 3 | invariant | num_kv_heads divides num_heads | `cfg.num_heads % cfg.num_kv_heads == 0` |
 
 ## Falsification Tests
 

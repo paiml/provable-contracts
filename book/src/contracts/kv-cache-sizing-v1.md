@@ -19,6 +19,7 @@ KV cache memory sizing and bias absence invariants
 graph LR
     kv_cache_sizing_v1["kv-cache-sizing-v1"] --> model_config_algebra_v1["model-config-algebra-v1"]
     kv_cache_equivalence_v1["kv-cache-equivalence-v1"] --> kv_cache_sizing_v1["kv-cache-sizing-v1"]
+    paged_kv_cache_v1["paged-kv-cache-v1"] --> kv_cache_sizing_v1["kv-cache-sizing-v1"]
     qwen2_e2e_verification_v1["qwen2-e2e-verification-v1"] --> kv_cache_sizing_v1["kv-cache-sizing-v1"]
     qwen3_e2e_verification_v1["qwen3-e2e-verification-v1"] --> kv_cache_sizing_v1["kv-cache-sizing-v1"]
     qwen35_e2e_verification_v1["qwen35-e2e-verification-v1"] --> kv_cache_sizing_v1["kv-cache-sizing-v1"]
@@ -29,9 +30,9 @@ graph LR
 
 ### bias_absence
 
-$$
+```
 has_bias=false => count(bias_tensors) == 0
-$$
+```
 
 **Domain:** $Model configuration$
 
@@ -41,9 +42,9 @@ $$
 
 ### hybrid_accounting
 
-$$
+```
 kv_layers = count(layer_type == 'attention')
-$$
+```
 
 **Domain:** $Hybrid architecture with mixed layer types$
 
@@ -67,9 +68,9 @@ $$
 
 ### total_kv_memory
 
-$$
+```
 kv_total = L * S * 2 * n_kv * d_k * bytes_per_element
-$$
+```
 
 **Domain:** $L=layers, S=sequence_length$
 

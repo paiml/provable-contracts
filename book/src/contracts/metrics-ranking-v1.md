@@ -59,9 +59,9 @@ $$
 
 ### reciprocal_rank
 
-$$
+```
 RR = 1 / rank_of_first_relevant_item, or 0 if none relevant
-$$
+```
 
 **Domain:** $ranked list, relevant item set$
 

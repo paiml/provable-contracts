@@ -29,7 +29,7 @@
 /// * `output`       - Output buffer, same shape as `input`.
 /// * `momentum`     - EMA momentum for running stats update.
 /// * `training`     - If true, compute batch stats and update running stats.
-///                     If false, use running stats for normalization.
+///   If false, use running stats for normalization.
 ///
 /// # Panics
 ///

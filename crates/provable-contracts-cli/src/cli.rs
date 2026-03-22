@@ -330,6 +330,27 @@ pub enum Commands {
         /// Path to the contract YAML file
         contract: PathBuf,
     },
+    /// Generate libfuzzer fuzz targets from a contract
+    Fuzz {
+        /// Path to the contract YAML file
+        contract: PathBuf,
+    },
+    /// Generate MIRAI abstract interpretation annotations from a contract
+    Mirai {
+        /// Path to the contract YAML file
+        contract: PathBuf,
+    },
+    /// Generate Flux refinement type annotations from a contract
+    Flux {
+        /// Path to the contract YAML file
+        contract: PathBuf,
+    },
+    /// Generate TLA+ system-level specification from contract dependency DAG
+    Tla {
+        /// Directory containing contract YAML files
+        #[arg(default_value = "contracts")]
+        contract_dir: PathBuf,
+    },
     /// Generate mdBook pages for contracts
     Book {
         /// Directory containing contract YAML files

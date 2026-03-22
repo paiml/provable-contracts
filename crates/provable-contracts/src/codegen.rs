@@ -126,17 +126,14 @@ pub fn generate_all(contract_dir: &Path) -> Vec<GeneratedContract> {
             .unwrap_or("unknown")
             .to_string();
 
-        match crate::schema::parse_contract(&path) {
-            Ok(contract) => {
-                let generated = generate_from_contract(&stem, &contract);
-                if generated.precondition_count > 0
-                    || generated.postcondition_count > 0
-                    || generated.lean_theorem_count > 0
-                {
-                    results.push(generated);
-                }
+        if let Ok(contract) = crate::schema::parse_contract(&path) {
+            let generated = generate_from_contract(&stem, &contract);
+            if generated.precondition_count > 0
+                || generated.postcondition_count > 0
+                || generated.lean_theorem_count > 0
+            {
+                results.push(generated);
             }
-            Err(_) => continue,
         }
     }
 

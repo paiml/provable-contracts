@@ -25,9 +25,9 @@ graph LR
 
 ### conv1d_causal
 
-$$
+```
 len(causal_conv1d(x, kernel_size=k)) == len(x)
-$$
+```
 
 **Domain:** $x \in \mathbb{R}^T, padding = k - 1$
 
@@ -38,9 +38,9 @@ $$
 
 ### head_grouping
 
-$$
-n_v \% n_k == 0
-$$
+```
+n_v % n_k == 0
+```
 
 **Domain:** $n_v >= n_k$
 
@@ -58,14 +58,14 @@ $$
 
 **Invariants:**
 
-- $len(layer_types) == num_hidden_layers$
+- `len(layer_types) == num_hidden_layers`
 - $Pure function of layer index$
 
 ### linear_associativity
 
-$$
+```
 (V @ K^T) @ Q == V @ (K^T @ Q)
-$$
+```
 
 **Domain:** $Conformable matrices$
 
@@ -75,9 +75,9 @@ $$
 
 ### linear_no_softmax
 
-$$
+```
 linear_attn(Q, K, V) != softmax(Q @ K^T) @ V
-$$
+```
 
 **Domain:** $Linear attention path$
 
@@ -91,7 +91,7 @@ $$
 K_dim = n_k * d_k, V_dim = n_v * d_v
 $$
 
-**Domain:** $n_k may != n_v, d_k may != d_v$
+**Domain:** `n_k may != n_v, d_k may != d_v`
 
 **Invariants:**
 
@@ -102,11 +102,11 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Exhaustive partition | $len(layer_types) == L, each entry in {attention, linear}$ |
-| 2 | invariant | Matrix associativity | $(A @ B) @ C == A @ (B @ C) within numerical tolerance$ |
-| 3 | invariant | Head grouping exact | $n_v \% n_k == 0 for valid configs$ |
-| 4 | invariant | Residual shape preservation | $O_proj output dim == hidden_dim$ |
-| 5 | invariant | Conv1d causal output length | $output_len == input_len with padding = kernel_size - 1$ |
+| 1 | invariant | Exhaustive partition | `len(layer_types) == L, each entry in {attention, linear}` |
+| 2 | invariant | Matrix associativity | `(A @ B) @ C == A @ (B @ C) within numerical tolerance` |
+| 3 | invariant | Head grouping exact | `n_v % n_k == 0 for valid configs` |
+| 4 | invariant | Residual shape preservation | `O_proj output dim == hidden_dim` |
+| 5 | invariant | Conv1d causal output length | `output_len == input_len with padding = kernel_size - 1` |
 | 6 | equivalence | SIMD linear attention equivalence |  |
 
 ## Falsification Tests

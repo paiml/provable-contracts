@@ -44,10 +44,10 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Encoder frozen | $encoder_params_before == encoder_params_after for each training step$ |
+| 1 | invariant | Encoder frozen | `encoder_params_before == encoder_params_after for each training step` |
 | 2 | invariant | Probability simplex | $\|sum(probs) - 1.0\| < eps AND probs_i > 0 for all i$ |
-| 3 | invariant | Embedding determinism | $embed(x) == embed(x) for same x and weights (bit-identical)$ |
-| 4 | bound | Trainable parameter count | $trainable_params == K * d_model + K (only head weights)$ |
+| 3 | invariant | Embedding determinism | `embed(x) == embed(x) for same x and weights (bit-identical)` |
+| 4 | bound | Trainable parameter count | `trainable_params == K * d_model + K (only head weights)` |
 
 ## Falsification Tests
 

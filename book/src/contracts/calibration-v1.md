@@ -62,9 +62,9 @@ $$
 
 ### platt_scaling
 
-$$
-\sigma(Af + B) where A,B = argmin -\sum[t_i \log(\sigma(Af_i+B)) + (1-t_i)\log(1-\sigma(Af_i+B))]
-$$
+```
+σ(Af + B) where A,B = argmin -Σ[t_i log(σ(Af_i+B)) + (1-t_i)log(1-σ(Af_i+B))]
+```
 
 **Domain:** $f \in \mathbb{R}ⁿ (logits), labels \in {0,1}ⁿ$
 
@@ -77,13 +77,13 @@ $$
 
 ### reliability_diagram
 
-$$
+```
 For each bin b: (mean_confidence(B_b), mean_accuracy(B_b))
-$$
+```
 
 **Domain:** $probabilities \in [0,1]ⁿ, labels \in {0,1}ⁿ, n_bins \geq 1$
 
-**Codomain:** $bins: Vec<(confidence \in [0,1], accuracy \in [0,1])>$
+**Codomain:** `bins: Vec<(confidence ∈ [0,1], accuracy ∈ [0,1])>`
 
 **Invariants:**
 

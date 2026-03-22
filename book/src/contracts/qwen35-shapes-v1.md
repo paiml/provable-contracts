@@ -37,9 +37,9 @@ $$
 
 ### o_projection_transpose
 
-$$
+```
 shape(o_proj) == transpose(shape(q_proj)) = [hidden, n_h * d_k]
-$$
+```
 
 **Domain:** $Standard transformer$
 
@@ -92,8 +92,8 @@ $$
 | 1 | invariant | Q projection shape | $n_h * d_k = 4096 for Qwen3.5-9B$ |
 | 2 | invariant | KV projection shape | $n_kv * d_k = 1024 for Qwen3.5-9B$ |
 | 3 | invariant | SwiGLU expansion ratio | $12288 / 4096 = 3.0$ |
-| 4 | invariant | O projection transpose | $shape(o_proj) == reverse(shape(q_proj))$ |
-| 5 | invariant | RoPE frequency vector length | $len(freqs) == d_k / 2$ |
+| 4 | invariant | O projection transpose | `shape(o_proj) == reverse(shape(q_proj))` |
+| 5 | invariant | RoPE frequency vector length | `len(freqs) == d_k / 2` |
 | 6 | monotonicity | RoPE frequency decreasing | $freq_i > freq_{i+1} for all i$ |
 | 7 | equivalence | SIMD shape equivalence |  |
 

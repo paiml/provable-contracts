@@ -18,7 +18,7 @@ $$
 group_size = n_h / n_kv (integer)
 $$
 
-**Domain:** $n_h, n_kv \in \mathbb{Z}^{+}, n_h \% n_kv == 0$
+**Domain:** `n_h, n_kv ∈ ℤ⁺, n_h % n_kv == 0`
 
 **Invariants:**
 
@@ -39,11 +39,11 @@ $$
 
 ### qkv_projection
 
-$$
-Q = x @ W_q^T, shape: [h] @ [n_h*d_k, h]^T \to [n_h*d_k]
-$$
+```
+Q = x @ W_q^T, shape: [h] @ [n_h*d_k, h]^T → [n_h*d_k]
+```
 
-**Domain:** $x \in \mathbb{R}^h, W_q \in \mathbb{R}^{n_h*d_k × h}$
+**Domain:** `x ∈ ℝ^h, W_q ∈ ℝ^{n_h*d_k × h}`
 
 **Invariants:**
 
@@ -82,10 +82,10 @@ $$
 | # | Type | Property | Formal |
 |---|------|----------|--------|
 | 1 | invariant | QKV shape compatibility | $Q_dim = n_h * d_k, K_dim = n_kv * d_k, V_dim = n_kv * d_k$ |
-| 2 | invariant | GQA grouping exact | $n_h \% n_kv == 0$ |
-| 3 | invariant | Residual shape preservation | $shape(x + sublayer(x)) == shape(x)$ |
+| 2 | invariant | GQA grouping exact | `n_h % n_kv == 0` |
+| 3 | invariant | Residual shape preservation | `shape(x + sublayer(x)) == shape(x)` |
 | 4 | invariant | SwiGLU intermediate shape | $gate/up: [h]\to[d_ff], down: [d_ff]\to[h]$ |
-| 5 | invariant | LM head output shape | $output_dim == vocab_size$ |
+| 5 | invariant | LM head output shape | `output_dim == vocab_size` |
 | 6 | equivalence | SIMD shape equivalence |  |
 
 ## Falsification Tests

@@ -82,11 +82,11 @@ $$
 
 ### model_parameter_count
 
-$$
+```
 P = V*d + L*(d_attn + d_ffn + d_norm) + d_final
-$$
+```
 
-**Domain:** $V=vocab, d=hidden, L=layers, d_attn/d_ffn/d_norm=per-layer params$
+**Domain:** `V=vocab, d=hidden, L=layers, d_attn/d_ffn/d_norm=per-layer params`
 
 **Invariants:**
 
@@ -96,9 +96,9 @@ $$
 
 ### throughput_model
 
-$$
+```
 tok/s = min(bandwidth / bytes_per_token, compute / flops_per_token)
-$$
+```
 
 **Domain:** $Roofline-limited throughput$
 

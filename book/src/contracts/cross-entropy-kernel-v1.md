@@ -26,9 +26,9 @@ graph LR
 
 ### cross_entropy
 
-$$
+```
 CE(targets, logits) = -sum(targets_i * log_softmax(logits)_i)
-$$
+```
 
 **Domain:** $targets in {0,1}^n with sum=1, logits in R^n, n >= 2$
 
@@ -37,14 +37,14 @@ $$
 **Invariants:**
 
 - $CE >= 0 (non-negativity)$
-- $CE(one_hot(k), logits) = -log_softmax(logits)_k$
+- `CE(one_hot(k), logits) = -log_softmax(logits)_k`
 - $CE(p, p_logits) = H(p) when p = softmax(p_logits)$
 
 ### log_softmax
 
-$$
-log_softmax(x)_i = x_i - max(x) - \log(sum(\exp(x_j - max(x))))
-$$
+```
+log_softmax(x)_i = x_i - max(x) - log(sum(exp(x_j - max(x))))
+```
 
 **Domain:** $x in R^n, n >= 1$
 
@@ -52,17 +52,17 @@ $$
 
 **Invariants:**
 
-- $log_softmax(x)_i <= 0 for all i$
+- `log_softmax(x)_i <= 0 for all i`
 - $\exp(log_softmax(x)) = softmax(x)$
-- $log_sum_exp trick preserves numerical stability$
+- `log_sum_exp trick preserves numerical stability`
 
 ## Proof Obligations
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
 | 1 | invariant | Non-negativity | $CE(targets, logits) >= 0$ |
-| 2 | bound | Log-softmax bounded above by zero | $log_softmax(x)_i <= 0 for all i$ |
-| 3 | equivalence | LogSoftmax + NLL equals CrossEntropy | $\|CE(t, x) - (-sum(t_i * log_softmax(x)_i))\| < eps$ |
+| 2 | bound | Log-softmax bounded above by zero | `log_softmax(x)_i <= 0 for all i` |
+| 3 | equivalence | LogSoftmax + NLL equals CrossEntropy | `\|CE(t, x) - (-sum(t_i * log_softmax(x)_i))\| < eps` |
 | 4 | bound | Finite output for finite inputs | $CE is finite when logits and targets are finite$ |
 | 5 | equivalence | SIMD matches scalar within ULP |  |
 

@@ -23,15 +23,15 @@ $$
 
 **Invariants:**
 
-- $Sign preserved: sign(f32) == sign(f16)$
+- `Sign preserved: sign(f32) == sign(f16)`
 - $Exponent bias shift: e_f32 = e_f16 + 112 (bias 127 - bias 15)$
 - $Mantissa zero-padded: lower 13 bits of f32 mantissa are 0$
 
 ### roundtrip
 
-$$
+```
 f32_to_f16(f16_to_f32(h)) == h
-$$
+```
 
 **Domain:** $h \in normal f16 values (exp \in [1, 30])$
 
@@ -46,9 +46,9 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | equivalence | Bias trick correctness | $f16_to_f32 via bit manipulation == f16_to_f32 via arithmetic conversion$ |
-| 2 | invariant | Roundtrip identity | $f32_to_f16(f16_to_f32(h)) == h for normal f16$ |
-| 3 | invariant | Sign preservation | $sign(f16_to_f32(h)) == sign(h)$ |
+| 1 | equivalence | Bias trick correctness | `f16_to_f32 via bit manipulation == f16_to_f32 via arithmetic conversion` |
+| 2 | invariant | Roundtrip identity | `f32_to_f16(f16_to_f32(h)) == h for normal f16` |
+| 3 | invariant | Sign preservation | `sign(f16_to_f32(h)) == sign(h)` |
 | 4 | equivalence | SIMD conversion equivalence |  |
 
 ## Falsification Tests

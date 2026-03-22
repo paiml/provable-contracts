@@ -39,11 +39,14 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Output is finite | $\|RMSNorm(x)_i\| < ∞ for all i when \varepsilon > 0$ |
-| 2 | invariant | Scale invariance | $RMSNorm(\alpha·x) = sign(\alpha) · RMSNorm(x) for \alpha \neq 0$ |
-| 3 | bound | RMS denominator is positive | $RMS(x) > 0 when \varepsilon > 0$ |
-| 4 | equivalence | SIMD matches scalar within ULP |  |
-| 5 | idempotency | Normalized RMS ≈ 1 | $RMS(RMSNorm(x)/\gamma) \approx 1 when \gamma = 1$ |
+| 1 | precondition | Input and weight vectors finite, same length, epsilon positive | $len(x) = len(\gamma) ∧ \varepsilon > 0 ∧ \forall i: isFinite(x_i) ∧ isFinite(\gamma_i)$ |
+| 2 | postcondition | Output same length as input, all elements finite | $len(out) = len(x) ∧ \forall i: isFinite(out_i)$ |
+| 3 | frame | Input vector, weight vector, and epsilon unchanged | $modifies(output) ∧ preserves(x, \gamma, \varepsilon)$ |
+| 4 | invariant | Output is finite | $\|RMSNorm(x)_i\| < ∞ for all i when \varepsilon > 0$ |
+| 5 | invariant | Scale invariance | $RMSNorm(\alpha·x) = sign(\alpha) · RMSNorm(x) for \alpha \neq 0$ |
+| 6 | bound | RMS denominator is positive | $RMS(x) > 0 when \varepsilon > 0$ |
+| 7 | equivalence | SIMD matches scalar within ULP |  |
+| 8 | idempotency | Normalized RMS ≈ 1 | $RMS(RMSNorm(x)/\gamma) \approx 1 when \gamma = 1$ |
 
 ## Kernel Phases
 
@@ -68,6 +71,9 @@ $$
 | FALSIFY-RN-003 | SIMD equivalence | \|rmsnorm_avx2(x) - rmsnorm_scalar(x)\| < 4 ULP | SIMD reduction ordering differs |
 | FALSIFY-RN-004 | Zero vector | RMSNorm(0) = 0 (output is zero vector) | NaN from 0/ε edge case |
 | FALSIFY-RN-005 | Unit γ normalized RMS | RMS(RMSNorm(x)/1) ≈ 1 for γ = [1,1,...,1] | Normalization not producing unit RMS |
+| FALSIFY-RN-006 | Precondition - mismatched lengths | rmsnorm(x, γ) panics or returns Err when len(x) ≠ len(γ) | Missing length validation |
+| FALSIFY-RN-007 | Frame condition | Input x and weight γ byte-identical before and after rmsnorm | Kernel corrupts input buffer |
+| FALSIFY-RN-008 | Postcondition - output length | len(rmsnorm(x, γ, ε)) = len(x) | Output buffer allocation mismatch |
 
 ## Kani Harnesses
 
@@ -84,5 +90,5 @@ Root mean square normalization quality gate
 
 **Checks:** finiteness, scale_invariance, simd_equivalence
 
-**Pass criteria:** All 5 falsification tests pass + Kani harnesses verify
+**Pass criteria:** All 8 falsification tests pass + Kani harnesses verify
 

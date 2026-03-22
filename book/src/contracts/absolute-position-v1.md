@@ -34,7 +34,7 @@ $$
 | 1 | invariant | Shape preservation | $output.shape = token_embed.shape = (seq_len, d)$ |
 | 2 | invariant | Additive identity | $pos_embed[t] = 0 implies output[t] = token_embed[t]$ |
 | 3 | bound | Max position bound | $t < max_position for all positions in the input$ |
-| 4 | bound | Finite output | $is_finite(token_embed[t]) and is_finite(pos_embed[t]) implies is_finite(output[t])$ |
+| 4 | bound | Finite output | `is_finite(token_embed[t]) and is_finite(pos_embed[t]) implies is_finite(output[t])` |
 
 ## Kernel Phases
 

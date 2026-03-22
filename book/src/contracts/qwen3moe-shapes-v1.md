@@ -43,7 +43,7 @@ $$
 expert_i: gate[moe_inter, hidden] * up[moe_inter, hidden] -> down[hidden, moe_inter]
 $$
 
-**Domain:** $128 experts, each with moe_intermediate_size=1536$
+**Domain:** `128 experts, each with moe_intermediate_size=1536`
 
 **Invariants:**
 
@@ -62,7 +62,7 @@ $$
 **Invariants:**
 
 - $Router selects top-8 of 128 experts per token$
-- $norm_topk_prob normalizes selected expert weights$
+- `norm_topk_prob normalizes selected expert weights`
 
 ### o_projection_transpose
 
@@ -75,7 +75,7 @@ $$
 **Invariants:**
 
 - $O projection is contracting: [4096, 8192]$
-- $shape(o_proj) == transpose(shape(q_proj))$
+- `shape(o_proj) == transpose(shape(q_proj))`
 
 ### q_projection_shape
 
@@ -87,7 +87,7 @@ $$
 
 **Invariants:**
 
-- $Q projection is expanding (8192 > 4096) due to n_h*d_k > hidden$
+- `Q projection is expanding (8192 > 4096) due to n_h*d_k > hidden`
 - $Q output dim = 8192$
 
 ### rope_frequency
@@ -126,7 +126,7 @@ $$
 | 3 | invariant | GQA divisibility | $n_h mod n_kv = 64 mod 4 = 0, ratio = 16$ |
 | 4 | invariant | MoE expert shape | $each expert: 3 * 4096 * 1536 params$ |
 | 5 | invariant | MoE router top-k | $router selects exactly 8 of 128 experts$ |
-| 6 | invariant | O projection transpose | $shape(o_proj) == reverse(shape(q_proj))$ |
+| 6 | invariant | O projection transpose | `shape(o_proj) == reverse(shape(q_proj))` |
 | 7 | monotonicity | RoPE frequency decreasing | $freq_i > freq_{i+1} for all i$ |
 | 8 | equivalence | SIMD shape equivalence |  |
 

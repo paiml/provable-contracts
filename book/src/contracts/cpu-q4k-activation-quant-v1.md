@@ -63,10 +63,10 @@ $$
 
 ### target_path
 
-$$
+```
 Target (Q8_K activations, integer-only inner loop):
-  Phase 1: quantize_row_q8_k(acts) \to q8_acts  (once per matmul)
-  Phase 2: dot(q4_row, q8_acts) = \sum_b vpdpbusd(q4[b], q8[b]) × scale[b]
+  Phase 1: quantize_row_q8_k(acts) → q8_acts  (once per matmul)
+  Phase 2: dot(q4_row, q8_acts) = Σ_b vpdpbusd(q4[b], q8[b]) × scale[b]
 
 Operations per super-block:
   - 4× _mm256_maddubs_epi16 (integer multiply-accumulate, 1 cycle throughput)
@@ -74,7 +74,7 @@ Operations per super-block:
   - 1× horizontal sum + scale application
   - Total: ~12 integer ops per super-block
 
-$$
+```
 
 **Domain:** $Q4_K × Q8_K integer arithmetic$
 
@@ -82,10 +82,10 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | equivalence | Q8_K quantization preserves dot product accuracy | $\|dot_q4k_f32(row, acts) - dot_q4k_q8k(row, quantize_q8k(acts))\| < \varepsilon$ |
+| 1 | equivalence | Q8_K quantization preserves dot product accuracy | `\|dot_q4k_f32(row, acts) - dot_q4k_q8k(row, quantize_q8k(acts))\| < ε` |
 | 2 | bound | CPU throughput reaches llama.cpp parity | $tok/s(apr CPU) \geq 0.85 × tok/s(llama.cpp CPU) on same hardware$ |
-| 3 | invariant | Phase 1 quantization is amortized | $quantize_row_q8_k called exactly once per matmul, not once per dot product$ |
-| 4 | equivalence | SIMD kernel equivalence | $avx2_q4k_q8k_dot(row, q8_acts) ≡ scalar_q4k_q8k_dot(row, q8_acts)$ |
+| 3 | invariant | Phase 1 quantization is amortized | `quantize_row_q8_k called exactly once per matmul, not once per dot product` |
+| 4 | equivalence | SIMD kernel equivalence | `avx2_q4k_q8k_dot(row, q8_acts) ≡ scalar_q4k_q8k_dot(row, q8_acts)` |
 
 ## Falsification Tests
 

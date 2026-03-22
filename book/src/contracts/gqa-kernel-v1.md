@@ -13,6 +13,7 @@ GQA kernel — grouped query attention with KV head broadcasting
 
 - [softmax-kernel-v1](softmax-kernel-v1.md)
 - [matmul-kernel-v1](matmul-kernel-v1.md)
+- [attention-kernel-v1](attention-kernel-v1.md)
 
 ## Dependency Graph
 
@@ -20,6 +21,7 @@ GQA kernel — grouped query attention with KV head broadcasting
 graph LR
     gqa_kernel_v1["gqa-kernel-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
     gqa_kernel_v1["gqa-kernel-v1"] --> matmul_kernel_v1["matmul-kernel-v1"]
+    gqa_kernel_v1["gqa-kernel-v1"] --> attention_kernel_v1["attention-kernel-v1"]
 ```
 
 ## Equations
@@ -30,7 +32,7 @@ $$
 GQA(Q, K, V) = softmax(Q_g * K_h^T / \sqrt{d_k}) * V_h
 $$
 
-**Domain:** $Q in R^{n x d}, K in R^{s x d}, V in R^{s x d_v}, num_heads > 0, num_kv_heads > 0$
+**Domain:** `Q in R^{n x d}, K in R^{s x d}, V in R^{s x d_v}, num_heads > 0, num_kv_heads > 0`
 
 **Codomain:** $GQA(Q, K, V) in R^{n x d}$
 
@@ -38,18 +40,19 @@ $$
 
 - $Attention weights sum to 1 per query position (normalization)$
 - $Output is convex combination of V rows per head$
-- $GQA(kv_heads=num_heads) = standard MHA$
-- $num_heads must be divisible by num_kv_heads$
+- `GQA(kv_heads=num_heads) = standard MHA`
+- `num_heads must be divisible by num_kv_heads`
 
 ## Proof Obligations
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Attention weight normalization | $\|sum(attn_weights[i, :]) - 1.0\| < eps per query position i$ |
-| 2 | equivalence | GQA degenerates to MHA | $GQA(kv_heads=num_heads) == MHA(Q, K, V) within tolerance$ |
-| 3 | bound | Output is convex combination of V | $min(V) <= output_i <= max(V) per head$ |
-| 4 | invariant | KV head broadcasting correctness | $Q heads [g*r..(g+1)*r] share K_g, V_g where r = num_heads/num_kv_heads$ |
-| 5 | equivalence | SIMD matches scalar within ULP |  |
+| 1 | subcontract | GQA refines standard MHA — accepts same Q/K/V shapes, produces compatible output | `pre(MHA) → pre(GQA) ∧ post(GQA) → post(MHA) when n_kv_heads = n_heads` |
+| 2 | invariant | Attention weight normalization | $\|sum(attn_weights[i, :]) - 1.0\| < eps per query position i$ |
+| 3 | equivalence | GQA degenerates to MHA | `GQA(kv_heads=num_heads) == MHA(Q, K, V) within tolerance` |
+| 4 | bound | Output is convex combination of V | $min(V) <= output_i <= max(V) per head$ |
+| 5 | invariant | KV head broadcasting correctness | `Q heads [g*r..(g+1)*r] share K_g, V_g where r = num_heads/num_kv_heads` |
+| 6 | equivalence | SIMD matches scalar within ULP |  |
 
 ## Kernel Phases
 

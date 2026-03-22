@@ -102,7 +102,7 @@ $$
 | # | Type | Property | Formal |
 |---|------|----------|--------|
 | 1 | bound | Decay in unit interval | $\alpha_t \in (0, 1) since sigmoid maps \mathbb{R} \to (0, 1)$ |
-| 2 | invariant | State shape preserved | $shape(state_{t+1}) == shape(state_t) == [k_dim, v_dim]$ |
+| 2 | invariant | State shape preserved | `shape(state_{t+1}) == shape(state_t) == [k_dim, v_dim]` |
 | 3 | invariant | Causal conv1d | $conv1d output at t depends only on t..t-k+1$ |
 | 4 | invariant | L2 norm preserves direction | $L2(q) / \|\|L2(q)\|\| \approx q / \|\|q\|\|$ |
 | 5 | equivalence | SIMD matches scalar within ULP |  |

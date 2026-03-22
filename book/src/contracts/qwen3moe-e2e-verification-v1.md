@@ -74,7 +74,7 @@ $$
 
 - $Linear in A (active params)$
 - $Attention FLOP component is O(seq_len * d)$
-- $GQA reduces KV computation by factor n_h/n_kv = 16$
+- `GQA reduces KV computation by factor n_h/n_kv = 16`
 - $MoE router adds O(d * N_experts) per token$
 
 ### memory_breakdown
@@ -94,9 +94,9 @@ $$
 
 ### model_parameter_count
 
-$$
+```
 P = V*d + L*(d_attn + d_router + N_experts*d_expert + d_norm) + d_final + V*d
-$$
+```
 
 **Domain:** $V=151936, d=4096, L=94, N_experts=128, moe_inter=1536$
 
@@ -108,13 +108,13 @@ $$
 - $Per-layer attention: Q(33.6M) + K(2.1M) + V(2.1M) + O(33.6M) = 71.3M$
 - $Per-layer MoE: 128 * 3 * 4096 * 1536 \approx 2415.9M$
 - $Per-layer router: 4096 * 128 = 524K$
-- $94 identical MoE decoder blocks (decoder_sparse_step=1)$
+- `94 identical MoE decoder blocks (decoder_sparse_step=1)`
 
 ### throughput_model
 
-$$
+```
 tok/s = min(bandwidth / bytes_per_token, compute / flops_per_token)
-$$
+```
 
 **Domain:** $Roofline-limited throughput for MoE$
 

@@ -29,6 +29,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 12 | [References](#12-references) | — |
 | 13 | [Escape-Proof Enforcement](#13-escape-proof-enforcement) | [sub/escape-proof-enforcement.md](sub/escape-proof-enforcement.md) |
 | 14 | [Lean 4 + Kani Composition](#14-lean-kani-composition) | [sub/lean-kani-composition.md](sub/lean-kani-composition.md) |
+| 15 | [Verification Extensions](#15-verification-extensions) | [sub/verification-extensions.md](sub/verification-extensions.md) |
 
 ---
 
@@ -606,3 +607,18 @@ build.rs codegen (debug_assert from preconditions) → #[contract] macro
 Zero runtime cost. Release binary identical to one built without contracts.
 Inspired by SPARK/Ada (proof discharge), Eiffel (contract inheritance),
 Dafny (verification conditions), Lean 4 (theorem proving).
+
+---
+
+## 15. Verification Extensions
+
+**Sub-spec**: [sub/verification-extensions.md](sub/verification-extensions.md)
+
+Six orthogonal verification approaches that complement the existing pipeline:
+
+1. **Type Invariants** — `Invariant` trait (stable) or `#[contracts::invariant]` (nightly) with Kani preservation harnesses
+2. **Coq Theorem Proving** — `pv coq` generates `.v` stubs; `coq-of-rust` bridges Rust → Coq for implementation-level proofs
+3. **Coverage-Guided Fuzzing** — `pv fuzz` generates libfuzzer targets gated on contract preconditions
+4. **Abstract Interpretation (MIRAI)** — `pv mirai` generates `precondition!`/`postcondition!` annotations for sound over-approximation
+5. **Refinement Types (Flux)** — `pv flux` generates `#[flux::refined_by]` annotations for compile-time shape verification via SMT
+6. **System-Level Model Checking (TLA+)** — `pv tla` generates TLA+ modules from the contract dependency DAG for pipeline-level safety/liveness

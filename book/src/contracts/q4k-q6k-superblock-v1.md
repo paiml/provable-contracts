@@ -30,7 +30,7 @@ $$
 x_i = d * s_j * q_i - dmin * m_j
 $$
 
-**Domain:** $d,dmin \in f16, s_j,m_j \in uint6, q_i \in uint4/uint6$
+**Domain:** `d,dmin ∈ f16, s_j,m_j ∈ uint6, q_i ∈ uint4/uint6`
 
 **Invariants:**
 

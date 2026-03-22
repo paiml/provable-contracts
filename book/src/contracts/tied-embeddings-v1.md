@@ -32,8 +32,8 @@ $$
 | # | Type | Property | Formal |
 |---|------|----------|--------|
 | 1 | bound | Output shape correctness | $logits.shape = (seq_len, vocab_size) for x.shape = (seq_len, d_model)$ |
-| 2 | equivalence | Equivalence to separate matmul | $tied_lm_head(x, W_embed) = matmul(x, W_separate^T) when W_separate = W_embed$ |
-| 3 | invariant | No extra parameters | $param_count(tied_lm_head) = 0 (reuses W_embed, adds no new weights)$ |
+| 2 | equivalence | Equivalence to separate matmul | `tied_lm_head(x, W_embed) = matmul(x, W_separate^T) when W_separate = W_embed` |
+| 3 | invariant | No extra parameters | `param_count(tied_lm_head) = 0 (reuses W_embed, adds no new weights)` |
 | 4 | bound | Finite output | $x finite and W_embed finite implies logits finite$ |
 
 ## Kernel Phases

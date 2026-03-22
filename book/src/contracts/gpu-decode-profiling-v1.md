@@ -19,9 +19,9 @@ GPU decode profiling contract — ensures BrickProfiler data reflects real GPU e
 
 ### brick_ordering
 
-$$
+```
 rank(bricks, by=per_call_avg) must respect kernel complexity
-$$
+```
 
 **Domain:** $All bricks with count > 0$
 
@@ -33,9 +33,9 @@ $$
 
 ### graph_disable
 
-$$
+```
 valid_profiling => NOT has_decode_graph
-$$
+```
 
 **Domain:** $Boolean$
 
@@ -47,9 +47,9 @@ $$
 
 ### report_completeness
 
-$$
+```
 len(JSON.brick_scores) == len(profiler.all_brick_stats())
-$$
+```
 
 **Domain:** $profiler has collected data$
 
@@ -57,8 +57,8 @@ $$
 
 - $Every profiler brick appears in JSON output — no silent truncation$
 - $Aggregate brick_score uses all N bricks — zip with fixed-length array forbidden$
-- $FalsificationSummary.total_points == len(JSON.brick_scores)$
-- $FalsificationSummary.passed + failed == total_points$
+- `FalsificationSummary.total_points == len(JSON.brick_scores)`
+- `FalsificationSummary.passed + failed == total_points`
 
 ### report_denominator
 
@@ -70,15 +70,15 @@ $$
 
 **Invariants:**
 
-- $per_decoded_tok_us(b) = (b.count * b.avg_us) / decoded_tokens$
+- `per_decoded_tok_us(b) = (b.count * b.avg_us) / decoded_tokens`
 - $profiler.total_tokens counts brick ELEMENTS — must NEVER be used as decoded token count$
 - $Dividing total_ns by profiler.total_tokens produces values 100-300x too small$
 
 ### report_fidelity
 
-$$
+```
 for each brick b: JSON.actual_us(b) == profiler.avg_us(b)
-$$
+```
 
 **Domain:** $All bricks emitted in JSON output, profiler.avg_us > 0$
 
@@ -87,9 +87,9 @@ $$
 **Invariants:**
 
 - $JSON actual_us must equal profiler per-call avg (not per-element, not per-token)$
-- $JSON score must equal compute_brick_score(actual_us, budget_us) — never hardcoded$
-- $JSON grade must equal score_to_grade(score) — never hardcoded$
-- $JSON gap_factor must equal actual_us / budget_us — never 1.0 unless actual == budget$
+- `JSON score must equal compute_brick_score(actual_us, budget_us) — never hardcoded`
+- `JSON grade must equal score_to_grade(score) — never hardcoded`
+- `JSON gap_factor must equal actual_us / budget_us — never 1.0 unless actual == budget`
 - $No BrickScore field may be a compile-time constant (score: 100, grade: 'R', gap: 1.0)$
 
 ### report_metadata
@@ -102,19 +102,19 @@ $$
 
 **Invariants:**
 
-- $rust_project_score: 0.0 unless computed by pmat in this run$
+- `rust_project_score: 0.0 unless computed by pmat in this run`
 - $tdg_score: 0.0 unless computed by pmat in this run$
-- $cuda_tdg_score: 0.0 unless computed by pmat in this run$
+- `cuda_tdg_score: 0.0 unless computed by pmat in this run`
 - $FalsificationSummary must derive from actual pass/fail counts, not constants$
 - $No hardcoded magic numbers: 137, 173.9, 98.1, 95.2, 976.0$
 
 ### sync_verification
 
-$$
+```
 is_immediate = (measured_brick_us / expected_brick_us) > 0.5
-$$
+```
 
-**Domain:** $measured_brick_us > 0, expected_brick_us = wall_clock_us / num_bricks_per_token$
+**Domain:** `measured_brick_us > 0, expected_brick_us = wall_clock_us / num_bricks_per_token`
 
 **Invariants:**
 
@@ -124,26 +124,26 @@ $$
 
 ### token_accounting
 
-$$
+```
 decoded_tokens = iterations * tokens_per_iteration
-$$
+```
 
-**Domain:** $iterations > 0, tokens_per_iteration > 0$
+**Domain:** `iterations > 0, tokens_per_iteration > 0`
 
 **Invariants:**
 
 - $profiler.total_tokens counts brick elements, NOT decoded tokens$
-- $calls_per_decoded_token(LmHead) = 1$
-- $calls_per_decoded_token(AttentionScore) = num_layers$
-- $calls_per_decoded_token(RmsNorm) = 2 * num_layers + 1$
+- `calls_per_decoded_token(LmHead) = 1`
+- `calls_per_decoded_token(AttentionScore) = num_layers`
+- `calls_per_decoded_token(RmsNorm) = 2 * num_layers + 1`
 
 ### wall_coverage
 
-$$
+```
 coverage = sum(brick_total_ns) / wall_clock_ns
-$$
+```
 
-**Domain:** $brick_total_ns >= 0, wall_clock_ns > 0$
+**Domain:** `brick_total_ns >= 0, wall_clock_ns > 0`
 
 **Codomain:** $coverage in [0, 1]$
 
@@ -157,20 +157,20 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Wall coverage threshold | $sum(brick_total_ns for all bricks) / wall_clock_ns >= 0.85$ |
-| 2 | invariant | Coverage upper bound | $sum(brick_total_ns) <= wall_clock_ns$ |
-| 3 | invariant | Graph disable for profiling | $profiling_enabled => !has_decode_graph$ |
-| 4 | invariant | LmHead call count | $lm_head.count == decoded_tokens$ |
-| 5 | invariant | Layer brick call count | $attention.count == decoded_tokens * num_layers$ |
-| 6 | monotonicity | Brick ordering respects complexity | $per_call_avg(LmHead) > per_call_avg(GateProjection) > per_call_avg(RmsNorm)$ |
-| 7 | invariant | Immediate sync detectable | $sync_mode == Immediate => LmHead.avg_us > 10 * RmsNorm.avg_us$ |
-| 8 | bound | Deferred sync ceiling | $sync_mode == Deferred => max(brick.avg_us for all bricks) < 200$ |
+| 1 | invariant | Wall coverage threshold | `sum(brick_total_ns for all bricks) / wall_clock_ns >= 0.85` |
+| 2 | invariant | Coverage upper bound | `sum(brick_total_ns) <= wall_clock_ns` |
+| 3 | invariant | Graph disable for profiling | `profiling_enabled => !has_decode_graph` |
+| 4 | invariant | LmHead call count | `lm_head.count == decoded_tokens` |
+| 5 | invariant | Layer brick call count | `attention.count == decoded_tokens * num_layers` |
+| 6 | monotonicity | Brick ordering respects complexity | `per_call_avg(LmHead) > per_call_avg(GateProjection) > per_call_avg(RmsNorm)` |
+| 7 | invariant | Immediate sync detectable | `sync_mode == Immediate => LmHead.avg_us > 10 * RmsNorm.avg_us` |
+| 8 | bound | Deferred sync ceiling | `sync_mode == Deferred => max(brick.avg_us for all bricks) < 200` |
 | 9 | invariant | Report fidelity — actual_us matches profiler | $abs(JSON.actual_us(b) - profiler.avg_us(b)) / profiler.avg_us(b) < 0.01$ |
-| 10 | invariant | Report fidelity — score computed not hardcoded | $JSON.score(b) == compute_brick_score(JSON.actual_us(b), JSON.budget_us(b))$ |
-| 11 | invariant | Report completeness — no truncation | $len(JSON.brick_scores) == len(profiler.all_brick_stats())$ |
-| 12 | invariant | Report completeness — falsification accounting | $JSON.falsification.total_points == len(JSON.brick_scores)$ |
-| 13 | invariant | Report denominator — decoded tokens from LmHead | $decoded_tokens == LmHead.count AND decoded_tokens != profiler.total_tokens$ |
-| 14 | invariant | Report metadata — no hardcoded nonzero constants | $rust_project_score == 0 AND tdg_score == 0 AND cuda_tdg_score == 0 (unless pmat computed)$ |
+| 10 | invariant | Report fidelity — score computed not hardcoded | `JSON.score(b) == compute_brick_score(JSON.actual_us(b), JSON.budget_us(b))` |
+| 11 | invariant | Report completeness — no truncation | `len(JSON.brick_scores) == len(profiler.all_brick_stats())` |
+| 12 | invariant | Report completeness — falsification accounting | `JSON.falsification.total_points == len(JSON.brick_scores)` |
+| 13 | invariant | Report denominator — decoded tokens from LmHead | `decoded_tokens == LmHead.count AND decoded_tokens != profiler.total_tokens` |
+| 14 | invariant | Report metadata — no hardcoded nonzero constants | `rust_project_score == 0 AND tdg_score == 0 AND cuda_tdg_score == 0 (unless pmat computed)` |
 
 ## Falsification Tests
 

@@ -18,6 +18,8 @@ KV cache equivalence, two-phase generation, and fused kernel correctness
 ```mermaid
 graph LR
     kv_cache_equivalence_v1["kv-cache-equivalence-v1"] --> kv_cache_sizing_v1["kv-cache-sizing-v1"]
+    continuous_batching_v1["continuous-batching-v1"] --> kv_cache_equivalence_v1["kv-cache-equivalence-v1"]
+    paged_kv_cache_v1["paged-kv-cache-v1"] --> kv_cache_equivalence_v1["kv-cache-equivalence-v1"]
 ```
 
 ## Equations
@@ -36,9 +38,9 @@ $$
 
 ### fused_kernel
 
-$$
+```
 |fused_q4k_matvec(W, x) - matmul(dequant(W), x)| < epsilon
-$$
+```
 
 **Domain:** $Quantized weight W, float input x$
 
@@ -61,9 +63,9 @@ $$
 
 ### prefill_incremental
 
-$$
+```
 |forward_with_cache(t_n) - forward_all([t_0..t_n])[n]| < epsilon
-$$
+```
 
 **Domain:** $Token sequence$
 
@@ -75,10 +77,12 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | equivalence | Prefill/incremental equivalence | $\|cached - full\| < 1e-5$ |
-| 2 | invariant | Page shape formula | $page_elements = block_size * n_kv * d_k$ |
-| 3 | equivalence | Batched/serial equivalence | $\|batched - serial\| < 1e-5$ |
-| 4 | equivalence | Fused kernel equivalence | $\|fused - decomposed\| < 1e-3$ |
+| 1 | frame | Cache append modifies only new entries; existing KV pairs unchanged | `modifies(cache[seq_len..seq_len+new_len]) ∧ preserves(cache[0..seq_len])` |
+| 2 | old_state | Cache length increases by exactly the number of new tokens | `new(cache.len) = old(cache.len) + new_token_count` |
+| 3 | equivalence | Prefill/incremental equivalence | $\|cached - full\| < 1e-5$ |
+| 4 | invariant | Page shape formula | $page_elements = block_size * n_kv * d_k$ |
+| 5 | equivalence | Batched/serial equivalence | $\|batched - serial\| < 1e-5$ |
+| 6 | equivalence | Fused kernel equivalence | $\|fused - decomposed\| < 1e-3$ |
 
 ## Falsification Tests
 
@@ -88,6 +92,8 @@ $$
 | FALSIFY-KCE-002 | Page shape | Formula matches actual page allocation | PagedAttention config error |
 | FALSIFY-KCE-003 | Batched/serial | Both prefill modes agree | Batching introduces numerical drift |
 | FALSIFY-KCE-004 | Fused kernel | Fused matches decomposed within quant tolerance | Fused kernel computation error |
+| FALSIFY-KCE-005 | Frame condition — existing entries preserved | After cache append, all entries at positions < old_len are byte-identical | Cache append overwrites existing entries (off-by-one in slot index) |
+| FALSIFY-KCE-006 | Old state — length growth | cache.len after append = cache.len before append + new_token_count | Cache append writes wrong number of entries |
 
 ## Kani Harnesses
 
@@ -103,5 +109,5 @@ Cache and kernel equivalence quality gate
 
 **Checks:** prefill_incremental, page_shape, batched_serial, fused_kernel
 
-**Pass criteria:** All 4 falsification tests pass
+**Pass criteria:** All 6 falsification tests pass
 

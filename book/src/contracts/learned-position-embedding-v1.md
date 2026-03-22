@@ -44,7 +44,7 @@ $$
 |---|------|----------|--------|
 | 1 | bound | Position in range | $0 <= pos < max_positions$ |
 | 2 | equivalence | Deterministic lookup | $PE(pos) = PE(pos) for same weights (idempotent)$ |
-| 3 | invariant | Output dimension | $PE(pos).len() == d_model for all valid pos$ |
+| 3 | invariant | Output dimension | `PE(pos).len() == d_model for all valid pos` |
 
 ## Falsification Tests
 

@@ -31,18 +31,18 @@ $$
 
 ### name_resolution
 
-$$
+```
 resolve(source, arch, role) =
-  first(name \in names(arch, role) : source.has_tensor(name))
-  ?? first(name \in fallback(role) : source.has_tensor(name))
-  ?? first(name \in names(arch, role) : source.has_tensor(strip_prefix("model.", name)))
+  first(name ∈ names(arch, role) : source.has_tensor(name))
+  ?? first(name ∈ fallback(role) : source.has_tensor(name))
+  ?? first(name ∈ names(arch, role) : source.has_tensor(strip_prefix("model.", name)))
   ?? Error("tensor not found")
 
-$$
+```
 
 **Domain:** $source: TensorSource, arch: str, role: GlobalTensorRole | LayerTensorRole$
 
-**Codomain:** $Result<Vec<f32>, Error>$
+**Codomain:** `Result<Vec<f32>, Error>`
 
 **Invariants:**
 

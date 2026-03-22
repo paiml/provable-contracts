@@ -84,6 +84,23 @@ pub fn math_to_latex(s: &str) -> String {
     out = out.replace('%', "\\%");
     out = out.replace('#', "\\#");
 
+    // Fix double superscripts: ^{+}^X → ^{+X}
+    // This arises when ⁺ (→ ^{+}) is followed by ^N in the source.
+    while let Some(pos) = out.find("^{+}^") {
+        let after = &out[pos + 5..]; // after "^{+}^"
+        // Collect the next superscript content: either {braced} or a single char
+        if after.starts_with('{') {
+            if let Some(close) = after.find('}') {
+                let inner = &after[1..close];
+                let replacement = format!("^{{+{inner}}}");
+                out = format!("{}{}{}", &out[..pos], replacement, &after[close + 1..]);
+            }
+        } else if let Some(ch) = after.chars().next() {
+            let replacement = format!("^{{+{ch}}}");
+            out = format!("{}{}{}", &out[..pos], replacement, &after[ch.len_utf8()..]);
+        }
+    }
+
     out
 }
 

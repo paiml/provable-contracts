@@ -30,9 +30,9 @@ graph LR
 
 ### classifier_weight_shape
 
-$$
+```
 weights.len() == hidden_size * num_classes
-$$
+```
 
 **Domain:** $hidden_size > 0, num_classes >= 2$
 
@@ -40,7 +40,7 @@ $$
 
 **Invariants:**
 
-- $data.len() == hidden_size * num_classes$
+- `data.len() == hidden_size * num_classes`
 - $hidden_size > 0$
 - $num_classes >= 2$
 - $No NaN or Inf values in data$
@@ -61,9 +61,9 @@ $$
 
 ### logit_shape
 
-$$
+```
 logits.len() == num_classes AND num_classes >= 2
-$$
+```
 
 **Domain:** $logits in R^n, num_classes in Z, num_classes >= 2$
 
@@ -71,7 +71,7 @@ $$
 
 **Invariants:**
 
-- $data.len() == num_classes$
+- `data.len() == num_classes`
 - $num_classes >= 2 (binary classification minimum)$
 - $No NaN or Inf values in data$
 
@@ -94,9 +94,9 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Logit shape matches num_classes | $ValidatedClassLogits::new(data, n) => data.len() == n$ |
-| 2 | invariant | Label index in bounds | $ValidatedSafetyLabel::new(idx, n) => idx < n$ |
-| 3 | invariant | Classifier weight shape | $ValidatedClassifierWeight::new(data, h, n) => data.len() == h*n$ |
+| 1 | invariant | Logit shape matches num_classes | `ValidatedClassLogits::new(data, n) => data.len() == n` |
+| 2 | invariant | Label index in bounds | `ValidatedSafetyLabel::new(idx, n) => idx < n` |
+| 3 | invariant | Classifier weight shape | `ValidatedClassifierWeight::new(data, h, n) => data.len() == h*n` |
 | 4 | bound | Softmax sum to one | $\|sum(softmax(logits)) - 1.0\| < 1e-5$ |
 | 5 | invariant | NaN/Inf rejection | $new() rejects data containing NaN or Inf$ |
 

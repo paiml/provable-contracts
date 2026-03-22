@@ -13,12 +13,12 @@ GGUF CPU inference must use KV cache for O(n) autoregressive generation
 
 ### autoregressive_generation
 
-$$
+```
 Without KV cache (current bug):
-  work(n) = \sum_{i=1}^{n} (i × L × M)  =  n(n+1)/2 × L × M  \in O(n²)
+  work(n) = Σ_{i=1}^{n} (i × L × M)  =  n(n+1)/2 × L × M  ∈ O(n²)
 
 With KV cache (correct):
-  work(n) = n × L × M  \in O(n)
+  work(n) = n × L × M  ∈ O(n)
 
 Where:
   n = number of generated tokens
@@ -26,9 +26,9 @@ Where:
   M = matmul cost per layer (fused_q4k_parallel_matvec)
 
 Speedup ratio = (n+1)/2
-  n=20 tokens \to 10.5x (matches measured 11x gap)
+  n=20 tokens → 10.5x (matches measured 11x gap)
 
-$$
+```
 
 **Domain:** $n \in ℕ, L \in ℕ, M > 0$
 
@@ -36,10 +36,10 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | equivalence | KV cache output matches no-cache output | $generate_with_cache(prompt, config) ≡ generate(prompt, config) for all prompts$ |
-| 2 | invariant | KV cache reduces work from O(n²) to O(n) | $forward_single_with_cache processes exactly 1 token per call$ |
+| 1 | equivalence | KV cache output matches no-cache output | `generate_with_cache(prompt, config) ≡ generate(prompt, config) for all prompts` |
+| 2 | invariant | KV cache reduces work from O(n²) to O(n) | `forward_single_with_cache processes exactly 1 token per call` |
 | 3 | bound | GGUF CPU throughput matches APR CPU | $tok/s(GGUF CPU) \geq 0.8 × tok/s(APR CPU)$ |
-| 4 | invariant | No regression in generation quality | $argmax(logits_cached) == argmax(logits_uncached) for greedy decoding$ |
+| 4 | invariant | No regression in generation quality | `argmax(logits_cached) == argmax(logits_uncached) for greedy decoding` |
 
 ## Falsification Tests
 

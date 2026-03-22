@@ -50,13 +50,13 @@ $$
 
 ### bias_correction
 
-$$
+```
 m_hat_t = m_t / (1 - beta1^t), v_hat_t = v_t / (1 - beta2^t)
-$$
+```
 
 **Domain:** $t >= 1, beta1 in (0,1), beta2 in (0,1)$
 
-**Codomain:** $m_hat_t in R^d, v_hat_t in R_>=0^d$
+**Codomain:** `m_hat_t in R^d, v_hat_t in R_>=0^d`
 
 **Invariants:**
 
@@ -65,9 +65,9 @@ $$
 
 ### weight_update
 
-$$
-theta_t = theta_{t-1} - lr * (m_hat_t / (\sqrt{v_hat_t} + eps) + lambda * theta_{t-1})
-$$
+```
+theta_t = theta_{t-1} - lr * (m_hat_t / (sqrt(v_hat_t) + eps) + lambda * theta_{t-1})
+```
 
 **Domain:** $theta in R^d, lr > 0, lambda >= 0, eps > 0$
 
@@ -82,11 +82,17 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Decoupled weight decay | $Weight decay term is lambda * theta, not lambda * theta in gradient$ |
-| 2 | bound | Second moment non-negative | $v_t >= 0 for all t and all dimensions$ |
-| 3 | bound | Bias-corrected moments finite | $m_hat_t and v_hat_t are finite when g_t is finite$ |
-| 4 | invariant | Bias correction factor | $1 / (1 - beta^t) > 1 for t >= 1 and beta in (0, 1)$ |
-| 5 | equivalence | SIMD matches scalar within ULP |  |
+| 1 | precondition | Hyperparameters valid, inputs finite | $lr > 0 ∧ \beta1 \in (0,1) ∧ \beta2 \in (0,1) ∧ \varepsilon > 0 ∧ \lambda \geq 0 ∧ t \geq 1 ∧ \forall i: isFinite(g_i)$ |
+| 2 | postcondition | Updated weights finite, moments non-negative | `∀i: isFinite(θ_i) ∧ v_t_i ≥ 0` |
+| 3 | frame | Only theta, m, v are modified; gradients and hyperparams unchanged | $modifies(\theta, m, v) ∧ preserves(g, lr, \beta1, \beta2, \varepsilon, \lambda)$ |
+| 4 | loop_invariant | Second moment remains non-negative across all training steps | `∀ step t, ∀i: v_t_i ≥ 0` |
+| 5 | loop_variant | Training step counter advances | $V = max_steps - t, V \geq 0, V strictly decreasing$ |
+| 6 | old_state | Moments are exponential moving averages of old values | $m_t = \beta1 · old(m_{t-1}) + (1-\beta1) · g_t$ |
+| 7 | invariant | Decoupled weight decay | $Weight decay term is lambda * theta, not lambda * theta in gradient$ |
+| 8 | bound | Second moment non-negative | $v_t >= 0 for all t and all dimensions$ |
+| 9 | bound | Bias-corrected moments finite | `m_hat_t and v_hat_t are finite when g_t is finite` |
+| 10 | invariant | Bias correction factor | $1 / (1 - beta^t) > 1 for t >= 1 and beta in (0, 1)$ |
+| 11 | equivalence | SIMD matches scalar within ULP |  |
 
 ## Kernel Phases
 
@@ -114,6 +120,11 @@ $$
 | FALSIFY-AW-004 | Update finiteness | theta_t is finite when g_t is finite and eps > 0 | Division by near-zero denominator when eps too small |
 | FALSIFY-AW-005 | SIMD equivalence | \|adamw_avx2(args) - adamw_scalar(args)\| < 8 ULP | SIMD sqrt or reciprocal approximation differs |
 | FALSIFY-AW-006 | Boundary - zero gradient | With g=0, only weight decay modifies theta | Bias correction or moment update incorrect at zero |
+| FALSIFY-AW-007 | Precondition - invalid hyperparameters | adamw_step with β1=0 or β2=1 or ε=0 returns Err or panics | Missing hyperparameter validation |
+| FALSIFY-AW-008 | Frame condition | Gradient vector unchanged after adamw_step | Optimizer modifies gradient buffer |
+| FALSIFY-AW-009 | Loop invariant - moment non-negativity across steps | v_t ≥ 0 after 1000 consecutive random gradient steps | EMA accumulation produces negative second moment |
+| FALSIFY-AW-010 | Old state - moment EMA | m_t = β1·old_m + (1-β1)·g_t verified at each step | First moment update formula incorrect |
+| FALSIFY-AW-011 | Loop variant - step counter | Training loop terminates when step reaches max_steps | Loop counter not advancing or off-by-one |
 
 ## Kani Harnesses
 
@@ -131,5 +142,5 @@ Decoupled weight decay optimizer quality gate
 
 **Checks:** decoupled_decay, moment_positivity, update_finiteness, simd_equivalence
 
-**Pass criteria:** All 6 falsification tests pass + Kani harnesses verify
+**Pass criteria:** All 11 falsification tests pass + Kani harnesses verify
 

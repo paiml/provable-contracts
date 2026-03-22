@@ -58,7 +58,7 @@ $$
 
 - $Linear in P$
 - $Attention FLOP component is O(seq_len * d)$
-- $GQA reduces KV computation by factor n_h/n_kv = 7$
+- `GQA reduces KV computation by factor n_h/n_kv = 7`
 
 ### memory_breakdown
 
@@ -77,11 +77,11 @@ $$
 
 ### model_parameter_count
 
-$$
+```
 P = V*d + L*(d_attn + d_ffn + d_norm) + d_final
-$$
+```
 
-**Domain:** $V=152064, d=3584, L=28, d_attn/d_ffn/d_norm=per-layer params$
+**Domain:** `V=152064, d=3584, L=28, d_attn/d_ffn/d_norm=per-layer params`
 
 **Invariants:**
 
@@ -93,9 +93,9 @@ $$
 
 ### throughput_model
 
-$$
+```
 tok/s = min(bandwidth / bytes_per_token, compute / flops_per_token)
-$$
+```
 
 **Domain:** $Roofline-limited throughput$
 

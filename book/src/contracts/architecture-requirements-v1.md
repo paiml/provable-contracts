@@ -22,20 +22,20 @@ Per-architecture tensor weight requirements — source of truth for required/opt
 
 ### constraint_matrix_exhaustiveness
 
-$$
-\forall (qk: bool, bias: bool): \exists! cell \in constraint_matrix such that
+```
+∀ (qk: bool, bias: bool): ∃! cell ∈ constraint_matrix such that
   cell.has_qk_norm = qk ∧ cell.has_bias = bias
 
-$$
+```
 
-**Domain:** $(has_qk_norm, has_bias) \in {true, false}^2$
+**Domain:** `(has_qk_norm, has_bias) ∈ {true, false}^2`
 
 **Codomain:** $Exactly one constraint cell$
 
 **Invariants:**
 
 - $Four cells cover all four (bool, bool) combinations$
-- $No two cells share the same (has_qk_norm, has_bias) pair$
+- `No two cells share the same (has_qk_norm, has_bias) pair`
 - $Adding a new boolean axis requires 2^(n+1) cells$
 
 ### role_mapping
@@ -57,10 +57,10 @@ $$
 
 ### weight_completeness
 
-$$
-required(arch) = base_roles ∪ (qk_norm_roles if has_qk_norm) ∪ (bias_roles if has_bias); complete(model, arch) = \forall role \in required(arch): role.ptr \neq 0 ∧ role.len > 0
+```
+required(arch) = base_roles ∪ (qk_norm_roles if has_qk_norm) ∪ (bias_roles if has_bias); complete(model, arch) = ∀ role ∈ required(arch): role.ptr ≠ 0 ∧ role.len > 0
 
-$$
+```
 
 **Domain:** $arch \in {llama, qwen2, qwen3, phi, mistral, gemma, whisper, ...}$
 
@@ -82,8 +82,8 @@ $$
 | 3 | invariant | Role count correctness | $\|base\| = 9 ∧ \|base ∪ qk\| = 11 ∧ \|base ∪ bias\| = 12 ∧ \|base ∪ qk ∪ bias\| = 14$ |
 | 4 | completeness | Weight completeness implies correct forward pass | $complete(model, arch) = true => forward(model) produces non-garbage output$ |
 | 5 | soundness | Incomplete weights detected before forward pass | $\exists role \in required(arch): role.len = 0 => error raised before any computation$ |
-| 6 | equivalence | YAML matches Rust implementation | $\forall arch: yaml.required(arch) = rust.required_roles(ArchConstraints::from_architecture(arch))$ |
-| 7 | monotonicity | Adding features only adds roles | $required(arch_with_feature) ⊇ required(arch_without_feature)$ |
+| 6 | equivalence | YAML matches Rust implementation | `∀ arch: yaml.required(arch) = rust.required_roles(ArchConstraints::from_architecture(arch))` |
+| 7 | monotonicity | Adding features only adds roles | `required(arch_with_feature) ⊇ required(arch_without_feature)` |
 
 ## Falsification Tests
 

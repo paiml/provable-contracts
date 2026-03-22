@@ -46,8 +46,8 @@ $$
 | # | Type | Property | Formal |
 |---|------|----------|--------|
 | 1 | bound | Output shape correctness | $y.shape = (batch, d_out) for x.shape = (batch, d_in), W.shape = (d_out, d_in)$ |
-| 2 | linearity | Homogeneity without bias | $linear_no_bias(alpha * x, W) = alpha * linear_no_bias(x, W)$ |
-| 3 | invariant | Bias additivity | $linear_forward(x, W, b) = linear_no_bias(x, W) + b (broadcast)$ |
+| 2 | linearity | Homogeneity without bias | `linear_no_bias(alpha * x, W) = alpha * linear_no_bias(x, W)` |
+| 3 | invariant | Bias additivity | `linear_forward(x, W, b) = linear_no_bias(x, W) + b (broadcast)` |
 | 4 | invariant | Zero input produces bias | $linear_forward(0, W, b) = b (broadcast to batch)$ |
 | 5 | equivalence | SIMD matches scalar within ULP |  |
 

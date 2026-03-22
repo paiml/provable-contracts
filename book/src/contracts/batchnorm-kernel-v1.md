@@ -12,9 +12,9 @@ BatchNorm kernel — batch normalization with running statistics
 
 ### batchnorm_eval
 
-$$
-BN_eval(x)_i = gamma_i * (x_i - mu_run) / \sqrt{sigma_run^2 + eps} + beta_i
-$$
+```
+BN_eval(x)_i = gamma_i * (x_i - mu_run) / sqrt(sigma_run^2 + eps) + beta_i
+```
 
 **Domain:** $x in R^C, mu_run in R^C, sigma_run in R_>=0^C$
 
@@ -63,7 +63,7 @@ $$
 | 1 | invariant | Training output standardized | $\|mean(BN(x)[:, c]) - beta_c\| < eps per channel c when gamma=1$ |
 | 2 | bound | Denominator strictly positive | $\sqrt{sigma_B^2 + eps} > 0 when eps > 0$ |
 | 3 | invariant | Running variance non-negative | $sigma_run >= 0 after any number of updates$ |
-| 4 | equivalence | Eval mode uses running stats | $BN_eval(x) uses mu_run/sigma_run, not batch statistics$ |
+| 4 | equivalence | Eval mode uses running stats | `BN_eval(x) uses mu_run/sigma_run, not batch statistics` |
 | 5 | equivalence | SIMD matches scalar within ULP |  |
 
 ## Kernel Phases

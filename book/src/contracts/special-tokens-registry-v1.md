@@ -24,9 +24,9 @@ $$
 
 **Invariants:**
 
-- $eos_token_id < vocab_size for every family$
-- $bos_token_id < vocab_size when not null$
-- $pad_token_id < vocab_size when not null$
+- `eos_token_id < vocab_size for every family`
+- `bos_token_id < vocab_size when not null`
+- `pad_token_id < vocab_size when not null`
 - $All additional_eos entries < vocab_size$
 - $Every architecture key maps to a valid family$
 
@@ -34,9 +34,9 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | bound | EOS token ID within vocab for every family | $\forall F: eos_token_id(F) < vocab_size(F)$ |
-| 2 | bound | BOS token ID within vocab when not null | $\forall F: bos_token_id(F) = null ∨ bos_token_id(F) < vocab_size(F)$ |
-| 3 | bound | PAD token ID within vocab when not null | $\forall F: pad_token_id(F) = null ∨ pad_token_id(F) < vocab_size(F)$ |
+| 1 | bound | EOS token ID within vocab for every family | `∀ F: eos_token_id(F) < vocab_size(F)` |
+| 2 | bound | BOS token ID within vocab when not null | `∀ F: bos_token_id(F) = null ∨ bos_token_id(F) < vocab_size(F)` |
+| 3 | bound | PAD token ID within vocab when not null | `∀ F: pad_token_id(F) = null ∨ pad_token_id(F) < vocab_size(F)` |
 | 4 | completeness | Architecture mapping covers all families | $\forall key \in architecture_mapping: mapping(key) \in families$ |
 
 ## Falsification Tests

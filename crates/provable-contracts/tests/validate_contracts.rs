@@ -254,8 +254,8 @@ fn contract_data_integrity() {
     }
 
     assert_eq!(total_eq, 395, "Total equations changed");
-    assert_eq!(total_ob, 632, "Total obligations changed");
-    assert_eq!(total_ft, 673, "Total falsification tests changed");
+    assert_eq!(total_ob, 630, "Total obligations changed");
+    assert_eq!(total_ft, 671, "Total falsification tests changed");
     assert_eq!(total_kani, 229, "Total Kani harnesses changed");
 
     assert!(

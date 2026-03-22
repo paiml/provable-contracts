@@ -56,7 +56,7 @@ $$
 |---|------|----------|--------|
 | 1 | invariant | TPOT computed from streaming data | $TPOT > 0 when server supports streaming and n_tokens > 1$ |
 | 2 | bound | TTFT separable from TPOT | $TTFT / latency < 0.95 when streaming (proves streaming is active)$ |
-| 3 | equivalence | Streaming output matches non-streaming | $concat(streaming_tokens) == non_streaming_response.content$ |
+| 3 | equivalence | Streaming output matches non-streaming | `concat(streaming_tokens) == non_streaming_response.content` |
 
 ## Falsification Tests
 

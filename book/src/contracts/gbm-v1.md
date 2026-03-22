@@ -29,9 +29,9 @@ $$
 
 ### negative_gradient
 
-$$
+```
 r_{im} = -(dL/dF)|_{F=F_{m-1}(x_i)}
-$$
+```
 
 **Domain:** $L: loss function, F_{m-1}: current ensemble, x_i in R^d$
 
@@ -39,8 +39,8 @@ $$
 
 **Invariants:**
 
-- $For squared loss: r_{im} = y_i - F_{m-1}(x_i)$
-- $For log-loss: r_{im} = y_i - sigma(F_{m-1}(x_i))$
+- `For squared loss: r_{im} = y_i - F_{m-1}(x_i)`
+- `For log-loss: r_{im} = y_i - sigma(F_{m-1}(x_i))`
 - $Pseudo-residuals are finite for bounded F and bounded data$
 
 ### predict
@@ -61,9 +61,9 @@ $$
 
 ### training_loss
 
-$$
+```
 L_m = (1/n) * sum L(y_i, F_m(x_i))
-$$
+```
 
 **Domain:** $training data, current ensemble F_m$
 

@@ -18,6 +18,7 @@ Scaled dot-product attention kernel
 graph LR
     attention_kernel_v1["attention-kernel-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
     bidirectional_attention_v1["bidirectional-attention-v1"] --> attention_kernel_v1["attention-kernel-v1"]
+    gqa_kernel_v1["gqa-kernel-v1"] --> attention_kernel_v1["attention-kernel-v1"]
     inference_pipeline_v1["inference-pipeline-v1"] --> attention_kernel_v1["attention-kernel-v1"]
     qwen35_hybrid_forward_v1["qwen35-hybrid-forward-v1"] --> attention_kernel_v1["attention-kernel-v1"]
     sliding_window_attention_v1["sliding-window-attention-v1"] --> attention_kernel_v1["attention-kernel-v1"]
@@ -45,7 +46,7 @@ $$
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | invariant | Attention weights normalize | $\sum_j softmax(QK^T/√d_k)_{ij} = 1 for all i$ |
+| 1 | invariant | Attention weights normalize | `Σ_j softmax(QK^T/√d_k)_{ij} = 1 for all i` |
 | 2 | bound | Attention weights in (0,1) | $0 < attn_{ij} < 1 for all i,j$ |
 | 3 | bound | Output bounded by V | $min(V) \leq output_{ij} \leq max(V)$ |
 | 4 | equivalence | SIMD matches scalar |  |

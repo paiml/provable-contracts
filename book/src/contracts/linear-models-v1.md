@@ -60,9 +60,9 @@ $$
 
 ### r_squared_training
 
-$$
+```
 R² = 1 - SS_res/SS_tot
-$$
+```
 
 **Domain:** $y, ŷ \in \mathbb{R}ⁿ$
 

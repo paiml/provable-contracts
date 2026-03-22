@@ -44,9 +44,9 @@ $$
 
 ### posterior_predictive
 
-$$
+```
 p(y_new|X_new, data) = integral p(y_new|X_new, w) * p(w|data) dw
-$$
+```
 
 **Domain:** $X_new in R^{m x d}, fitted BLR model$
 
@@ -78,7 +78,7 @@ $$
 | # | Type | Property | Formal |
 |---|------|----------|--------|
 | 1 | invariant | Posterior parameters positive | $alpha' > 0 and beta' > 0 after any conjugate update$ |
-| 2 | invariant | Predictions finite | $forall i: \|y_hat_i\| < infinity when \|\|X_i\|\| < infinity$ |
+| 2 | invariant | Predictions finite | `forall i: \|y_hat_i\| < infinity when \|\|X_i\|\| < infinity` |
 | 3 | invariant | Prediction deterministic | $predict(X) = predict(X) for same posterior$ |
 | 4 | invariant | Conjugacy preserved | $posterior family = prior family for conjugate models$ |
 

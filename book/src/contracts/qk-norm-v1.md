@@ -20,6 +20,7 @@ QK normalization — per-head RMSNorm applied to Q and K before attention
 graph LR
     qk_norm_v1["qk-norm-v1"] --> rmsnorm_kernel_v1["rmsnorm-kernel-v1"]
     attention_scaling_v1["attention-scaling-v1"] --> qk_norm_v1["qk-norm-v1"]
+    qk_norm_apr_loader_v1["qk-norm-apr-loader-v1"] --> qk_norm_v1["qk-norm-v1"]
     qwen35_hybrid_forward_v1["qwen35-hybrid-forward-v1"] --> qk_norm_v1["qk-norm-v1"]
 ```
 

@@ -47,7 +47,7 @@ $$
 
 **Invariants:**
 
-- $|q_dot - f32_dot| \leq quantization_error_bound$
+- `|q_dot - f32_dot| ≤ quantization_error_bound`
 
 ## Proof Obligations
 
