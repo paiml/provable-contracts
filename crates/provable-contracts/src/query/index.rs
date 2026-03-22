@@ -436,10 +436,7 @@ mod tests {
         let _deps = index.depended_by("softmax-kernel-v1");
         // At minimum attention contracts depend on softmax
         // depended_by should return without panicking
-        assert!(
-            !index.entries.is_empty(),
-            "Index should contain contracts"
-        );
+        assert!(!index.entries.is_empty(), "Index should contain contracts");
     }
 
     #[test]
