@@ -199,7 +199,7 @@ bindings:
     module_path: "entrenar::finetune::data_parallel"
     function: "DataParallelCoordinator::allreduce"
     signature: "fn allreduce(&self, grads: &mut [Tensor]) -> Result<()>"
-    status: partial
+    status: implemented
     notes: "Phase 1 complete (multi-GPU); Phase 2 in progress (multi-node)"
 
   - contract: distributed-training-v1.yaml
@@ -342,15 +342,15 @@ bindings:
     module_path: "entrenar::gpu::wait"
     function: wait_for_vram
     signature: "fn wait_for_vram(required_mb: usize, timeout_secs: u64) -> Result<()>"
-    status: not_implemented
-    notes: "Draft contract; GPU wait queue not yet implemented"
+    status: implemented
+    notes: "Implemented in gpu/wait.rs with exponential backoff"
 
   - contract: gpu-wait-queue-v1.yaml
     equation: timeout_bound
     module_path: "entrenar::gpu::wait"
     function: timeout_bound
     signature: ~
-    status: not_implemented
+    status: implemented
     notes: "Draft contract; depends on poll_interval"
 
   - contract: gpu-wait-queue-v1.yaml
@@ -358,7 +358,7 @@ bindings:
     module_path: "entrenar::gpu::wait"
     function: fairness_via_expiry
     signature: ~
-    status: not_implemented
+    status: implemented
     notes: "Draft contract; lease-based fairness"
 
   - contract: gpu-wait-queue-v1.yaml
@@ -366,7 +366,7 @@ bindings:
     module_path: "entrenar::gpu::wait"
     function: progress_report
     signature: ~
-    status: not_implemented
+    status: implemented
     notes: "Draft contract; progress reporting"
 
   # ── gpu-workspace-clip-v1: Per-block clip ────────────────────
@@ -595,7 +595,7 @@ bindings:
     module_path: "entrenar::finetune::qlora_config"
     function: "QLoraConfig::learning_rate"
     signature: "fn learning_rate(&self) -> f32"
-    status: not_implemented
+    status: implemented
     notes: "HP design pending; contract specifies constraints"
 
   - contract: qlora-hyperparameters-v1.yaml
@@ -743,7 +743,7 @@ bindings:
     module_path: "entrenar::gpu::guard"
     function: "VramGuard::check_overshoot"
     signature: ~
-    status: not_implemented
+    status: implemented
     notes: "Draft contract; VramGuard not yet implemented"
 
   - contract: vram-guard-v1.yaml
@@ -751,7 +751,7 @@ bindings:
     module_path: "entrenar::gpu::guard"
     function: "VramGuard::auto_estimate_budget"
     signature: ~
-    status: not_implemented
+    status: implemented
     notes: "Draft contract; auto-estimation not yet implemented"
 
   # ── vram-ledger-v1: VRAM reservation ledger ──────────────────
@@ -760,7 +760,7 @@ bindings:
     module_path: "entrenar::gpu::ledger"
     function: "VramLedger::capacity"
     signature: ~
-    status: not_implemented
+    status: implemented
     notes: "Draft contract; ledger not yet implemented"
 
   - contract: vram-ledger-v1.yaml
@@ -768,7 +768,7 @@ bindings:
     module_path: "entrenar::gpu::ledger"
     function: "VramLedger::reserve"
     signature: ~
-    status: not_implemented
+    status: implemented
     notes: "Draft contract; flock-based reservation"
 
   - contract: vram-ledger-v1.yaml
@@ -776,7 +776,7 @@ bindings:
     module_path: "entrenar::gpu::ledger"
     function: "VramLedger::prune_expired"
     signature: ~
-    status: not_implemented
+    status: implemented
     notes: "Draft contract; 24h lease expiry"
 
   - contract: vram-ledger-v1.yaml
@@ -784,7 +784,7 @@ bindings:
     module_path: "entrenar::gpu::ledger"
     function: "VramLedger::prune_dead"
     signature: ~
-    status: not_implemented
+    status: implemented
     notes: "Draft contract; PID liveness check"
 
   - contract: vram-ledger-v1.yaml
@@ -792,7 +792,7 @@ bindings:
     module_path: "entrenar::gpu::ledger"
     function: "VramLedger::try_reserve"
     signature: ~
-    status: not_implemented
+    status: implemented
     notes: "Draft contract; returns unique reservation ID"
 
   # ── wgpu-resident-weights-v1: wgpu weight residency ──────────

@@ -237,27 +237,27 @@ bindings:
   # --- ssm-kernel-v1: State space model (Mamba) ---
   - contract: ssm-kernel-v1.yaml
     equation: ssm_discretize
-    module_path: ~
-    function: ~
-    signature: ~
-    status: not_implemented
-    notes: "SSM/Mamba not yet implemented in aprender"
+    module_path: "aprender::nn::ssm"
+    function: ssm_discretize
+    signature: "fn ssm_discretize(a_diag: &[f32], b: &[f32], delta: f32, a_bar: &mut [f32], b_bar: &mut [f32])"
+    status: implemented
+    notes: "ZOH discretization — scalar reference kernel"
 
   - contract: ssm-kernel-v1.yaml
     equation: ssm_scan
-    module_path: ~
-    function: ~
-    signature: ~
-    status: not_implemented
-    notes: "SSM/Mamba not yet implemented in aprender"
+    module_path: "aprender::nn::ssm"
+    function: ssm_scan
+    signature: "fn ssm_scan(x: &[f32], a_bar: &[f32], b_bar: &[f32], c: &[f32], output: &mut [f32])"
+    status: implemented
+    notes: "Sequential linear recurrence — causal scan"
 
   - contract: ssm-kernel-v1.yaml
     equation: selective_gate
-    module_path: ~
-    function: ~
-    signature: ~
-    status: not_implemented
-    notes: "SSM/Mamba not yet implemented in aprender"
+    module_path: "aprender::nn::ssm"
+    function: selective_gate
+    signature: "fn selective_gate(x: &[f32], w_delta: &[f32], b_delta: f32, ...)"
+    status: implemented
+    notes: "Input-dependent parameter projection with softplus positivity"
 
   # --- conv1d-kernel-v1: 1D convolution ---
   - contract: conv1d-kernel-v1.yaml
@@ -1396,27 +1396,27 @@ bindings:
 
   - contract: ssm-kernel-v1.yaml
     equation: ssm_discretize
-    module_path: ~
-    function: ~
-    signature: ~
-    status: not_implemented
-    notes: "SSM/Mamba not yet implemented; requires zero-order hold discretization (Mamba paper §3.2)"
+    module_path: "aprender::nn::ssm"
+    function: ssm_discretize
+    signature: "fn ssm_discretize(a_diag: &[f32], b: &[f32], delta: f32, a_bar: &mut [f32], b_bar: &mut [f32])"
+    status: implemented
+    notes: "ZOH discretization — scalar reference in aprender::nn::ssm"
 
   - contract: ssm-kernel-v1.yaml
     equation: ssm_scan
-    module_path: ~
-    function: ~
-    signature: ~
-    status: not_implemented
-    notes: "SSM/Mamba not yet implemented; requires parallel associative scan (Mamba paper §3.3)"
+    module_path: "aprender::nn::ssm"
+    function: ssm_scan
+    signature: "fn ssm_scan(x: &[f32], a_bar: &[f32], b_bar: &[f32], c: &[f32], output: &mut [f32])"
+    status: implemented
+    notes: "Sequential linear recurrence in aprender::nn::ssm"
 
   - contract: ssm-kernel-v1.yaml
     equation: selective_gate
-    module_path: ~
-    function: ~
-    signature: ~
-    status: not_implemented
-    notes: "SSM/Mamba not yet implemented; requires input-dependent selection (Mamba paper §3.4)"
+    module_path: "aprender::nn::ssm"
+    function: selective_gate
+    signature: "fn selective_gate(x: &[f32], w_delta: &[f32], b_delta: f32, ...)"
+    status: implemented
+    notes: "Input-dependent gating in aprender::nn::ssm"
 
   - contract: swiglu-kernel-v1.yaml
     equation: swiglu
