@@ -16,6 +16,18 @@ equations:
       - "⟨RoPE(q, m), RoPE(k, n)⟩ depends only on q, k, m-n (relative position)"
 
 proof_obligations:
+  # Eiffel DbC
+  - type: precondition
+    property: "Input dimension is even, position non-negative"
+    formal: "d mod 2 = 0 ∧ d > 0 ∧ m ≥ 0 ∧ ∀i: isFinite(x_i)"
+  - type: postcondition
+    property: "Output has same dimension as input, all elements finite"
+    formal: "len(out) = len(x) ∧ ∀i: isFinite(out_i)"
+    requires: "ROPE-PRE-001"
+  - type: frame
+    property: "Input vector and position unchanged"
+    formal: "modifies(output) ∧ preserves(x, m, θ)"
+  # Original obligations
   - type: invariant
     property: "Norm preservation"
     formal: "|‖RoPE(x, m)‖ - ‖x‖| < ε"
@@ -68,6 +80,23 @@ falsification_tests:
     test: "direct test with m=0"
     if_fails: "Off-by-one in position indexing"
 
+  # DbC falsification tests
+  - id: FALSIFY-RP-005
+    rule: "Precondition - odd dimension"
+    prediction: "RoPE with odd d panics or returns Err"
+    test: "proptest: random odd-dimension vectors"
+    if_fails: "Missing even-dimension validation"
+  - id: FALSIFY-RP-006
+    rule: "Frame condition"
+    prediction: "Input vector unchanged after RoPE application"
+    test: "proptest: clone input, apply RoPE, assert clone == original"
+    if_fails: "RoPE modifies input buffer"
+  - id: FALSIFY-RP-007
+    rule: "Postcondition - output length"
+    prediction: "len(RoPE(x, m)) = len(x)"
+    test: "proptest: random inputs, verify length"
+    if_fails: "Output allocation mismatch"
+
 kani_harnesses:
   - id: KANI-RP-001
     obligation: RP-INV-001
@@ -82,7 +111,7 @@ qa_gate:
   checks:
     - "norm_preservation"
     - "relative_position"
-  pass_criteria: "All 4 falsification tests pass"
+  pass_criteria: "All 7 falsification tests pass"
   falsification: "Swap sin and cos in rotation matrix"
 
 simd_dispatch:

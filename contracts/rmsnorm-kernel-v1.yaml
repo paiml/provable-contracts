@@ -17,6 +17,18 @@ equations:
       - "RMSNorm(α·x) = sign(α) · RMSNorm(x) · γ (scale invariance)"
 
 proof_obligations:
+  # Eiffel DbC
+  - type: precondition
+    property: "Input and weight vectors finite, same length, epsilon positive"
+    formal: "len(x) = len(γ) ∧ ε > 0 ∧ ∀i: isFinite(x_i) ∧ isFinite(γ_i)"
+  - type: postcondition
+    property: "Output same length as input, all elements finite"
+    formal: "len(out) = len(x) ∧ ∀i: isFinite(out_i)"
+    requires: "RMS-PRE-001"
+  - type: frame
+    property: "Input vector, weight vector, and epsilon unchanged"
+    formal: "modifies(output) ∧ preserves(x, γ, ε)"
+  # Original obligations
   - type: invariant
     property: "Output is finite"
     formal: "|RMSNorm(x)_i| < ∞ for all i when ε > 0"
@@ -60,8 +72,8 @@ proof_obligations:
     applies_to: all
 
 verification_summary:
-  total_obligations: 5
-  l2_property_tested: 5
+  total_obligations: 8
+  l2_property_tested: 8
   l3_kani_proved: 2
   l4_lean_proved: 2
   l4_sorry_count: 0
@@ -122,6 +134,23 @@ falsification_tests:
     test: "proptest with unit weight vectors"
     if_fails: "Normalization not producing unit RMS"
 
+  # DbC falsification tests
+  - id: FALSIFY-RN-006
+    rule: "Precondition - mismatched lengths"
+    prediction: "rmsnorm(x, γ) panics or returns Err when len(x) ≠ len(γ)"
+    test: "proptest: random vectors of different lengths"
+    if_fails: "Missing length validation"
+  - id: FALSIFY-RN-007
+    rule: "Frame condition"
+    prediction: "Input x and weight γ byte-identical before and after rmsnorm"
+    test: "proptest: clone inputs, call rmsnorm, assert unchanged"
+    if_fails: "Kernel corrupts input buffer"
+  - id: FALSIFY-RN-008
+    rule: "Postcondition - output length"
+    prediction: "len(rmsnorm(x, γ, ε)) = len(x)"
+    test: "proptest: random valid inputs, verify output length"
+    if_fails: "Output buffer allocation mismatch"
+
 kani_harnesses:
   - id: KANI-RN-001
     obligation: RN-INV-001
@@ -144,5 +173,5 @@ qa_gate:
     - "finiteness"
     - "scale_invariance"
     - "simd_equivalence"
-  pass_criteria: "All 5 falsification tests pass + Kani harnesses verify"
+  pass_criteria: "All 8 falsification tests pass + Kani harnesses verify"
   falsification: "Set ε = 0 to trigger division by zero"

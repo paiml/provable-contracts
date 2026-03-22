@@ -249,8 +249,8 @@ mod status {
         let contract = parse_contract(&path).unwrap();
         assert!(contract.qa_gate.is_some());
         assert_eq!(contract.equations.len(), 1);
-        assert_eq!(contract.proof_obligations.len(), 6);
-        assert_eq!(contract.falsification_tests.len(), 6);
+        assert_eq!(contract.proof_obligations.len(), 9);
+        assert_eq!(contract.falsification_tests.len(), 9);
         assert_eq!(contract.kani_harnesses.len(), 3);
     }
 
@@ -300,8 +300,8 @@ mod audit {
         let contract = parse_contract(&path).unwrap();
         let report = audit_contract(&contract);
         assert_eq!(report.equations, 1);
-        assert_eq!(report.obligations, 6);
-        assert_eq!(report.falsification_tests, 6);
+        assert_eq!(report.obligations, 9);
+        assert_eq!(report.falsification_tests, 9);
         assert_eq!(report.kani_harnesses, 3);
     }
 

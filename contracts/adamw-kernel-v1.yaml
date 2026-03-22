@@ -65,8 +65,30 @@ equations:
       - "Weight decay applied AFTER Adam update (decoupled)"
       - "Update finite when inputs finite and eps > 0"
 
-# Proof obligations: decoupling, non-negativity, finiteness, and SIMD equivalence
+# Proof obligations: DbC + decoupling, non-negativity, finiteness, SIMD equivalence
 proof_obligations:
+  # Eiffel DbC
+  - type: precondition
+    property: "Hyperparameters valid, inputs finite"
+    formal: "lr > 0 ∧ β1 ∈ (0,1) ∧ β2 ∈ (0,1) ∧ ε > 0 ∧ λ ≥ 0 ∧ t ≥ 1 ∧ ∀i: isFinite(g_i)"
+  - type: postcondition
+    property: "Updated weights finite, moments non-negative"
+    formal: "∀i: isFinite(θ_i) ∧ v_t_i ≥ 0"
+    requires: "AW-PRE-001"
+  - type: frame
+    property: "Only theta, m, v are modified; gradients and hyperparams unchanged"
+    formal: "modifies(θ, m, v) ∧ preserves(g, lr, β1, β2, ε, λ)"
+  - type: loop_invariant
+    property: "Second moment remains non-negative across all training steps"
+    formal: "∀ step t, ∀i: v_t_i ≥ 0"
+    applies_to_phase: "moment_update"
+  - type: loop_variant
+    property: "Training step counter advances"
+    formal: "V = max_steps - t, V ≥ 0, V strictly decreasing"
+  - type: old_state
+    property: "Moments are exponential moving averages of old values"
+    formal: "m_t = β1 · old(m_{t-1}) + (1-β1) · g_t"
+  # Original obligations
   - type: invariant
     property: "Decoupled weight decay"
     formal: "Weight decay term is lambda * theta, not lambda * theta in gradient"
@@ -158,6 +180,33 @@ falsification_tests:
     test: "proptest with zero gradient, nonzero lambda"
     if_fails: "Bias correction or moment update incorrect at zero"
 
+  # DbC falsification tests
+  - id: FALSIFY-AW-007
+    rule: "Precondition - invalid hyperparameters"
+    prediction: "adamw_step with β1=0 or β2=1 or ε=0 returns Err or panics"
+    test: "proptest: boundary hyperparameter values"
+    if_fails: "Missing hyperparameter validation"
+  - id: FALSIFY-AW-008
+    rule: "Frame condition"
+    prediction: "Gradient vector unchanged after adamw_step"
+    test: "proptest: clone gradient before step, assert unchanged after"
+    if_fails: "Optimizer modifies gradient buffer"
+  - id: FALSIFY-AW-009
+    rule: "Loop invariant - moment non-negativity across steps"
+    prediction: "v_t ≥ 0 after 1000 consecutive random gradient steps"
+    test: "proptest: run 1000 steps with random gradients, check v at each"
+    if_fails: "EMA accumulation produces negative second moment"
+  - id: FALSIFY-AW-010
+    rule: "Old state - moment EMA"
+    prediction: "m_t = β1·old_m + (1-β1)·g_t verified at each step"
+    test: "proptest: compute m both ways, assert equality within ε"
+    if_fails: "First moment update formula incorrect"
+  - id: FALSIFY-AW-011
+    rule: "Loop variant - step counter"
+    prediction: "Training loop terminates when step reaches max_steps"
+    test: "Run training loop with max_steps=100, verify exactly 100 iterations"
+    if_fails: "Loop counter not advancing or off-by-one"
+
 # Kani bounded model checking harnesses for formal AdamW verification
 kani_harnesses:
   - id: KANI-AW-001
@@ -192,5 +241,5 @@ qa_gate:
     - "moment_positivity"
     - "update_finiteness"
     - "simd_equivalence"
-  pass_criteria: "All 6 falsification tests pass + Kani harnesses verify"
+  pass_criteria: "All 11 falsification tests pass + Kani harnesses verify"
   falsification: "Move weight decay inside gradient (L2 instead of decoupled)"
