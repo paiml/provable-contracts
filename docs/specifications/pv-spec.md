@@ -101,9 +101,17 @@ provable-contracts/
 |   |   +-- proof_status.rs         L1-L5 levels
 |   |   +-- kernels/                Reference implementations
 |   |   +-- error.rs                Error types
-|   +-- provable-contracts-cli/     CLI binary (`pv`)
+|   |   +-- explain.rs              Contract narrative walkthrough
+|   |   +-- extract.rs              PyTorch → YAML extraction
+|   |   +-- fuzz_gen.rs             Fuzz target generation
+|   |   +-- mirai_gen.rs            MIRAI annotation generation
+|   |   +-- flux_gen.rs             Flux refinement type generation
+|   |   +-- tla_gen.rs              TLA+ spec generation
+|   |   +-- coq_gen.rs              Coq theorem generation
+|   |   +-- invariant_gen.rs        Type invariant generation
+|   +-- provable-contracts-cli/     CLI binary (`pv`, 27 commands)
 |   +-- provable-contracts-macros/  Proc macro (#[contract])
-+-- contracts/                      YAML contract registry (165 contracts)
++-- contracts/                      YAML contract registry (118 contracts)
 +-- docs/specifications/            This spec
 ```
 
@@ -111,11 +119,11 @@ provable-contracts/
 
 | Metric | Value |
 |---|---|
-| YAML contracts | 165 |
-| Binding entries (4 crates) | 442 (aprender 301, entrenar 96, realizar 23, trueno 22) |
-| Proof obligation types | 12 |
-| CLI commands | 18 |
-| Consuming projects | 4 Level 3 (aprender, entrenar, realizar, trueno) + 1 YAML-only (bashrs) |
+| YAML contracts | 118 kernel + data registries |
+| Binding entries (7 crates) | 475 (aprender 301, entrenar 96, realizar 33, trueno 22, forjar 13, presentar 5, rmedia 5) |
+| Proof obligation types | 26 (19 property + 7 Eiffel DbC) |
+| CLI commands | 27 |
+| Consuming projects | 7 Level 3 binding registries + 1 YAML-only (bashrs) |
 | Stack LoC governed | ~900K Rust |
 
 ---
@@ -269,7 +277,7 @@ Kani verification strategies in **[sub/pipeline.md](sub/pipeline.md)**.
 
 ## 5. CLI Reference
 
-The `pv` binary provides 18 commands. Full reference with examples, flags, and output formats in
+The `pv` binary provides 27 commands. Full reference with examples, flags, and output formats in
 **[sub/cli.md](sub/cli.md)**.
 
 ### Command Summary
@@ -294,12 +302,21 @@ The `pv` binary provides 18 commands. Full reference with examples, flags, and o
 | `pv lint <dir>` | Quality gate: validate + audit + score + SARIF |
 | `pv score <target>` | Score contract or codebase (A-F grades) |
 | `pv query <terms>` | Semantic search with tier/class/graph filters |
+| `pv explain <contract>` | Narrative walkthrough of verification chain |
+| `pv extract-pytorch <target>` | Extract kernel equations from PyTorch source |
+| `pv codegen <dir>` | Generate `debug_assert!()` from preconditions |
+| `pv invariants <contract>` | Generate `Invariant` trait + Kani harnesses |
+| `pv coq <contract>` | Generate Coq theorem stubs |
+| `pv fuzz <contract>` | Generate libfuzzer fuzz targets |
+| `pv mirai <contract>` | Generate MIRAI annotations |
+| `pv flux <contract>` | Generate Flux refinement type annotations |
+| `pv tla <dir>` | Generate TLA+ specs from contract DAG |
 
 ---
 
 ## 6. Library API
 
-The `provable-contracts` crate exposes 17 public modules. Full API
+The `provable-contracts` crate exposes 30 public modules. Full API
 reference in **[sub/library.md](sub/library.md)**.
 
 ### Core API
@@ -486,7 +503,7 @@ const ALLOWED_GAPS: &[(&str, &str)] = &[
 
 ## 10. Kernel Contract Registry
 
-Full registry of all 165 contracts, organized by tier and kernel
+Full registry of all contracts, organized by tier and kernel
 equivalence class, in **[sub/registry.md](sub/registry.md)**.
 
 ### Kernel Equivalence Classes
@@ -525,8 +542,11 @@ KAIZEN workflow in **[sub/integration.md](sub/integration.md)**.
 |---|---|---|---|
 | aprender | 301 | AllImplemented | Level 3: `build.rs` + `#[contract]` proc macro |
 | entrenar | 96 | WarnOnGaps | Level 3: `build.rs` + `CONTRACT_*` env vars |
-| realizar | 23 | WarnOnGaps | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| realizar | 33 | WarnOnGaps | Level 3: `build.rs` + `CONTRACT_*` env vars |
 | trueno | 22 | AllImplemented | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| forjar | 13 | WarnOnGaps | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| presentar | 5 | WarnOnGaps | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| rmedia | 5 | WarnOnGaps | Level 3: `build.rs` + `CONTRACT_*` env vars |
 | bashrs | — | — | YAML-only: SSC encoder + classifier contracts |
 
 ### The KAIZEN Contract-First Workflow

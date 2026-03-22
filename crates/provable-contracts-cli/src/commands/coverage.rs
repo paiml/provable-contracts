@@ -7,6 +7,7 @@ use provable_contracts::schema::parse_contract;
 pub fn run(
     contract_dir: &Path,
     binding_path: Option<&Path>,
+    show_fuzz: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let binding = match binding_path {
         Some(bp) => Some(parse_binding(bp)?),
@@ -79,6 +80,22 @@ pub fn run(
     }
     println!();
     println!("Overall obligation coverage: {pct:.1}%");
+
+    if show_fuzz {
+        println!();
+        println!("Fuzz Coverage");
+        println!("=============");
+        println!(
+            "  Fuzz targets available: {}/{}",
+            report
+                .contracts
+                .iter()
+                .filter(|c| c.obligations > 0)
+                .count(),
+            report.contracts.len()
+        );
+        println!("  (Run `pv fuzz <contract>` to generate targets, then `cargo fuzz run`)");
+    }
 
     Ok(())
 }

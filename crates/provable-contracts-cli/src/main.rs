@@ -44,14 +44,18 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             commands::probar::run(&contract, binding.as_deref())
         }
         Commands::Status { contract } => commands::status::run(&contract),
-        Commands::Audit { contract, binding } => {
-            commands::audit::run(&contract, binding.as_deref())
-        }
+        Commands::Audit {
+            contract,
+            binding,
+            coq,
+            flux,
+        } => commands::audit::run(&contract, binding.as_deref(), coq, flux),
         Commands::Diff { old, new } => commands::diff::run(&old, &new),
         Commands::Coverage {
             contract_dir,
             binding,
-        } => commands::coverage::run(&contract_dir, binding.as_deref()),
+            fuzz,
+        } => commands::coverage::run(&contract_dir, binding.as_deref(), fuzz),
         Commands::Generate {
             contract,
             output,
@@ -125,15 +129,26 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             summary,
             top_gaps,
             weights,
-        } => commands::score::run(
-            &path,
-            binding.as_deref(),
-            &format,
-            min_score,
-            summary,
-            top_gaps,
-            weights.as_deref(),
-        ),
+            exit_code,
+        } => {
+            let result = commands::score::run(
+                &path,
+                binding.as_deref(),
+                &format,
+                min_score,
+                summary,
+                top_gaps,
+                weights.as_deref(),
+            );
+            if exit_code {
+                if let Err(ref e) = result {
+                    if e.to_string().contains("below threshold") {
+                        std::process::exit(1);
+                    }
+                }
+            }
+            result
+        }
         Commands::Query {
             query,
             contract_dir,
@@ -201,12 +216,12 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             format: &format,
             exit_code,
         }),
-        Commands::Invariants { contract } => commands::invariants::run(&contract),
-        Commands::Coq { contract } => commands::coq::run(&contract),
-        Commands::Fuzz { contract } => commands::fuzz::run(&contract),
-        Commands::Mirai { contract } => commands::mirai::run(&contract),
-        Commands::Flux { contract } => commands::flux::run(&contract),
-        Commands::Tla { contract_dir } => commands::tla::run(&contract_dir),
+        Commands::Invariants { contract, .. } => commands::invariants::run(&contract),
+        Commands::Coq { contract, .. } => commands::coq::run(&contract),
+        Commands::Fuzz { contract, .. } => commands::fuzz::run(&contract),
+        Commands::Mirai { contract, .. } => commands::mirai::run(&contract),
+        Commands::Flux { contract, .. } => commands::flux::run(&contract),
+        Commands::Tla { contract_dir, .. } => commands::tla::run(&contract_dir),
         Commands::Book {
             contract_dir,
             output,
