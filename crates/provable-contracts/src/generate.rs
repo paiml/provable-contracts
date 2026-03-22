@@ -7,7 +7,9 @@ use std::path::{Path, PathBuf};
 
 use crate::binding::BindingRegistry;
 use crate::book_gen::generate_contract_page;
+use crate::coq_gen::generate_coq_spec;
 use crate::graph::{DependencyGraph, dependency_graph};
+use crate::invariant_gen::generate_invariants;
 use crate::kani_gen::generate_kani_harnesses;
 use crate::probar_gen::{generate_probar_tests, generate_wired_probar_tests};
 use crate::scaffold::generate_trait;
@@ -41,6 +43,8 @@ pub enum ArtifactKind {
     ProbarTest,
     WiredProbarTest,
     BookPage,
+    Invariants,
+    CoqSpec,
 }
 
 impl std::fmt::Display for ArtifactKind {
@@ -51,6 +55,8 @@ impl std::fmt::Display for ArtifactKind {
             Self::ProbarTest => write!(f, "probar"),
             Self::WiredProbarTest => write!(f, "wired-probar"),
             Self::BookPage => write!(f, "book-page"),
+            Self::Invariants => write!(f, "invariants"),
+            Self::CoqSpec => write!(f, "coq"),
         }
     }
 }
@@ -123,6 +129,30 @@ pub fn generate_all(
         });
     }
 
+    // Type invariants (only if contract has type_invariants)
+    let invariant_content = generate_invariants(contract);
+    if !invariant_content.is_empty() {
+        let inv_path = output_dir.join(format!("{stem}_invariants.rs"));
+        std::fs::write(&inv_path, &invariant_content)?;
+        files.push(GeneratedFile {
+            relative_path: PathBuf::from(format!("{stem}_invariants.rs")),
+            absolute_path: inv_path,
+            kind: ArtifactKind::Invariants,
+            bytes: invariant_content.len(),
+        });
+    }
+
+    // Coq theorem stubs
+    let coq_content = generate_coq_spec(contract, stem);
+    let coq_path = output_dir.join(format!("{stem}.v"));
+    std::fs::write(&coq_path, &coq_content)?;
+    files.push(GeneratedFile {
+        relative_path: PathBuf::from(format!("{stem}.v")),
+        absolute_path: coq_path,
+        kind: ArtifactKind::CoqSpec,
+        bytes: coq_content.len(),
+    });
+
     // Book page (single-contract graph with just this contract)
     let single_graph = build_single_contract_graph(contract, stem);
     let book_content = generate_contract_page(contract, stem, &single_graph);
@@ -182,7 +212,7 @@ kani_harnesses:
         let c = minimal_contract();
         let dir = tempfile::tempdir().unwrap();
         let result = generate_all(&c, "test-kernel-v1", dir.path(), None).unwrap();
-        assert_eq!(result.files.len(), 4);
+        assert_eq!(result.files.len(), 5); // scaffold + kani + probar + coq + book
         assert!(
             result
                 .files
@@ -232,7 +262,7 @@ bindings:
         .unwrap();
         let dir = tempfile::tempdir().unwrap();
         let result = generate_all(&c, "test-kernel-v1", dir.path(), Some(&binding)).unwrap();
-        assert_eq!(result.files.len(), 5);
+        assert_eq!(result.files.len(), 6); // scaffold + kani + probar + wired + coq + book
         assert!(
             result
                 .files
@@ -247,7 +277,7 @@ bindings:
         let dir = tempfile::tempdir().unwrap();
         let sub = dir.path().join("deep").join("nested");
         let result = generate_all(&c, "test-kernel-v1", &sub, None).unwrap();
-        assert_eq!(result.files.len(), 4);
+        assert_eq!(result.files.len(), 5); // scaffold + kani + probar + coq + book
         assert!(sub.exists());
     }
 

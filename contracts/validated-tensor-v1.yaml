@@ -27,6 +27,20 @@ equations:
     invariants:
       - "No all-zero rows (every token has a non-trivial embedding)"
 
+type_invariants:
+  - name: no_nan
+    type: "ValidatedTensor"
+    predicate: "self.data.iter().all(|x| !x.is_nan())"
+    description: "No NaN values in tensor data"
+  - name: no_inf
+    type: "ValidatedTensor"
+    predicate: "self.data.iter().all(|x| x.is_finite())"
+    description: "No Inf values in tensor data"
+  - name: density_above_threshold
+    type: "ValidatedTensor"
+    predicate: "self.data.iter().filter(|&&x| x != 0.0).count() as f64 / self.data.len() as f64 > 0.055"
+    description: "Embedding density exceeds 5.5% (reject near-zero matrices)"
+
 proof_obligations:
   - type: bound
     property: "Density gate"

@@ -78,9 +78,48 @@ pub fn explain_contract(
     write_simd_dispatch(&mut out, contract);
     write_enforcement(&mut out, contract);
     write_qa_gate(&mut out, contract);
+    write_type_invariants(&mut out, contract);
+    write_coq_status(&mut out, contract);
     write_binding_status(&mut out, contract, stem, binding);
 
     out
+}
+
+fn write_type_invariants(out: &mut String, contract: &Contract) {
+    if contract.type_invariants.is_empty() {
+        return;
+    }
+    let _ = writeln!(out, "Type invariants (Meyer's class invariants)");
+    let _ = writeln!(
+        out,
+        "  These predicates must hold for every instance at every stable state."
+    );
+    let _ = writeln!(out);
+    for inv in &contract.type_invariants {
+        let desc = inv
+            .description
+            .as_deref()
+            .map(|d| format!(" — {d}"))
+            .unwrap_or_default();
+        let _ = writeln!(out, "  {} [{}]{}", inv.name, inv.type_name, desc);
+        let _ = writeln!(out, "    Predicate: {}", inv.predicate);
+        let _ = writeln!(out);
+    }
+}
+
+fn write_coq_status(out: &mut String, contract: &Contract) {
+    let Some(ref spec) = contract.coq_spec else {
+        return;
+    };
+    let _ = writeln!(out, "Coq verification ({})", spec.module);
+    if spec.obligations.is_empty() {
+        let _ = writeln!(out, "  No obligation links defined — stubs only");
+    } else {
+        for ob in &spec.obligations {
+            let _ = writeln!(out, "  {} → {} [{}]", ob.links_to, ob.coq_lemma, ob.status);
+        }
+    }
+    let _ = writeln!(out);
 }
 
 /// Generate a markdown explanation with headers and LaTeX math.
