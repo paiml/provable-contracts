@@ -83,6 +83,212 @@ pub fn explain_contract(
     out
 }
 
+/// Generate a markdown explanation with headers and LaTeX math.
+#[allow(clippy::too_many_lines)]
+pub fn explain_contract_markdown(
+    contract: &Contract,
+    stem: &str,
+    binding: Option<&BindingRegistry>,
+) -> String {
+    let mut out = String::with_capacity(4096);
+    let _ = writeln!(out, "# {stem}\n");
+    let _ = writeln!(
+        out,
+        "**Version:** {} | **Description:** {}\n",
+        contract.metadata.version, contract.metadata.description
+    );
+
+    if !contract.metadata.references.is_empty() {
+        let _ = writeln!(out, "## References\n");
+        for r in &contract.metadata.references {
+            let _ = writeln!(out, "- {r}");
+        }
+        let _ = writeln!(out);
+    }
+
+    if !contract.equations.is_empty() {
+        let _ = writeln!(out, "## Equations\n");
+        for (name, eq) in &contract.equations {
+            let _ = writeln!(out, "### {name}\n");
+            let latex = crate::latex::math_to_latex(&eq.formula);
+            let _ = writeln!(out, "$$\n{latex}\n$$\n");
+            if let Some(ref dom) = eq.domain {
+                let _ = writeln!(out, "**Domain:** ${}$\n", crate::latex::math_to_latex(dom));
+            }
+            if let Some(ref cod) = eq.codomain {
+                let _ = writeln!(
+                    out,
+                    "**Codomain:** ${}$\n",
+                    crate::latex::math_to_latex(cod)
+                );
+            }
+            if !eq.invariants.is_empty() {
+                let _ = writeln!(out, "**Invariants:**\n");
+                for inv in &eq.invariants {
+                    let _ = writeln!(out, "- ${}$", crate::latex::math_to_latex(inv));
+                }
+                let _ = writeln!(out);
+            }
+            if !eq.preconditions.is_empty() {
+                let _ = writeln!(out, "**Preconditions:**\n");
+                for pre in &eq.preconditions {
+                    let _ = writeln!(out, "- `{pre}`");
+                }
+                let _ = writeln!(out);
+            }
+            if !eq.postconditions.is_empty() {
+                let _ = writeln!(out, "**Postconditions:**\n");
+                for post in &eq.postconditions {
+                    let _ = writeln!(out, "- `{post}`");
+                }
+                let _ = writeln!(out);
+            }
+        }
+    }
+
+    if !contract.proof_obligations.is_empty() {
+        let _ = writeln!(out, "## Proof Obligations\n");
+        let _ = writeln!(out, "| # | Type | Property | Formal |");
+        let _ = writeln!(out, "|---|------|----------|--------|");
+        for (i, ob) in contract.proof_obligations.iter().enumerate() {
+            let formal = ob.formal.as_deref().unwrap_or("");
+            let _ = writeln!(
+                out,
+                "| {} | `{}` | {} | {} |",
+                i + 1,
+                ob.obligation_type,
+                ob.property,
+                formal
+            );
+        }
+        let _ = writeln!(out);
+    }
+
+    // Verification summary
+    let level = compute_proof_level(contract, None);
+    let _ = writeln!(out, "## Verification\n");
+    let _ = writeln!(out, "**Proof level:** {level}\n");
+    if let Some(ref vs) = contract.verification_summary {
+        let _ = writeln!(
+            out,
+            "- Lean: {}/{} proved",
+            vs.l4_lean_proved, vs.total_obligations
+        );
+    }
+    let _ = writeln!(out, "- Kani: {} harnesses", contract.kani_harnesses.len());
+    let _ = writeln!(
+        out,
+        "- Tests: {} falsification\n",
+        contract.falsification_tests.len()
+    );
+
+    // Binding status
+    if let Some(registry) = binding {
+        let contract_file = format!("{stem}.yaml");
+        let has_bindings = contract.equations.keys().any(|eq| {
+            registry
+                .bindings
+                .iter()
+                .any(|b| b.contract == contract_file && b.equation == *eq)
+        });
+        if has_bindings {
+            let _ = writeln!(out, "## Bindings ({})\n", registry.target_crate);
+            let _ = writeln!(out, "| Equation | Status |");
+            let _ = writeln!(out, "|----------|--------|");
+            for eq_name in contract.equations.keys() {
+                let status = registry
+                    .bindings
+                    .iter()
+                    .find(|b| b.contract == contract_file && b.equation == *eq_name)
+                    .map_or("missing", |b| match b.status {
+                        crate::binding::ImplStatus::Implemented => "implemented",
+                        crate::binding::ImplStatus::Partial => "partial",
+                        crate::binding::ImplStatus::NotImplemented => "not_implemented",
+                    });
+                let _ = writeln!(out, "| {eq_name} | {status} |");
+            }
+            let _ = writeln!(out);
+        }
+    }
+
+    out
+}
+
+/// Generate a JSON explanation of the contract.
+pub fn explain_contract_json(
+    contract: &Contract,
+    stem: &str,
+    binding: Option<&BindingRegistry>,
+) -> String {
+    let level = compute_proof_level(contract, None);
+
+    let obligations: Vec<serde_json::Value> = contract
+        .proof_obligations
+        .iter()
+        .map(|ob| {
+            let mut obj = serde_json::json!({
+                "type": ob.obligation_type.to_string(),
+                "property": ob.property,
+                "pattern": obligation_pattern(ob.obligation_type),
+            });
+            if let Some(ref f) = ob.formal {
+                obj["formal"] = serde_json::json!(f);
+            }
+            if let Some(t) = ob.tolerance {
+                obj["tolerance"] = serde_json::json!(t);
+            }
+            if let Some(ref lean) = ob.lean {
+                obj["lean"] = serde_json::json!({
+                    "theorem": lean.theorem,
+                    "status": lean.status.to_string(),
+                });
+            }
+            if let Some(ref req) = ob.requires {
+                obj["requires"] = serde_json::json!(req);
+            }
+            if let Some(ref phase) = ob.applies_to_phase {
+                obj["applies_to_phase"] = serde_json::json!(phase);
+            }
+            if let Some(ref parent) = ob.parent_contract {
+                obj["parent_contract"] = serde_json::json!(parent);
+            }
+            obj
+        })
+        .collect();
+
+    let json = serde_json::json!({
+        "stem": stem,
+        "version": contract.metadata.version,
+        "description": contract.metadata.description,
+        "references": contract.metadata.references,
+        "depends_on": contract.metadata.depends_on,
+        "equations": contract.equations.keys().collect::<Vec<_>>(),
+        "proof_level": level.to_string(),
+        "obligations": obligations,
+        "falsification_tests": contract.falsification_tests.len(),
+        "kani_harnesses": contract.kani_harnesses.len(),
+        "binding": binding.map(|b| {
+            let contract_file = format!("{stem}.yaml");
+            let statuses: std::collections::BTreeMap<String, String> = contract
+                .equations
+                .keys()
+                .map(|eq| {
+                    let status = b.bindings.iter()
+                        .find(|bi| bi.contract == contract_file && bi.equation == *eq)
+                        .map_or_else(|| "missing".to_string(), |bi| bi.status.to_string());
+                    (eq.clone(), status)
+                })
+                .collect();
+            serde_json::json!({
+                "target_crate": b.target_crate,
+                "equations": statuses,
+            })
+        }),
+    });
+
+    serde_json::to_string_pretty(&json).unwrap_or_else(|_| "{}".to_string())
+}
+
 fn write_header(out: &mut String, contract: &Contract, stem: &str) {
     let _ = writeln!(out, "{stem} (v{})", contract.metadata.version);
     let _ = writeln!(out, "{}", contract.metadata.description);
@@ -575,6 +781,66 @@ falsification_tests: []
         assert!(output.contains("Test.Module.test_theorem (proved)"));
         assert!(output.contains("Depends: dep1"));
         assert!(output.contains("Note: Proved over reals"));
+    }
+
+    #[test]
+    fn explain_markdown_has_headers_and_latex() {
+        let contract = parse_contract_str(
+            r#"
+metadata:
+  version: "1.0.0"
+  description: "Markdown test"
+  references: ["Paper A"]
+equations:
+  f:
+    formula: "σ(x)_i = exp(x_i)"
+    domain: "x ∈ ℝ^n"
+proof_obligations:
+  - type: invariant
+    property: "output finite"
+falsification_tests: []
+"#,
+        )
+        .unwrap();
+
+        let output = explain_contract_markdown(&contract, "test-v1", None);
+        assert!(output.contains("# test-v1"));
+        assert!(output.contains("## Equations"));
+        assert!(output.contains("$$"));
+        assert!(output.contains("\\sigma"));
+        assert!(output.contains("## Proof Obligations"));
+        assert!(output.contains("| # | Type |"));
+    }
+
+    #[test]
+    fn explain_json_is_valid() {
+        let contract = parse_contract_str(
+            r#"
+metadata:
+  version: "1.0.0"
+  description: "JSON test"
+  references: ["Paper"]
+equations:
+  f:
+    formula: "f(x) = x"
+proof_obligations:
+  - type: precondition
+    property: "input valid"
+  - type: postcondition
+    property: "output bounded"
+    requires: "PRE-001"
+falsification_tests: []
+"#,
+        )
+        .unwrap();
+
+        let output = explain_contract_json(&contract, "json-v1", None);
+        let parsed: serde_json::Value = serde_json::from_str(&output).unwrap();
+        assert_eq!(parsed["stem"], "json-v1");
+        assert_eq!(parsed["version"], "1.0.0");
+        assert_eq!(parsed["obligations"].as_array().unwrap().len(), 2);
+        assert_eq!(parsed["obligations"][0]["type"], "precondition");
+        assert_eq!(parsed["obligations"][1]["requires"], "PRE-001");
     }
 
     #[test]

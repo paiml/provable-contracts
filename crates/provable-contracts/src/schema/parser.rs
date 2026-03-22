@@ -188,6 +188,84 @@ falsification_tests: []
     }
 
     #[test]
+    fn parse_dbc_obligation_types() {
+        use crate::schema::types::ObligationType;
+
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "DbC type test"
+  depends_on: ["parent-v1"]
+equations:
+  f:
+    formula: "f(x) = x"
+proof_obligations:
+  - type: precondition
+    property: "input finite"
+    formal: "isFinite(x)"
+  - type: postcondition
+    property: "output bounded"
+    requires: "PRE-001"
+  - type: frame
+    property: "input unchanged"
+  - type: loop_invariant
+    property: "max tracks true max"
+    applies_to_phase: "find_max"
+  - type: loop_variant
+    property: "remaining decreasing"
+    applies_to_phase: "accumulate"
+  - type: old_state
+    property: "cache grows"
+  - type: subcontract
+    property: "refines parent"
+    parent_contract: "parent-v1"
+falsification_tests: []
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        assert_eq!(contract.proof_obligations.len(), 7);
+        assert_eq!(
+            contract.proof_obligations[0].obligation_type,
+            ObligationType::Precondition
+        );
+        assert_eq!(
+            contract.proof_obligations[1].obligation_type,
+            ObligationType::Postcondition
+        );
+        assert_eq!(
+            contract.proof_obligations[1].requires.as_deref(),
+            Some("PRE-001")
+        );
+        assert_eq!(
+            contract.proof_obligations[2].obligation_type,
+            ObligationType::Frame
+        );
+        assert_eq!(
+            contract.proof_obligations[3].obligation_type,
+            ObligationType::LoopInvariant
+        );
+        assert_eq!(
+            contract.proof_obligations[3].applies_to_phase.as_deref(),
+            Some("find_max")
+        );
+        assert_eq!(
+            contract.proof_obligations[4].obligation_type,
+            ObligationType::LoopVariant
+        );
+        assert_eq!(
+            contract.proof_obligations[5].obligation_type,
+            ObligationType::OldState
+        );
+        assert_eq!(
+            contract.proof_obligations[6].obligation_type,
+            ObligationType::Subcontract
+        );
+        assert_eq!(
+            contract.proof_obligations[6].parent_contract.as_deref(),
+            Some("parent-v1")
+        );
+    }
+
+    #[test]
     fn parse_kani_strategies() {
         use crate::schema::types::KaniStrategy;
 
