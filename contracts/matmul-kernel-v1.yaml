@@ -24,6 +24,19 @@ equations:
       - "|q_dot - f32_dot| ≤ quantization_error_bound"
 
 proof_obligations:
+  - type: precondition
+    property: "A, B finite and dimensions compatible"
+    formal: "all(is_finite(A)) and all(is_finite(B)) and cols(A) = rows(B)"
+    applies_to: all
+  - type: postcondition
+    property: "Output shape and all finite"
+    formal: "shape(output) = (rows(A), cols(B)) and all(is_finite(output))"
+    requires: "A, B finite and dimensions compatible"
+    applies_to: all
+  - type: frame
+    property: "A, B unchanged"
+    formal: "input matrices A and B are not modified by kernel"
+    applies_to: all
   - type: invariant
     property: "Output shape correctness"
     formal: "shape(A @ B) = (rows(A), cols(B))"
@@ -86,6 +99,22 @@ falsification_tests:
     test: "proptest with identity matrices"
     if_fails: "Off-by-one in loop bounds"
 
+  - id: FALSIFY-MM-006
+    rule: "Precondition violation"
+    prediction: "kernel panics or returns Err on invalid input"
+    test: "proptest with invalid inputs (NaN, Inf, incompatible dimensions)"
+    if_fails: "Missing input validation"
+  - id: FALSIFY-MM-007
+    rule: "Frame condition"
+    prediction: "A, B unchanged after kernel call"
+    test: "proptest: clone inputs, call kernel, assert unchanged"
+    if_fails: "Kernel corrupts input buffer"
+  - id: FALSIFY-MM-008
+    rule: "Postcondition - output shape"
+    prediction: "Output has shape (rows(A), cols(B))"
+    test: "proptest: random valid inputs, verify output shape"
+    if_fails: "Output allocation mismatch"
+
 kani_harnesses:
   - id: KANI-MM-001
     obligation: MM-INV-001
@@ -101,7 +130,7 @@ qa_gate:
     - "shape_correctness"
     - "numerical_accuracy"
     - "simd_equivalence"
-  pass_criteria: "All 5 falsification tests pass"
+  pass_criteria: "All 8 falsification tests pass"
   falsification: "Swap row/column indices in inner loop"
 
 simd_dispatch:

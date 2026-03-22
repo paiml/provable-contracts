@@ -18,6 +18,19 @@ equations:
       - "Output rows are convex combinations of V rows"
 
 proof_obligations:
+  - type: precondition
+    property: "Q, K, V finite and compatible shapes"
+    formal: "all(is_finite(Q)) and all(is_finite(K)) and all(is_finite(V)) and cols(Q) = cols(K) and rows(K) = rows(V)"
+    applies_to: all
+  - type: postcondition
+    property: "Output shape and attention weights normalized"
+    formal: "shape(output) = (rows(Q), cols(V)) and Σ_j attn_{ij} = 1 for all i"
+    requires: "Q, K, V finite and compatible shapes"
+    applies_to: all
+  - type: frame
+    property: "Q, K, V unchanged"
+    formal: "input matrices Q, K, V are not modified by kernel"
+    applies_to: all
   - type: invariant
     property: "Attention weights normalize"
     formal: "Σ_j softmax(QK^T/√d_k)_{ij} = 1 for all i"
@@ -82,6 +95,22 @@ falsification_tests:
     test: "proptest: verify 0 < attn_ij < 1 for random Q,K"
     if_fails: "Softmax output outside (0,1) range"
 
+  - id: FALSIFY-ATT-006
+    rule: "Precondition violation"
+    prediction: "kernel panics or returns Err on invalid input"
+    test: "proptest with invalid inputs (NaN, Inf, incompatible shapes)"
+    if_fails: "Missing input validation"
+  - id: FALSIFY-ATT-007
+    rule: "Frame condition"
+    prediction: "Q, K, V unchanged after kernel call"
+    test: "proptest: clone inputs, call kernel, assert unchanged"
+    if_fails: "Kernel corrupts input buffer"
+  - id: FALSIFY-ATT-008
+    rule: "Postcondition - output shape"
+    prediction: "Output has shape (rows(Q), cols(V))"
+    test: "proptest: random valid inputs, verify output shape"
+    if_fails: "Output allocation mismatch"
+
 kani_harnesses:
   - id: KANI-ATT-001
     obligation: ATT-INV-001
@@ -97,7 +126,7 @@ qa_gate:
     - "weight_normalization"
     - "output_convexity"
     - "scaling_factor"
-  pass_criteria: "All 5 falsification tests pass"
+  pass_criteria: "All 8 falsification tests pass"
   falsification: "Use 1/d_k instead of 1/√d_k for scaling"
 
 simd_dispatch:

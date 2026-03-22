@@ -25,6 +25,19 @@ equations:
       - "sigma^2 = 0 iff x is constant"
 
 proof_obligations:
+  - type: precondition
+    property: "Inputs finite and compatible"
+    formal: "all(is_finite(x_i)) and all(is_finite(gamma_i)) and len(x) = len(gamma) and eps > 0"
+    applies_to: all
+  - type: postcondition
+    property: "Output same length, all finite, centered"
+    formal: "len(output) = len(input) and all(is_finite(output_i)) and |mean(output)| < eps when gamma=1, beta=0"
+    requires: "Inputs finite and compatible"
+    applies_to: all
+  - type: frame
+    property: "Input, weight, bias unchanged"
+    formal: "input x, weight gamma, and bias beta are not modified by kernel"
+    applies_to: all
   - type: invariant
     property: "Centering"
     formal: "|mean(LN(x)) - mean(beta)| < eps when gamma = 1"
@@ -75,7 +88,7 @@ proof_obligations:
       notes: "mean(x+c) = mean(x)+c, so centered values unchanged, variance unchanged"
 
 verification_summary:
-  total_obligations: 6
+  total_obligations: 9
   l2_property_tested: 6
   l3_kani_proved: 3
   l4_lean_proved: 2
@@ -150,6 +163,22 @@ falsification_tests:
     test: "proptest with constant vectors"
     if_fails: "Division by near-zero variance not handled"
 
+  - id: FALSIFY-LN-008
+    rule: "Precondition violation"
+    prediction: "kernel panics or returns Err on invalid input"
+    test: "proptest with invalid inputs (NaN, Inf, mismatched lengths, eps <= 0)"
+    if_fails: "Missing input validation"
+  - id: FALSIFY-LN-009
+    rule: "Frame condition"
+    prediction: "Input, weight, bias unchanged after kernel call"
+    test: "proptest: clone inputs, call kernel, assert unchanged"
+    if_fails: "Kernel corrupts input buffer"
+  - id: FALSIFY-LN-010
+    rule: "Postcondition - output shape"
+    prediction: "Output has same length as input"
+    test: "proptest: random valid inputs, verify output length"
+    if_fails: "Output allocation mismatch"
+
 kani_harnesses:
   - id: KANI-LN-001
     obligation: LN-INV-001
@@ -183,5 +212,5 @@ qa_gate:
     - "denominator_safety"
     - "simd_equivalence"
     - "idempotency"
-  pass_criteria: "All 7 falsification tests pass + Kani harnesses verify"
+  pass_criteria: "All 10 falsification tests pass + Kani harnesses verify"
   falsification: "Remove epsilon from denominator sqrt"

@@ -47,6 +47,19 @@ equations:
 
 # Proof obligations: formal properties that must hold for any correct implementation
 proof_obligations:
+  - type: precondition
+    property: "Input finite"
+    formal: "all(is_finite(x_i)) for input vector x"
+    applies_to: all
+  - type: postcondition
+    property: "Output same length and all finite"
+    formal: "len(output) = len(input) and all(is_finite(output_i))"
+    requires: "Input finite"
+    applies_to: all
+  - type: frame
+    property: "Input unchanged"
+    formal: "input vector x is not modified by kernel"
+    applies_to: all
   - type: bound
     property: "Non-negativity for positive inputs"
     formal: "x > 0 implies GELU(x) >= 0"
@@ -137,6 +150,22 @@ falsification_tests:
     test: "proptest with large magnitude x"
     if_fails: "Numerical overflow in exp or tanh for extreme inputs"
 
+  - id: FALSIFY-GE-007
+    rule: "Precondition violation"
+    prediction: "kernel panics or returns Err on invalid input"
+    test: "proptest with invalid inputs (NaN, Inf)"
+    if_fails: "Missing input validation"
+  - id: FALSIFY-GE-008
+    rule: "Frame condition"
+    prediction: "Input unchanged after kernel call"
+    test: "proptest: clone input, call kernel, assert unchanged"
+    if_fails: "Kernel corrupts input buffer"
+  - id: FALSIFY-GE-009
+    rule: "Postcondition - output shape"
+    prediction: "Output has same length as input"
+    test: "proptest: random valid inputs, verify output length"
+    if_fails: "Output allocation mismatch"
+
 # Kani bounded model checking harnesses for formal verification
 kani_harnesses:
   - id: KANI-GE-001
@@ -165,5 +194,5 @@ qa_gate:
     - "odd_symmetry"
     - "simd_equivalence"
     - "approximation_accuracy"
-  pass_criteria: "All 6 falsification tests pass + Kani harnesses verify"
+  pass_criteria: "All 9 falsification tests pass + Kani harnesses verify"
   falsification: "Replace CDF with constant 0.5 to reduce GELU to 0.5*x"

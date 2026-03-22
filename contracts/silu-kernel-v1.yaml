@@ -26,6 +26,19 @@ equations:
       - "sigmoid(-x) = 1 - sigmoid(x) (symmetry)"
 
 proof_obligations:
+  - type: precondition
+    property: "Input finite"
+    formal: "all(is_finite(x_i)) for input vector x"
+    applies_to: all
+  - type: postcondition
+    property: "Output same length and correct"
+    formal: "len(output) = len(input) and output_i = x_i * sigmoid(x_i)"
+    requires: "Input finite"
+    applies_to: all
+  - type: frame
+    property: "Input unchanged"
+    formal: "input vector x is not modified by kernel"
+    applies_to: all
   - type: invariant
     property: "Zero preservation"
     formal: "SiLU(0) = 0"
@@ -55,7 +68,7 @@ proof_obligations:
     applies_to: all
 
 verification_summary:
-  total_obligations: 5
+  total_obligations: 8
   l2_property_tested: 5
   l3_kani_proved: 3
   l4_lean_proved: 1
@@ -119,6 +132,22 @@ falsification_tests:
     test: "proptest with large negative x"
     if_fails: "exp overflow for large negative input"
 
+  - id: FALSIFY-SI-007
+    rule: "Precondition violation"
+    prediction: "kernel panics or returns Err on invalid input"
+    test: "proptest with invalid inputs (NaN, Inf)"
+    if_fails: "Missing input validation"
+  - id: FALSIFY-SI-008
+    rule: "Frame condition"
+    prediction: "Input unchanged after kernel call"
+    test: "proptest: clone input, call kernel, assert unchanged"
+    if_fails: "Kernel corrupts input buffer"
+  - id: FALSIFY-SI-009
+    rule: "Postcondition - output shape"
+    prediction: "Output has same length as input"
+    test: "proptest: random valid inputs, verify output length"
+    if_fails: "Output allocation mismatch"
+
 kani_harnesses:
   - id: KANI-SI-001
     obligation: SI-INV-001
@@ -151,5 +180,5 @@ qa_gate:
     - "lower_bound"
     - "positive_monotonicity"
     - "simd_equivalence"
-  pass_criteria: "All 6 falsification tests pass + Kani harnesses verify"
+  pass_criteria: "All 9 falsification tests pass + Kani harnesses verify"
   falsification: "Replace sigmoid with constant 0.5"

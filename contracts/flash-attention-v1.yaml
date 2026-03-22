@@ -6,7 +6,7 @@ metadata:
   references:
     - "Dao et al. (2022) FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness"
     - "Dao (2023) FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning"
-  depends_on: ["softmax-kernel-v1"]
+  depends_on: ["softmax-kernel-v1", "attention-kernel-v1"]
 
 equations:
   flash_attention:
@@ -19,6 +19,23 @@ equations:
       - "Online softmax: running max and sum across tiles"
 
 proof_obligations:
+  - type: precondition
+    property: "Q, K, V finite and block size positive"
+    formal: "all(is_finite(Q)) and all(is_finite(K)) and all(is_finite(V)) and block_size > 0"
+    applies_to: all
+  - type: postcondition
+    property: "Output matches standard attention within tolerance"
+    formal: "|FlashAttn(Q,K,V) - StdAttn(Q,K,V)| < ε for all elements"
+    requires: "Q, K, V finite and block size positive"
+    applies_to: all
+  - type: frame
+    property: "Q, K, V unchanged"
+    formal: "input matrices Q, K, V are not modified by kernel"
+    applies_to: all
+  - type: subcontract
+    property: "FlashAttention refines standard attention"
+    formal: "pre(Attention) → pre(FlashAttention) ∧ post(FlashAttention) → post(Attention)"
+    parent_contract: "attention-kernel-v1"
   - type: equivalence
     property: "Matches standard attention"
     formal: "|FlashAttn(Q,K,V) - StdAttn(Q,K,V)| < ε"
@@ -36,6 +53,11 @@ proof_obligations:
     property: "Attention weight conservation"
     formal: "Each output row is weighted mean of V rows"
     applies_to: all
+
+subcontract:
+  parent_contract: "attention-kernel-v1"
+  relationship: "FlashAttention is an IO-aware tiled implementation of standard attention"
+  equivalence: "|FlashAttn(Q,K,V) - StdAttn(Q,K,V)| < ε"
 
 kernel_structure:
   phases:
@@ -74,6 +96,28 @@ falsification_tests:
     test: "direct test with small inputs"
     if_fails: "Edge case in tile loop bounds"
 
+  - id: FALSIFY-FA-005
+    rule: "Precondition violation"
+    prediction: "kernel panics or returns Err on invalid input"
+    test: "proptest with invalid inputs (NaN, Inf, block_size = 0)"
+    if_fails: "Missing input validation"
+  - id: FALSIFY-FA-006
+    rule: "Frame condition"
+    prediction: "Q, K, V unchanged after kernel call"
+    test: "proptest: clone inputs, call kernel, assert unchanged"
+    if_fails: "Kernel corrupts input buffer"
+  - id: FALSIFY-FA-007
+    rule: "Postcondition - output shape"
+    prediction: "Output matches standard attention within tolerance"
+    test: "proptest: random valid inputs, verify output matches standard attention"
+    if_fails: "Output allocation mismatch"
+
+  - id: FALSIFY-FA-008
+    rule: "Subcontract - FlashAttention refines Attention"
+    prediction: "Any input accepted by standard Attention is also accepted by FlashAttention"
+    test: "proptest: random Q,K,V valid for standard attention, verify FlashAttention accepts"
+    if_fails: "FlashAttention strengthens precondition (rejects inputs standard accepts)"
+
 kani_harnesses:
   - id: KANI-FA-001
     obligation: FA-EQ-001
@@ -89,7 +133,7 @@ qa_gate:
     - "equivalence"
     - "online_softmax"
     - "weight_normalization"
-  pass_criteria: "All 4 falsification tests pass"
+  pass_criteria: "All 8 falsification tests pass"
   falsification: "Skip rescaling step in tile accumulation"
 
 simd_dispatch:
