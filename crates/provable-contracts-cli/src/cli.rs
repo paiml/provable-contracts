@@ -97,6 +97,12 @@ pub enum Commands {
         /// Path to binding registry YAML (generates wired tests)
         #[arg(long)]
         binding: Option<PathBuf>,
+        /// Generate CONTRACT-README.md (requires --binding)
+        #[arg(long)]
+        readme: bool,
+        /// Generate .github/workflows/contracts.yml
+        #[arg(long)]
+        ci: bool,
     },
     /// Show contract dependency graph
     Graph {

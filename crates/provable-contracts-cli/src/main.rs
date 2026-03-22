@@ -56,7 +56,9 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             contract,
             output,
             binding,
-        } => commands::generate::run(&contract, &output, binding.as_deref()),
+            readme,
+            ci,
+        } => commands::generate::run(&contract, &output, binding.as_deref(), readme, ci),
         Commands::Graph {
             contract_dir,
             format,
