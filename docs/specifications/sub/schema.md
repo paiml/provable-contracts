@@ -29,11 +29,13 @@ equations:
       - "..."
 
 proof_obligations:
-  - type: "invariant|equivalence|bound|monotonicity|..."
+  - type: "invariant|equivalence|bound|...|precondition|postcondition|frame|..."
     property: "..."                   # Human-readable description
     formal: "..."                     # Formal predicate
     tolerance: 1.0e-6                 # Numerical tolerance
     applies_to: "all|scalar|simd"     # Implementation scope
+    requires: "OB-ID"                 # postcondition only: links to precondition
+    parent_contract: "stem"           # subcontract only: contract being refined
     lean:                             # Phase 7 Lean 4 metadata
       theorem: "softmax_partition_unity"
       module: "ProvableContracts.Softmax"
@@ -109,6 +111,23 @@ qa_gate:
 | `ordering` | f preserves total/partial order | sorted output |
 | `completeness` | all cases covered | dispatch exhaustive |
 | `soundness` | no false positives | validation rejects bad |
+| `involution` | f(f(x)) = x | encode/decode roundtrip |
+| `determinism` | f(x) = f(x) always | sampling with fixed seed |
+| `roundtrip` | decode(encode(x)) = x | serialization fidelity |
+| `state_machine` | S x A -> S valid transitions | cache state FSM |
+| `classification` | f(x) in C | output in valid class set |
+| `independence` | P(A∩B) = P(A)*P(B) | feature independence |
+| `termination` | algorithm halts | convergence loop exits |
+| `precondition` | P(input) before call | input finite, non-empty |
+| `postcondition` | P(in) -> Q(out) guarantee | given valid input, output in range |
+| `frame` | modifies(S), preserves(rest) | only output buffer written |
+| `loop_invariant` | for-all iter i: P(state_i) | running max tracks true max |
+| `loop_variant` | V(state) in N, decreasing | remaining = n - i |
+| `old_state` | Q(old, new) state relation | cache.len grows by seq_len |
+| `subcontract` | weaken(pre), strengthen(post) | GQA refines MHA |
+
+See **[eiffel-dbc.md](eiffel-dbc.md)** for full definitions of the
+Eiffel DbC types (last 7 rows).
 
 ---
 

@@ -1372,3 +1372,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-077
+  github_issue: null
+  item_type: task
+  title: 'Implement Eiffel DbC spec: pv explain, obligation types, CI contracts job'
+  status: inprogress
+  priority: high
+  assigned_to: null
+  created: 2026-03-22T11:56:07Z
+  updated: 2026-03-22T11:56:11.324283710+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null

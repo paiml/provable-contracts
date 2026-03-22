@@ -26,7 +26,8 @@
 
 A Rust library and CLI for converting peer-reviewed research papers into
 mathematically provable kernel implementations via YAML contract
-intermediaries with Kani bounded model checking verification.
+intermediaries with Kani bounded model checking and Lean 4 theorem
+proving.
 
 ---
 
@@ -38,6 +39,8 @@ intermediaries with Kani bounded model checking verification.
 - [CLI Reference](#cli-reference)
 - [Contract Registry](#contract-registry)
 - [The Seven-Phase Pipeline](#the-seven-phase-pipeline)
+- [Escape-Proof Enforcement](#escape-proof-enforcement)
+- [Proof Obligation Types](#proof-obligation-types)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [License](#license)
@@ -46,25 +49,42 @@ intermediaries with Kani bounded model checking verification.
 
 - **YAML Contracts** -- Declare kernel semantics (equations, invariants,
   proof obligations) in a structured, version-controlled YAML schema.
+- **26 Proof Obligation Types** -- From algebraic properties (invariant,
+  bound, monotonicity) to Eiffel DbC types (precondition, postcondition,
+  frame, loop_invariant, loop_variant, old_state, subcontract).
+- **Escape-Proof Enforcement** -- Six-stage compile-time pipeline where
+  skipping any stage produces a compiler error. Inspired by SPARK/Ada
+  proof discharge, Eiffel contract inheritance, and Dafny verification
+  conditions. Zero runtime cost (`debug_assert!` in release = nothing).
+- **Lean 4 Theorem Proving** -- 64 proved theorems (0 sorry) across
+  softmax, RMSNorm, LayerNorm, MatMul, FFT, SVD, quantization, and more.
+  Lean proves algorithms over reals; Kani verifies Rust code over f32.
+- **Kani Bounded Model Checking** -- Generate `#[kani::proof]` harnesses
+  with `stub_float` strategy bridging Lean proofs to Rust verification.
 - **Scaffold Generation** -- Automatically produce Rust trait stubs and
   failing test skeletons from any contract.
-- **Kani Harness Codegen** -- Generate `#[kani::proof]` bounded model
-  checking harnesses from proof obligation taxonomies.
 - **Property Test Generation** -- Emit `proptest` / probar property-based
   tests from both obligations and falsification predicates.
+- **Contract Explanation** -- `pv explain` renders a chain-of-thought
+  narrative for any contract: what it means, why each obligation exists,
+  how the verification chain works.
 - **Binding Registry** -- Map contract equations to real crate functions
-  (`aprender`, `entrenar`, `realizar`, `trueno`) for wired integration
-  tests with compile-time enforcement.
+  (`aprender`, `entrenar`, `realizar`, `trueno`, `forjar`, `simular`)
+  for wired integration tests with compile-time enforcement via
+  `#[contract]`, `#[requires]`, `#[ensures]`, `#[invariant]` macros.
 - **Traceability Audit** -- Verify the full chain from paper reference
   through equation, obligation, falsification test, and Kani harness.
 - **Contract Scoring** -- Five-dimension quality scoring (spec depth,
   falsification, Kani, Lean, binding) with A-F letter grades.
 - **Quality Gate (lint)** -- Unified validate + audit + score gate with
-  pass/fail exit codes, JSON output, and CI integration.
+  pass/fail exit codes, SARIF output, and CI integration. Five gates:
+  validate, audit, score, verify (test refs), enforce (pre/post/Lean).
 - **Semantic Query Engine** -- BM25 search across all contracts with
   tier/class filters, cross-project discovery, and graph-aware ranking.
-- **Lean 4 Codegen** -- Generate Lean 4 definition and theorem stubs
-  from contract proof obligations.
+- **PyTorch Extraction** -- `pv extract-pytorch` infers pre/postconditions
+  from PyTorch docstrings and generates YAML contract skeletons.
+- **Codegen** -- `pv codegen` generates `debug_assert!()` macros from
+  YAML preconditions/postconditions for compile-time enforcement.
 
 ## Installation
 
@@ -103,6 +123,11 @@ let harnesses = generate_kani_harnesses(&contract);
 ### CLI Examples
 
 ```bash
+# Explain a contract (chain-of-thought narrative)
+pv explain contracts/softmax-kernel-v1.yaml
+pv explain contracts/softmax-kernel-v1.yaml --format markdown
+pv explain contracts/softmax-kernel-v1.yaml --binding contracts/aprender/binding.yaml
+
 # Validate a contract
 pv validate contracts/softmax-kernel-v1.yaml
 
@@ -114,20 +139,14 @@ pv kani contracts/softmax-kernel-v1.yaml
 
 # Generate probar property tests
 pv probar contracts/softmax-kernel-v1.yaml
-
-# Generate wired tests using binding registry
-pv probar contracts/softmax-kernel-v1.yaml \
-    --binding contracts/aprender/binding.yaml
+pv probar contracts/softmax-kernel-v1.yaml --binding contracts/aprender/binding.yaml
 
 # Show contract status
 pv status contracts/softmax-kernel-v1.yaml
 
 # Run traceability audit
 pv audit contracts/softmax-kernel-v1.yaml
-
-# Audit with binding coverage
-pv audit contracts/softmax-kernel-v1.yaml \
-    --binding contracts/aprender/binding.yaml
+pv audit contracts/softmax-kernel-v1.yaml --binding contracts/aprender/binding.yaml
 
 # Compare two contract versions
 pv diff contracts/softmax-kernel-v1.yaml contracts/softmax-kernel-v2.yaml
@@ -135,64 +154,42 @@ pv diff contracts/softmax-kernel-v1.yaml contracts/softmax-kernel-v2.yaml
 # Cross-contract obligation coverage
 pv coverage contracts/ --binding contracts/aprender/binding.yaml
 
-# End-to-end codegen (scaffold + kani + probar)
+# End-to-end codegen (scaffold + kani + probar + book)
 pv generate contracts/softmax-kernel-v1.yaml -o generated/
 
-# Dependency graph (text)
+# Generate debug_assert!() macros from YAML preconditions/postconditions
+pv codegen contracts/ --output src/contract_checks.rs
+
+# Extract contracts from PyTorch source
+pv extract-pytorch "torch/nn/functional.py::softmax"
+
+# Dependency graph (text, dot, json, mermaid)
 pv graph contracts/
-
-# Dependency graph (Graphviz DOT)
-pv graph contracts/ --format dot
-
-# Dependency graph (JSON)
-pv graph contracts/ --format json
-
-# Dependency graph (Mermaid)
 pv graph contracts/ --format mermaid
 
-# Display equations (text)
+# Display equations (text, latex, ptx, asm)
 pv equations contracts/softmax-kernel-v1.yaml
-
-# Display equations (LaTeX)
 pv equations contracts/softmax-kernel-v1.yaml --format latex
 
-# Generate Lean 4 stubs
+# Lean 4 codegen and proof status
 pv lean contracts/softmax-kernel-v1.yaml
-
-# Lean 4 proof status report
 pv lean-status contracts/
 
 # Proof level report (L1-L5)
 pv proof-status contracts/
 
-# Score a contract (five-dimension quality metric)
+# Score a contract (five-dimension quality metric, A-F grades)
 pv score contracts/softmax-kernel-v1.yaml
-
-# Score all contracts with CI quality gate (exits 1 if below threshold)
 pv score contracts/ --min-score 0.75
 
 # Semantic search across contracts
 pv query "softmax numerical stability"
+pv query "kernel" --tier 1 --score
+pv query "attention" --class A --call-sites --violations
 
-# Tier filter: foundation kernels only
-pv query "kernel" --tier 1
-
-# Class filter: Llama/Mistral equivalence class
-pv query "attention" --class A --score
-
-# Cross-project call sites and violations
-pv query "rmsnorm" --call-sites --violations --coverage-map
-
-# Contract quality gate (validate + audit + score)
+# Contract quality gate (validate + audit + score + verify + enforce)
 pv lint contracts/
-
-# Lint with minimum score threshold
-pv lint contracts/ --min-score 0.60
-
-# Lint with JSON output for CI
-pv lint contracts/ --format json
-
-# Lint with binding registry
+pv lint contracts/ --min-score 0.60 --format sarif
 pv lint contracts/ --binding contracts/aprender/binding.yaml
 
 # Generate mdBook pages
@@ -201,26 +198,29 @@ pv book contracts/ -o book/src/contracts/
 
 ## CLI Reference
 
-| Command        | Description                                          |
-|----------------|------------------------------------------------------|
-| `validate`     | Parse and validate a YAML kernel contract            |
-| `scaffold`     | Generate Rust trait definition + failing tests        |
-| `kani`         | Generate `#[kani::proof]` bounded model harnesses    |
-| `probar`       | Generate property-based tests from obligations       |
-| `status`       | Display contract summary (equations, obligations)    |
-| `audit`        | Run traceability audit with optional binding check   |
-| `diff`         | Compare two contract versions, suggest semver bump   |
-| `coverage`     | Cross-contract obligation coverage report            |
-| `generate`     | End-to-end codegen (scaffold + kani + probar + book) |
-| `graph`        | Dependency DAG (`text`, `dot`, `json`, `mermaid`)    |
-| `equations`    | Display equations (`text`, `latex`, `ptx`, `asm`)    |
-| `lean`         | Generate Lean 4 definitions and theorem stubs        |
-| `lean-status`  | Report Lean 4 proof status across contracts          |
-| `proof-status` | Hierarchical proof level (L1-L5) report              |
-| `score`        | Five-dimension contract quality scoring (A-F)        |
-| `query`        | Semantic search with tier/class/graph filters        |
-| `lint`         | Quality gate: validate + audit + score in one pass   |
-| `book`         | Generate mdBook pages for contracts                  |
+| Command            | Description                                              |
+|--------------------|----------------------------------------------------------|
+| `explain`          | Chain-of-thought narrative for any contract               |
+| `validate`         | Parse and validate a YAML kernel contract                |
+| `scaffold`         | Generate Rust trait definition + failing tests            |
+| `kani`             | Generate `#[kani::proof]` bounded model harnesses        |
+| `probar`           | Generate property-based tests from obligations           |
+| `codegen`          | Generate `debug_assert!()` from YAML pre/postconditions |
+| `extract-pytorch`  | Extract contracts from PyTorch source docstrings         |
+| `status`           | Display contract summary (equations, obligations)        |
+| `audit`            | Run traceability audit with optional binding check       |
+| `diff`             | Compare two contract versions, suggest semver bump       |
+| `coverage`         | Cross-contract obligation coverage report                |
+| `generate`         | End-to-end codegen (scaffold + kani + probar + book)     |
+| `graph`            | Dependency DAG (`text`, `dot`, `json`, `mermaid`)        |
+| `equations`        | Display equations (`text`, `latex`, `ptx`, `asm`)        |
+| `lean`             | Generate Lean 4 definitions and theorem stubs            |
+| `lean-status`      | Report Lean 4 proof status across contracts              |
+| `proof-status`     | Hierarchical proof level (L1-L5) report                  |
+| `score`            | Five-dimension contract quality scoring (A-F)            |
+| `query`            | Semantic search with tier/class/graph filters            |
+| `lint`             | Quality gate: validate + audit + score + verify + enforce|
+| `book`             | Generate mdBook pages for contracts                      |
 
 ## Contract Registry
 
@@ -259,7 +259,7 @@ obligation coverage.
 
 ### Binding Registries
 
-Four downstream crates have binding registries mapping contract
+Six downstream crates have binding registries mapping contract
 equations to Rust implementations, each with compile-time enforcement
 via `build.rs` + `#[contract]` proc macro (Level 3 integration):
 
@@ -269,6 +269,8 @@ via `build.rs` + `#[contract]` proc macro (Level 3 integration):
 | **entrenar** | 96 | WarnOnGaps | 84% |
 | **realizar** | 23 | WarnOnGaps | 100% |
 | **trueno** | 22 | AllImplemented | 100% |
+| **forjar** | 4 | WarnOnGaps | 100% |
+| **simular** | 3 | WarnOnGaps | 100% |
 
 ### Qwen 3.5 Verification DAG
 
@@ -308,11 +310,58 @@ The provable-contracts methodology follows seven phases:
 7. **Prove** -- Generate Lean 4 theorem stubs and prove correctness
    in a type-theoretic proof assistant.
 
+## Escape-Proof Enforcement
+
+It must be **impossible** to ship code that violates a contract. Not
+"difficult" — impossible. The compiler refuses to produce a binary.
+
+Six stages, each gating the next:
+
+```
+A. Equation (YAML)        → must exist
+B. Lean 4 Proof           → must have no sorry
+C. YAML Validation        → pv lint gates 1-5 must pass
+D. build.rs Codegen       → generates debug_assert!() from pre/postconditions
+E. #[contract] Macro      → checks CONTRACT_* env var, injects assertions
+F. Test Execution         → cargo test blocks merge on failure
+```
+
+Zero runtime cost — `debug_assert!()` expands to nothing in release
+builds. The proof exists in the build artifacts, not the shipped code.
+
+See [`docs/specifications/sub/escape-proof-enforcement.md`](docs/specifications/sub/escape-proof-enforcement.md).
+
+## Proof Obligation Types
+
+26 obligation types across two categories:
+
+**Property types (19):** `invariant`, `equivalence`, `bound`,
+`monotonicity`, `idempotency`, `linearity`, `symmetry`,
+`associativity`, `conservation`, `ordering`, `completeness`,
+`soundness`, `involution`, `determinism`, `roundtrip`, `state_machine`,
+`classification`, `independence`, `termination`.
+
+**Eiffel DbC types (7):** `precondition`, `postcondition`, `frame`,
+`loop_invariant`, `loop_variant`, `old_state`, `subcontract`. Derived
+from Bertrand Meyer's Design by Contract (OOSC, 1997).
+
+See [`docs/specifications/sub/eiffel-dbc.md`](docs/specifications/sub/eiffel-dbc.md).
+
 ## Documentation
 
 - **Specification**: [`docs/specifications/pv-spec.md`](docs/specifications/pv-spec.md) (canonical, ONE spec)
-- **Sub-specs**: `docs/specifications/sub/` (schema, CLI, query,
-  scoring, registry, pipeline, library, integration)
+- **Sub-specs**:
+  - [`sub/schema.md`](docs/specifications/sub/schema.md) -- Contract YAML schema
+  - [`sub/eiffel-dbc.md`](docs/specifications/sub/eiffel-dbc.md) -- Eiffel DbC extensions
+  - [`sub/escape-proof-enforcement.md`](docs/specifications/sub/escape-proof-enforcement.md) -- Six-stage enforcement
+  - [`sub/lean-kani-composition.md`](docs/specifications/sub/lean-kani-composition.md) -- Lean + Kani composition
+  - [`sub/cli.md`](docs/specifications/sub/cli.md) -- CLI reference
+  - [`sub/pipeline.md`](docs/specifications/sub/pipeline.md) -- Seven-phase pipeline
+  - [`sub/scoring.md`](docs/specifications/sub/scoring.md) -- Scoring system
+  - [`sub/query.md`](docs/specifications/sub/query.md) -- Query engine
+  - [`sub/registry.md`](docs/specifications/sub/registry.md) -- Contract registry
+  - [`sub/integration.md`](docs/specifications/sub/integration.md) -- Stack integration
+  - [`sub/lint.md`](docs/specifications/sub/lint.md) -- Lint gates
 - **mdBook**: Run `mdbook serve` from the repository root, or build
   with `mdbook build`.
 

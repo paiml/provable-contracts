@@ -17,7 +17,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 |---|---------|----------|
 | 1 | [Vision and Architecture](#1-vision-and-architecture) | — |
 | 2 | [The Verification Ladder](#2-the-verification-ladder) | — |
-| 3 | [Contract Schema](#3-contract-schema) | [sub/schema.md](sub/schema.md) |
+| 3 | [Contract Schema](#3-contract-schema) | [sub/schema.md](sub/schema.md), [sub/eiffel-dbc.md](sub/eiffel-dbc.md) |
 | 4 | [The Seven-Phase Pipeline](#4-the-seven-phase-pipeline) | [sub/pipeline.md](sub/pipeline.md) |
 | 5 | [CLI Reference (`pv`)](#5-cli-reference) | [sub/cli.md](sub/cli.md), [sub/lint.md](sub/lint.md) |
 | 6 | [Library API](#6-library-api) | [sub/library.md](sub/library.md) |
@@ -222,11 +222,17 @@ field reference, and examples in **[sub/schema.md](sub/schema.md)**.
 | `verification_summary` | no | Lean 4 proof status |
 | `qa_gate` | no | certeza integration |
 
-### Proof Obligation Types (12)
+### Proof Obligation Types (26)
 
-`invariant`, `equivalence`, `bound`, `monotonicity`, `idempotency`,
-`linearity`, `symmetry`, `associativity`, `conservation`, `ordering`,
-`completeness`, `soundness`.
+**Property types (19):** `invariant`, `equivalence`, `bound`,
+`monotonicity`, `idempotency`, `linearity`, `symmetry`,
+`associativity`, `conservation`, `ordering`, `completeness`,
+`soundness`, `involution`, `determinism`, `roundtrip`, `state_machine`,
+`classification`, `independence`, `termination`.
+
+**Eiffel DbC types (7):** `precondition`, `postcondition`, `frame`,
+`loop_invariant`, `loop_variant`, `old_state`, `subcontract`.
+See **[sub/eiffel-dbc.md](sub/eiffel-dbc.md)** for full definitions.
 
 ---
 
