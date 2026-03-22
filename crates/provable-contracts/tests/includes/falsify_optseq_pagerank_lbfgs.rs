@@ -3,6 +3,7 @@
 // ============================================================================
 
 /// Helper: generate a row-stochastic matrix of size n x n.
+#[allow(clippy::cast_precision_loss)]
 fn row_stochastic_matrix(n: usize) -> Vec<f32> {
     let mut mat = vec![0.0_f32; n * n];
     for i in 0..n {
@@ -24,6 +25,7 @@ proptest! {
     /// Contract: pagerank-kernel-v1.yaml
     /// Prediction: output sums to ~1 and all >= 0 with row-stochastic transition and uniform rank
     /// If fails: pagerank iteration does not preserve distribution property
+    #[allow(clippy::cast_precision_loss)]
     #[test]
     fn falsify_pr_001_output_distribution(n in 2_usize..8) {
         let transition = row_stochastic_matrix(n);
@@ -51,6 +53,7 @@ proptest! {
 /// Prediction: with row-stochastic transition matrix and uniform rank, output is valid distribution
 /// If fails: transition matrix handling is incorrect
 #[test]
+#[allow(clippy::cast_precision_loss)]
 fn falsify_pr_002_input_normalization() {
     let n = 4;
     let transition = row_stochastic_matrix(n);
@@ -78,6 +81,7 @@ fn falsify_pr_002_input_normalization() {
 /// Prediction: repeated iteration converges (output changes decrease)
 /// If fails: iteration does not converge to stationary distribution
 #[test]
+#[allow(clippy::cast_precision_loss)]
 fn falsify_pr_003_convergence() {
     let n = 4;
     let transition = row_stochastic_matrix(n);
@@ -108,6 +112,7 @@ proptest! {
     /// Contract: pagerank-kernel-v1.yaml
     /// Prediction: all output ranks >= 0
     /// If fails: teleport or damping term produces negative values
+    #[allow(clippy::cast_precision_loss)]
     #[test]
     fn falsify_pr_004_non_negative(n in 2_usize..8) {
         let transition = row_stochastic_matrix(n);
@@ -128,6 +133,7 @@ proptest! {
     /// Contract: pagerank-kernel-v1.yaml
     /// Prediction: avx2 vs scalar within 8 ULP
     /// If fails: SIMD implementation diverges from scalar reference
+    #[allow(clippy::cast_precision_loss)]
     #[cfg(target_arch = "x86_64")]
     #[test]
     fn falsify_pr_005_simd_equivalence(n in 2_usize..8) {
@@ -157,6 +163,7 @@ proptest! {
 /// Prediction: uniform transition matrix with uniform rank gives uniform output
 /// If fails: symmetry is broken by implementation
 #[test]
+#[allow(clippy::cast_precision_loss)]
 fn falsify_pr_006_uniform_stationary() {
     let n = 4;
     // Uniform row-stochastic matrix

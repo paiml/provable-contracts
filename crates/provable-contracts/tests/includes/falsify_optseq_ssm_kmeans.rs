@@ -172,11 +172,10 @@ fn falsify_ssm_006_zero_input() {
 
     ssm_scan_scalar(&a_bar, &b_bar, &c, &x, state_dim, seq_len, &mut output);
 
-    for t in 0..seq_len {
+    for (t, &val) in output.iter().enumerate().take(seq_len) {
         assert!(
-            output[t].abs() < 1e-7,
-            "FALSIFY-SSM-006 failed: output[{t}] = {}, expected 0.0 for zero input",
-            output[t]
+            val.abs() < 1e-7,
+            "FALSIFY-SSM-006 failed: output[{t}] = {val}, expected 0.0 for zero input"
         );
     }
 }

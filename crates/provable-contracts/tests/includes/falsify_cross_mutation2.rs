@@ -25,6 +25,7 @@ fn mutation_gqa_detect_wrong_head_broadcast() {
 
 /// Mutation: flash attention — no rescaling gives wrong output
 #[test]
+#[allow(clippy::many_single_char_names)]
 fn mutation_flash_detect_no_rescaling() {
     let n = 4;
     let d = 2;
@@ -34,6 +35,7 @@ fn mutation_flash_detect_no_rescaling() {
     let mut correct = [0.0f32; 8];
     flash_attention_scalar(&q, &k, &v, n, d, 2, &mut correct);
 
+    #[allow(clippy::cast_precision_loss)]
     let scale = 1.0 / (d as f32).sqrt();
     let tile_size = 2;
     let mut mutated = [0.0f32; 8];
@@ -241,9 +243,7 @@ fn mutation_lbfgs_detect_reverse_loop() {
         );
     }
     let mut mutated = [0.0f32; 4];
-    for i in 0..d {
-        mutated[i] = gradient[i];
-    }
+    mutated[..d].copy_from_slice(&gradient[..d]);
     let dist = common::l2_distance(&correct, &mutated);
     assert!(
         dist > 0.01,

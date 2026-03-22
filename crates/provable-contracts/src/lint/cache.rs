@@ -165,7 +165,7 @@ mod tests {
     fn cache_stats_default() {
         let stats = CacheStats::default();
         assert_eq!(stats.total, 0);
-        assert_eq!(stats.hit_rate(), 0.0);
+        assert!(stats.hit_rate().abs() < f64::EPSILON);
     }
 
     #[test]

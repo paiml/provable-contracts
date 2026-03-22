@@ -157,7 +157,7 @@ mod tests {
                 // All returned stems should be valid (no .yaml extension, no path prefix)
                 for stem in &stems {
                     assert!(
-                        !stem.ends_with(".yaml"),
+                        !stem.to_ascii_lowercase().ends_with(".yaml"),
                         "Stem should not have extension: {stem}"
                     );
                     assert!(

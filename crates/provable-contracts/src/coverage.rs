@@ -225,7 +225,7 @@ proof_obligations:
     fn empty_contracts() {
         let report = coverage_report(&[], None);
         assert_eq!(report.totals.contracts, 0);
-        assert_eq!(overall_percentage(&report), 100.0);
+        assert!((overall_percentage(&report) - 100.0).abs() < f64::EPSILON);
     }
 
     #[test]

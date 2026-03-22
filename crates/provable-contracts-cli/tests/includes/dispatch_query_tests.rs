@@ -1,5 +1,6 @@
 use super::*;
 
+#[allow(dead_code)]
 fn test_contract() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts/softmax-kernel-v1.yaml")
 }

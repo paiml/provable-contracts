@@ -351,13 +351,14 @@ proptest! {
         let max_input = input_v.iter().map(|x| x.abs()).fold(0.0_f32, f32::max);
         let max_weight = weight_v.iter().map(|x| x.abs()).fold(0.0_f32, f32::max);
         let max_bias = bias_v.iter().map(|x| x.abs()).fold(0.0_f32, f32::max);
+        #[allow(clippy::cast_precision_loss)]
         let bound = (c_in * kernel_size) as f32 * max_input * max_weight + max_bias;
 
-        for i in 0..output.len() {
+        for (i, val) in output.iter().enumerate() {
             prop_assert!(
-                output[i].abs() <= bound + 1e-4,
+                val.abs() <= bound + 1e-4,
                 "FALSIFY-CV-004 failed: |output[{i}]| = {} exceeds bound {bound}",
-                output[i].abs()
+                val.abs()
             );
         }
     }

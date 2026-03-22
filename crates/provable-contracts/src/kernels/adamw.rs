@@ -235,7 +235,7 @@ mod tests {
         //       ~ 0.5 - 0.001005
         //       ~ 0.498995
         assert!(
-            (params[0] - 0.498995).abs() < 1e-4,
+            (params[0] - 0.498_995).abs() < 1e-4,
             "params[0] = {}",
             params[0]
         );

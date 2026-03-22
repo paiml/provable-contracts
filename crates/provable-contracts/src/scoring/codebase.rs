@@ -363,8 +363,8 @@ mod tests {
             bindings: Vec::new(),
         };
         let score = score_codebase(&[], &binding);
-        assert_eq!(score.contract_coverage, 0.0);
-        assert_eq!(score.composite, 0.15); // only drift=1.0 * 0.15
+        assert!(score.contract_coverage.abs() < f64::EPSILON);
+        assert!((score.composite - 0.15).abs() < f64::EPSILON); // only drift=1.0 * 0.15
         assert_eq!(score.grade, Grade::F);
     }
 
@@ -399,7 +399,7 @@ mod tests {
         // Gap ordering should differ when one contract has much higher pagerank
         assert!(!with_pr.top_gaps.is_empty());
         // The dimensions should still be the same
-        assert_eq!(without_pr.composite, with_pr.composite);
+        assert!((without_pr.composite - with_pr.composite).abs() < f64::EPSILON);
     }
 
     #[test]

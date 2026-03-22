@@ -37,6 +37,7 @@ fn mutation_rmsnorm_detect_zero_eps() {
 
     let mut mutated = [0.0f32; 4];
     let sum_sq: f32 = input.iter().map(|x| x * x).sum();
+    #[allow(clippy::cast_precision_loss)]
     let rms = (sum_sq / input.len() as f32 + 0.0).sqrt();
     let inv_rms = 1.0 / rms;
     for i in 0..4 {
@@ -59,6 +60,7 @@ fn mutation_layernorm_detect_no_eps() {
     layernorm_scalar(&input, &gamma, &beta, 1e-5, &mut correct);
     common::assert_all_finite(&correct);
 
+    #[allow(clippy::cast_precision_loss)]
     let n = input.len() as f32;
     let mean: f32 = input.iter().sum::<f32>() / n;
     let var: f32 = input.iter().map(|x| (x - mean) * (x - mean)).sum::<f32>() / n;
@@ -188,7 +190,9 @@ fn mutation_rope_detect_swap_sincos() {
     let mut mutated = [0.0f32; 4];
     let half_dim = dim / 2;
     for k in 0..half_dim {
+        #[allow(clippy::cast_precision_loss)]
         let freq = base.powf(-2.0 * k as f32 / dim as f32);
+        #[allow(clippy::cast_precision_loss)]
         let theta = freq * position as f32;
         let cos_t = theta.cos();
         let sin_t = theta.sin();
@@ -206,6 +210,7 @@ fn mutation_rope_detect_swap_sincos() {
 
 /// Mutation: matmul — swap row/col indices gives wrong result
 #[test]
+#[allow(clippy::many_single_char_names)]
 fn mutation_matmul_detect_swap_indices() {
     let a = [1.0f32, 2.0, 3.0, 4.0, 5.0, 6.0];
     let b = [1.0f32, 2.0, 3.0, 4.0, 5.0, 6.0];
@@ -234,6 +239,7 @@ fn mutation_matmul_detect_swap_indices() {
 
 /// Mutation: attention — use `1/d_k` instead of `1/sqrt(d_k)` gives different output
 #[test]
+#[allow(clippy::many_single_char_names)]
 fn mutation_attention_detect_wrong_scaling() {
     let q = [1.0f32, 0.5, 0.3, 0.7];
     let k = [0.5f32, 0.3, 0.7, 0.2];
@@ -245,6 +251,7 @@ fn mutation_attention_detect_wrong_scaling() {
     let mut correct = [0.0f32; 4];
     attention_scalar(&q, &k, &v, n, m, d_k, d_v, &mut correct);
 
+    #[allow(clippy::cast_precision_loss)]
     let wrong_scale = 1.0 / d_k as f32;
     let mut scores = vec![0.0f32; n * m];
     for i in 0..n {

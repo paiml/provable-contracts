@@ -18,7 +18,7 @@ fn factorial(n: u64) -> u64 {
 
 #[test]
 fn test_requires_passes() {
-    assert_eq!(sqrt_positive(4.0), 2.0);
+    assert!((sqrt_positive(4.0) - 2.0).abs() < f64::EPSILON);
 }
 
 #[test]

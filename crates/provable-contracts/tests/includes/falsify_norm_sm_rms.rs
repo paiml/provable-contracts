@@ -110,6 +110,7 @@ fn falsify_sm_006_identical_inputs() {
         let input = vec![c; n];
         let mut output = vec![0.0_f32; n];
         softmax_scalar(&input, &mut output);
+        #[allow(clippy::cast_precision_loss)]
         let expected = 1.0 / n as f32;
         for (i, &o) in output.iter().enumerate() {
             assert!(
@@ -206,6 +207,7 @@ proptest! {
         rmsnorm_scalar(&v, &gamma, 1e-8, &mut output);
 
         let sum_sq: f32 = output.iter().map(|x| x * x).sum();
+        #[allow(clippy::cast_precision_loss)]
         let rms_out = (sum_sq / output.len() as f32).sqrt();
         prop_assert!(
             (rms_out - 1.0).abs() < 1e-3,

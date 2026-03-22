@@ -207,6 +207,7 @@ proptest! {
         // Check per-channel mean of the output is approx 0
         for ch in 0..c {
             let ch_sum: f32 = (0..n).map(|s| output[s * c + ch]).sum();
+            #[allow(clippy::cast_precision_loss)]
             let ch_mean = ch_sum / n as f32;
             prop_assert!(
                 ch_mean.abs() < 1e-4,
@@ -348,8 +349,8 @@ fn falsify_bn_005_eval_vs_train_mode() {
     let beta = vec![0.0_f32; c];
 
     // Training output
-    let mut rm_train = vec![5.0_f32; c];
-    let mut rv_train = vec![2.0_f32; c];
+    let mut running_mean_train = vec![5.0_f32; c];
+    let mut running_var_train = vec![2.0_f32; c];
     let mut train_out = vec![0.0_f32; n * c];
     batchnorm_scalar(
         &input,
@@ -358,16 +359,16 @@ fn falsify_bn_005_eval_vs_train_mode() {
         &gamma,
         &beta,
         1e-5,
-        &mut rm_train,
-        &mut rv_train,
+        &mut running_mean_train,
+        &mut running_var_train,
         &mut train_out,
         0.1,
         true,
     );
 
     // Eval output (with different running stats than batch stats)
-    let mut rm_eval = vec![5.0_f32; c];
-    let mut rv_eval = vec![2.0_f32; c];
+    let mut running_mean_eval = vec![5.0_f32; c];
+    let mut running_var_eval = vec![2.0_f32; c];
     let mut eval_out = vec![0.0_f32; n * c];
     batchnorm_scalar(
         &input,
@@ -376,8 +377,8 @@ fn falsify_bn_005_eval_vs_train_mode() {
         &gamma,
         &beta,
         1e-5,
-        &mut rm_eval,
-        &mut rv_eval,
+        &mut running_mean_eval,
+        &mut running_var_eval,
         &mut eval_out,
         0.1,
         false,
@@ -429,8 +430,8 @@ fn falsify_bn_006_running_stats_updated() {
 
     // After training, running_mean should be non-zero (input is non-zero)
     let mut mean_changed = false;
-    for ch in 0..c {
-        if running_mean[ch].abs() > 1e-10 {
+    for val in &running_mean[..c] {
+        if val.abs() > 1e-10 {
             mean_changed = true;
             break;
         }
@@ -442,8 +443,8 @@ fn falsify_bn_006_running_stats_updated() {
 
     // After training, running_var should be non-zero (input has variance)
     let mut var_changed = false;
-    for ch in 0..c {
-        if running_var[ch].abs() > 1e-10 {
+    for val in &running_var[..c] {
+        if val.abs() > 1e-10 {
             var_changed = true;
             break;
         }

@@ -213,6 +213,7 @@ fn current_commit() -> Result<String, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::lint::cache::CacheStats;
 
     fn sample_snapshot(score: f64, ts: &str) -> TrendSnapshot {
         TrendSnapshot {
@@ -237,7 +238,7 @@ mod tests {
             gates: vec![],
             total_duration_ms: 10,
             findings: vec![],
-            cache_stats: Default::default(),
+            cache_stats: CacheStats::default(),
         };
         let path = record_snapshot(&trend, &report, 107).unwrap();
         assert!(path.exists());
@@ -354,7 +355,7 @@ mod tests {
             gates: vec![],
             total_duration_ms: 0,
             findings: vec![],
-            cache_stats: Default::default(),
+            cache_stats: CacheStats::default(),
         };
         assert!((extract_mean_score(&report) - 0.0).abs() < f64::EPSILON);
     }

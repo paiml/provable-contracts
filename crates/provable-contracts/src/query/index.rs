@@ -433,11 +433,12 @@ mod tests {
         let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
         let index = ContractIndex::build_from_directory(&dir).unwrap();
         // softmax-kernel-v1 is depended on by several contracts
-        let deps = index.depended_by("softmax-kernel-v1");
+        let _deps = index.depended_by("softmax-kernel-v1");
         // At minimum attention contracts depend on softmax
+        // depended_by should return without panicking
         assert!(
-            true,
-            "May or may not have dependents depending on contracts"
+            !index.entries.is_empty(),
+            "Index should contain contracts"
         );
     }
 
@@ -453,6 +454,7 @@ mod tests {
         }
         // Softmax should rank relatively high (many things depend on it)
         let softmax = scores.get("softmax-kernel-v1").unwrap();
+        #[allow(clippy::cast_precision_loss)]
         let mean = scores.values().sum::<f64>() / scores.len() as f64;
         assert!(
             *softmax >= mean,

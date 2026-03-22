@@ -128,6 +128,7 @@ fn falsify_mm_005_identity() {
     let sizes = [1, 2, 3, 4, 5];
     for &n in &sizes {
         let identity = common::identity_matrix(n);
+        #[allow(clippy::cast_precision_loss)]
         let a: Vec<f32> = (0..n * n).map(|i| (i as f32) * 0.7 - 1.5).collect();
         let mut c = vec![0.0f32; n * n];
         matmul_scalar(&a, &identity, n, n, n, &mut c);
@@ -308,6 +309,7 @@ proptest! {
         common::assert_all_finite(&output);
 
         let v_max_abs = v.iter().map(|x| x.abs()).fold(0.0f32, f32::max);
+        #[allow(clippy::cast_precision_loss)]
         let loose_bound = v_max_abs * (n as f32);
         for (idx, &val) in output.iter().enumerate() {
             prop_assert!(

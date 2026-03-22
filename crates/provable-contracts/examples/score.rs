@@ -19,9 +19,8 @@ fn main() {
     let mut scores = Vec::new();
     for entry in &entries {
         let path = entry.path();
-        let contract = match provable_contracts::schema::parse_contract(&path) {
-            Ok(c) => c,
-            Err(_) => continue,
+        let Ok(contract) = provable_contracts::schema::parse_contract(&path) else {
+            continue;
         };
         let stem = path
             .file_stem()
@@ -44,6 +43,7 @@ fn main() {
         print!("{s}");
     }
 
+    #[allow(clippy::cast_precision_loss)]
     let mean: f64 = scores.iter().map(|s| s.composite).sum::<f64>() / scores.len() as f64;
     println!(
         "\nOverall: {} contracts, mean {:.2} (Grade {})",

@@ -39,10 +39,10 @@ fn score_complete_contract() {
     let contract = parse_contract_str(minimal_kernel_yaml()).unwrap();
     let score = score_contract(&contract, None, "test-v1");
     assert!(score.spec_depth >= 0.70, "spec_depth={}", score.spec_depth);
-    assert_eq!(score.falsification_coverage, 1.0);
+    assert!((score.falsification_coverage - 1.0).abs() < f64::EPSILON);
     assert!(score.kani_coverage > 0.0);
-    assert_eq!(score.lean_coverage, 0.0);
-    assert_eq!(score.binding_coverage, 0.0);
+    assert!(score.lean_coverage.abs() < f64::EPSILON);
+    assert!(score.binding_coverage.abs() < f64::EPSILON);
     assert!(score.composite > 0.0);
 }
 
@@ -79,8 +79,8 @@ fn custom_weights_change_composite() {
         kani_heavy.composite
     );
     // Individual dimensions should be the same
-    assert_eq!(default.spec_depth, kani_heavy.spec_depth);
-    assert_eq!(default.kani_coverage, kani_heavy.kani_coverage);
+    assert!((default.spec_depth - kani_heavy.spec_depth).abs() < f64::EPSILON);
+    assert!((default.kani_coverage - kani_heavy.kani_coverage).abs() < f64::EPSILON);
 }
 
 #[test]
@@ -271,7 +271,7 @@ equations:
         }],
     };
     let score = score_contract(&contract, Some(&binding), "test-v1");
-    assert_eq!(score.binding_coverage, 0.0);
+    assert!(score.binding_coverage.abs() < f64::EPSILON);
 }
 
 #[test]
@@ -292,5 +292,5 @@ kani_harnesses:
 "#;
     let contract = parse_contract_str(yaml).unwrap();
     let score = score_contract(&contract, None, "test-v1");
-    assert_eq!(score.kani_coverage, 1.0);
+    assert!((score.kani_coverage - 1.0).abs() < f64::EPSILON);
 }

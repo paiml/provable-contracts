@@ -41,6 +41,7 @@ proptest! {
     /// Contract: gqa-kernel-v1.yaml
     /// Prediction: with num_heads=2, num_kv_heads=1, both heads use same KV but different Q
     /// Failure: KV broadcasting broken (heads produce identical output despite different Q)
+    #[allow(clippy::cast_precision_loss)]
     #[test]
     fn falsify_gq_002_kv_head_broadcasting(
         seq_len in 2usize..=3,
@@ -82,6 +83,7 @@ proptest! {
     /// Contract: gqa-kernel-v1.yaml
     /// Prediction: when num_heads == num_kv_heads, GQA equals standard attention per head
     /// Failure: MHA equivalence broken
+    #[allow(clippy::cast_precision_loss)]
     #[test]
     fn falsify_gq_003_mha_equivalence(
         seq_len in 2usize..=3,

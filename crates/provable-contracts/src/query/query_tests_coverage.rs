@@ -31,16 +31,16 @@
 
     #[test]
     fn parse_iso_days_ago_recent() {
-        // 2026-03-06 at epoch ~1772870400
-        let now = 1772870400;
+        // 2026-03-06 at epoch ~1_772_870_400
+        let now = 1_772_870_400;
         let days = super::query_enrich::parse_iso_days_ago("2026-03-05", now);
         assert!(days <= 2, "Yesterday should be ~1 day ago, got {days}");
     }
 
     #[test]
     fn parse_iso_days_ago_invalid() {
-        assert_eq!(super::query_enrich::parse_iso_days_ago("invalid", 1772870400), 0);
-        assert_eq!(super::query_enrich::parse_iso_days_ago("2026-03", 1772870400), 0);
+        assert_eq!(super::query_enrich::parse_iso_days_ago("invalid", 1_772_870_400), 0);
+        assert_eq!(super::query_enrich::parse_iso_days_ago("2026-03", 1_772_870_400), 0);
     }
 
     #[test]

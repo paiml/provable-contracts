@@ -47,7 +47,7 @@ proptest! {
         gelu_scalar(&input, &mut output);
         let sqrt_2_over_pi = (2.0_f32 / std::f32::consts::PI).sqrt();
         for (&x, &y) in input.iter().zip(output.iter()) {
-            let expected = x * 0.5 * (1.0 + (sqrt_2_over_pi * (x + 0.044715 * x * x * x)).tanh());
+            let expected = x * 0.5 * (1.0 + (sqrt_2_over_pi * (x + 0.044_715 * x * x * x)).tanh());
             let err = (y - expected).abs();
             prop_assert!(
                 err < 0.005,
