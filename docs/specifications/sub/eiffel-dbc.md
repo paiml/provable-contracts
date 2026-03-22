@@ -456,9 +456,273 @@ verified for bounded iterations in Kani.
 
 ---
 
-## 6. Domain Applicability
+## 6. Type Invariants
 
-### 6.1. Meyer's Universality Argument
+Meyer's Design by Contract places *class invariants* as the third pillar
+alongside preconditions and postconditions. A class invariant is a
+predicate that must hold for every instance of a type at every stable
+state — after construction and after every public method returns.
+
+Our current `invariant` obligation type asserts properties of
+*functions*. Type invariants assert properties of *data structures*.
+
+### 6.1. YAML Schema Extension
+
+```yaml
+type_invariants:
+  - name: tensor_validity
+    type: "ValidatedTensor"
+    predicate: "self.dims.iter().product::<usize>() == self.data.len()"
+    description: "Data length equals product of dimensions"
+  - name: tensor_non_empty
+    type: "ValidatedTensor"
+    predicate: "!self.dims.is_empty()"
+    description: "At least one dimension"
+```
+
+Add `type_invariants: Vec<TypeInvariant>` to the `Contract` struct:
+
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TypeInvariant {
+    pub name: String,
+    #[serde(rename = "type")]
+    pub type_name: String,
+    pub predicate: String,
+    #[serde(default)]
+    pub description: Option<String>,
+}
+```
+
+### 6.2. Rust Implementation Paths
+
+**Path A: Stable Rust — `Invariant` trait pattern.**
+
+This is the seL4 Rust verification pattern. Works today with Kani:
+
+```rust
+pub trait Invariant {
+    fn is_valid(&self) -> bool;
+}
+
+impl Invariant for ValidatedTensor {
+    fn is_valid(&self) -> bool {
+        !self.dims.is_empty()
+            && self.dims.iter().product::<usize>() == self.data.len()
+    }
+}
+```
+
+`pv scaffold` generates the `Invariant` impl from `type_invariants`.
+`pv kani` generates preservation harnesses:
+
+```rust
+#[kani::proof]
+fn verify_tensor_invariant_preserved_by_reshape() {
+    let tensor: ValidatedTensor = kani::any();
+    kani::assume(tensor.is_valid());
+    let reshaped = tensor.reshape(&new_dims);
+    assert!(reshaped.is_valid());
+}
+```
+
+**Path B: Nightly Rust — `#[contracts::invariant]`.**
+
+RFC #128044 adds native type invariants to the compiler. When stable,
+`pv scaffold --nightly-invariants` would generate:
+
+```rust
+#![feature(contracts)]
+
+#[contracts::invariant(self.dims.iter().product::<usize>() == self.data.len())]
+#[contracts::invariant(!self.dims.is_empty())]
+pub struct ValidatedTensor {
+    pub dims: Vec<usize>,
+    pub data: Vec<f32>,
+}
+```
+
+### 6.3. Codegen: `pv invariants`
+
+New CLI command `pv invariants <contract.yaml>` generates:
+
+1. `Invariant` trait impl for each type with declared invariants
+2. Kani preservation harnesses for every function in the contract's
+   binding that takes or returns the invariant-bearing type
+3. `debug_assert!(self.is_valid())` calls in constructors (via
+   `#[contract]` macro integration)
+
+### 6.4. Relationship to Existing Obligations
+
+| Concept | Scope | Checked when |
+|---|---|---|
+| `invariant` obligation | Function property | After function returns |
+| `type_invariants` | Data structure property | After construction + every public method |
+| `precondition` obligation | Function input | Before function body |
+| `postcondition` obligation | Function output | Before function returns |
+| `frame` obligation | Mutation scope | After function returns |
+
+Type invariants are *orthogonal* to function-level obligations. A
+function can satisfy all its pre/postconditions while violating a type
+invariant on the return value. The preservation harness catches this:
+`kani::assume(input.is_valid()); /* operation */; assert!(output.is_valid())`.
+
+### 6.5. Escape-Proof Enforcement for Type Invariants
+
+The six-stage pipeline extends naturally:
+
+| Stage | Type Invariant Enforcement |
+|---|---|
+| A (YAML) | `type_invariants[]` section in contract |
+| B (Lean) | Invariant as a `Prop` on the type; preservation theorems |
+| C (Lint) | `pv lint`: every type with invariants has preservation harnesses |
+| D (build.rs) | Generate `Invariant` trait impl |
+| E (Macro) | `#[contract]` inserts `debug_assert!(result.is_valid())` |
+| F (Tests) | Kani preservation harnesses + proptest |
+
+---
+
+## 7. Coq Integration
+
+The current verification ladder has Lean 4 at L5 (unbounded proof) and
+Kani at L4 (bounded model checking). Adding Coq provides a second
+path to unbounded proofs with different strengths:
+
+| Prover | Strengths | Ecosystem |
+|---|---|---|
+| **Lean 4** | Mathlib (analysis, algebra), tactic automation, `sorry` tracking | Active, growing |
+| **Coq** | CompCert (verified C compiler), Fiat Crypto, `coq-of-rust` bridge | Mature, battle-tested |
+
+The two are NOT interchangeable — they verify different aspects:
+- **Lean** excels at mathematical properties (softmax sums to 1 over ℝ)
+- **Coq** excels at implementation verification (`coq-of-rust` translates
+  actual Rust code to Coq, proving properties of *the code itself*)
+
+### 7.1. YAML Schema Extension
+
+```yaml
+coq_spec:
+  module: "SoftmaxSpec"
+  imports:
+    - "Require Import Reals."
+    - "Require Import List."
+  definitions:
+    - name: "softmax_sum_to_one"
+      statement: |
+        Theorem softmax_partition_of_unity : forall (xs : list R),
+          xs <> [] ->
+          fold_left Rplus (map softmax_fn xs) 0 = 1.
+  obligations:
+    - links_to: "SM-INV-001"
+      coq_lemma: "softmax_partition_of_unity"
+      status: "proved|admitted|stub"
+```
+
+### 7.2. The `coq-of-rust` Bridge
+
+`coq-of-rust` translates Rust code directly to Coq, giving a formal
+model of the *actual implementation* — not a parallel specification.
+This means Kani-verified bounds and Coq proofs refer to the *same
+code*:
+
+```bash
+# In Makefile
+coq-verify:
+    coq-of-rust translate crates/aprender/src/kernels/softmax.rs \
+        --output generated/coq/softmax.v
+    coqc generated/coq/softmax.v
+```
+
+### 7.3. Codegen: `pv coq`
+
+New CLI command `pv coq <contract.yaml>` generates:
+
+1. `.v` file with `Require Import` statements from `coq_spec.imports`
+2. Definitions from equations (translated to Coq `Definition`)
+3. Theorem stubs from proof obligations (with `admit.` placeholders)
+4. Obligation cross-references via `(** Obligation: SM-INV-001 *)`
+
+```coq
+(* Generated from softmax-kernel-v1 v1.0.0 *)
+Require Import Reals.
+Require Import List.
+
+(** Equation: softmax *)
+Definition softmax (xs : list R) : list R :=
+  (* TODO: formalize *) nil.
+
+(** Obligation: Output sums to 1 [invariant] *)
+(** Paper: Bridle (1990) *)
+Theorem softmax_partition_of_unity :
+  forall (xs : list R),
+    xs <> [] ->
+    fold_left Rplus (softmax xs) 0 = 1.
+Proof.
+  admit. (* replace with proof *)
+Qed.
+```
+
+### 7.4. Tiered Proof Strategy
+
+Full Coq proofs require mathematician time. The practical approach
+(CompCert, seL4, Fiat Cryptography) is tiered:
+
+```
+Tier 1: Kani (automated, bounded)      ← current, L4
+Tier 2: Lean 4 (semi-automated, ℝ)     ← current, L5
+Tier 3: Coq stubs (generated, admit)   ← new: pv coq
+Tier 4: Coq proofs (human-verified)    ← manual, L5+
+Tier 5: coq-of-rust (implementation)   ← automated translation
+```
+
+### 7.5. Audit Integration
+
+`pv audit --coq` reports which obligations have:
+
+| Status | Meaning |
+|---|---|
+| `kani_only` | Bounded verification (L4), no proof |
+| `lean_proved` | Lean theorem over ℝ (L5) |
+| `coq_stub` | Coq theorem generated but unproved (`admit`) |
+| `coq_proved` | Coq theorem fully discharged |
+| `coq_of_rust` | Implementation translated and verified |
+
+### 7.6. Relationship to Lean-Kani Composition
+
+The `stub_float` bridge works identically with Coq:
+- Coq proves `exp > 0` (over ℝ)
+- Kani stubs `f32::exp()` with `kani::any()` constrained by Coq's proof
+- Kani verifies the surrounding Rust code preserves the invariant
+
+The choice between Lean and Coq is per-obligation:
+- Use Lean when Mathlib has the required analysis lemmas
+- Use Coq when `coq-of-rust` can directly verify the implementation
+- Use both when maximum assurance is needed (defense-in-depth)
+
+### 7.7. Migration Path
+
+1. Add `coq_spec` and `type_invariants` as optional schema sections
+2. Implement `pv coq` command (generates `.v` stubs)
+3. Implement `pv invariants` command (generates `Invariant` trait)
+4. Extend `pv audit` with `--coq` flag
+5. Extend `pv explain` to render type invariants and Coq status
+6. Write exemplar Coq proofs for Tier 1 contracts (softmax, matmul)
+7. Integrate `coq-of-rust` for implementation-level verification
+
+### 7.8. References
+
+1. Leroy, X. (2009). "Formal verification of a realistic compiler." *CACM* 52(7). (CompCert)
+2. Klein, G. et al. (2009). "seL4: Formal Verification of an OS Kernel." *SOSP 2009.*
+3. Erbsen, A. et al. (2019). "Simple High-Level Code For Cryptographic Arithmetic." *S&P 2019.* (Fiat Crypto)
+4. `coq-of-rust` — github.com/formal-land/coq-of-rust
+5. Rust RFC #128044 — `core::contracts` type invariants (nightly tracking)
+6. Lattuada, A. et al. (2023). "Verus: Verifying Rust Programs using Linear Ghost Types." arXiv:2303.05491.
+
+---
+
+## 8. Domain Applicability
+
+### 8.1. Meyer's Universality Argument
 
 Meyer was emphatic in OOSC (1997, Ch. 11) that Design by Contract is
 not a systems programming technique — it is a *software correctness*
@@ -484,7 +748,7 @@ technique that applies to every domain. His key claims:
    expert's constraints become the developer's preconditions and
    postconditions directly — no translation layer.
 
-### 6.2. Current Domain Coverage
+### 8.2. Current Domain Coverage
 
 Our contract system is heavily weighted toward **scientific/numerical
 kernels**:
@@ -517,7 +781,7 @@ This covers Meyer's "scientific computing" domain thoroughly. But the
 stack spans domains where our current property-only obligation types
 are insufficient without the Eiffel DbC extensions.
 
-### 6.3. Domain Contract Patterns
+### 8.3. Domain Contract Patterns
 
 #### Presentation / UI (presentar + probar)
 
@@ -1028,7 +1292,7 @@ resource constraints for orchestration platforms.
 | `bound` | Container CPU limit ≤ node capacity |
 | `loop_variant` | Rolling restart: remaining pods = `total - restarted`, strictly decreasing |
 
-### 6.4. Domain-Specific `references` and `equations`
+### 8.4. Domain-Specific `references` and `equations`
 
 Meyer's seamless development principle means the `metadata.references`
 field and `equations` section should point to the *domain authority*,
@@ -1052,7 +1316,7 @@ This is a natural extension: the pipeline's Phase 1 (EXTRACT) already
 says "arXiv PDF → canonical math." For non-kernel domains, Phase 1
 becomes "domain specification → canonical rules."
 
-### 6.5. When DbC Types Matter Most by Domain
+### 8.5. When DbC Types Matter Most by Domain
 
 Not every obligation type is equally useful in every domain. The Eiffel
 DbC types have different gravity depending on the domain:
@@ -1088,7 +1352,7 @@ converged), state comparison is the core operation (old_state — hash
 diffing), and transports are substitutable (subcontract — pepita
 refines SSH).
 
-### 6.6. Cross-Project Dependency Graph and Contract Flow
+### 8.6. Cross-Project Dependency Graph and Contract Flow
 
 The PAIML stack has a layered dependency structure. Contracts flow
 *upward* through the dependency graph — a contract on trueno's SIMD
@@ -1223,7 +1487,7 @@ proof_obligations:
     formal: "¬∃ instr ∈ ptx: is_shared_mem(instr) ∧ is_64bit_addr(instr)"
 ```
 
-### 6.7. Implications for the Stack
+### 8.7. Implications for the Stack
 
 Extending provable-contracts to non-kernel domains requires:
 
@@ -1292,7 +1556,7 @@ Extending provable-contracts to non-kernel domains requires:
 
 ---
 
-## 7. Migration Path
+## 9. Migration Path
 
 ### Phase 1: Schema + Validation
 
@@ -1376,7 +1640,7 @@ adding the `ObligationType` variants and the obligation-level fields.
 
 ---
 
-## 8. `pv explain` — Contract Narrative Command
+## 10. `pv explain` — Contract Narrative Command
 
 Before implementing the 7 new DbC obligation types, we need the
 ability to *explain* any contract in detail. The existing commands
@@ -1385,7 +1649,7 @@ provide counts (`pv status`), gap detection (`pv audit`), formulas
 None produces a narrative explanation of *what the contract means,
 why each obligation exists, and how the verification chain works*.
 
-### 8.1. Command Interface
+### 10.1. Command Interface
 
 ```bash
 pv explain <contract.yaml>                              # text narrative
@@ -1394,7 +1658,7 @@ pv explain <contract.yaml> --format json                 # structured JSON
 pv explain <contract.yaml> --binding binding.yaml        # include binding status
 ```
 
-### 8.2. Output Structure
+### 10.2. Output Structure
 
 `pv explain` renders a **chain-of-thought narrative** organized into
 these sections:
@@ -1458,7 +1722,7 @@ governing paper(s) and the domain.
 - Which equations are implemented/partial/missing
 - Which project(s) consume this contract
 
-### 8.3. Example: Softmax
+### 10.3. Example: Softmax
 
 ```
 softmax-kernel-v1 (v1.0.0)
@@ -1551,7 +1815,7 @@ Quality gate: F-SM-001 Softmax Contract
   Mutation: Introduce off-by-one in max reduction loop
 ```
 
-### 8.4. Implementation
+### 10.4. Implementation
 
 **Library module:** `crates/provable-contracts/src/explain.rs`
 
@@ -1575,7 +1839,7 @@ Reuses existing building blocks:
 Adds `Explain` variant to `Commands` enum with `contract: PathBuf`,
 `--format text|markdown|json`, and `--binding` option.
 
-### 8.5. Relationship to DbC Types
+### 10.5. Relationship to DbC Types
 
 When the 7 new obligation types are implemented, `pv explain` will
 render their narratives using the same pattern:
@@ -1593,7 +1857,7 @@ render their narratives using the same pattern:
 This makes `pv explain` the primary user-facing tool for understanding
 contracts — including the new Eiffel DbC types as they are adopted.
 
-### 8.6. Generated Artifacts: README.md and CI Workflows
+### 10.6. Generated Artifacts: README.md and CI Workflows
 
 `pv generate` already produces per-contract Rust artifacts (`_scaffold.rs`,
 `_kani.rs`, `_probar.rs`, `_book.md`). It should also generate project-
@@ -1713,7 +1977,7 @@ contracts, ensuring no project ships with broken bindings.
 
 ---
 
-## 9. Escape-Proof Enforcement by Domain
+## 11. Escape-Proof Enforcement by Domain
 
 The escape-proof enforcement pipeline
 ([escape-proof-enforcement.md](escape-proof-enforcement.md)) defines
@@ -1722,7 +1986,7 @@ Eiffel DbC obligation type flows through the pipeline, and how each
 domain in the stack concretely enforces escape prevention at compile
 time.
 
-### 9.1. The Six Stages, Revisited for DbC Types
+### 11.1. The Six Stages, Revisited for DbC Types
 
 ```
 A. Equation YAML        equations.<name>.preconditions / postconditions
@@ -1751,7 +2015,7 @@ For the five NEW DbC types, the pipeline extends as follows:
 | `old_state` | `proof_obligations[].type: old_state` | Universally quantified pre-state | Clone-before codegen | `let old = state.clone(); ...; debug_assert!(Q(old, state))` | Snapshot-compare: assert relationship |
 | `subcontract` | `proof_obligations[].type: subcontract` | Implication chain | Cross-contract env var check | Parent contract binding must exist | Load both contracts, verify weakening/strengthening |
 
-### 9.2. Chain of Thought: Kernels (aprender, trueno, entrenar)
+### 11.2. Chain of Thought: Kernels (aprender, trueno, entrenar)
 
 **Domain axiom:** `softmax(x)_i = exp(x_i - max(x)) / Σ_j exp(x_j - max(x))`
 
@@ -1850,7 +2114,7 @@ CI blocks the merge. The kernel cannot ship with a broken postcondition.
 | Weaken postcondition | Lean proof no longer matches → sorry required → compile error |
 | Skip `cargo test` | CI workflow requires test pass |
 
-### 9.3. Chain of Thought: Simulation (simular)
+### 11.3. Chain of Thought: Simulation (simular)
 
 **Domain axiom:** `E(t+dt) = E(t) + O(dt^4)` (symplectic energy conservation)
 
@@ -1922,7 +2186,7 @@ and halts — the loop invariant obligation lets Kani verify *before
 deployment* that drift is bounded for all inputs within the natural
 bound (max particles × max timesteps).
 
-### 9.4. Chain of Thought: Infrastructure as Code (forjar)
+### 11.4. Chain of Thought: Infrastructure as Code (forjar)
 
 **Domain axiom:** `converge(desired, current) → desired` (idempotent convergence)
 
@@ -2322,13 +2586,13 @@ and leaves no trace in the deployed binary.
 
 ---
 
-## 10. Falsification
+## 12. Falsification
 
 Every claim in this spec must be falsifiable. The following tests can
 refute the spec's core hypotheses. They follow the project's standard
 Popperian pattern: prediction → test → if_fails.
 
-### 10.1. Hypothesis: DbC Types Add Verification Power
+### 12.1. Hypothesis: DbC Types Add Verification Power
 
 **H1: Precondition/postcondition obligation types produce Kani
 harnesses that catch bugs undetectable by property-only types.**
@@ -2388,7 +2652,7 @@ proofs than bare termination type.**
     assertion — simplify to termination only
 ```
 
-### 10.2. Hypothesis: Two-Layer Pre/Post Model Is Necessary
+### 12.2. Hypothesis: Two-Layer Pre/Post Model Is Necessary
 
 **H4: Obligation-level pre/postconditions provide value beyond
 equation-level debug_assert pre/postconditions.**
@@ -2410,7 +2674,7 @@ equation-level debug_assert pre/postconditions.**
     obligation-level pre/post is redundant, equation-level suffices
 ```
 
-### 10.3. Hypothesis: DbC Types Apply to Non-Kernel Domains
+### 12.3. Hypothesis: DbC Types Apply to Non-Kernel Domains
 
 **H5: The frame obligation type is useful for at least 3 non-kernel
 stack projects (simular, forjar, probar).**
@@ -2451,7 +2715,7 @@ the stack's transport/plugin abstractions.**
     no tests that detect real behavioral subtyping violations
 ```
 
-### 10.4. Hypothesis: The Heat Map Predicts Adoption Value
+### 12.4. Hypothesis: The Heat Map Predicts Adoption Value
 
 **H7: Domains rated "High" for a DbC type benefit measurably more
 from that type than domains rated "Low" or "Medium".**
@@ -2476,7 +2740,7 @@ from that type than domains rated "Low" or "Medium".**
 
 ---
 
-## 11. References
+## 13. References
 
 ### Design by Contract Foundations
 
