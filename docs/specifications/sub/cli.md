@@ -16,7 +16,7 @@ The binary is named `pv`.
 
 ---
 
-## 2. Existing Commands (16)
+## 2. Core Commands
 
 ### pv validate
 

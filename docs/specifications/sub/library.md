@@ -7,7 +7,7 @@
 ## 1. Crate Structure
 
 ```
-provable-contracts (library)
+provable-contracts (library) — 30 public modules
 +-- schema/           YAML parsing + validation
 +-- scaffold/         Trait + test generation
 +-- kani_gen/         Kani harness codegen
@@ -23,10 +23,21 @@ provable-contracts (library)
 +-- book_gen/         mdBook generation
 +-- latex             Math -> LaTeX conversion
 +-- kernels/          Reference kernel implementations
-+-- scoring/          Contract + codebase scoring [IMPLEMENTED]
-+-- query/            O(1) contract search index [IMPLEMENTED]
++-- scoring/          Contract + codebase scoring
++-- query/            O(1) contract search index
++-- lint/             5-gate quality pipeline
 +-- build_helper      Build-time helpers
 +-- error             Error types
++-- explain           Contract narrative walkthrough
++-- extract           PyTorch -> YAML extraction
++-- codegen           debug_assert!() generation
++-- coq_gen           Coq theorem stub generation
++-- invariant_gen     Type invariant + preservation harness generation
++-- fuzz_gen          libfuzzer fuzz target generation
++-- mirai_gen         MIRAI annotation generation
++-- flux_gen          Flux refinement type generation
++-- tla_gen           TLA+ system spec generation
++-- readme_gen        README generation for contracts
 ```
 
 ---
@@ -47,6 +58,9 @@ pub struct Contract {
     pub kani_harnesses: Vec<KaniHarness>,
     pub qa_gate: Option<QaGate>,
     pub verification_summary: Option<VerificationSummary>,
+    pub type_invariants: Vec<TypeInvariant>,    // Meyer's class invariants
+    pub coq_spec: Option<CoqSpec>,              // Coq theorem proving
+    pub lean_theorems: Vec<LeanTheorem>,        // Phase 7 Lean 4
 }
 
 pub struct Metadata {
@@ -75,9 +89,15 @@ pub struct ProofObligation {
 }
 
 pub enum ObligationType {
+    // Property types (19)
     Invariant, Equivalence, Bound, Monotonicity,
     Idempotency, Linearity, Symmetry, Associativity,
     Conservation, Ordering, Completeness, Soundness,
+    Involution, Determinism, Roundtrip, StateMachine,
+    Classification, Independence, Termination,
+    // Eiffel DbC types (7)
+    Precondition, Postcondition, Frame,
+    LoopInvariant, LoopVariant, OldState, Subcontract,
 }
 
 pub enum KaniStrategy {
@@ -131,7 +151,80 @@ Wired variant calls real functions from binding registry.
 ```rust
 pub fn generate_lean_files(contract: &Contract) -> Vec<LeanFile>
 pub fn lean_status(contract: &Contract) -> LeanStatusReport
+pub fn format_status_report(report: &LeanStatusReport) -> String
 ```
+
+### coq_gen
+
+```rust
+pub fn generate_coq_spec(contract: &Contract, stem: &str) -> String
+```
+
+Generates `.v` Coq theorem stubs from contract proof obligations.
+
+### invariant_gen
+
+```rust
+pub fn generate_invariant_trait(contract: &Contract) -> String
+pub fn generate_invariant_harnesses(contract: &Contract) -> String
+pub fn generate_invariants(contract: &Contract) -> String
+```
+
+Generates `Invariant` trait impls + Kani preservation harnesses from `type_invariants`.
+
+### fuzz_gen
+
+```rust
+pub fn generate_fuzz_target(contract: &Contract, stem: &str) -> String
+pub fn generate_fuzz_cargo_toml(crate_name: &str) -> String
+```
+
+Generates libfuzzer fuzz targets gated on contract preconditions.
+
+### mirai_gen
+
+```rust
+pub fn generate_mirai_annotations(contract: &Contract, stem: &str) -> String
+```
+
+Generates MIRAI `precondition!` / `postcondition!` / `verify!` annotations.
+
+### flux_gen
+
+```rust
+pub fn generate_flux_annotations(contract: &Contract, stem: &str) -> String
+```
+
+Generates Flux `#[flux::refined_by]` and `#[flux::sig]` annotations.
+
+### tla_gen
+
+```rust
+pub fn generate_tla_module(
+    module_name: &str,
+    contracts: &[(String, &Contract)],
+    graph: &DependencyGraph,
+) -> String
+```
+
+Generates TLA+ `MODULE` from contract dependency DAG.
+
+### explain
+
+```rust
+pub fn explain_contract(contract: &Contract, stem: &str, binding: Option<&BindingRegistry>) -> String
+pub fn explain_contract_markdown(contract: &Contract, stem: &str, binding: Option<&BindingRegistry>) -> String
+```
+
+Narrative walkthrough of a contract's equations, obligations, and verification chain.
+
+### extract
+
+```rust
+pub fn extract_from_pytorch(target: &str) -> Result<ExtractedContract>
+```
+
+Parses PyTorch source (`file.py::function_name`) into a contract structure.
 
 ---
 

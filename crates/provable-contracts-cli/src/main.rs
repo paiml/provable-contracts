@@ -19,6 +19,14 @@ use cli::Commands;
 struct Cli {
     #[command(subcommand)]
     command: Commands,
+
+    /// Suppress non-essential output
+    #[arg(short, long, global = true)]
+    quiet: bool,
+
+    /// Verbose output
+    #[arg(short, long, global = true)]
+    verbose: bool,
 }
 
 /// Dispatch a parsed CLI subcommand to its handler
@@ -99,24 +107,40 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             show_trend,
             no_cache,
             cache_stats,
-        } => commands::lint::run(
-            &contract_dir,
-            binding.as_deref(),
-            min_score,
-            format.as_deref(),
-            severity.as_deref(),
-            strict,
-            suppress.as_deref(),
-            suppress_rule.as_deref(),
-            suppress_file.as_deref(),
-            &rule,
-            config.as_deref(),
-            diff_ref.as_deref(),
-            trend,
-            show_trend,
-            no_cache,
-            cache_stats,
-        ),
+            suggest,
+            baseline,
+        } => {
+            let result = commands::lint::run(
+                &contract_dir,
+                binding.as_deref(),
+                min_score,
+                format.as_deref(),
+                severity.as_deref(),
+                strict,
+                suppress.as_deref(),
+                suppress_rule.as_deref(),
+                suppress_file.as_deref(),
+                &rule,
+                config.as_deref(),
+                diff_ref.as_deref(),
+                trend,
+                show_trend,
+                no_cache,
+                cache_stats,
+            );
+            if suggest {
+                println!();
+                println!("Auto-fix suggestions (--suggest):");
+                println!("  - Missing kani_harnesses: run `pv kani <contract>` to generate");
+                println!("  - Missing falsification_tests: run `pv probar <contract>` to generate");
+                println!("  - Low spec_depth score: add domain, codomain, invariants to equations");
+                println!("  - No qa_gate: add qa_gate section with certeza integration");
+            }
+            if let Some(ref _baseline_path) = baseline {
+                eprintln!("note: --baseline SARIF filtering not yet implemented");
+            }
+            result
+        }
         Commands::Score {
             path,
             binding,

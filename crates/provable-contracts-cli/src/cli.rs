@@ -197,6 +197,12 @@ pub enum Commands {
         /// Show cache hit/miss statistics
         #[arg(long)]
         cache_stats: bool,
+        /// Show auto-fix suggestions (dry run)
+        #[arg(long)]
+        suggest: bool,
+        /// Suppress findings present in baseline SARIF file
+        #[arg(long)]
+        baseline: Option<PathBuf>,
     },
     /// Score contracts or a codebase directory
     Score {
