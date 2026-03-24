@@ -630,3 +630,22 @@ bindings:
     status: implemented
     notes: "Domain-matched: cublaslt.rs:257"
 
+
+  # PMAT-338: WGPU forward pass contracts
+  - contract: wgpu-forward-pass-v1.yaml
+    equation: rmsnorm_correctness
+    function: "WgslForwardPass::forward_model"
+    status: implemented
+    notes: "PMAT-324: 4.77e-7 max error on W5700X"
+
+  - contract: wgpu-forward-pass-v1.yaml
+    equation: gemv_dispatch
+    function: "GpuMatmulCache::matmul_cached"
+    status: implemented
+    notes: "PMAT-326: M=1→GEMV, M>1→GEMM"
+
+  - contract: wgpu-forward-pass-v1.yaml
+    equation: vec4_alignment
+    function: "WgslForwardPass::encode_matmul"
+    status: implemented
+    notes: "PMAT-331: K%4==0 enforced by vec4 GEMV shader"
