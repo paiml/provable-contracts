@@ -33,6 +33,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 16 | [Bidirectional Coverage](#16-bidirectional-coverage) | [sub/bidirectional-coverage.md](sub/bidirectional-coverage.md) |
 | 17 | [Gradual Enforcement](#17-gradual-enforcement) | [sub/gradual-enforcement.md](sub/gradual-enforcement.md) |
 | 18 | [PVScore](#18-pvscore) | [sub/pvscore.md](sub/pvscore.md) |
+| 19 | [Sovereign Stack Audit](#19-sovereign-stack-audit) | [sub/sovereign-stack-audit.md](sub/sovereign-stack-audit.md) |
 
 ---
 
@@ -711,3 +712,28 @@ weak formal proofs with good test coverage.
 
 Key references: SQALE (Letouzey 2012), OpenSSF Scorecard (2023),
 Petrovic et al. (2022) "Practical Mutation Testing at Scale" IEEE TSE.
+
+---
+
+## 19. Sovereign Stack Audit
+
+**Sub-spec**: [sub/sovereign-stack-audit.md](sub/sovereign-stack-audit.md)
+
+Full audit of all 13 repos in the PAIML sovereign AI stack.
+**6.4M LOC. Only 30% under contract enforcement.**
+
+| Tier | Repos | LOC | Status |
+|---|---|---|---|
+| Enforced (AllImplemented) | aprender, realizar, entrenar, trueno, rmedia, presentar, forjar | 2.2M | 823 bindings, ~5% reverse cov |
+| **Unenforced (ZERO)** | **depyler, ruchy, decy, bashrs, pmat, simular** | **4.4M** | **0 contracts, 0 bindings** |
+
+**Critical finding:** pmat (the quality enforcer) has CB-1200 which checks
+other repos for contract compliance — but has zero enforcement on itself.
+
+**No-escape plan:**
+1. **CB-1300 mandate** — every paiml Rust repo >10K LOC MUST have contracts
+2. **Transpiler contracts first** — depyler/ruchy bugs propagate to all transpiled programs
+3. **pmat self-enforcement** — the enforcer eats its own dogfood
+4. **Security tool contracts** — bashrs/rash correctness IS the security guarantee
+5. **Reverse coverage ratchet** — CI-gated targets: 25% at 6mo, 50% at 12mo
+6. **PVScore gate at month 3** — unified 10-dim score, A >= 90 required
