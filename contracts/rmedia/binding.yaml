@@ -1371,3 +1371,680 @@ bindings:
     function: "jaccard_similarity"
     status: implemented
 
+
+  # --- Final coverage sweep ---
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "build"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: cg_minimize
+    function: "in_point"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "validate"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "content_x"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "content_y"
+    status: implemented
+
+  - contract: lora-algebra-v1.yaml
+    equation: shape_preservation
+    function: "merge"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "format_time"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: name_resolution
+    function: "resolve"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "element_id"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "bytes_per_pixel"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: architecture_normalization
+    function: "enrich_from_config"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "detect_gpu"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: name_resolution
+    function: "resolve_encoder"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "validate_encoder"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "h264_gpu"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "hevc_gpu"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: decode_degradation
+    function: "decode_audio"
+    status: implemented
+
+  - contract: qk-norm-apr-loader-v1.yaml
+    equation: qk_norm_load
+    function: "load_project"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_track"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: cg_minimize
+    function: "out_point"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_timeline"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect_volumes"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_clip"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "render_graph"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "content_width"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "content_height"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "cell_count"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_cells"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: garbage_oracle
+    function: "text_fits"
+    status: implemented
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: effective_context
+    function: "parse_position"
+    status: implemented
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: effective_context
+    function: "position_to_smpte"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "buffer_size"
+    status: implemented
+
+  - contract: gpu-context-health-v1.yaml
+    equation: context_health
+    function: "ansi_code"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    function: "clamp_score"
+    status: implemented
+
+  - contract: gnn-v1.yaml
+    equation: global_max_pool
+    function: "make_dimension"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    function: "score_range"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    function: "format_score"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: chunked_prefill
+    function: "render_prompt"
+    status: implemented
+
+  - contract: qwen3-shapes-v1.yaml
+    equation: head_dim_consistency
+    function: "parse_config"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "format_qa_summary"
+    status: implemented
+
+  - contract: safetensors-cpu-dispatch-v1.yaml
+    equation: format_parity
+    function: "script_path"
+    status: implemented
+
+  - contract: classifier-pipeline-v1.yaml
+    equation: embedding_extraction
+    function: "parse_script"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_frames"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: classify_drift
+    function: "check_drift"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: hybrid_layer_schedule
+    function: "load_indices"
+    status: implemented
+
+  - contract: metaheuristics-v1.yaml
+    equation: ga_crossover
+    function: "search_multi"
+    status: implemented
+
+  - contract: metrics-ranking-v1.yaml
+    equation: mrr
+    function: "derive_queries"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "validate_outline"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    function: "score_page"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    function: "score_site"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_length"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    function: "score_boundaries"
+    status: implemented
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: effective_context
+    function: "clip_at_position"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "entry_count"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "blank_count"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "format_value"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "command_count"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "track_count"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: gradient_boost
+    function: "hit_rate"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_filter"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_transition"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: kv_cache_growth
+    function: "video_only"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: kv_cache_growth
+    function: "audio_only"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: request_state
+    function: "active_annotations"
+    status: implemented
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: effective_context
+    function: "frame_at_position"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: name_resolution
+    function: "source_frame"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: contract_composition
+    function: "compose_transform"
+    status: implemented
+
+  - contract: embedding-algebra-v1.yaml
+    equation: unembedding_projection
+    function: "final_value"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: flops_per_token
+    function: "compute_ghosts"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: garbage_oracle
+    function: "extract_text"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: draft_decode
+    function: "build_vocabulary"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: architecture_normalization
+    function: "enrich_module_titles_from_config"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: kv_cache_growth
+    function: "create_audio_only"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "encode_audio_data"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: decode_degradation
+    function: "decode_video_frame"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: decode_degradation
+    function: "decode_video_avframe"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: decode_degradation
+    function: "decode_audio_packet"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_sub_folder"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_item_to_track"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "format_transform_easing"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: convergence
+    function: "color_for_hint"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: garbage_oracle
+    function: "estimate_text_width"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    function: "compute_course_score"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    function: "format_course_score"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "format_canary_report"
+    status: implemented
+
+  - contract: classifier-pipeline-v1.yaml
+    equation: embedding_extraction
+    function: "find_script_file"
+    status: implemented
+
+  - contract: codebert-tokenizer-validation-v1.yaml
+    equation: tokenizer_adequacy
+    function: "build_script_vocab"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: flops_per_token
+    function: "compute_luma_variance"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "format_visual_qa_summary"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: garbage_oracle
+    function: "srt_to_plain_text"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: name_resolution
+    function: "resolve_transcript_dir"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "format_oracle_section"
+    status: implemented
+
+  - contract: decision-tree-v1.yaml
+    equation: gini_split
+    function: "group_into_modules"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "parse_module_field"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "run_from_doc"
+    status: implemented
+
+  - contract: qwen3-shapes-v1.yaml
+    equation: head_dim_consistency
+    function: "format_config_coursepage"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "build_with_options"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: flops_per_token
+    function: "compute_semantic_durations"
+    status: implemented
+
+  - contract: qwen3-shapes-v1.yaml
+    equation: head_dim_consistency
+    function: "format_config_reflection"
+    status: implemented
+
+  - contract: safetensors-cpu-dispatch-v1.yaml
+    equation: format_parity
+    function: "parse_svg_path"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: flops_per_token
+    function: "compute_rms_windows"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "simulate_single_drop"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "push_interleaved_f32"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "strip_style_blocks"
+    status: implemented
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: effective_context
+    function: "format_css_number"
+    status: implemented
+
+  - contract: f16-conversion-v1.yaml
+    equation: roundtrip
+    function: "anim_values_approx_eq"
+    status: implemented
+
+  - contract: f16-conversion-v1.yaml
+    equation: roundtrip
+    function: "collect_anim_values"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "filter_with_props"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "visible_bullet_count"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "title_element_ids"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "endcard_element_ids"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "apply_element_transforms"
+    status: implemented
+
+  - contract: encoder-forward-v1.yaml
+    equation: encoder_layer
+    function: "ease_out_cubic"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "compute_ghosts_full"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "count_ghosted_groups"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: flops_per_token
+    function: "compute_content_peaks"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    function: "score_content_alignment"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "create_video_with_audio"
+    status: implemented
+
+  - contract: decision-tree-v1.yaml
+    equation: gini_split
+    function: "buffer_audio_frame_into"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "render_with_quick_export"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "make_dimension_with_fix"
+    status: implemented
+
+  - contract: qwen3-shapes-v1.yaml
+    equation: head_dim_consistency
+    function: "format_config_key_concepts"
+    status: implemented
+
+  - contract: qwen3-shapes-v1.yaml
+    equation: head_dim_consistency
+    function: "format_config_module_concepts"
+    status: implemented
+
+  - contract: decision-tree-v1.yaml
+    equation: mse_split
+    function: "compute_mean_abs_diff"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "group_transcripts_by_lesson_full"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "enrich_capstone_from_repo"
+    status: implemented
+
+  - contract: decision-tree-v1.yaml
+    equation: mse_split
+    function: "compute_mean_energy_dbfs"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: convergence
+    function: "snap_to_nearest_silence_bounded"
+    status: implemented
+
+  - contract: pca-v1.yaml
+    equation: pca_transform
+    function: "select_top_silence_midpoints"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: garbage_oracle
+    function: "lip_sync_to_swap_string"
+    status: implemented
+
+  - contract: decision-tree-v1.yaml
+    equation: gini_split
+    function: "apply_svg_transforms_into"
+    status: implemented
+
+  - contract: decision-tree-v1.yaml
+    equation: gini_split
+    function: "segment_transcript_into_banners"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "build_single_banner_svg"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "validate_script_svg_alignment"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "group_transcripts_by_module_with_limit"
+    status: implemented
+

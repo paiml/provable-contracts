@@ -4269,3 +4269,3160 @@ bindings:
     function: "priority"
     status: implemented
 
+
+  # --- Final coverage sweep ---
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "build"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "builder"
+    status: implemented
+
+  - contract: batched-beam-search-v1.yaml
+    equation: batched_beam_projection
+    function: "total_flops"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "a_tile_bytes"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "b_tile_bytes"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "c_tile_bytes"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "fits_in_cache"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "validate"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect"
+    status: implemented
+
+  - contract: classifier-pipeline-v1.yaml
+    equation: embedding_extraction
+    function: "forward_model"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: layer_composition
+    function: "forward_layer"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "block_on"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "numel"
+    status: implemented
+
+  - contract: conv1d-kernel-v1.yaml
+    equation: conv1d
+    function: "stride"
+    status: implemented
+
+  - contract: gguf-cpu-cache-v1.yaml
+    equation: autoregressive_generation
+    function: "matches"
+    status: implemented
+
+  - contract: conversation-generation-v1.yaml
+    equation: conversation_types
+    function: "seed"
+    status: implemented
+
+  - contract: gnn-v1.yaml
+    equation: message_passing
+    function: "node"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: chunked_prefill
+    function: "min_us"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "max_us"
+    status: implemented
+
+  - contract: gpu-decode-profiling-v1.yaml
+    equation: brick_ordering
+    function: "bricks"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_ms"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "time_to_first_token_ms"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: throughput_target
+    function: "utilization"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "full"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: rayon_overhead
+    function: "lightweight"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "total_throughput"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_tokens"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_ns"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "tile"
+    status: implemented
+
+  - contract: lora-algebra-v1.yaml
+    equation: shape_preservation
+    function: "merge"
+    status: implemented
+
+  - contract: qwen3moe-shapes-v1.yaml
+    equation: o_projection_transpose
+    function: "hidden_dim"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "batch_size"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "gpu_sm_count"
+    status: implemented
+
+  - contract: kv-cache-sizing-v1.yaml
+    equation: zero_input_identity
+    function: "zeros"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: per_row_scale
+    function: "rows"
+    status: implemented
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: total_bytes
+    function: "cols"
+    status: implemented
+
+  - contract: fused-qkv-projection-v1.yaml
+    equation: fused_qkv
+    function: "matvec"
+    status: implemented
+
+  - contract: shannon-entropy-v1.yaml
+    equation: entropy
+    function: "log2"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: layer_composition
+    function: "norm_l2"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: layer_composition
+    function: "norm_l1"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "argmax"
+    status: implemented
+
+  - contract: calibration-v1.yaml
+    equation: platt_scaling
+    function: "argmin"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "clamp"
+    status: implemented
+
+  - contract: batchnorm-kernel-v1.yaml
+    equation: batchnorm_eval
+    function: "sqrt"
+    status: implemented
+
+  - contract: metaheuristics-v1.yaml
+    equation: best_monotone
+    function: "history"
+    status: implemented
+
+  - contract: kv-cache-sizing-v1.yaml
+    equation: zero_input_identity
+    function: "free_mb"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: attention_entropy
+    function: "query"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: pcie_overhead
+    function: "vram_mb"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: pcie_overhead
+    function: "vram_gb"
+    status: implemented
+
+  - contract: quantization-ordering-v1.yaml
+    equation: bytes_per_param
+    function: "f32_to_f16"
+    status: implemented
+
+  - contract: pca-v1.yaml
+    equation: explained_variance
+    function: "eigenvalues"
+    status: implemented
+
+  - contract: kv-cache-sizing-v1.yaml
+    equation: per_token_per_layer
+    function: "dtype"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: layer_composition
+    function: "norm_sq"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "block_size"
+    status: implemented
+
+  - contract: f16-conversion-v1.yaml
+    equation: roundtrip
+    function: "values"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: pcie_overhead
+    function: "cost_per_op"
+    status: implemented
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q4k_superblock
+    function: "elements"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "format_kb"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "size_bytes"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "bytes_per_block"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "validate_ab"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: speedup_bound
+    function: "theoretical_speedup"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: pcie_overhead
+    function: "transfer_overhead"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "total_blocks"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "capture"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: training_loss
+    function: "ml_training"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: speedup_bound
+    function: "inference"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "cpu_count"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    function: "score_cv"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: flops_per_token
+    function: "compute_us"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "l3_per_core"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: speedup_condition
+    function: "passes"
+    status: implemented
+
+  - contract: qwen3moe-shapes-v1.yaml
+    equation: o_projection_transpose
+    function: "back"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: throughput_target
+    function: "tx_utilization"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: throughput_target
+    function: "rx_utilization"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "latency_cv"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: throughput_target
+    function: "rtx_4090"
+    status: implemented
+
+  - contract: graph-centrality-v1.yaml
+    equation: closeness
+    function: "distance"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_cases"
+    status: implemented
+
+  - contract: metrics-ranking-v1.yaml
+    equation: hit_at_k
+    function: "results"
+    status: implemented
+
+  - contract: lora-algebra-v1.yaml
+    equation: shape_preservation
+    function: "strategy"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "throughput_ops_per_sec"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "superblocks_per_row"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "typical_cache_bytes"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: throughput_target
+    function: "gpu_q4k_matvec"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "total_vram_bytes"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: request_state
+    function: "execute_with_cache"
+    status: implemented
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q4k_superblock
+    function: "elements_per_tile"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "select_for_size"
+    status: implemented
+
+  - contract: gguf-cpu-cache-v1.yaml
+    equation: autoregressive_generation
+    function: "tokens_per_sec"
+    status: implemented
+
+  - contract: gguf-cpu-cache-v1.yaml
+    equation: autoregressive_generation
+    function: "tokens_per_second"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "avg_token_latency_ms"
+    status: implemented
+
+  - contract: gpu-decode-profiling-v1.yaml
+    equation: report_fidelity
+    function: "all_brick_stats"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: training_loss
+    function: "prepare_training_data"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: throughput_model
+    function: "compute_roofline_bound"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "max_batch_size"
+    status: implemented
+
+  - contract: quantization-ordering-v1.yaml
+    equation: bytes_per_param
+    function: "f16_memory_bytes"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: pcie_overhead
+    function: "analyze_transfer_overhead"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "block_memory_bytes"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "total_memory_bytes"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: pcie_overhead
+    function: "traces_for_layer"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "avx512_per_core"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "num_k_blocks"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_superblocks"
+    status: implemented
+
+  - contract: batched-beam-search-v1.yaml
+    equation: beam_selection
+    function: "pack_a_index"
+    status: implemented
+
+  - contract: batched-beam-search-v1.yaml
+    equation: beam_selection
+    function: "pack_b_index"
+    status: implemented
+
+  - contract: batched-beam-search-v1.yaml
+    equation: beam_selection
+    function: "swizzle_index"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_elements"
+    status: implemented
+
+  - contract: safetensors-cpu-dispatch-v1.yaml
+    equation: format_parity
+    function: "cpu_avx512_q4k_matvec"
+    status: implemented
+
+  - contract: safetensors-cpu-dispatch-v1.yaml
+    equation: format_parity
+    function: "cpu_avx2_q4k_matvec"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: speedup_condition
+    function: "compute_speedup"
+    status: implemented
+
+  - contract: qk-norm-apr-loader-v1.yaml
+    equation: qk_norm_load
+    function: "load_or_detect"
+    status: implemented
+
+  - contract: metaheuristics-v1.yaml
+    equation: best_monotone
+    function: "best_backend"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "validate_size"
+    status: implemented
+
+  - contract: batched-beam-search-v1.yaml
+    equation: beam_selection
+    function: "validate_index"
+    status: implemented
+
+  - contract: hybrid-layer-dispatch-v1.yaml
+    equation: conv1d_causal
+    function: "validated_len"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "checked_add"
+    status: implemented
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: top_p
+    function: "tiled_sum_2d"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "tiled_max_2d"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: chunked_prefill
+    function: "tiled_min_2d"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "vec_add"
+    status: implemented
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: fused_kernel
+    function: "upload_weight"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "weight_count"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "weight_bytes"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "dot_async"
+    status: implemented
+
+  - contract: metrics-ranking-v1.yaml
+    equation: hit_at_k
+    function: "list_adapters"
+    status: implemented
+
+  - contract: gelu-kernel-v1.yaml
+    equation: gelu_tanh_approx
+    function: "tanh_async"
+    status: implemented
+
+  - contract: loss-functions-v1.yaml
+    equation: bce
+    function: "console_log"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "num_operations"
+    status: implemented
+
+  - contract: qwen3-shapes-v1.yaml
+    equation: o_projection_transpose
+    function: "tile_shape"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "tile_count"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_tiles"
+    status: implemented
+
+  - contract: flash-attention-v1.yaml
+    equation: flash_attention
+    function: "iter_tiles"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "slice_dim"
+    status: implemented
+
+  - contract: hybrid-layer-dispatch-v1.yaml
+    equation: hybrid_dispatch
+    function: "linear_index"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "all_async"
+    status: implemented
+
+  - contract: batched-beam-search-v1.yaml
+    equation: beam_selection
+    function: "adapter_index"
+    status: implemented
+
+  - contract: safetensors-cpu-dispatch-v1.yaml
+    equation: format_parity
+    function: "golden_path"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_tests"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "pass_rate"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: convergence
+    function: "for_backends"
+    status: implemented
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: fused_kernel
+    function: "input_sizes"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "on_poll_end"
+    status: implemented
+
+  - contract: performance-grading-v1.yaml
+    equation: llamacpp_parity
+    function: "yield_ratio"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "idle_time"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    function: "open_connection"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_node"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_edge"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "current_scope"
+    status: implemented
+
+  - contract: batched-beam-search-v1.yaml
+    equation: batched_beam_projection
+    function: "record_kernel_launch"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: pcie_overhead
+    function: "record_transfer"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_dependency"
+    status: implemented
+
+  - contract: gnn-v1.yaml
+    equation: message_passing
+    function: "node_by_name"
+    status: implemented
+
+  - contract: batched-beam-search-v1.yaml
+    equation: batched_beam_projection
+    function: "kernel_nodes"
+    status: implemented
+
+  - contract: safetensors-cpu-dispatch-v1.yaml
+    equation: format_parity
+    function: "critical_path"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: flops_per_token
+    function: "compute_slack"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: throughput_target
+    function: "roofline_distance"
+    status: implemented
+
+  - contract: ptx-target-parity-v1.yaml
+    equation: jit_compilation_success
+    function: "ptx_hash"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "transfer_bytes"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: name_resolution
+    function: "lookup_name"
+    status: implemented
+
+  - contract: safetensors-cpu-dispatch-v1.yaml
+    equation: format_parity
+    function: "lookup_path"
+    status: implemented
+
+  - contract: performance-grading-v1.yaml
+    equation: llamacpp_parity
+    function: "compression_ratio"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "throughput_gbps"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: correctness_under_batching
+    function: "validate_request"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "validate_pipelined"
+    status: implemented
+
+  - contract: qwen35-hybrid-forward-v1.yaml
+    equation: gradient_flow
+    function: "validate_connections"
+    status: implemented
+
+  - contract: classification-finetune-v1.yaml
+    equation: softmax_sum
+    function: "assert_finite"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "throughput_ceiling"
+    status: implemented
+
+  - contract: qk-norm-apr-loader-v1.yaml
+    equation: qk_norm_load
+    function: "record_load"
+    status: implemented
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: batched_serial_equivalence
+    function: "record_prefill"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: decode_degradation
+    function: "record_decode"
+    status: implemented
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: batched_serial_equivalence
+    function: "prefill_tokens_per_second"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "should_cache"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_pending"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: dequant_dot
+    function: "can_produce"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: dequant_dot
+    function: "can_consume"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "active_count"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: hybrid_layer_schedule
+    function: "add_layer"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_error"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "critical_count"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "warning_count"
+    status: implemented
+
+  - contract: gpu-decode-profiling-v1.yaml
+    equation: report_fidelity
+    function: "worst_brick"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: hybrid_layer_schedule
+    function: "record_layer"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: hybrid_layer_schedule
+    function: "decisive_layer"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "track_token"
+    status: implemented
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: top_k
+    function: "compute_rank"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "begin_forward"
+    status: implemented
+
+  - contract: loss-functions-v1.yaml
+    equation: nll
+    function: "record_logits"
+    status: implemented
+
+  - contract: embedding-algebra-v1.yaml
+    equation: unembedding_projection
+    function: "record_kv_state"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "end_forward"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: architecture_normalization
+    function: "summary_to_json"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: speedup_condition
+    function: "add_step"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: correctness_under_batching
+    function: "allow_request"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "split_batch"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "max_resources"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: convergence
+    function: "for_backend"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "full_iterations"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "tail_size"
+    status: implemented
+
+  - contract: preprocessing-normalization-v1.yaml
+    equation: minmax_scaler
+    function: "tail_range"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "cpu_cycles"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "cache_efficiency"
+    status: implemented
+
+  - contract: gpu-decode-profiling-v1.yaml
+    equation: report_fidelity
+    function: "start_brick"
+    status: implemented
+
+  - contract: gpu-decode-profiling-v1.yaml
+    equation: report_fidelity
+    function: "stop_brick"
+    status: implemented
+
+  - contract: gpu-decode-profiling-v1.yaml
+    equation: report_fidelity
+    function: "brick_stats"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "pending_count"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "record_elapsed_with_bytes"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "all_stats"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "brick_names"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "tile_summary"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "enable_graph"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "disable_graph"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "execution_graph"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "graph_record_kernel"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "graph_to_dot"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "graph_to_csr"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "graph_clear"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "start_tile"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "stop_tile"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "tile_stats"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "valid_count"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: throughput_scaling
+    function: "pressure_level"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_gflops"
+    status: implemented
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: fused_kernel
+    function: "check_input"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_alloc"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "packed_a_size"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "packed_b_size"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "estimate_time_us"
+    status: implemented
+
+  - contract: batched-beam-search-v1.yaml
+    equation: beam_selection
+    function: "record_selection"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: throughput_target
+    function: "roofline_analysis"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "memory_bytes"
+    status: implemented
+
+  - contract: flash-attention-v1.yaml
+    equation: flash_attention
+    function: "num_tiles"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: layer_composition
+    function: "rms_norm"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "validate_buffer"
+    status: implemented
+
+  - contract: rope-extrapolation-v1.yaml
+    equation: ntk_scaled_base
+    function: "mark_trained"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: training_loss
+    function: "training_stats"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: training_loss
+    function: "training_progress"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "cache_path"
+    status: implemented
+
+  - contract: qk-norm-apr-loader-v1.yaml
+    equation: qk_norm_load
+    function: "load_or_create"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: speedup_bound
+    function: "save_apr"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: speedup_bound
+    function: "load_apr"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "throughput_mape"
+    status: implemented
+
+  - contract: qk-norm-apr-loader-v1.yaml
+    equation: qk_norm_load
+    function: "load_or_default"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "save_to_cache"
+    status: implemented
+
+  - contract: qwen3moe-shapes-v1.yaml
+    equation: swiglu_ratio
+    function: "render_compact"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: gradient_boost
+    function: "online_learner"
+    status: implemented
+
+  - contract: batched-beam-search-v1.yaml
+    equation: batched_beam_projection
+    function: "kernel_bandit"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: negative_gradient
+    function: "ema_loss"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: gradient_boost
+    function: "exploration_rate"
+    status: implemented
+
+  - contract: performance-grading-v1.yaml
+    equation: concrete_instance
+    function: "model_params_b"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: draft_decode
+    function: "num_layers"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "vocab_size"
+    status: implemented
+
+  - contract: hybrid-layer-dispatch-v1.yaml
+    equation: conv1d_causal
+    function: "seq_len"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "cuda_graphs"
+    status: implemented
+
+  - contract: conversation-generation-v1.yaml
+    equation: conversation_types
+    function: "quant_type"
+    status: implemented
+
+  - contract: conversation-generation-v1.yaml
+    equation: conversation_types
+    function: "kernel_type"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "gpu_l2_cache_mb"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: throughput_scaling
+    function: "calculate_efficiency"
+    status: implemented
+
+  - contract: performance-grading-v1.yaml
+    equation: efficiency_grade
+    function: "classify_bottleneck"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "max_pool2d"
+    status: implemented
+
+  - contract: metaheuristics-v1.yaml
+    equation: best_monotone
+    function: "select_best"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: layer_composition
+    function: "norm_linf"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: architecture_normalization
+    function: "minmax_normalize"
+    status: implemented
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: top_p
+    function: "sum_kahan"
+    status: implemented
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: top_p
+    function: "sum_of_squares"
+    status: implemented
+
+  - contract: metaheuristics-v1.yaml
+    equation: best_monotone
+    function: "clear_history"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: attention_entropy
+    function: "query_device"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "supports_cuda"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: pcie_overhead
+    function: "low_overhead"
+    status: implemented
+
+  - contract: gelu-kernel-v1.yaml
+    equation: gelu_tanh_approx
+    function: "tanh_scalar"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: contract_composition
+    function: "connected_components"
+    status: implemented
+
+  - contract: qwen35-hybrid-forward-v1.yaml
+    equation: activation_magnitude
+    function: "gradient_magnitude"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "fft_batched"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "forward_r2c"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "slice_size"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "storage_size"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "nnz_blocks"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: hybrid_layer_schedule
+    function: "col_indices"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "avg_nnz_per_row"
+    status: implemented
+
+  - contract: pagerank-kernel-v1.yaml
+    equation: power_iteration
+    function: "fill_uniform"
+    status: implemented
+
+  - contract: f16-conversion-v1.yaml
+    equation: f16_to_f32_bias
+    function: "fill_normal"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "cost_multiplier"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: pcie_overhead
+    function: "avg_cost_per_decision"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_host"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "metric_names"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: speedup_bound
+    function: "memory_usage"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect_skew"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "host_count"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "record_batch"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "all_health"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "buffer_size"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "export_count"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "format_dogstatsd"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_route"
+    status: implemented
+
+  - contract: metrics-ranking-v1.yaml
+    equation: hit_at_k
+    function: "delivery_results"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "alert_count"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: gradient_boost
+    function: "format_rate"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "format_bytes"
+    status: implemented
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: effective_context
+    function: "key_number"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "record_pass"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "all_passed"
+    status: implemented
+
+  - contract: lbfgs-kernel-v1.yaml
+    equation: two_loop_recursion
+    function: "enter_recursion"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: draft_decode
+    function: "exit_recursion"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: correctness_under_batching
+    function: "request_memory"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: speedup_bound
+    function: "release_memory"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "validate_bytes"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "validate_floats"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: flops_per_token
+    function: "compute_checksum"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "validate_numeric"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "calculate_cost"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_spend"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: architecture_normalization
+    function: "export_json"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_irqs"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_snapshot"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect_interference"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_metric"
+    status: implemented
+
+  - contract: preprocessing-normalization-v1.yaml
+    equation: minmax_scaler
+    function: "time_range"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "max_age"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "running_count"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "waiting_count"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "swapped_count"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: correctness_under_batching
+    function: "add_request"
+    status: implemented
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: fused_kernel
+    function: "input_len"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "remaining_tokens"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "add_token"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: speedup_condition
+    function: "simulate_step"
+    status: implemented
+
+  - contract: safetensors-cpu-dispatch-v1.yaml
+    equation: format_parity
+    function: "validate_path"
+    status: implemented
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: attention_sparsity
+    function: "num_weights"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "dominant_format"
+    status: implemented
+
+  - contract: performance-grading-v1.yaml
+    equation: llamacpp_parity
+    function: "memory_ratio"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "available_count"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "execute_on_all"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: gradient_boost
+    function: "success_rate"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "format_report"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: draft_decode
+    function: "exit_code"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "theoretical_peak_for_size"
+    status: implemented
+
+  - contract: fused-qkv-projection-v1.yaml
+    equation: shared_q8_qkv
+    function: "collect_baseline"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: cg_minimize
+    function: "add_point"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: cg_minimize
+    function: "point_count"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "size_range"
+    status: implemented
+
+  - contract: hybrid-layer-dispatch-v1.yaml
+    equation: hybrid_dispatch
+    function: "fit_linear"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "fit_all"
+    status: implemented
+
+  - contract: performance-grading-v1.yaml
+    equation: concrete_instance
+    function: "best_model"
+    status: implemented
+
+  - contract: performance-grading-v1.yaml
+    equation: concrete_instance
+    function: "export_model"
+    status: implemented
+
+  - contract: preprocessing-normalization-v1.yaml
+    equation: minmax_scaler
+    function: "range_width"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect_regressions"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: pcie_overhead
+    function: "transfer_dominated"
+    status: implemented
+
+  - contract: lora-algebra-v1.yaml
+    equation: shape_preservation
+    function: "eviction_strategy"
+    status: implemented
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: prefill_incremental
+    function: "sequence_ids"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "num_blocks"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "expected_throughput"
+    status: implemented
+
+  - contract: tensor-inventory-v1.yaml
+    equation: parameter_decomposition
+    function: "verify_counts"
+    status: implemented
+
+  - contract: qwen3-shapes-v1.yaml
+    equation: o_projection_transpose
+    function: "distribution_shape"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_baseline"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "baseline_count"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: flops_per_token
+    function: "compute_threshold"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect_trend"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "clear_all"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: throughput_target
+    function: "freq_utilization"
+    status: implemented
+
+  - contract: decision-tree-v1.yaml
+    equation: mse_split
+    function: "trimmed_mean"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "count_outliers"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "time_to_throttle"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "correlation_to_latency"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_counter"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "metric_count"
+    status: implemented
+
+  - contract: f16-conversion-v1.yaml
+    equation: roundtrip
+    function: "clear_values"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "format_help"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "format_type"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "problem_size"
+    status: implemented
+
+  - contract: qk-norm-apr-loader-v1.yaml
+    equation: qk_norm_load
+    function: "load_profile"
+    status: implemented
+
+  - contract: qk-norm-apr-loader-v1.yaml
+    equation: qk_norm_load
+    function: "load_default"
+    status: implemented
+
+  - contract: metrics-ranking-v1.yaml
+    equation: hit_at_k
+    function: "list_profiles"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "profile_count"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "clear_cache"
+    status: implemented
+
+  - contract: qk-norm-apr-loader-v1.yaml
+    equation: qk_norm_load
+    function: "load_intensity"
+    status: implemented
+
+  - contract: preprocessing-normalization-v1.yaml
+    equation: minmax_scaler
+    function: "range_mhz"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect_governor"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: dequant_dot
+    function: "can_control"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: chunked_prefill
+    function: "min_mhz"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "max_mhz"
+    status: implemented
+
+  - contract: pagerank-kernel-v1.yaml
+    equation: power_iteration
+    function: "uniform_governor"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "current_mhz"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "current_ghz"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: throughput_scaling
+    function: "efficiency_pct"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: numerical_stability
+    function: "stability_pct"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    function: "score_performance"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: speedup_condition
+    function: "score_speedup"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_trace"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: convergence
+    function: "traces_for_kernel"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "checksum_match"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "fnv1a_f32"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "add_pass"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_fail"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "failure_count"
+    status: implemented
+
+  - contract: pca-v1.yaml
+    equation: pca_transform
+    function: "top_left"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "trace_count"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_syscall"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: throughput_target
+    function: "relative_bandwidth"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: throughput_scaling
+    function: "efficiency_factor"
+    status: implemented
+
+  - contract: gpu-context-health-v1.yaml
+    equation: context_health
+    function: "submit_attempt"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "claim_count"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "attempt_count"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: dequant_dot
+    function: "can_claim"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: dequant_dot
+    function: "can_verify"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: dequant_dot
+    function: "can_approve"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_criterion"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_evidence"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "passed_count"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "failed_count"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    function: "weighted_score"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_score"
+    status: implemented
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: attention_sparsity
+    function: "weights_valid"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: architecture_normalization
+    function: "benchmark_to_json"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: architecture_normalization
+    function: "comparison_to_json"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_metadata"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_entry"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: architecture_normalization
+    function: "backend_str"
+    status: implemented
+
+  - contract: conversation-generation-v1.yaml
+    equation: conversation_types
+    function: "workload_type"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "capture_golden"
+    status: implemented
+
+  - contract: qk-norm-apr-loader-v1.yaml
+    equation: qk_norm_load
+    function: "load_golden"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect_regression"
+    status: implemented
+
+  - contract: metrics-ranking-v1.yaml
+    equation: hit_at_k
+    function: "list_goldens"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: flops_per_token
+    function: "compute_hash"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "max_regression"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "exceeds_threshold"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_time_us"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "p50_latency_us"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "p99_latency_us"
+    status: implemented
+
+  - contract: preprocessing-normalization-v1.yaml
+    equation: standard_scaler
+    function: "std_dev"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "add_all"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "data_count"
+    status: implemented
+
+  - contract: performance-grading-v1.yaml
+    equation: efficiency_grade
+    function: "classify_anomaly"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect_realtime"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "count_by_severity"
+    status: implemented
+
+  - contract: fused-qkv-projection-v1.yaml
+    equation: shared_q8_qkv
+    function: "learn_baseline"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: throughput_scaling
+    function: "average_efficiency"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: throughput_scaling
+    function: "efficiency_trend"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "max_bandwidth"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "increase_size"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "decrease_size"
+    status: implemented
+
+  - contract: online-softmax-v1.yaml
+    equation: online_normalizer
+    function: "toggle_running"
+    status: implemented
+
+  - contract: metrics-ranking-v1.yaml
+    equation: hit_at_k
+    function: "prev_item"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: name_resolution
+    function: "short_name"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: transpose_involution
+    function: "swap_percent"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: request_state
+    function: "active_profile"
+    status: implemented
+
+  - contract: batched-beam-search-v1.yaml
+    equation: beam_selection
+    function: "activate_selected"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "throughput_summary"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "latency_breakdown"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: cg_minimize
+    function: "ridge_point"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: speedup_bound
+    function: "theoretical_peak_at_oi"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: throughput_target
+    function: "rtx_3090"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "m2_ultra_gpu"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "regression_count"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "improvement_count"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "unchanged_count"
+    status: implemented
+
+  - contract: gnn-v1.yaml
+    equation: message_passing
+    function: "extract_features"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_prototype"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "compress_data"
+    status: implemented
+
+  - contract: qwen35-hybrid-forward-v1.yaml
+    equation: gradient_flow
+    function: "skip_slow"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "quick_validate"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "full_validate"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    function: "category_score"
+    status: implemented
+
+  - contract: performance-grading-v1.yaml
+    equation: efficiency_grade
+    function: "classify_workload"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect_anomaly"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: classify_drift
+    function: "check_drift"
+    status: implemented
+
+  - contract: embedding-algebra-v1.yaml
+    equation: unembedding_projection
+    function: "export_state"
+    status: implemented
+
+  - contract: embedding-algebra-v1.yaml
+    equation: unembedding_projection
+    function: "import_state"
+    status: implemented
+
+  - contract: embedding-algebra-v1.yaml
+    equation: unembedding_projection
+    function: "github_state"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_result"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_failures"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: gradient_boost
+    function: "failure_rate"
+    status: implemented
+
+  - contract: safetensors-cpu-dispatch-v1.yaml
+    equation: format_parity
+    function: "validate_float"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: garbage_oracle
+    function: "validate_string"
+    status: implemented
+
+  - contract: conversation-generation-v1.yaml
+    equation: conversation_types
+    function: "validate_u64"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: kv_cache_growth
+    function: "positive_only"
+    status: implemented
+
+  - contract: conversation-generation-v1.yaml
+    equation: conversation_types
+    function: "safe_div"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: speedup_bound
+    function: "bound_value"
+    status: implemented
+
+  - contract: safetensors-cpu-dispatch-v1.yaml
+    equation: format_parity
+    function: "sanitize_float"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "data_parallel"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "byte_size"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "flop_count"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: speedup_bound
+    function: "memory_value"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: simd_only_threshold
+    function: "simd_auto"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "gpu_auto"
+    status: implemented
+
+  - contract: safetensors-cpu-dispatch-v1.yaml
+    equation: format_parity
+    function: "cpu_avx512_vnni_q4k_q8k"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "macro_tile_offset"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "midi_tile_offset"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "micro_tile_offset"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "block_to_linear_offset"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "actual_tile_dims"
+    status: implemented
+
+  - contract: graph-centrality-v1.yaml
+    equation: closeness
+    function: "optimal_prefetch_distance"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "weight_row_offset"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: per_row_scale
+    function: "optimal_parallel_rows"
+    status: implemented
+
+  - contract: flash-attention-v1.yaml
+    equation: flash_attention
+    function: "num_macro_tiles"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "expected_throughput_gflops"
+    status: implemented
+
+  - contract: safetensors-cpu-dispatch-v1.yaml
+    equation: format_parity
+    function: "tiled_reduce_partial"
+    status: implemented
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: top_p
+    function: "tiled_sum_2d_gpu"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "tiled_max_2d_gpu"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: chunked_prefill
+    function: "tiled_min_2d_gpu"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "vec_add_async"
+    status: implemented
+
+  - contract: metrics-ranking-v1.yaml
+    equation: hit_at_k
+    function: "list_adapters_async"
+    status: implemented
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: top_p
+    function: "tiled_sum_2d_async"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "tiled_max_2d_async"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: chunked_prefill
+    function: "tiled_min_2d_async"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "recommended_workgroup_size"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_weighted_edge"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_node_in_scope"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect_ping_pong"
+    status: implemented
+
+  - contract: safetensors-cpu-dispatch-v1.yaml
+    equation: format_parity
+    function: "critical_path_summary"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    function: "cycles_per_element"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "diagnose_from_cycles"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "validate_header_size"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    function: "budget_us_per_tok"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "record_decode_batch"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "throughput_from_latency"
+    status: implemented
+
+  - contract: qwen35-hybrid-forward-v1.yaml
+    equation: gradient_flow
+    function: "should_skip_wake"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: hybrid_layer_schedule
+    function: "should_trace_layer"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    function: "bits_per_element"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "current_logit_trace"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: hybrid_layer_schedule
+    function: "record_layer_activation"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: name_resolution
+    function: "record_quant_error"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "init_time_service"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "l2_cache_hit_rate"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "fnv1a_f32_checksum"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "tile_stats_to_json"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "graph_push_scope"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "graph_pop_scope"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "graph_record_brick"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "graph_is_scope_balanced"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "enable_tile_profiling"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "disable_tile_profiling"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "all_tile_stats"
+    status: implemented
+
+  - contract: cpu-work-stealing-v1.yaml
+    equation: l1_tiling
+    function: "reset_tile_stats"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "format_by_ggml_type"
+    status: implemented
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: fused_kernel
+    function: "validate_weight_buffer"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "validate_f32_buffer"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "validate_gemv_shapes"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: classify_drift
+    function: "detect_concept_drift"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: gradient_boost
+    function: "enable_online_learning"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: gradient_boost
+    function: "disable_online_learning"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "record_and_persist"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "recommend_kernel_with_exploration"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "gpu_mem_bw_gbs"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "gpu_compute_tflops"
+    status: implemented
+
+  - contract: random-forest-v1.yaml
+    equation: predict
+    function: "train_random_forest"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "enumerate_cuda_devices"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: attention_entropy
+    function: "query_cuda_memory"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "cuda_monitor_available"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "validate_csr_invariants"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: draft_decode
+    function: "row_length_variance"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "gemm_strided_batched"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "time_until_preemption"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "estimated_execution_time"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: gradient_boost
+    function: "slo_compliance_rate"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "active_host_count"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect_skewed_hosts"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "alert_from_anomaly"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "add_default_channel"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "checked_add_i64"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "checked_add_usize"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: name_resolution
+    function: "record_error_handled"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: garbage_oracle
+    function: "validate_toml_string"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    function: "price_per_second"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    function: "joules_per_second"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "calculate_from_energy"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "detect_cost_creep"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: graph_compatibility
+    function: "capture_system_state"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_raw_size"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "total_compressed_size"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "max_seq_len"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "all_sequence_ids"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    function: "bits_per_weight"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "ggml_type_to_format"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "hosts_with_label"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "hosts_with_arch"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: flops_per_token
+    function: "compute_peak_gflops"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: speedup_bound
+    function: "memory_peak_gflops"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "detect_size_cliffs"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "compare_all_backends"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "free_block_count"
+    status: implemented
+
+  - contract: validated-tensor-v1.yaml
+    equation: density_gate
+    function: "used_block_count"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "used_memory_bytes"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: speedup_bound
+    function: "select_eviction_target"
+    status: implemented
+
+  - contract: online-softmax-v1.yaml
+    equation: online_normalizer
+    function: "apply_streaming_llm"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "validate_f971_throughput"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "validate_f972_sm_util"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "add_with_latency"
+    status: implemented
+
+  - contract: tensor-names-v1.yaml
+    equation: name_resolution
+    function: "validate_metric_name"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "compare_and_mark"
+    status: implemented
+
+  - contract: gpu-weight-residency-v1.yaml
+    equation: pcie_overhead
+    function: "syscall_overhead_percent"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "typical_latency_cycles"
+    status: implemented
+
+  - contract: decision-tree-v1.yaml
+    equation: mse_split
+    function: "matrix_working_set"
+    status: implemented
+
+  - contract: decision-tree-v1.yaml
+    equation: mse_split
+    function: "elementwise_working_set"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "run_with_baseline"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "allow_version_mismatch"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "peak_memory_bytes"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect_zscore_outliers"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect_iqr_outliers"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: min_samples_guard
+    function: "detect_change_points"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    function: "bandwidth_per_lane"
+    status: implemented
+
+  - contract: qk-norm-apr-loader-v1.yaml
+    equation: qk_norm_load
+    function: "toggle_load_last"
+    status: implemented
+
+  - contract: metaheuristics-v1.yaml
+    equation: ga_crossover
+    function: "space_savings_percent"
+    status: implemented
+
+  - contract: metaheuristics-v1.yaml
+    equation: best_monotone
+    function: "latency_history_slice"
+    status: implemented
+
+  - contract: preprocessing-normalization-v1.yaml
+    equation: minmax_scaler
+    function: "typical_intensity_range"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: convergence
+    function: "delay_for_attempt"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: covariance_update
+    function: "false_positive_rate"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "clear_baseline_cache"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: target_path
+    function: "checked_add_u64"
+    status: implemented
+
+  - contract: conversation-generation-v1.yaml
+    equation: conversation_types
+    function: "checked_mul_u64"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "strategy_with_priority"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    function: "midi_tiles_per_macro"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    function: "micro_tiles_per_midi"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "record_kernel_launch_with_metrics"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "assert_equiv_with_tolerance"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    function: "budget_tok_per_sec"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "gemm_blis_with_prepacked_b"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "gemm_reference_with_jidoka"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "bootstrap_from_five_whys"
+    status: implemented
+
+  - contract: metaheuristics-v1.yaml
+    equation: best_monotone
+    function: "select_best_available_backend"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: convergence
+    function: "select_backend_for_operation"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: attention_entropy
+    function: "query_cuda_device_info"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    function: "actual_bits_per_weight"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    function: "avg_bits_per_weight"
+    status: implemented
+
+  - contract: fused-qkv-projection-v1.yaml
+    equation: shared_q8_qkv
+    function: "validate_f975_baseline_available"
+    status: implemented
+
+  - contract: gpu-context-health-v1.yaml
+    equation: context_health
+    function: "validate_f976_no_foreign_code"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "validate_f982_gpu_detected"
+    status: implemented
+
+  - contract: performance-grading-v1.yaml
+    equation: efficiency_grade
+    function: "validate_f983_grade_calculated"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "validate_f984_health_indicators"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "should_trace_gpu_transfer"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "test_float_edge_cases"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: acceptance
+    function: "test_u64_edge_cases"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "gemm_blis_parallel_with_prepacked_b"
+    status: implemented
+

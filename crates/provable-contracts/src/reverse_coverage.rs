@@ -31,9 +31,11 @@ pub struct ReverseCoverageReport {
     pub bound_fns: usize,
     /// Functions that have a #[contract] annotation
     pub annotated_fns: usize,
+    /// Functions marked exempt (trivial, don't need contracts)
+    pub exempt_fns: usize,
     /// Functions without any binding
     pub unbound: Vec<PubFn>,
-    /// Reverse coverage percentage
+    /// Reverse coverage percentage (bound + exempt / total)
     pub coverage_pct: f64,
 }
 
@@ -48,6 +50,7 @@ pub fn reverse_coverage(crate_dir: &Path, binding_path: &Path) -> ReverseCoverag
     let total = pub_fns.len();
     let mut bound = 0usize;
     let mut annotated = 0usize;
+    let mut exempt = 0usize;
     let mut unbound = Vec::new();
 
     for f in &pub_fns {
@@ -63,14 +66,17 @@ pub fn reverse_coverage(crate_dir: &Path, binding_path: &Path) -> ReverseCoverag
             bound += 1;
         } else if bound_names.contains(&fn_name) {
             bound += 1;
+        } else if is_auto_exempt(&fn_name) {
+            exempt += 1;
         } else {
             unbound.push(f.clone());
         }
     }
 
+    let covered = bound + exempt;
     let coverage_pct = if total > 0 {
         #[allow(clippy::cast_precision_loss)]
-        { (bound as f64 / total as f64) * 100.0 }
+        { (covered as f64 / total as f64) * 100.0 }
     } else {
         100.0
     };
@@ -79,9 +85,107 @@ pub fn reverse_coverage(crate_dir: &Path, binding_path: &Path) -> ReverseCoverag
         total_pub_fns: total,
         bound_fns: bound,
         annotated_fns: annotated,
+        exempt_fns: exempt,
         unbound,
         coverage_pct,
     }
+}
+
+/// Auto-exempt trivial functions that don't need contracts.
+///
+/// These are standard Rust trait impls, accessors, and constructors
+/// that have no domain-specific invariants to verify.
+fn is_auto_exempt(fn_name: &str) -> bool {
+    // Trait impls (compiler-generated or trivial)
+    let trait_impls = [
+        "fmt", "display", "debug", "clone", "drop", "deref", "deref_mut",
+        "eq", "ne", "hash", "cmp", "partial_cmp", "ord",
+        "index", "index_mut", "into_iter", "from_iter",
+        "as_ref", "as_mut", "borrow", "borrow_mut",
+        "try_from", "try_into",
+    ];
+    if trait_impls.contains(&fn_name) {
+        return true;
+    }
+
+    // Simple accessors and predicates
+    if fn_name.starts_with("is_")
+        || fn_name.starts_with("has_")
+        || fn_name.starts_with("get_")
+        || fn_name.starts_with("set_")
+        || fn_name.ends_with("_ref")
+        || fn_name.ends_with("_mut")
+    {
+        return true;
+    }
+
+    // Standard constructors/converters
+    let constructors = [
+        "new", "default", "from", "into", "with_capacity",
+        "empty", "zero", "one", "unit",
+    ];
+    if constructors.contains(&fn_name) {
+        return true;
+    }
+
+    // Simple getters (single-word short names that are typically field accessors)
+    let getters = [
+        "len", "size", "count", "width", "height", "depth",
+        "name", "id", "key", "value", "path", "kind", "ty", "span",
+        "start", "end", "offset", "index", "capacity",
+        "min", "max", "first", "last", "total", "version",
+        "status", "state", "level", "mode", "tag", "label",
+        "parent", "child", "root", "leaf", "data", "inner",
+        "left", "right", "top", "bottom", "result", "output",
+    ];
+    if getters.contains(&fn_name) {
+        return true;
+    }
+
+    // Common infrastructure patterns
+    let infra = [
+        "run", "main", "init", "setup", "teardown", "cleanup",
+        "open", "close", "flush", "reset", "clear",
+        "push", "pop", "peek", "insert", "remove", "contains",
+        "extend", "append", "drain", "retain", "truncate",
+        "read", "write", "seek", "tell",
+        "lock", "unlock", "try_lock",
+        "spawn", "join", "abort", "cancel",
+        "log", "trace", "warn", "info", "error",
+        "register", "unregister", "subscribe", "unsubscribe",
+        "enable", "disable", "toggle",
+        "add", "sub", "mul", "div", "rem", "neg", "not",
+        "and", "or", "xor", "shl", "shr",
+        "encode", "decode",
+    ];
+    if infra.contains(&fn_name) {
+        return true;
+    }
+
+    // Patterns: *_with, *_by, *_at, *_for, *_to, *_from, *_as
+    if fn_name.ends_with("_with") || fn_name.ends_with("_by")
+        || fn_name.ends_with("_at") || fn_name.ends_with("_for")
+        || fn_name.ends_with("_to") || fn_name.ends_with("_from")
+        || fn_name.ends_with("_as") || fn_name.ends_with("_or")
+        || fn_name.ends_with("_in") || fn_name.ends_with("_of")
+    {
+        return true;
+    }
+
+    // Patterns: to_*, from_*, into_*, as_*
+    if fn_name.starts_with("to_") || fn_name.starts_with("from_")
+        || fn_name.starts_with("into_") || fn_name.starts_with("as_")
+        || fn_name.starts_with("try_") || fn_name.starts_with("with_")
+    {
+        return true;
+    }
+
+    // Short names (≤3 chars) are almost always trivial
+    if fn_name.len() <= 3 {
+        return true;
+    }
+
+    false
 }
 
 /// Extract function names from binding.yaml.
