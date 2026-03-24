@@ -1118,3 +1118,18 @@ bindings:
     status: implemented
     notes: "Domain-matched: dequant.rs:302"
 
+
+  - contract: q4k-cross-backend-parity-v1.yaml
+    equation: dot_product_epsilon
+    function: "fused_q4k_q8k_parallel_matvec_into"
+    status: implemented
+
+  - contract: wgpu-forward-pass-v1.yaml
+    equation: dequant_correctness
+    function: "dequant_model_weights"
+    status: implemented
+
+  - contract: wgpu-forward-pass-v1.yaml
+    equation: gemv_dispatch
+    function: "GpuMatmulCache::matmul_cached"
+    status: implemented

@@ -1,0 +1,15 @@
+name: wgpu-forward-pass-v1
+version: "1.0.0"
+equations:
+  rmsnorm_correctness:
+    description: "WGSL RMSNorm within 1e-5 of CPU"
+    measurement: "4.77e-7 (PMAT-324)"
+  gemv_dispatch:
+    description: "M=1 uses GEMV, M>1 uses tiled GEMM"
+  dequant_correctness:
+    description: "Q4K->F32 dequant preserves semantics"
+postconditions:
+  - name: performance_target
+    threshold: 25.0
+    unit: "tok/s"
+    measurement: "27.6 (PMAT-331)"
