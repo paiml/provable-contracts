@@ -34,6 +34,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 17 | [Gradual Enforcement](#17-gradual-enforcement) | [sub/gradual-enforcement.md](sub/gradual-enforcement.md) |
 | 18 | [PVScore](#18-pvscore) | [sub/pvscore.md](sub/pvscore.md) |
 | 19 | [Sovereign Stack Audit](#19-sovereign-stack-audit) | [sub/sovereign-stack-audit.md](sub/sovereign-stack-audit.md) |
+| 20 | [UX, Speech, Probar](#20-ux-speech-probar) | [sub/ux-speech-probar.md](sub/ux-speech-probar.md) |
 
 ---
 
@@ -737,3 +738,27 @@ other repos for contract compliance — but has zero enforcement on itself.
 4. **Security tool contracts** — bashrs/rash correctness IS the security guarantee
 5. **Reverse coverage ratchet** — CI-gated targets: 25% at 6mo, 50% at 12mo
 6. **PVScore gate at month 3** — unified 10-dim score, A >= 90 required
+
+---
+
+## 20. UX, Speech, Probar
+
+**Sub-spec**: [sub/ux-speech-probar.md](sub/ux-speech-probar.md)
+
+Four UX contract categories with proof methods:
+
+| Category | Example | Proof Method |
+|---|---|---|
+| Geometric invariants | `Rect::intersection` commutativity | Kani exhaustive |
+| Perceptual correctness | WCAG contrast ratio | Kani bounded + probar |
+| Pipeline correctness | Privacy routing, template XSS | Kani + TLA+ |
+| Visual regression | Screenshot pixel diff | probar + golden tests |
+
+Whisper.apr contracts: APR serialization roundtrip, mel spectrogram
+bounds, transcription timestamp monotonicity, language detection accuracy.
+
+probar integration: property tests as PVScore D2 data source. probar
+reports pass rate + coverage → feeds into PVScore geometric mean.
+
+apr-model-qa-playbook: MQS (Model Quality Score, 0-1000) certifies
+individual models. Composes with PVScore for codebase + model quality.
