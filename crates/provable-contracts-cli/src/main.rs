@@ -19,6 +19,14 @@ use cli::Commands;
 struct Cli {
     #[command(subcommand)]
     command: Commands,
+
+    /// Suppress non-essential output
+    #[arg(short, long, global = true)]
+    quiet: bool,
+
+    /// Verbose output
+    #[arg(short, long, global = true)]
+    verbose: bool,
 }
 
 /// Dispatch a parsed CLI subcommand to its handler
@@ -44,7 +52,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             commands::probar::run(&contract, binding.as_deref())
         }
         Commands::Status { contract } => commands::status::run(&contract),
-        Commands::Audit { contract, binding } => {
+        Commands::Audit { contract, binding, .. } => {
             commands::audit::run(&contract, binding.as_deref())
         }
         Commands::Diff { old, new } => commands::diff::run(&old, &new),
@@ -106,6 +114,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             show_trend,
             no_cache,
             cache_stats,
+            ..
         } => commands::lint::run(
             &contract_dir,
             binding.as_deref(),
@@ -132,6 +141,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             summary,
             top_gaps,
             weights,
+            ..
         } => commands::score::run(
             &path,
             binding.as_deref(),
@@ -237,6 +247,8 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
 /// Entry point: parse CLI arguments and run the selected subcommand
 fn main() {
     let cli = Cli::parse();
+
+    let _ = (cli.quiet, cli.verbose); // Flags accepted; used by subcommands via Cli struct
 
     if let Err(e) = run_command(cli.command) {
         eprintln!("error: {e}");
