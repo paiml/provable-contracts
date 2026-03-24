@@ -1,0 +1,20 @@
+name: q4k-cross-backend-parity-v1
+version: "1.0.0"
+equations:
+  dot_product_epsilon:
+    description: "Q4K dot within sqrt(K)*2^-23 across backends"
+    formula: "|dot_gpu - dot_cpu| < sqrt(K) * 2^-23 * |dot_cpu|"
+  factual_match:
+    description: "Factual prompts must match across backends"
+    formula: "is_factual(prompt) -> tokens_gpu == tokens_cpu"
+preconditions:
+  - name: same_weights
+  - name: greedy_decode
+postconditions:
+  - name: factual_parity
+    severity: critical
+  - name: canary_gate_pass
+    severity: critical
+findings:
+  - pmat: 330
+    description: "1.5B GPU 'Go' vs CPU 'Rust'. 3B correct."
