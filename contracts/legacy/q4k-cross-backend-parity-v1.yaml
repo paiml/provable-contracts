@@ -1,0 +1,110 @@
+# Q4K Cross-Backend Parity Contract v1
+#
+# STATUS: Authoritative
+# PMAT: 329
+# CONSUMERS:
+#   - realizr Q4K GEMV (CUDA DP4A, CPU AVX2, WGPU)
+#   - canary_pytorch.py (canary testing)
+#   - probador llm test (correctness gate)
+#
+# ENFORCEMENT: Canary test ship/kill gate.
+# High-confidence tokens MUST match; low-confidence divergence PERMITTED.
+#
+# ROOT CAUSE (Five-Whys):
+#   Why diverge? → argmax picks different token
+#   Why different argmax? → logits differ by ~1e-3
+#   Why logits differ? → Q4K dot product accumulation order differs
+#   Why different order? → GPU DP4A vs CPU AVX2 vs WGPU reduction
+#   Why? → FP32 addition is non-associative (IEEE 754)
+#
+# CONCLUSION: Not a bug. Permitted by IEEE 754. High-confidence outputs
+# are stable; low-confidence (creative) outputs are non-deterministic
+# across backends. This is the same behavior as PyTorch vs TensorFlow.
+
+name: q4k-cross-backend-parity-v1
+version: "1.0.0"
+description: >
+  Q4K quantized dot product produces numerically equivalent but not
+  bit-identical results across GPU (DP4A), CPU (AVX2), and WGPU backends.
+  Contract defines acceptable divergence thresholds.
+
+equations:
+  dot_product_parity:
+    description: >
+      For the same Q4K weight tensor W and input vector x, the dot product
+      y = W·x computed on different backends satisfies |y_a - y_b| < ε·|y_a|
+      where ε depends on the accumulation dimension K.
+    formula: "|dot_gpu(W, x) - dot_cpu(W, x)| < sqrt(K) * 2^-23 * |dot_cpu(W, x)|"
+    variables:
+      K: "Number of elements in dot product (e.g., 1536 for hidden_dim)"
+      epsilon: "sqrt(K) * machine_epsilon ≈ sqrt(1536) * 1.19e-7 ≈ 4.67e-6"
+
+  argmax_stability:
+    description: >
+      High-confidence tokens (probability > threshold) produce identical
+      argmax across all backends. Low-confidence tokens may diverge.
+    formula: "P(token) > 0.9 → argmax_gpu == argmax_cpu == argmax_wgpu"
+    threshold: 0.9
+
+preconditions:
+  - name: same_weights
+    description: "All backends use identical Q4K super-block bytes"
+    check: "CRC32(W_gpu) == CRC32(W_cpu) == CRC32(W_wgpu)"
+
+  - name: same_input
+    description: "All backends receive identical input token IDs"
+    check: "input_ids_gpu == input_ids_cpu"
+
+  - name: greedy_decode
+    description: "Temperature = 0 (greedy argmax, no sampling)"
+    check: "temperature == 0.0"
+
+postconditions:
+  - name: factual_match
+    description: >
+      For factual prompts with a single correct answer (math, code structure),
+      all backends MUST produce the same token sequence.
+    check: "tokens_gpu == tokens_cpu for factual prompts"
+    severity: critical
+
+  - name: creative_divergence_permitted
+    description: >
+      For creative/ambiguous prompts (names, colors, formatting),
+      backends MAY produce different token sequences.
+      Both must still be semantically valid.
+    check: "tokens_gpu != tokens_cpu PERMITTED if prob_margin < 0.1"
+    severity: info
+
+  - name: canary_gate
+    description: >
+      Ship/kill gate: all backends must pass expected-content validation
+      (e.g., math output contains correct answer, code output compiles).
+    check: "canary_match_rate >= 0.80"
+    severity: critical
+
+falsification:
+  - name: F-329-1
+    description: "If GPU and CPU produce different math answers, the contract is violated"
+    test: "assert(gpu_math_output == cpu_math_output)"
+
+  - name: F-329-2
+    description: "If logit divergence exceeds sqrt(K)*epsilon, accumulation is broken"
+    test: "assert(max_logit_diff < sqrt(1536) * 1.19e-7 * max_logit_abs)"
+
+backends:
+  - name: cuda_dp4a
+    description: "NVIDIA CUDA DP4A (INT8 dot + FP32 accum)"
+    accumulation: "per-warp reduction, then cross-warp"
+
+  - name: cpu_avx2
+    description: "x86 AVX2 SIMD (FP32 fused multiply-add)"
+    accumulation: "8-wide SIMD, horizontal reduction"
+
+  - name: wgpu_vulkan
+    description: "WGSL compute shader (FP32, workgroup reduction)"
+    accumulation: "256-thread tree reduction in shared memory"
+
+references:
+  - "IEEE 754-2019: Floating-point arithmetic non-associativity"
+  - "Goldberg 1991: What Every Computer Scientist Should Know About FP"
+  - "PMAT-328: Canary testing divergence discovery"

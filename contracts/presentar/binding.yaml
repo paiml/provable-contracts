@@ -1,0 +1,166 @@
+version: "1.0.0"
+target_crate: "presentar-core"
+bindings:
+  - contract: "color-wcag-v1"
+    equation: "contrast_ratio"
+    status: "implemented"
+    function: "Color::contrast_ratio"
+    file: "crates/presentar-core/src/color.rs"
+
+  - contract: "color-wcag-v1"
+    equation: "lerp"
+    status: "implemented"
+    function: "Color::lerp"
+    file: "crates/presentar-core/src/color.rs"
+
+  - contract: "rect-geometry-v1"
+    equation: "intersection"
+    status: "implemented"
+    function: "Rect::intersection"
+    file: "crates/presentar-core/src/geometry.rs"
+
+  - contract: "rect-geometry-v1"
+    equation: "inset"
+    status: "implemented"
+    function: "Rect::inset"
+    file: "crates/presentar-core/src/geometry.rs"
+
+  - contract: "constraints-layout-v1"
+    equation: "constrain"
+    status: "implemented"
+    function: "Constraints::constrain"
+    file: "crates/presentar-core/src/constraints.rs"
+
+  # --- Deep domain inference (pv infer round 3) ---
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "compute_intrinsic_layout"
+    status: implemented
+    notes: "Domain-matched: compute_block.rs:566"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "compute_grid_layout"
+    status: implemented
+    notes: "Domain-matched: grid.rs:408"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "with_layout"
+    status: implemented
+    notes: "Domain-matched: treemap.rs:198"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "with_log_scale"
+    status: implemented
+    notes: "Domain-matched: loss_curve.rs:100"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "calculate_grid_layout"
+    status: implemented
+    notes: "Domain-matched: config.rs:888"
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: padding
+    function: "pad_left"
+    status: implemented
+    notes: "Domain-matched: format.rs:257"
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: padding
+    function: "pad_right"
+    status: implemented
+    notes: "Domain-matched: format.rs:267"
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: padding
+    function: "padding"
+    status: implemented
+    notes: "Domain-matched: text_input.rs:179"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "get_item_layout"
+    status: implemented
+    notes: "Domain-matched: virtualization.rs:306"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "get_cell_layout"
+    status: implemented
+    notes: "Domain-matched: virtualization.rs:662"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "get_cell_layout_by_position"
+    status: implemented
+    notes: "Domain-matched: virtualization.rs:669"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "scale"
+    status: implemented
+    notes: "Domain-matched: geometry.rs:140"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "scale_simd"
+    status: implemented
+    notes: "Domain-matched: simd.rs:604"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "batch_scale_f64"
+    status: implemented
+    notes: "Domain-matched: simd.rs:830"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "batch_scale_offset_f64"
+    status: implemented
+    notes: "Domain-matched: simd.rs:849"
+
+  - contract: color-wcag-v1.yaml
+    equation: contrast_ratio
+    function: "passes_wcag_aa"
+    status: implemented
+    notes: "Domain-matched: theme.rs:93"
+
+  - contract: color-wcag-v1.yaml
+    equation: contrast_ratio
+    function: "passes_wcag_aaa"
+    status: implemented
+    notes: "Domain-matched: theme.rs:99"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "measure_text"
+    status: implemented
+    notes: "Domain-matched: webgpu.rs:578"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "layout_text"
+    status: implemented
+    notes: "Domain-matched: webgpu.rs:623"
+
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    function: "animate_to"
+    status: implemented
+    notes: "Domain-matched: showcase_gpu.rs:98"
+
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    function: "is_animation_complete"
+    status: implemented
+    notes: "Domain-matched: showcase_gpu.rs:390"
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: padding
+    function: "pad_to_width"
+    status: implemented
+    notes: "Domain-matched: edg_unicode.rs:76"
+

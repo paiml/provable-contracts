@@ -86,6 +86,12 @@ pub enum Commands {
         /// Path to binding registry YAML (adds binding coverage)
         #[arg(long)]
         binding: Option<PathBuf>,
+        /// Include fuzz coverage data
+        #[arg(long)]
+        fuzz: bool,
+        /// Reverse coverage: scan crate dir for unbound pub fns
+        #[arg(long)]
+        reverse: Option<PathBuf>,
     },
     /// Generate all artifacts (scaffold, kani, probar) to disk
     Generate {
@@ -365,5 +371,19 @@ pub enum Commands {
         /// Path to SUMMARY.md (default: book/src/SUMMARY.md)
         #[arg(long)]
         summary_path: Option<PathBuf>,
+    },
+    /// Infer contracts and bindings for unbound functions in a crate
+    Infer {
+        /// Path to the crate directory to scan
+        crate_dir: PathBuf,
+        /// Path to binding registry YAML
+        #[arg(long)]
+        binding: PathBuf,
+        /// Directory containing contract YAML files
+        #[arg(long, default_value = "contracts")]
+        contract_dir: PathBuf,
+        /// Maximum number of suggestions to show
+        #[arg(long, default_value = "20")]
+        top: usize,
     },
 }
