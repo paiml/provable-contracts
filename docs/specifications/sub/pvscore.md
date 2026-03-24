@@ -237,48 +237,72 @@ pv pvscore . --format json
 1. Letouzey, J.-L. (2012). "The SQALE Method for Evaluating Technical Debt."
    *MTD Workshop, ICSE 2012*.
 
-2. OpenSSF (2023-2026). "Scorecard: Security Health Metrics for Open Source."
-   github.com/ossf/scorecard.
+2. Zahan, N. et al. (2023). "OpenSSF Scorecard: On the Path Toward Ecosystem-wide
+   Automated Security Metrics." *IEEE Security & Privacy*. arXiv:2208.03412.
 
-3. Molnar, A. & Motogna, S. (2024). "Versioned Analysis of Software Quality
+3. Jin, S. et al. (2023). "Software Code Quality Measurement: Implications from
+   Metric Distributions." arXiv:2307.12082.
+
+4. Wong, S. et al. (2025). "A Note on Code Quality Score: LLMs for Maintainable
+   Large Codebases." arXiv:2508.02732.
+
+5. Perera, J. et al. (2023). "Quantifying Technical Debt: A Systematic Mapping Study
+   and a Conceptual Model." arXiv:2303.06535.
+
+6. Molnar, A. & Motogna, S. (2024). "Versioned Analysis of Software Quality
    Indicators and Technical Debt." arXiv:2407.15967.
 
 ### Contract and Verification Metrics
 
-4. Meyer, B. (2025). "Software engineering as a domain to formalize."
+7. Meyer, B. (2025). "Software engineering as a domain to formalize."
    arXiv:2502.11434.
 
-5. Li, Y. et al. (2025). "Do Large Language Models Respect Contracts?"
-   arXiv:2510.12047.
+8. Lim, S. et al. (2025). "ContractEval: A Benchmark for Evaluating
+   Contract-Satisfying Assertions." arXiv:2510.12047.
 
-6. Rust Std Lib Verification (2025). arXiv:2510.01072.
+9. Goel, A. et al. (2026). "An End-to-End Agentic Pipeline for Smart Contract
+   Translation and Quality Evaluation." arXiv:2602.13808.
+
+10. Rust Std Lib Verification (2025). arXiv:2510.01072.
+
+### Formal Verification Adoption
+
+11. Tu, H. et al. (2025). "Agentic Program Verification." arXiv:2511.17330.
+
+12. Pothireddypalli, S. et al. (2026). "Agentic AI-based Coverage Closure
+    for Formal Verification." arXiv:2603.03147.
 
 ### Gradual Typing Coverage
 
-7. Bader, J., Aldrich, J. & Tanter, E. (2018). "Gradual Program Verification."
-   arXiv:1710.06422.
+13. Bader, J., Aldrich, J. & Tanter, E. (2018). "Gradual Program Verification."
+    arXiv:1710.06422.
 
-8. Lehmann, N. & Tanter, E. (2023). "Gradual Liquid Type Inference."
-   OOPSLA 2023.
+14. Cassano, F. et al. (2023). "Type Prediction With Program Decomposition
+    and Fill-in-the-Type Training." arXiv:2305.17145.
 
 ### Mutation Testing
 
-9. Petrovic, G. et al. (2022). "Practical Mutation Testing at Scale."
-   *IEEE TSE 48(10)*.
+15. Petrovic, G. et al. (2022). "Practical Mutation Testing at Scale."
+    *IEEE TSE 48(10)*.
 
-10. Gopinath, R., Jensen, C. & Groce, A. (2014). "Mutations: How Close are
+16. Gopinath, R., Jensen, C. & Groce, A. (2014). "Mutations: How Close are
     they to Real Faults?" *ISSRE 2014*.
 
 ### CI/CD Quality Gates
 
-11. Feist, J. et al. (2024). "Integrating Static Code Analysis Toolchains."
+17. Sun, S., Friberg, D. & Staron, M. (2025). "'Good' and 'Bad' Failures in
+    Industrial CI/CD." arXiv:2504.11839.
+
+18. Feist, J. et al. (2024). "Integrating Static Code Analysis Toolchains."
     arXiv:2403.05986.
 
-12. Nachman, L. et al. (2025). "Dealing with SonarQube Cloud."
-    arXiv:2508.18816.
+### Build Reproducibility
+
+19. Schmid, L. et al. (2025). "Maven-Lockfile: High Integrity Rebuild of
+    Past Java Releases." arXiv:2510.00730.
 
 ### Organizational Intelligence
 
-13. PAIML Organizational Intelligence Plugin (2025-2026).
+20. PAIML Organizational Intelligence Plugin (2025-2026).
     github.com/paiml/organizational-intelligence-plugin.
-    GPU-accelerated defect pattern analysis for GitHub organizations.
+    GPU-accelerated defect pattern analysis across 28 paiml GitHub repos.
