@@ -1,0 +1,47 @@
+version: "1.0.0"
+target_crate: depyler-core
+bindings:
+  - contract: type-preservation-v1.yaml
+    equation: hir_to_rust
+    function: "hir_to_rust"
+    module_path: "depyler_core::codegen"
+    status: implemented
+    notes: "Core transpilation: HIR → Rust source"
+
+  - contract: type-preservation-v1.yaml
+    equation: generate_rust
+    function: "generate_rust"
+    module_path: "depyler_core::codegen"
+    status: implemented
+    notes: "syn::File → formatted Rust string"
+
+  - contract: semantic-equivalence-v1.yaml
+    equation: convert_stmt
+    function: "StmtConverter::convert"
+    module_path: "depyler_core::ast_bridge::converters"
+    status: implemented
+
+  - contract: semantic-equivalence-v1.yaml
+    equation: convert_expr
+    function: "ExprConverter::convert"
+    module_path: "depyler_core::ast_bridge::converters"
+    status: implemented
+
+  - contract: codegen-safety-v1.yaml
+    equation: compile_with_cargo
+    function: "compile_with_cargo"
+    module_path: "depyler_core::cargo_first"
+    status: implemented
+    notes: "Verifies generated Rust compiles"
+
+  - contract: codegen-safety-v1.yaml
+    equation: convert_class_to_struct
+    function: "convert_class_to_struct"
+    module_path: "depyler_core::direct_rules"
+    status: implemented
+
+  - contract: type-preservation-v1.yaml
+    equation: type_inference
+    function: "get_inferred_var_types"
+    module_path: "depyler_analysis::type_system::constraint_collector"
+    status: implemented

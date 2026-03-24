@@ -1,0 +1,20 @@
+version: "1.0.0"
+target_crate: simular
+bindings:
+  - contract: checkpoint-v1.yaml
+    equation: step
+    function: "step"
+    module_path: "simular::tui::tsp_app"
+    status: implemented
+
+  - contract: checkpoint-v1.yaml
+    equation: seek
+    function: "seek"
+    module_path: "simular::edd::audit"
+    status: implemented
+
+  - contract: gradient-v1.yaml
+    equation: audit_trail
+    function: "new"
+    module_path: "simular::edd::audit::AuditTrail"
+    status: implemented

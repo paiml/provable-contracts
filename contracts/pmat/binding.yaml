@@ -1,0 +1,26 @@
+version: "1.0.0"
+target_crate: pmat
+bindings:
+  - contract: tdg-scoring-v1.yaml
+    equation: calculate_tdg
+    function: "calculate_weighted_tdg"
+    module_path: "pmat::services::tdg_calculator_core"
+    status: implemented
+
+  - contract: comply-check-v1.yaml
+    equation: run_checks
+    function: "run_all_checks"
+    module_path: "pmat::cli::handlers::comply_handlers"
+    status: implemented
+
+  - contract: score-composite-v1.yaml
+    equation: geometric_mean
+    function: "compute_composite_score"
+    module_path: "pmat::cli::handlers::score_handler_compute"
+    status: implemented
+
+  - contract: context-generation-v1.yaml
+    equation: generate_context
+    function: "generate_agent_context"
+    module_path: "pmat::services::context"
+    status: implemented

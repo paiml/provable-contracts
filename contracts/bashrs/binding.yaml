@@ -1,0 +1,40 @@
+version: "1.0.0"
+target_crate: bashrs-specs
+bindings:
+  - contract: probar-shell-safety-v1.yaml
+    equation: validate_entry
+    function: "validate_entry"
+    module_path: "rash::corpus::schema_enforcement"
+    status: implemented
+    notes: "Schema validation for corpus entries"
+
+  - contract: probar-shell-safety-v1.yaml
+    equation: validate_corpus
+    function: "validate_corpus"
+    module_path: "rash::corpus::schema_enforcement"
+    status: implemented
+
+  - contract: probar-shell-safety-v1.yaml
+    equation: classify_risk
+    function: "classify_risk"
+    module_path: "rash::corpus::error_dedup"
+    status: implemented
+    notes: "Risk classification from signals + error message"
+
+  - contract: probar-shell-safety-v1.yaml
+    equation: check_quality_gates
+    function: "check_quality_gates"
+    module_path: "rash::corpus::quality_gates"
+    status: implemented
+
+  - contract: probar-shell-safety-v1.yaml
+    equation: check_convergence
+    function: "check_convergence"
+    module_path: "rash::corpus::citl"
+    status: implemented
+
+  - contract: probar-shell-safety-v1.yaml
+    equation: lint_pipeline
+    function: "lint_pipeline"
+    module_path: "rash::corpus::citl"
+    status: implemented
