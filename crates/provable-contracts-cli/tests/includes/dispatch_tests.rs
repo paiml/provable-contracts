@@ -127,6 +127,7 @@ fn dispatch_score_single() {
         summary: false,
         top_gaps: 5,
         weights: None,
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -141,6 +142,7 @@ fn dispatch_score_directory() {
         summary: false,
         top_gaps: 5,
         weights: None,
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -155,6 +157,7 @@ fn dispatch_score_min_threshold_fails() {
         summary: false,
         top_gaps: 5,
         weights: None,
+        exit_code: false,
     });
     assert!(result.is_err());
 }
@@ -171,6 +174,7 @@ fn dispatch_score_custom_weights() {
         weights: Some(
             r#"{"spec_depth":0.1,"falsification":0.3,"kani":0.3,"lean":0.1,"binding":0.2}"#
                 .to_string(),
+        exit_code: false,
         ),
     });
     assert!(result.is_ok());
@@ -186,6 +190,7 @@ fn dispatch_score_markdown() {
         summary: false,
         top_gaps: 0,
         weights: None,
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -200,6 +205,7 @@ fn dispatch_score_directory_markdown() {
         summary: false,
         top_gaps: 3,
         weights: None,
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -214,6 +220,7 @@ fn dispatch_score_summary() {
         summary: true,
         top_gaps: 0,
         weights: None,
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -228,6 +235,7 @@ fn dispatch_score_summary_json() {
         summary: true,
         top_gaps: 0,
         weights: None,
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -242,6 +250,7 @@ fn dispatch_score_summary_markdown() {
         summary: true,
         top_gaps: 0,
         weights: None,
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -258,6 +267,7 @@ fn dispatch_score_with_binding() {
         summary: false,
         top_gaps: 3,
         weights: None,
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -274,6 +284,7 @@ fn dispatch_score_with_binding_json() {
         summary: false,
         top_gaps: 0,
         weights: None,
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -290,6 +301,7 @@ fn dispatch_score_with_binding_markdown() {
         summary: false,
         top_gaps: 0,
         weights: None,
+        exit_code: false,
     });
     assert!(result.is_ok());
 }
@@ -304,6 +316,7 @@ fn dispatch_score_directory_threshold_fails() {
         summary: false,
         top_gaps: 0,
         weights: None,
+        exit_code: false,
     });
     assert!(result.is_err());
 }

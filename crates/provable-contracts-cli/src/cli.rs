@@ -70,6 +70,12 @@ pub enum Commands {
         /// Path to binding registry YAML (adds binding audit)
         #[arg(long)]
         binding: Option<PathBuf>,
+        /// Show Coq proof tier per obligation
+        #[arg(long)]
+        coq: bool,
+        /// Show Flux shape coverage per obligation
+        #[arg(long)]
+        flux: bool,
     },
     /// Diff two contract versions and suggest semver bump
     Diff {
@@ -203,6 +209,18 @@ pub enum Commands {
         /// Show cache hit/miss statistics
         #[arg(long)]
         cache_stats: bool,
+        /// Show auto-fix suggestions (dry run)
+        #[arg(long)]
+        suggest: bool,
+        /// Suppress findings in baseline SARIF file
+        #[arg(long)]
+        baseline: Option<PathBuf>,
+        /// Apply deterministic auto-fixes
+        #[arg(long)]
+        fix: bool,
+        /// Re-lint on file change (polling)
+        #[arg(long)]
+        watch: bool,
     },
     /// Score contracts or a codebase directory
     Score {
@@ -227,6 +245,9 @@ pub enum Commands {
         /// Custom weights as JSON
         #[arg(long)]
         weights: Option<String>,
+        /// Exit with status 1 if any contract below --min-score
+        #[arg(long)]
+        exit_code: bool,
     },
     /// Search contracts by intent, regex, or literal match
     Query {
