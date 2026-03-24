@@ -10,6 +10,7 @@ pub mod extract;
 pub mod flux;
 pub mod fuzz;
 pub mod generate;
+pub mod infer;
 pub mod graph;
 pub mod invariants;
 pub mod kani;

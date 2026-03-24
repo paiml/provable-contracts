@@ -225,6 +225,12 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             update_summary,
             summary_path.as_deref(),
         ),
+        Commands::Infer {
+            crate_dir,
+            binding,
+            contract_dir,
+            top,
+        } => commands::infer::run(&crate_dir, &binding, &contract_dir, top),
     }
 }
 

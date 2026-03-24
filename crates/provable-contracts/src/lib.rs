@@ -38,6 +38,7 @@ pub mod extract;
 pub mod flux_gen;
 pub mod fuzz_gen;
 pub mod generate;
+pub mod infer;
 pub mod graph;
 pub mod invariant_gen;
 pub mod kani_gen;

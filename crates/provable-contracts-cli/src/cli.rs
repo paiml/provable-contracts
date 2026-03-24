@@ -372,4 +372,18 @@ pub enum Commands {
         #[arg(long)]
         summary_path: Option<PathBuf>,
     },
+    /// Infer contracts and bindings for unbound functions in a crate
+    Infer {
+        /// Path to the crate directory to scan
+        crate_dir: PathBuf,
+        /// Path to binding registry YAML
+        #[arg(long)]
+        binding: PathBuf,
+        /// Directory containing contract YAML files
+        #[arg(long, default_value = "contracts")]
+        contract_dir: PathBuf,
+        /// Maximum number of suggestions to show
+        #[arg(long, default_value = "20")]
+        top: usize,
+    },
 }
