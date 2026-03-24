@@ -968,3 +968,4337 @@ bindings:
     status: implemented
     notes: "Auto-inferred by pv infer"
 
+
+  # --- Mass auto-accept (pv infer ≥85%) ---
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: prefill_incremental
+    function: "increment"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "should_sample"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "sample_percentage"
+    status: implemented
+
+  - contract: gated-delta-net-v1.yaml
+    equation: decay
+    function: "weight_decay"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: convergence
+    function: "test_quadratic_convergence"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: convergence
+    function: "test_rosenbrock_convergence"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: convergence
+    function: "test_ill_conditioned_convergence"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: convergence
+    function: "test_high_dim_convergence"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "sample_ei_ratio_continuous"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "sample_ei_ratio_discrete"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: token_budget
+    function: "budget"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: verification_ladder
+    function: "add"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: token_budget
+    function: "get"
+    status: implemented
+
+  - contract: pagerank-kernel-v1.yaml
+    equation: power_iteration
+    function: "iter"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "sample_random"
+    status: implemented
+
+  - contract: architecture-requirements-v1.yaml
+    equation: weight_completeness
+    function: "complete"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "config"
+    status: implemented
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: update
+    function: "apply_update"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: decode_step
+    function: "step"
+    status: implemented
+
+  - contract: pagerank-kernel-v1.yaml
+    equation: pagerank
+    function: "rank"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: scaled_dot_product
+    function: "scale"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "base_weight_quantized"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "is_double_quantized"
+    status: implemented
+
+  - contract: roofline-model-v1.yaml
+    equation: compute_ceiling
+    function: "compute"
+    status: implemented
+
+  - contract: batchnorm-kernel-v1.yaml
+    equation: running_stats
+    function: "stats"
+    status: implemented
+
+  - contract: qk-norm-apr-loader-v1.yaml
+    equation: qk_norm_load
+    function: "load"
+    status: implemented
+
+  - contract: gpu-decode-profiling-v1.yaml
+    equation: report_metadata
+    function: "metadata"
+    status: implemented
+
+  - contract: attention-kernel-v1.yaml
+    equation: attention
+    function: "target_attention_projections"
+    status: implemented
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: qkv_projection
+    function: "target_qkv_projections"
+    status: implemented
+
+  - contract: qwen35-hybrid-forward-v1.yaml
+    equation: activation_magnitude
+    function: "magnitude"
+    status: implemented
+
+  - contract: lora-algebra-v1.yaml
+    equation: lora_shape
+    function: "lora"
+    status: implemented
+
+  - contract: gpu-decode-profiling-v1.yaml
+    equation: report_completeness
+    function: "report"
+    status: implemented
+
+  - contract: embedding-algebra-v1.yaml
+    equation: tied_weights
+    function: "weights"
+    status: implemented
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: total_bytes
+    function: "total"
+    status: implemented
+
+  - contract: batchnorm-kernel-v1.yaml
+    equation: batchnorm_train
+    function: "train"
+    status: implemented
+
+  - contract: format-parity-v1.yaml
+    equation: name_bijection
+    function: "name"
+    status: implemented
+
+  - contract: gated-delta-net-v1.yaml
+    equation: output
+    function: "output_dir"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: precision
+    function: "mixed_precision"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: request_state
+    function: "state"
+    status: implemented
+
+  - contract: quantization-ordering-v1.yaml
+    equation: alpha_scaling
+    function: "alpha"
+    status: implemented
+
+  - contract: gpu-decode-profiling-v1.yaml
+    equation: report_metadata
+    function: "eta"
+    status: implemented
+
+  - contract: loss-functions-v1.yaml
+    equation: l1_loss
+    function: "loss"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "quantize_export_publish"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "quantize_and_export"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "quantize_to_gguf_bytes"
+    status: implemented
+
+  - contract: gpu-decode-profiling-v1.yaml
+    equation: graph_disable
+    function: "disable"
+    status: implemented
+
+  - contract: ptx-target-parity-v1.yaml
+    equation: no_hardcoded_targets
+    function: "targets"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "collect_stats_from_samples"
+    status: implemented
+
+  - contract: encoder-forward-v1.yaml
+    equation: encoder_layer
+    function: "encode"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: draft_decode
+    function: "decode"
+    status: implemented
+
+  - contract: online-softmax-v1.yaml
+    equation: online_normalizer
+    function: "normalize"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: accuracy
+    function: "add_accuracy"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: accuracy
+    function: "final_accuracy"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: accuracy
+    function: "best_accuracy"
+    status: implemented
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: dequantization
+    function: "quantization"
+    status: implemented
+
+  - contract: shannon-entropy-v1.yaml
+    equation: uniform_entropy
+    function: "uniform"
+    status: implemented
+
+  - contract: loss-functions-v1.yaml
+    equation: mse_loss
+    function: "layer_wise_mse_loss"
+    status: implemented
+
+  - contract: qwen3-shapes-v1.yaml
+    equation: head_dim_consistency
+    function: "dim"
+    status: implemented
+
+  - contract: batchnorm-kernel-v1.yaml
+    equation: batchnorm_eval
+    function: "norm"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "sample_latent"
+    status: implemented
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: lm_head
+    function: "lm_head_weight"
+    status: implemented
+
+  - contract: qwen3-shapes-v1.yaml
+    equation: head_dim_consistency
+    function: "head_dim"
+    status: implemented
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: update
+    function: "update_actual"
+    status: implemented
+
+  - contract: gated-delta-net-v1.yaml
+    equation: read
+    function: "read_reservations"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: batched_verify
+    function: "verify"
+    status: implemented
+
+  - contract: gnn-v1.yaml
+    equation: gcn_aggregate
+    function: "aggregate"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: qk_norm_score_bound
+    function: "core"
+    status: implemented
+
+  - contract: preprocessing-normalization-v1.yaml
+    equation: standard_scaler
+    function: "standard"
+    status: implemented
+
+  - contract: embedding-algebra-v1.yaml
+    equation: logit_temperature
+    function: "git"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: recall
+    function: "all"
+    status: implemented
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: assignment
+    function: "send_shard_assignments"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: predict
+    function: "predict_probs"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: qk_norm_score_bound
+    function: "score"
+    status: implemented
+
+  - contract: performance-grading-v1.yaml
+    equation: efficiency_grade
+    function: "grade"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "shard_samples"
+    status: implemented
+
+  - contract: codebert-tokenizer-validation-v1.yaml
+    equation: tokenizer_adequacy
+    function: "tokenize"
+    status: implemented
+
+  - contract: codebert-tokenizer-validation-v1.yaml
+    equation: tokenizer_adequacy
+    function: "tokenizer"
+    status: implemented
+
+  - contract: gnn-v1.yaml
+    equation: global_mean_pool
+    function: "mean_pool"
+    status: implemented
+
+  - contract: encoder-forward-v1.yaml
+    equation: cls_pooling
+    function: "cls_pool"
+    status: implemented
+
+  - contract: encoder-forward-v1.yaml
+    equation: cls_pooling
+    function: "pool"
+    status: implemented
+
+  - contract: loss-functions-v1.yaml
+    equation: bce
+    function: "bce_with_logits_loss"
+    status: implemented
+
+  - contract: shannon-entropy-v1.yaml
+    equation: entropy
+    function: "cross_entropy_loss"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "run_quantize"
+    status: implemented
+
+  - contract: naive-bayes-v1.yaml
+    equation: log_posterior
+    function: "log"
+    status: implemented
+
+  - contract: gbm-v1.yaml
+    equation: predict
+    function: "predict_fix"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: line_search
+    function: "search"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: confusion_matrix
+    function: "matrix"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: precision
+    function: "precision_avg"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: recall
+    function: "recall_avg"
+    status: implemented
+
+  - contract: drift-detection-v1.yaml
+    equation: performance_drift
+    function: "erf"
+    status: implemented
+
+  - contract: model-metadata-bounds-v1.yaml
+    equation: config_bounds_check
+    function: "check"
+    status: implemented
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    function: "threshold"
+    status: implemented
+
+  - contract: decision-tree-v1.yaml
+    equation: gini_split
+    function: "split"
+    status: implemented
+
+  - contract: metaheuristics-v1.yaml
+    equation: best_monotone
+    function: "best"
+    status: implemented
+
+  - contract: kv-cache-sizing-v1.yaml
+    equation: zero_input_identity
+    function: "zero"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "samples_per_dollar"
+    status: implemented
+
+  - contract: continuous-batching-v1.yaml
+    equation: throughput_scaling
+    function: "throughput"
+    status: implemented
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: update
+    function: "update_class"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: model_parameter_count
+    function: "mode"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: cg_minimize
+    function: "min"
+    status: implemented
+
+  - contract: attention-scaling-v1.yaml
+    equation: softmax_saturation
+    function: "max"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: mean_update
+    function: "mean"
+    status: implemented
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: paged_contiguous_equivalence
+    function: "contiguous"
+    status: implemented
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: total_bytes
+    function: "total_bytes_per_step"
+    status: implemented
+
+  - contract: gated-delta-net-v1.yaml
+    equation: read
+    function: "worker_ready"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: prefill_phase
+    function: "phase"
+    status: implemented
+
+  - contract: performance-grading-v1.yaml
+    equation: efficiency_grade
+    function: "efficiency"
+    status: implemented
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: update
+    function: "update_heartbeat"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: model_parameter_count
+    function: "model"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: precision
+    function: "is_mixed_precision"
+    status: implemented
+
+  - contract: attention-kernel-v1.yaml
+    equation: attention
+    function: "attention_memory_savings"
+    status: implemented
+
+  - contract: embedding-algebra-v1.yaml
+    equation: tied_weights
+    function: "weight"
+    status: implemented
+
+  - contract: bayesian-v1.yaml
+    equation: blr_predict
+    function: "lr"
+    status: implemented
+
+  - contract: random-forest-v1.yaml
+    equation: ensemble_size
+    function: "size"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "eval_samples"
+    status: implemented
+
+  - contract: ptx-target-parity-v1.yaml
+    equation: jit_compilation_success
+    function: "success"
+    status: implemented
+
+  - contract: calibration-v1.yaml
+    equation: expected_calibration_error
+    function: "error"
+    status: implemented
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: update
+    function: "update_run"
+    status: implemented
+
+  - contract: qwen3moe-shapes-v1.yaml
+    equation: moe_router_shape
+    function: "router"
+    status: implemented
+
+  - contract: batchnorm-kernel-v1.yaml
+    equation: running_stats
+    function: "run"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: hybrid_layer_schedule
+    function: "schedule"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "num_samples"
+    status: implemented
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: update
+    function: "update_sparsity"
+    status: implemented
+
+  - contract: calibration-v1.yaml
+    equation: expected_calibration_error
+    function: "calibration"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: active_parameter_count
+    function: "count"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "samples_processed"
+    status: implemented
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "path"
+    status: implemented
+
+  - contract: qwen3moe-e2e-verification-v1.yaml
+    equation: memory_breakdown
+    function: "memory"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "min_samples"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "quantize_4bit"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize_4bit"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "fake_quantize"
+    status: implemented
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q4k_superblock
+    function: "q4"
+    status: implemented
+
+  - contract: fused-qkv-projection-v1.yaml
+    equation: shared_q8_qkv
+    function: "q8"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "quantize_4bit_double"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize_4bit_double"
+    status: implemented
+
+  - contract: metrics-regression-v1.yaml
+    equation: mse
+    function: "quantization_mse"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "quantize_with_params"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize_with_params"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "quantize_tensor"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize_tensor"
+    status: implemented
+
+  - contract: model-config-algebra-v1.yaml
+    equation: bounds
+    function: "error_within_bounds"
+    status: implemented
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: accuracy
+    function: "accuracy_retention"
+    status: implemented
+
+  - contract: metrics-regression-v1.yaml
+    equation: mse
+    function: "best_by_mse"
+    status: implemented
+
+  - contract: gnn-v1.yaml
+    equation: message_passing
+    function: "pass"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "render_sample_panel"
+    status: implemented
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: update
+    function: "update_step"
+    status: implemented
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: update
+    function: "update_gpu"
+    status: implemented
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: update
+    function: "update_sample"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "sample_with_variation"
+    status: implemented
+
+  - contract: gnn-v1.yaml
+    equation: message_passing
+    function: "message"
+    status: implemented
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: temperature
+    function: "temperature_history"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "total_samples"
+    status: implemented
+
+  - contract: roofline-model-v1.yaml
+    equation: bandwidth_ceiling
+    function: "width"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: accuracy
+    function: "accuracy_color"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: accuracy
+    function: "accuracy_history_len"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: accuracy
+    function: "accuracy_normalized"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: accuracy
+    function: "accuracy_sparkline"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: accuracy
+    function: "record_accuracy"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: accuracy
+    function: "accuracy_mean"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: accuracy
+    function: "accuracy_values"
+    status: implemented
+
+  - contract: metrics-classification-v1.yaml
+    equation: accuracy
+    function: "accuracy_std"
+    status: implemented
+
+  - contract: arima-v1.yaml
+    equation: differencing
+    function: "diff"
+    status: implemented
+
+  - contract: safetensors-cpu-dispatch-v1.yaml
+    equation: format_parity
+    function: "format"
+    status: implemented
+
+  - contract: gated-delta-net-v1.yaml
+    equation: write
+    function: "writer"
+    status: implemented
+
+  - contract: gated-delta-net-v1.yaml
+    equation: write
+    function: "writer_mut"
+    status: implemented
+
+  - contract: swiglu-kernel-v1.yaml
+    equation: silu
+    function: "sil"
+    status: implemented
+
+  - contract: pca-v1.yaml
+    equation: explained_variance
+    function: "explain"
+    status: implemented
+
+  - contract: gated-delta-net-v1.yaml
+    equation: delta
+    function: "abs_delta"
+    status: implemented
+
+  - contract: lora-algebra-v1.yaml
+    equation: dare_unbiased
+    function: "dare"
+    status: implemented
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: assignment
+    function: "sign"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: draft_decode
+    function: "code"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: residual_stream
+    function: "stream"
+    status: implemented
+
+  - contract: qwen3moe-shapes-v1.yaml
+    equation: moe_router_shape
+    function: "route"
+    status: implemented
+
+  - contract: batchnorm-kernel-v1.yaml
+    equation: batchnorm_eval
+    function: "eval"
+    status: implemented
+
+  - contract: performance-grading-v1.yaml
+    equation: efficiency_grade
+    function: "grad"
+    status: implemented
+
+  - contract: kv-cache-sizing-v1.yaml
+    equation: zero_input_identity
+    function: "input"
+    status: implemented
+
+  - contract: gated-delta-net-v1.yaml
+    equation: output
+    function: "clear_output"
+    status: implemented
+
+  - contract: rmsnorm-kernel-v1.yaml
+    equation: rmsnorm
+    function: "per_head_rmsnorm_forward"
+    status: implemented
+
+  - contract: rope-kernel-v1.yaml
+    equation: rope
+    function: "rope_neox_forward"
+    status: implemented
+
+  - contract: rope-kernel-v1.yaml
+    equation: rope
+    function: "batched_rope_neox_forward"
+    status: implemented
+
+  - contract: rope-kernel-v1.yaml
+    equation: rope
+    function: "batched_rope_neox_backward"
+    status: implemented
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: residual
+    function: "residual_add_forward"
+    status: implemented
+
+  - contract: transpose-kernel-v1.yaml
+    equation: transpose
+    function: "batched_transpose_forward"
+    status: implemented
+
+  - contract: swiglu-kernel-v1.yaml
+    equation: swiglu
+    function: "fused_swiglu_forward"
+    status: implemented
+
+  - contract: activation-kernel-v1.yaml
+    equation: relu
+    function: "relu_forward"
+    status: implemented
+
+  - contract: softmax-kernel-v1.yaml
+    equation: softmax
+    function: "softmax_forward"
+    status: implemented
+
+  - contract: gelu-kernel-v1.yaml
+    equation: gelu
+    function: "gelu_forward"
+    status: implemented
+
+  - contract: swiglu-kernel-v1.yaml
+    equation: silu
+    function: "silu_forward"
+    status: implemented
+
+  - contract: softmax-kernel-v1.yaml
+    equation: softmax
+    function: "batched_softmax_forward"
+    status: implemented
+
+  - contract: activation-kernel-v1.yaml
+    equation: relu
+    function: "relu_backward"
+    status: implemented
+
+  - contract: gelu-kernel-v1.yaml
+    equation: gelu
+    function: "gelu_backward"
+    status: implemented
+
+  - contract: swiglu-kernel-v1.yaml
+    equation: silu
+    function: "silu_backward"
+    status: implemented
+
+  - contract: softmax-kernel-v1.yaml
+    equation: softmax
+    function: "softmax_backward"
+    status: implemented
+
+  - contract: softmax-kernel-v1.yaml
+    equation: softmax
+    function: "batched_softmax_backward"
+    status: implemented
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: effective_context
+    function: "context"
+    status: implemented
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    function: "matmul_forward"
+    status: implemented
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    function: "matmul_backward"
+    status: implemented
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    function: "mul"
+    status: implemented
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: bsum
+    function: "sum"
+    status: implemented
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    function: "matmul_compute"
+    status: implemented
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    function: "matmul_nt"
+    status: implemented
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    function: "matmul_nt_compute"
+    status: implemented
+
+  - contract: qwen3-shapes-v1.yaml
+    equation: kv_projection_shape
+    function: "shape"
+    status: implemented
+
+  - contract: gated-delta-net-v1.yaml
+    equation: output
+    function: "mark_output"
+    status: implemented
+
+  - contract: gated-delta-net-v1.yaml
+    equation: output
+    function: "output_ids"
+    status: implemented
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    function: "infer_matmul"
+    status: implemented
+
+  - contract: optimization-v1.yaml
+    equation: line_search
+    function: "line"
+    status: implemented
+
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "init"
+    status: implemented
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    function: "generate_sample_points"
+    status: implemented
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: temperature
+    function: "temperature_sweep"
+    status: implemented
+
+  - contract: attention-kernel-v1.yaml
+    equation: attention
+    function: "supports_attention_distill"
+    status: implemented
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: prefill_incremental
+    function: "inc"
+    status: implemented
+
+  - contract: speculative-decoding-v1.yaml
+    equation: speedup_condition
+    function: "io"
+    status: implemented
+
+  - contract: inference-pipeline-v1.yaml
+    equation: kv_cache_growth
+    function: "row"
+    status: implemented
+
+  - contract: gated-delta-net-v1.yaml
+    equation: read
+    function: "to_human_readable"
+    status: implemented
+
+
+  # --- Generic pattern bindings (100% coverage) ---
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "timing_variance"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "semantic_equiv"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "violation"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "perfect"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "most_severe_violation"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "assessment"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "summary"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_critical"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "events_in_order"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_precedes"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "description"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "relative_speed"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "parse"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "development"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "production"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "archival"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "would_exceed_limit"
+    status: implemented
+
+  - contract: configuration-v1.yaml
+    equation: configuration
+    function: "is_indefinite_retention"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "second_moments"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "n_trials"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "suggest"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "record"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "record_failed"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "bracket"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "fail"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "as_int"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_valid"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "estimate_noise_multiplier"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "allows"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "remaining"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "privacy_spent"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "remaining_budget"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_budget_exhausted"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "privatize_gradients"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "reset"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "rdp_to_dp"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "apply"
+    status: implemented
+
+  - contract: configuration-v1.yaml
+    equation: configuration
+    function: "pissa_init"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "lora_a"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "lora_a_mut"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "lora_b"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "lora_b_mut"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "d_in"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "unmerge"
+    status: implemented
+
+  - contract: configuration-v1.yaml
+    equation: configuration
+    function: "ensure_initialized"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "register"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "num_states"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "save_peft"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "save_adapter"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "save_adapter_peft"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "save"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "expand_shorthand"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "should_apply"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "remove"
+    status: implemented
+
+  - contract: iterator-v1.yaml
+    equation: iterator
+    function: "iter_mut"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "savings_percent"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "mock"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "fp32"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "fp16"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "to_yaml"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "clear"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "validation"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "test"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "shuffle"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "examples"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "take"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "fetch"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "collate"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "create_repo"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "upload_file"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "publish"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_markdown"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "teacher"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "simulate_epoch"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "elapsed"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "export"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "export_auto"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "extension"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "revision"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "allow_pytorch_pickle"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "verify_sha256"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_authenticated"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "fetch_paginated"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_leaderboard"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "dataset_repo_id"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "primary_metric"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "tracked_metrics"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_retryable"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_security_risk"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "install_panic_hook"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "tags"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "start_run"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "enable"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_enabled"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "start"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "span"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "meets_threshold"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_clippy_clean"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "generate_suggested_fix"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "percentages"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "cumulative_percentages"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "vital_few"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_failure"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "clean"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "vulnerable"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_vulnerable"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "vulnerable_deps"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "build_optimizer"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "parse_args"
+    status: implemented
+
+  - contract: error-handling-v1.yaml
+    equation: error_handling
+    function: "apply_overrides"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_hf_repo_id"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "rebatch"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "reset_epoch"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_epoch_exhausted"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "create_demo_batches"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "inputs"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "infer_schema"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "manifest_to_spec"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "save_manifest"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "parse_human_usize"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "deserialize_human_usize_opt"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "generate_manifest"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "generate_yaml"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "bos_id"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "create_batches"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "wordpiece"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "char"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "session_to_artifact"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "duration"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_available"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "combine_teachers"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "save_student_checkpoint"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "lerp"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "slerp"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "discriminate"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "generate"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "interpolate"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "download_to_host"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "backward"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "llama2_7b"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "llama2_13b"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "tiny"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_encoder"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "adapter_info"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "place_adapters"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "disabled"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "begin"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "finish_op"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "leaderboard"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "acquire"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "acquire_wait"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "budget_mb"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_expired"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_alive"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "should_prune"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "capacity_mb"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "available_mb"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "release"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "auto_ledger"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_local"
+    status: implemented
+
+  - contract: configuration-v1.yaml
+    equation: configuration
+    function: "setup_mps_env"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "register_local"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "root"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "huggingface"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "local"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "custom"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "find"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "find_mut"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "available"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "mark_synced"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "sovereign_local"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_region_allowed"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_allowed"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "offline"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "append"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "verify_integrity"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "plan"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "enforce_tier"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "cascade_delete"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "verify_checksum"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "suggested_filename"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "includes"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "trueno"
+    status: implemented
+
+  - contract: display-format-v1.yaml
+    equation: display_format
+    function: "aprender"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "renacer"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "crates_io"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_crates_io"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_git"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "generate_flake_nix"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "finish"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "span_id"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_id"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_finished"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "coordinator"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "worker"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_coordinator"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "bind"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "broadcast_averaged"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "shutdown_workers"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "local_addr"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "meets_minimum"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "meets_stretch"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "evaluate"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "contains_tautology"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "wgpu_available"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "num_classes"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "should_escalate"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "compare_baselines"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "generalization_test"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "num_adapters"
+    status: implemented
+
+  - contract: iterator-v1.yaml
+    equation: iterator
+    function: "select_next_adapter"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "save_adapter_checkpoint"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "execute_plan"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "pipeline_mut"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_worker"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "record_metric"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "passed"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "warnings"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "apply_accumulated_gradients"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "optimizer_lr"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "optimizer"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "optimizer_mut"
+    status: implemented
+
+  - contract: iterator-v1.yaml
+    equation: iterator
+    function: "collect_lora_gradients"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "apply_lora_gradients"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "build_searcher"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "build_scheduler"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "record_trial"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "num_gpus"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "primary_pipeline"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "primary_pipeline_ref"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "average_gradients"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "connect"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "receive_shard"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "send_gradients"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "receive_averaged"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "worker_id"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_report"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "evaluate_checkpoint"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "generate_chat"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "shuffle_train"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_monitor"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_audit"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_train"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_inspect"
+    status: implemented
+
+  - contract: display-format-v1.yaml
+    equation: display_format
+    function: "print_detailed_summary"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_publish"
+    status: implemented
+
+  - contract: configuration-v1.yaml
+    equation: configuration
+    function: "run_init"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_completion"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_experiments"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_finetune"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_info"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_research"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_research_preregister"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_research_bundle"
+    status: implemented
+
+  - contract: configuration-v1.yaml
+    equation: configuration
+    function: "run_research_init"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_research_export"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_research_cite"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "verify_signature"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_research_verify"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_research_deposit"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_bench"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "n_classes"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "support"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "f1_avg"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "rouge_n"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "rouge_l"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "perplexity"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "ks_p_value"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "chi_square_p_value"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "check_categorical"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "on_retrain"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "detector"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "detector_mut"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "reset_cooldown"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "higher_is_better"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "sort"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "sort_by"
+    status: implemented
+
+  - contract: display-format-v1.yaml
+    equation: display_format
+    function: "print"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "evaluate_cv"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "hbm_gb"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_tpu"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_apple_silicon"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "kwh"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "estimate_additional"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_server"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_edge"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "mobile"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "embedded"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "sizes_mb"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "meets_wasm_budget"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "budget_violations"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "qlora"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "typical_quality_retention"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "requires_pretrained"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "quality_retention"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "pareto_frontier"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "most_efficient"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "greenest"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "cheapest"
+    status: implemented
+
+  - contract: iterator-v1.yaml
+    equation: iterator
+    function: "filter_by_paradigm"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "comparison_report"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "dominates"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "select_optimal_tier"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "percent"
+    status: implemented
+
+  - contract: display-format-v1.yaml
+    equation: display_format
+    function: "render"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "recommended_mode"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "check_deviation"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "comparison_sparkline"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_callback"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "info"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "critical"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "should_stop"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "recent_alerts"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "clear_alerts"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "sparkline_width"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "refresh_interval_ms"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "sparkline"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "should_refresh"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "force_refresh"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "push"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "last_n"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "last"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "terminal_mode"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "smoothing"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "push_losses"
+    status: implemented
+
+  - contract: display-format-v1.yaml
+    equation: display_format
+    function: "render_terminal"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "trainer"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "trainer_mut"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "shard_batches"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "component_sizes_u32"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "average"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "upload_to_workspace"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "upload_nonblock"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "local_num_heads"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "local_num_kv_heads"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "extract_shard"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "estimate"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "start_writing"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "should_save_checkpoint"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_last"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "schedule_1f1b"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "activate_worker"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "remove_worker"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "finalize_removal"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "check_heartbeats"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "should_pause"
+    status: implemented
+
+  - contract: configuration-v1.yaml
+    equation: configuration
+    function: "clear_reconfig"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "grad_scaler_stats"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_checkpointing"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_lora"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "save_lora_adapter"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_nf4"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_distributed"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "grad_scaler"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "prepare_async_save"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "seq_start"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "unweighted"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "callbacks"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "callbacks_mut"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "record_epoch"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_val_improving"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_improving"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "monitor_validation"
+    status: implemented
+
+  - contract: iterator-v1.yaml
+    equation: iterator
+    function: "collector"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "on_train_begin"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "on_epoch_begin"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "save_every"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "method"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "record_importances"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "kahan_variance"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "health_check"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "create_experiment"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "create_run"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "generate_id"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "uptime_secs"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "address"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "requires_calibration"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "fine_tune_lr"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "nm_2_4"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "nm_4_8"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "performance_assertions"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "schedule_traces"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "dataset"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "num_batches"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_terminal"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "record_stage_duration"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "stage"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "metrics"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "metrics_mut"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "start_calibration"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "advance"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "execute_export"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "succeeded"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "failed"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "calibration_progress"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "overall_progress"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "pipeline"
+    status: implemented
+
+  - contract: configuration-v1.yaml
+    equation: configuration
+    function: "initialize"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "calibrate"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "prune"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "finetune"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "checklist_summary"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "progress"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "children"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "ucb1"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "puct"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_fully_expanded"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "enable_auto_rollback"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "check_rollback"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "require_metric"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "require_approvals"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "auto_promote"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "open"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "open_project"
+    status: implemented
+
+  - contract: configuration-v1.yaml
+    equation: configuration
+    function: "init_schema"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "comprehensive"
+    status: implemented
+
+  - contract: configuration-v1.yaml
+    equation: configuration
+    function: "optional"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "label_balance"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "skipped"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_passed"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_failed"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_skipped"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "failed_checks"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "ste_backward"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "symmetric"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "asymmetric"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "q4_symmetric"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "q8_symmetric"
+    status: implemented
+
+  - contract: configuration-v1.yaml
+    equation: configuration
+    function: "is_initialized"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "num_levels"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "double_quant_savings"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "calibrate_percentile"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "percentile"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "moving_average"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "observe"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "compare_granularities"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "num_groups"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_asymmetric"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "analyze_outlier_impact"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "bits"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "run_benchmark"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "extract_variables"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_16"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "bold"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "style"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "temp_color"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "power_color"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "progress_color"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "colored_bar"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "colored_value"
+    status: implemented
+
+  - contract: display-format-v1.yaml
+    equation: display_format
+    function: "render_gauge"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "color_mode"
+    status: implemented
+
+  - contract: display-format-v1.yaml
+    equation: display_format
+    function: "render_braille_chart"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "pct_color"
+    status: implemented
+
+  - contract: display-format-v1.yaml
+    equation: display_format
+    function: "render_sparkline"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "trend_arrow"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_thermal_throttling"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "estimated_remaining"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "progress_percent"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "arrow"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "exists"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "refresh"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "emit_epoch_summary"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "emit_info"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_records"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "num_devices"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_mock"
+    status: implemented
+
+  - contract: display-format-v1.yaml
+    equation: display_format
+    function: "render_progress_bar"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "power_percent"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "severity"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "alerts"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "thresholds"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "record_validation"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "gauge"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "counter"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "generate_sparkline"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "height"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "background_color"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "show_sparklines"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "x_coordinates"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "record_custom"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "timestamps"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_prometheus"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_csv"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "analyze"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "compare"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "emoji"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "trigger"
+    status: implemented
+
+  - contract: display-format-v1.yaml
+    equation: display_format
+    function: "render_ascii"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "serialize"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "deserialize"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "recent"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "verify_chain"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "latest_hash"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "check_trace"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "trigger_emergency"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "andon"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "confidence"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "monotonic_ns"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "fnv1a_hash"
+    status: implemented
+
+  - contract: iterator-v1.yaml
+    equation: iterator
+    function: "collector_mut"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "nodes"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "edges"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "incoming_edges"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "outgoing_edges"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "predecessors"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "successors"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "identify_anomalies"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "timestamp_ns"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "n_changes"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "weighted_average"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "ties"
+    status: implemented
+
+  - contract: iterator-v1.yaml
+    equation: iterator
+    function: "iterative_slerp"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "hierarchical"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "models_approx_equal"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "generate_anonymous_id"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "anonymize"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "verify_original_id"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "commit"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "verify_commitment"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "reveal"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "git_commit"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "generate_citation_key"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_bibtex"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_cff"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "parse_typst"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "parse_markdown"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_html"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_typst"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_markdown"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "root_dataset"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "file"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "person"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "root_dataset_mut"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_directory"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_zip"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "citations_to"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "cite_upstream"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "upstream_nodes"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "deduplicate"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "python3"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "evcxr"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "julia"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_ipynb"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "markdown_cells"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "markdown"
+    status: implemented
+
+  - contract: error-handling-v1.yaml
+    equation: error_handling
+    function: "execute_result"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "generate_url"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "doi_url"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_identical_to"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_supplement_to"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "cites"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "deposit"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "sandbox_url"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "api_endpoint"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "latest"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "subscribe_metrics"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "experiment_id"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "metric_keys"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "promote"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "demote"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "ones"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "requires_grad"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "backward_op"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "enabled"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_checkpointed"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "num_segments"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "register_segment"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "checkpoint"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "checkpoint_if"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "optimal_checkpoints"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "is_saved"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "num_saved"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "estimate_policy_tradeoff"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "expand_kv_heads"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "gemm_nf4_backward_a_cublas"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "gemm_nf4_backward_a"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "gemm_backward_a"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "gemm_backward_b"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "synchronize"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "grad_buffer"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "grad_buffer_mut"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "device"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "bf16_truncate"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "gemm_bf16_reference"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "unscale_grad"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_dynamic"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "bf16"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_reduced"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "upload"
+    status: implemented
+
+  - contract: serialization-v1.yaml
+    equation: serialization
+    function: "download"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "clip_gradients"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "swish"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_constant"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "as_constant"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "constant"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "placeholder"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "value"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_removed"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "mark_removed"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "topological_order"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "traced_binary_op"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "infer_elementwise"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "optimize"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "record_success"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "record_failure"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "suggest_fix"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "record_outcome"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "overlaps"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "contains"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "failure"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_success"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "decision_stats"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "decisions_by_file"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "find_root_causes"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "ingest_session"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "progressive"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "combined"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_table"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "a100_80gb"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "a100_40gb"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "v100"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_satisfied"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "recommend"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "compare_strategies"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "welch_t_test"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "mann_whitney_u"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "anova"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "effect_interpretation"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "confidence_interval"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "convert"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "strict"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "inspect"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "preferences_mut"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "preferences"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "avg_duration_ms"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "execute"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_quiet"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "is_verbose"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_cli"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "header"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "percentage"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "tick"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "headers"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "to_comparison_table"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "compare_methods"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "analyze_adapter"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "estimate_lora"
+    status: implemented
+
+  - contract: builder-pattern-v1.yaml
+    equation: builder_pattern
+    function: "estimate_qlora"
+    status: implemented
+
