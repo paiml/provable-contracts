@@ -30,6 +30,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 13 | [Escape-Proof Enforcement](#13-escape-proof-enforcement) | [sub/escape-proof-enforcement.md](sub/escape-proof-enforcement.md) |
 | 14 | [Lean 4 + Kani Composition](#14-lean-kani-composition) | [sub/lean-kani-composition.md](sub/lean-kani-composition.md) |
 | 15 | [Verification Extensions](#15-verification-extensions) | [sub/verification-extensions.md](sub/verification-extensions.md) |
+| 16 | [Bidirectional Coverage](#16-bidirectional-coverage) | [sub/bidirectional-coverage.md](sub/bidirectional-coverage.md) |
 
 ---
 
@@ -622,3 +623,19 @@ Six orthogonal verification approaches that complement the existing pipeline:
 4. **Abstract Interpretation (MIRAI)** — `pv mirai` generates `precondition!`/`postcondition!` annotations for sound over-approximation
 5. **Refinement Types (Flux)** — `pv flux` generates `#[flux::refined_by]` annotations for compile-time shape verification via SMT
 6. **System-Level Model Checking (TLA+)** — `pv tla` generates TLA+ modules from the contract dependency DAG for pipeline-level safety/liveness
+
+---
+
+## 16. Bidirectional Coverage
+
+**Sub-spec**: [sub/bidirectional-coverage.md](sub/bidirectional-coverage.md)
+
+Current enforcement is unidirectional (binding → implementation). Bidirectional
+coverage adds the reverse check: implementation → binding. Three mechanisms:
+
+1. **`pv coverage --reverse`** — Static API diff: scan pub fns, report unbound
+2. **`#[must_contract]`** — Compile-time lint for unannotated pub fns
+3. **`pv infer`** — Semantic matching: suggest contracts for unbound functions
+
+`pv lint` Gate 7 enforces reverse coverage threshold. This prevents
+whack-a-mole: new functions cannot escape the contract system silently.

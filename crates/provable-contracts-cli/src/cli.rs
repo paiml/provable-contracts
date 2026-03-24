@@ -86,6 +86,12 @@ pub enum Commands {
         /// Path to binding registry YAML (adds binding coverage)
         #[arg(long)]
         binding: Option<PathBuf>,
+        /// Include fuzz coverage data
+        #[arg(long)]
+        fuzz: bool,
+        /// Reverse coverage: scan crate dir for unbound pub fns
+        #[arg(long)]
+        reverse: Option<PathBuf>,
     },
     /// Generate all artifacts (scaffold, kani, probar) to disk
     Generate {

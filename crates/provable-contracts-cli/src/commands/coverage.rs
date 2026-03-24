@@ -2,12 +2,37 @@ use std::path::Path;
 
 use provable_contracts::binding::parse_binding;
 use provable_contracts::coverage::{coverage_report, overall_percentage};
+use provable_contracts::reverse_coverage::reverse_coverage;
 use provable_contracts::schema::parse_contract;
 
 pub fn run(
     contract_dir: &Path,
     binding_path: Option<&Path>,
+    _show_fuzz: bool,
+    reverse_crate: Option<&Path>,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    // Reverse coverage mode
+    if let Some(crate_dir) = reverse_crate {
+        let bp = binding_path.ok_or("--reverse requires --binding <path>")?;
+        let report = reverse_coverage(crate_dir, bp);
+        println!("Reverse Coverage Report");
+        println!("=======================");
+        println!("  Public functions: {}", report.total_pub_fns);
+        println!("  Bound (in binding.yaml): {}", report.bound_fns);
+        println!("  Annotated (#[contract]): {}", report.annotated_fns);
+        println!("  Unbound: {}", report.unbound.len());
+        println!("  Coverage: {:.1}%", report.coverage_pct);
+        if !report.unbound.is_empty() {
+            println!("\nUnbound functions:");
+            for f in report.unbound.iter().take(20) {
+                println!("  {} ({}:{})", f.path, f.file, f.line);
+            }
+            if report.unbound.len() > 20 {
+                println!("  ... and {} more", report.unbound.len() - 20);
+            }
+        }
+        return Ok(());
+    }
     let binding = match binding_path {
         Some(bp) => Some(parse_binding(bp)?),
         None => None,
