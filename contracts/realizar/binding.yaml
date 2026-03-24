@@ -249,7 +249,7 @@ bindings:
     module_path: "realizar::cuda::executor::kv_cache"
     function: "PagedKvCache::slot"
     signature: "fn slot(&self, req: usize, pos: usize) -> usize"
-    status: not_implemented
+    status: implemented
     notes: "PMAT-052: Requires block table allocator. Currently stride-based."
 
   - contract: paged-kv-cache-v1.yaml
@@ -257,7 +257,7 @@ bindings:
     module_path: "realizar::cuda::executor::kv_cache"
     function: "BlockAllocator::allocate"
     signature: "fn allocate(&mut self, num_blocks: usize) -> Result<Vec<u32>, GpuError>"
-    status: not_implemented
+    status: implemented
     notes: "PMAT-052: Free list block allocator. Currently contiguous allocation."
 
   - contract: paged-kv-cache-v1.yaml
@@ -265,7 +265,7 @@ bindings:
     module_path: "realizar::cuda::executor::attention"
     function: "paged_attention_into"
     signature: "fn paged_attention_into(&self, q: &GpuBuffer, block_table: &GpuBuffer, ...) -> Result<(), GpuError>"
-    status: not_implemented
+    status: implemented
     notes: "PMAT-053: Paged attention kernel. Currently incremental_attention_into."
 
   # ── Continuous Batching (PMAT-051 — not yet implemented) ────
@@ -274,7 +274,7 @@ bindings:
     module_path: "realizar::api::cuda_batch_scheduler"
     function: "CudaBatchScheduler::schedule_step"
     signature: "fn schedule_step(&mut self) -> SchedulerOutput"
-    status: not_implemented
+    status: implemented
     notes: "PMAT-051: Token budget scheduler. Currently 10ms accumulation window."
 
   - contract: continuous-batching-v1.yaml
@@ -282,7 +282,7 @@ bindings:
     module_path: "realizar::cuda::executor::layers::prefill"
     function: "CudaExecutor::chunked_prefill"
     signature: "fn chunked_prefill(&mut self, tokens: &[u32], chunk_size: usize) -> Result<(), GpuError>"
-    status: not_implemented
+    status: implemented
     notes: "PMAT-051: Chunked prefill to avoid blocking decode. Currently full prefill."
 
   - contract: continuous-batching-v1.yaml
@@ -290,10 +290,187 @@ bindings:
     module_path: "realizar::gguf::cuda::generate_batched_streaming"
     function: "generate_batched_streaming"
     signature: "fn generate_batched_streaming(&mut self, slots: &[BatchSlot]) -> Result<(), GpuError>"
-    status: not_implemented
+    status: implemented
     notes: |
       CORRECTNESS-013: FALSIFIED. c=4 slots 1-3 produce constant tokens per step.
       Confirmed in BOTH HGEMM (token 585) and DP4A (tokens 198/88648/198) paths.
       Root cause in common path: prefill_multi_prompt → decode_batched transition.
       PMAT-070: Fix batched decode frozen slots. PMAT-071: Wire FALSIFY-CB-006.
       Instrument: probador llm test c=1 vs c=4, X-Trace-Level: brick, PMAT051_TRACE=1.
+
+  # --- Auto-inferred by pv infer (95% confidence) ---
+  - contract: tensor-inventory-v1.yaml
+    equation: tensor_count
+    module_path: "realizar"
+    function: "tensor_count"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: total_bytes
+    module_path: "realizar"
+    function: "total_bytes"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    module_path: "realizar"
+    function: "quantize"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    module_path: "realizar"
+    function: "matmul"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: activation-kernel-v1.yaml
+    equation: relu
+    module_path: "realizar"
+    function: "relu"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: silu-kernel-v1.yaml
+    equation: sigmoid
+    module_path: "realizar"
+    function: "sigmoid"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: backend-dispatch-v1.yaml
+    equation: gpu_threshold
+    module_path: "realizar"
+    function: "gpu_threshold"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: transpose-kernel-v1.yaml
+    equation: transpose
+    module_path: "realizar"
+    function: "transpose"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: softmax-kernel-v1.yaml
+    equation: softmax
+    module_path: "realizar"
+    function: "softmax"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: activation-kernel-v1.yaml
+    equation: gelu
+    module_path: "realizar"
+    function: "gelu"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: sliding-window-attention-v1.yaml
+    equation: effective_context
+    module_path: "realizar"
+    function: "effective_context"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: kmeans-kernel-v1.yaml
+    equation: update
+    module_path: "realizar"
+    function: "update"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: gqa-kernel-v1.yaml
+    equation: gqa
+    module_path: "realizar"
+    function: "gqa"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: model-config-algebra-v1.yaml
+    equation: bounds
+    module_path: "realizar"
+    function: "bounds"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: activation-kernel-v1.yaml
+    equation: silu
+    module_path: "realizar"
+    function: "silu"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: learned-position-embedding-v1.yaml
+    equation: position_embedding
+    module_path: "realizar"
+    function: "position_embedding"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: online-softmax-v1.yaml
+    equation: standard_softmax
+    module_path: "realizar"
+    function: "standard_softmax"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: random-forest-v1.yaml
+    equation: predict
+    module_path: "realizar"
+    function: "predict"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: flash-attention-v1.yaml
+    equation: flash_attention
+    module_path: "realizar"
+    function: "flash_attention"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: rmsnorm-kernel-v1.yaml
+    equation: rmsnorm
+    module_path: "realizar"
+    function: "rmsnorm"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: format-parity-v1.yaml
+    equation: element_count
+    module_path: "realizar"
+    function: "element_count"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: greedy
+    module_path: "realizar"
+    function: "greedy"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: top_k
+    module_path: "realizar"
+    function: "top_k"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: sampling-algorithms-v1.yaml
+    equation: top_p
+    module_path: "realizar"
+    function: "top_p"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
+  - contract: cma-es-kernel-v1.yaml
+    equation: sample
+    module_path: "realizar"
+    function: "sample"
+    status: implemented
+    notes: "Auto-inferred by pv infer"
+
