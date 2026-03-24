@@ -234,7 +234,104 @@ pv score contracts/ --binding contracts/aprender/binding.yaml
 - Path is a `.yaml` file → contract score (5-dim)
 - Path is a directory with contracts → codebase score (5-dim)
 - Path is `.` or a project root (has `Cargo.toml`) → PVScore (10-dim)
+
+---
+
+## Architecture: O(1) Caching (pmat tdg pattern)
+
+PVScore adopts the same three-layer architecture as `pmat tdg`:
+**atom-level scoring → hash-based cache → incremental recomputation.**
+
+### Layer 1: Per-Contract Score Cache
+
 ```
+.pv/score-cache/
+  softmax-kernel-v1.json     # { hash: "a3f2...", score: 0.81, dims: {D1:0.95,...} }
+  rmsnorm-kernel-v1.json
+  ...
+```
+
+On `pv score`, compute SHA-256 of the contract YAML. If hash matches
+cache → return cached score in O(1). Only re-compute dimensions for
+contracts whose content changed.
+
+**Cost:** O(changed contracts) instead of O(all contracts).
+
+### Layer 2: Per-Crate Reverse Coverage Index
+
+```
+.pv/reverse-index/
+  trueno.json       # { file_hashes: {"src/simd.rs": "b4e..."}, pub_fns: 2440, bound: 90 }
+  aprender.json
+  ...
+```
+
+`pv coverage --reverse` walks source trees. With cached index, only
+re-scan files whose mtime changed. Binding diff is O(changed bindings).
+
+**Cost:** O(changed source files) instead of O(all source files).
+
+### Layer 3: Score Watermark (No-Escape Ratchet)
+
+```
+.pv/pvscore-baseline.json    # { score: 91, timestamp: "2026-03-24", dimensions: {...} }
+```
+
+Like `pmat tdg baseline`, the watermark records the highest achieved
+PVScore. On every `pv score .`:
+
+1. Compute current PVScore
+2. Compare against baseline
+3. If current < baseline → **FAIL** (regression)
+4. If current >= baseline → update baseline, PASS
+
+```
+$ pv score .
+PVScore: 87/100 (Grade B) — FAIL
+  Previous baseline: 91/100
+  Regression: -4 points
+  Cannot merge: score must be >= baseline (91)
+```
+
+This is the ratchet: scores can only go UP. A zero in any dimension
+not only fails the 90 threshold but also fails the regression check.
+
+**No escape:** Unlike pmat tdg where you can update the baseline with
+`pmat tdg baseline create`, PVScore baselines can only be RAISED, never
+lowered, without `pv score . --reset-baseline --reason "..."` which
+records an audit trail.
+
+### Incremental Pipeline
+
+```
+pv score .
+  ├── Check .pv/score-cache/ hash for each contract YAML
+  │   ├── Hit  → use cached D1-D5                              O(1)
+  │   └── Miss → recompute D1-D5, update cache                 O(1) per contract
+  ├── Check .pv/reverse-index/ for each crate
+  │   ├── Hit  → use cached D6                                  O(1)
+  │   └── Miss → rescan changed files only                      O(changed)
+  ├── Read .pmat-metrics/mutation.result                        O(1)
+  ├── Scan .github/workflows/                                   O(1)
+  ├── Read .pmat-metrics/kani-last-run                          O(1)
+  ├── Read .pv/defect-cache.json or defects.yaml                O(1)
+  ├── Geometric mean of D1-D10                                  O(1)
+  ├── Compare against .pv/pvscore-baseline.json                 O(1)
+  └── Pass/fail
+```
+
+**Total cost:** O(changed files) on incremental runs. O(1) when
+nothing changed (all cache hits).
+
+### Implementation Files
+
+| Component | File | Pattern from pmat |
+|---|---|---|
+| Score cache | `.pv/score-cache/*.json` | `.pmat/baseline.json` |
+| Reverse index | `.pv/reverse-index/*.json` | `.pmat/context.idx` |
+| Watermark | `.pv/pvscore-baseline.json` | `.pmat-baseline.json` |
+| Cache logic | `scoring/cache.rs` | `services/tdg_calculator_core.rs` |
+| Incremental | `scoring/incremental.rs` | `services/incremental_index.rs` |
 
 ---
 
