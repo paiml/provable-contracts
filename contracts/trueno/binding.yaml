@@ -340,3 +340,63 @@ bindings:
     status: implemented
     notes: "Auto-inferred by pv infer"
 
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    function: "cpu_avx2_matmul"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    function: "cpu_avx512_matmul"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: rmsnorm-kernel-v1.yaml
+    equation: rmsnorm
+    function: "cpu_rmsnorm"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: softmax-kernel-v1.yaml
+    equation: softmax
+    function: "gpu_softmax"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    function: "gpu_q4k_matmul"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: f16-conversion-v1.yaml
+    equation: f16_to_f32_bias
+    function: "f16_to_f32"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize_q4k_to_f32"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: gelu-kernel-v1.yaml
+    equation: gelu
+    function: "gelu_async"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: matmul-kernel-v1.yaml
+    equation: quantized_dot
+    function: "dot"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: gelu-kernel-v1.yaml
+    equation: gelu
+    function: "elu"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"

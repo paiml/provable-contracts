@@ -474,3 +474,57 @@ bindings:
     status: implemented
     notes: "Auto-inferred by pv infer"
 
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize_q4_k_parallel"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize_q4_k_simd"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize_q8_0_parallel"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize_q8_0_simd"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: kv-cache-equivalence-v1.yaml
+    equation: fused_kernel
+    function: "fused_rmsnorm_ffn_up_gate"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    function: "fused_rmsnorm_q4_0_matmul"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: transpose-kernel-v1.yaml
+    equation: transpose
+    function: "concat_qkv_transposed"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: gqa-kernel-v1.yaml
+    equation: gqa
+    function: "gqa_group_size"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: roofline-model-v1.yaml
+    equation: compute_ceiling
+    function: "compute"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"

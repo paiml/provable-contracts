@@ -2830,3 +2830,51 @@ bindings:
     status: implemented
     notes: "Auto-inferred by pv infer"
 
+
+  - contract: alibi-kernel-v1.yaml
+    equation: alibi_bias
+    function: "bias"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: batchnorm-kernel-v1.yaml
+    equation: batchnorm_eval
+    function: "eval"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: ica-v1.yaml
+    equation: fastica
+    function: "fast"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: arima-v1.yaml
+    equation: ma_filter
+    function: "filter"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "fake_quantize"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: metrics-ranking-v1.yaml
+    equation: ndcg_at_k
+    function: "dcg_at_k"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: roofline-model-v1.yaml
+    equation: compute_ceiling
+    function: "compute"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
+
+  - contract: graph-centrality-v1.yaml
+    equation: degree
+    function: "in_degrees"
+    status: implemented
+    notes: "Curated from pv infer (85% confidence)"
