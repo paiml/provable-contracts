@@ -212,20 +212,28 @@ PVScore is strictly harder than any individual system because:
 
 ---
 
-## CLI
+## CLI: `pv score` (unified)
+
+Same command, two modes. The target determines the scoring model:
 
 ```bash
-# Compute PVScore for the current project
-pv pvscore .
+# Contract score (5 dimensions, 0.0-1.0) — existing behavior
+pv score contracts/softmax-kernel-v1.yaml
 
-# Compute PVScore with CI gate
-pv pvscore . --min-score 90 --exit-code
+# Project score (10 dimensions, 0-100, geometric mean) — PVScore mode
+pv score .
+pv score . --min-score 90 --exit-code   # CI gate (A >= 90 required)
+pv score . --verbose                     # Per-dimension breakdown
+pv score . --format json                 # Dashboard output
 
-# Breakdown by dimension
-pv pvscore . --verbose
+# Codebase score with binding (5 dimensions, 0.0-1.0) — existing behavior
+pv score contracts/ --binding contracts/aprender/binding.yaml
+```
 
-# JSON output for dashboards
-pv pvscore . --format json
+**Detection logic:**
+- Path is a `.yaml` file → contract score (5-dim)
+- Path is a directory with contracts → codebase score (5-dim)
+- Path is `.` or a project root (has `Cargo.toml`) → PVScore (10-dim)
 ```
 
 ---

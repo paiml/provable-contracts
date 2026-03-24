@@ -678,12 +678,14 @@ Meyer (2025) "Software engineering as a domain to formalize" arXiv:2502.11434.
 
 ---
 
-## 18. PVScore
+## 18. PVScore (`pv score .`)
 
 **Sub-spec**: [sub/pvscore.md](sub/pvscore.md)
 
-PVScore is a **0-100 composite** using geometric mean of 10 dimensions.
-Grade A (90+) required for CI merge — this is a HARD requirement.
+`pv score` has three modes: contract (`.yaml` → 5-dim 0.0-1.0),
+codebase (directory + binding → 5-dim), and **project** (`.` or
+`Cargo.toml` root → 10-dim 0-100 geometric mean). PVScore is the
+project mode. Grade A (90+) required for CI merge — HARD requirement.
 
 **10 Dimensions** (all 0-100, geometric mean):
 
