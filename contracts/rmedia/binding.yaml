@@ -80,3 +80,95 @@ bindings:
     equation: audio_video_sync
     function: "Encoder::av_sync_drift_secs"
     status: implemented
+
+  # --- Deep domain inference (pv infer round 3) ---
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    function: "to_animation"
+    status: implemented
+    notes: "Domain-matched: transform.rs:51"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "layout_for_type"
+    status: implemented
+    notes: "Domain-matched: layout.rs:292"
+
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    function: "generate_animation_properties"
+    status: implemented
+    notes: "Domain-matched: animate.rs:24"
+
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    function: "generate_animation_properties_with_transforms"
+    status: implemented
+    notes: "Domain-matched: animate.rs:49"
+
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    function: "generate_animation_properties_with_emphasis"
+    status: implemented
+    notes: "Domain-matched: animate.rs:80"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "scale_width"
+    status: implemented
+    notes: "Domain-matched: profile.rs:249"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "scale_height"
+    status: implemented
+    notes: "Domain-matched: profile.rs:258"
+
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    function: "compute_animate_score"
+    status: implemented
+    notes: "Domain-matched: animate_score_cmd.rs:737"
+
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    function: "format_animate_score"
+    status: implemented
+    notes: "Domain-matched: animate_score_cmd.rs:768"
+
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    function: "last_animated_frame"
+    status: implemented
+    notes: "Domain-matched: timeline.rs:154"
+
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    function: "has_animations"
+    status: implemented
+    notes: "Domain-matched: svg_render.rs:175"
+
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    function: "all_animations_pixel_compositable"
+    status: implemented
+    notes: "Domain-matched: svg_render.rs:186"
+
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    function: "animated_element_ids"
+    status: implemented
+    notes: "Domain-matched: svg_render.rs:213"
+
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    function: "make_animation"
+    status: implemented
+    notes: "Domain-matched: animation_timeline.rs:182"
+
+  - contract: spring-easing-v1.yaml
+    equation: easing_apply
+    function: "resolve_pose_animations"
+    status: implemented
+    notes: "Domain-matched: pose.rs:183"
+

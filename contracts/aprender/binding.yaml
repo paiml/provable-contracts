@@ -2878,3 +2878,239 @@ bindings:
     function: "in_degrees"
     status: implemented
     notes: "Curated from pv infer (85% confidence)"
+
+  # --- Deep domain inference (pv infer round 3) ---
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "with_energy_scale"
+    status: implemented
+    notes: "Domain-matched: mod.rs:234"
+
+  - contract: loudnorm-v1.yaml
+    equation: k_weighting
+    function: "check_weights"
+    status: implemented
+    notes: "Domain-matched: mod.rs:158"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "scale"
+    status: implemented
+    notes: "Domain-matched: quantization.rs:312"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "set_input_scale"
+    status: implemented
+    notes: "Domain-matched: quantization_linear.rs:44"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "output_scale"
+    status: implemented
+    notes: "Domain-matched: quantization_linear.rs:76"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "scale_loss"
+    status: implemented
+    notes: "Domain-matched: quantization_linear.rs:156"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "unscale_gradients"
+    status: implemented
+    notes: "Domain-matched: quantization_linear.rs:161"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "loss_scale"
+    status: implemented
+    notes: "Domain-matched: quantization_linear.rs:190"
+
+  - contract: dropout-v1.yaml
+    equation: dropout
+    function: "dropout"
+    status: implemented
+    notes: "Domain-matched: functional.rs:315"
+
+  - contract: layernorm-kernel-v1.yaml
+    equation: layernorm
+    function: "layer_norm"
+    status: implemented
+    notes: "Domain-matched: functional.rs:349"
+
+  - contract: dropout-v1.yaml
+    equation: dropout
+    function: "with_dropout"
+    status: implemented
+    notes: "Domain-matched: message_passing.rs:55"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "with_layout"
+    status: implemented
+    notes: "Domain-matched: conv2d.rs:88"
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: padding
+    function: "with_padding"
+    status: implemented
+    notes: "Domain-matched: conv2d.rs:129"
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: padding
+    function: "padding"
+    status: implemented
+    notes: "Domain-matched: conv2d.rs:159"
+
+  - contract: dropout-v1.yaml
+    equation: dropout
+    function: "with_expert_dropout"
+    status: implemented
+    notes: "Domain-matched: moe.rs:60"
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: slot_mapping
+    function: "kv_cache_size"
+    status: implemented
+    notes: "Domain-matched: mod.rs:108"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "reversal_scale"
+    status: implemented
+    notes: "Domain-matched: mod.rs:413"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "set_reversal_scale"
+    status: implemented
+    notes: "Domain-matched: mod.rs:421"
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: padding
+    function: "pad_token"
+    status: implemented
+    notes: "Domain-matched: shell_vocab.rs:290"
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: slot_mapping
+    function: "kv_cache_fits"
+    status: implemented
+    notes: "Domain-matched: mod.rs:227"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "mul_scalar"
+    status: implemented
+    notes: "Domain-matched: matrix.rs:256"
+
+  - contract: layernorm-kernel-v1.yaml
+    equation: layernorm
+    function: "input_layernorm_mut"
+    status: implemented
+    notes: "Domain-matched: mod.rs:299"
+
+  - contract: layernorm-kernel-v1.yaml
+    equation: layernorm
+    function: "post_attention_layernorm_mut"
+    status: implemented
+    notes: "Domain-matched: mod.rs:304"
+
+  - contract: dropout-v1.yaml
+    equation: dropout
+    function: "with_dropout_rate"
+    status: implemented
+    notes: "Domain-matched: nas.rs:120"
+
+  - contract: dropout-v1.yaml
+    equation: dropout
+    function: "with_dropout_range"
+    status: implemented
+    notes: "Domain-matched: nas.rs:226"
+
+  - contract: layernorm-kernel-v1.yaml
+    equation: layernorm
+    function: "is_valid_layernorm_weight"
+    status: implemented
+    notes: "Domain-matched: validation.rs:284"
+
+  - contract: layernorm-kernel-v1.yaml
+    equation: layernorm
+    function: "is_valid_layernorm_bias"
+    status: implemented
+    notes: "Domain-matched: validation.rs:290"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "safe_f16_scale"
+    status: implemented
+    notes: "Domain-matched: f16_safety.rs:85"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "is_safe_f16_scale"
+    status: implemented
+    notes: "Domain-matched: f16_safety.rs:101"
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: padding
+    function: "padding_token_id"
+    status: implemented
+    notes: "Domain-matched: reader_parsing.rs:373"
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize_q4_0"
+    status: implemented
+    notes: "Domain-matched: dequant.rs:49"
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize_q8_0"
+    status: implemented
+    notes: "Domain-matched: dequant.rs:100"
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize_q4_1"
+    status: implemented
+    notes: "Domain-matched: dequantize.rs:32"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "layout_warn"
+    status: implemented
+    notes: "Domain-matched: mod.rs:140"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "layout_error"
+    status: implemented
+    notes: "Domain-matched: mod.rs:146"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "add_log_scale"
+    status: implemented
+    notes: "Domain-matched: mod.rs:345"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "measure_iterations"
+    status: implemented
+    notes: "Domain-matched: benchmark_runner.rs:53"
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: slot_mapping
+    function: "compute_kv_cache"
+    status: implemented
+    notes: "Domain-matched: oracle.rs:262"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "detect_constraint_mismatches"
+    status: implemented
+    notes: "Domain-matched: config.rs:400"
+

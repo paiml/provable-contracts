@@ -400,3 +400,233 @@ bindings:
     function: "elu"
     status: implemented
     notes: "Curated from pv infer (85% confidence)"
+
+  # --- Deep domain inference (pv infer round 3) ---
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "extract_scale_min_6bit"
+    status: implemented
+    notes: "Domain-matched: q4k_matvec.rs:350"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "scale"
+    status: implemented
+    notes: "Domain-matched: mod.rs:184"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "layout"
+    status: implemented
+    notes: "Domain-matched: mod.rs:145"
+
+  - contract: tensor-shape-flow-v1.yaml
+    equation: reshape
+    function: "reshape"
+    status: implemented
+    notes: "Domain-matched: mod.rs:285"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "with_layout"
+    status: implemented
+    notes: "Domain-matched: mod.rs:373"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q4k_dot
+    function: "matmul_q4k_f32_colmajor"
+    status: implemented
+    notes: "Domain-matched: colmajor.rs:74"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q4k_dot
+    function: "matmul_q4k_f32_colmajor_dispatch"
+    status: implemented
+    notes: "Domain-matched: colmajor.rs:118"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q4k_dot
+    function: "matmul_q4k_f32_dispatch"
+    status: implemented
+    notes: "Domain-matched: mod.rs:32"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q4k_dot
+    function: "matmul_q4k_f32_scalar"
+    status: implemented
+    notes: "Domain-matched: scalar.rs:48"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q4k_dot
+    function: "matmul_q4k_f32"
+    status: implemented
+    notes: "Domain-matched: scalar.rs:136"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q6k_dot
+    function: "matmul_q6k_f32_colmajor"
+    status: implemented
+    notes: "Domain-matched: colmajor.rs:65"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q6k_dot
+    function: "matmul_q6k_f32_colmajor_dispatch"
+    status: implemented
+    notes: "Domain-matched: colmajor.rs:109"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q6k_dot
+    function: "matmul_q6k_f32_scalar"
+    status: implemented
+    notes: "Domain-matched: gemv.rs:51"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q6k_dot
+    function: "matmul_q6k_f32_dispatch"
+    status: implemented
+    notes: "Domain-matched: gemv.rs:215"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q6k_dot
+    function: "matmul_q6k_f32"
+    status: implemented
+    notes: "Domain-matched: gemv.rs:400"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "grayscale"
+    status: implemented
+    notes: "Domain-matched: mod.rs:63"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "mul_scalar"
+    status: implemented
+    notes: "Domain-matched: elementwise.rs:184"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "mul_scalar_alloc"
+    status: implemented
+    notes: "Domain-matched: elementwise.rs:281"
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    function: "gemv_scalar"
+    status: implemented
+    notes: "Domain-matched: gemv.rs:335"
+
+  - contract: layernorm-kernel-v1.yaml
+    equation: layernorm
+    function: "layer_norm"
+    status: implemented
+    notes: "Domain-matched: norms.rs:190"
+
+  - contract: layernorm-kernel-v1.yaml
+    equation: layernorm
+    function: "layer_norm_alloc"
+    status: implemented
+    notes: "Domain-matched: norms.rs:393"
+
+  - contract: matmul-kernel-v1.yaml
+    equation: matmul
+    function: "microkernel_scalar"
+    status: implemented
+    notes: "Domain-matched: mod.rs:40"
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: slot_mapping
+    function: "kv_caches"
+    status: implemented
+    notes: "Domain-matched: builder.rs:94"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "measured_tps"
+    status: implemented
+    notes: "Domain-matched: builder.rs:136"
+
+  - contract: embedding-lookup-v1.yaml
+    equation: embedding_lookup
+    function: "embedding_lookup_sparse"
+    status: implemented
+    notes: "Domain-matched: mod.rs:113"
+
+  - contract: layernorm-kernel-v1.yaml
+    equation: layernorm
+    function: "layer_norm_simple"
+    status: implemented
+    notes: "Domain-matched: normalization.rs:256"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "bench_scale"
+    status: implemented
+    notes: "Domain-matched: arithmetic.rs:188"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q4k_dot
+    function: "transpose_q4k_for_matmul"
+    status: implemented
+    notes: "Domain-matched: transpose.rs:12"
+
+  - contract: q4k-q6k-superblock-v1.yaml
+    equation: q6k_dot
+    function: "transpose_q6k_for_matmul"
+    status: implemented
+    notes: "Domain-matched: transpose.rs:65"
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize_q4_k_to_f32"
+    status: implemented
+    notes: "Domain-matched: dequantize.rs:7"
+
+  - contract: int8-symmetric-quant-v1.yaml
+    equation: quantize
+    function: "dequantize_q6_k_to_f32"
+    status: implemented
+    notes: "Domain-matched: dequantize.rs:143"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "add_measurement"
+    status: implemented
+    notes: "Domain-matched: mod.rs:76"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "measurement_count"
+    status: implemented
+    notes: "Domain-matched: mod.rs:97"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "measure_variance"
+    status: implemented
+    notes: "Domain-matched: controller.rs:98"
+
+  - contract: constraints-layout-v1.yaml
+    equation: constrain
+    function: "constrain"
+    status: implemented
+    notes: "Domain-matched: widget.rs:99"
+
+  - contract: paged-kv-cache-v1.yaml
+    equation: slot_mapping
+    function: "kv_cache_scatter_gpu"
+    status: implemented
+    notes: "Domain-matched: incremental.rs:359"
+
+  - contract: layernorm-kernel-v1.yaml
+    equation: layernorm
+    function: "layer_norm_with_stream"
+    status: implemented
+    notes: "Domain-matched: norm_activation.rs:90"
+
+  - contract: bias-add-v1.yaml
+    equation: bias_add
+    function: "gemm_fp8_e4m3_to_f16_scaled"
+    status: implemented
+    notes: "Domain-matched: cublaslt.rs:257"
+
