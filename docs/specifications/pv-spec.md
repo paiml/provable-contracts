@@ -31,6 +31,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 14 | [Lean 4 + Kani Composition](#14-lean-kani-composition) | [sub/lean-kani-composition.md](sub/lean-kani-composition.md) |
 | 15 | [Verification Extensions](#15-verification-extensions) | [sub/verification-extensions.md](sub/verification-extensions.md) |
 | 16 | [Bidirectional Coverage](#16-bidirectional-coverage) | [sub/bidirectional-coverage.md](sub/bidirectional-coverage.md) |
+| 17 | [Gradual Enforcement](#17-gradual-enforcement) | [sub/gradual-enforcement.md](sub/gradual-enforcement.md) |
 
 ---
 
@@ -596,6 +597,14 @@ Proven by 32+ KAIZEN tickets with measurable results:
 27. Li, Y. et al. (2025). "Do Large Language Models Respect Contracts?" arXiv:2510.12047.
 28. Bruni, R. et al. (2026). "Agent Behavioral Contracts." arXiv:2602.22302.
 
+### Gradual Typing and Verification
+
+29. Siek, J. G. & Taha, W. (2006). "Gradual Typing for Functional Languages." Scheme and Functional Programming Workshop.
+30. Bader, J., Aldrich, J. & Tanter, E. (2018). "Gradual Program Verification." VMCAI 2018. arXiv:1710.06422.
+31. Lehmann, N. & Tanter, E. (2023). "Gradual Liquid Type Inference." OOPSLA 2023.
+32. Garcia, R., Clark, A. & Tanter, E. (2016). "Abstracting Gradual Typing." POPL 2016.
+33. Rondon, P. M., Kawaguci, M. & Jhala, R. (2008). "Liquid Types." PLDI 2008.
+
 ---
 
 ## 13. Escape-Proof Enforcement
@@ -641,3 +650,27 @@ coverage adds the reverse check: implementation → binding. Three mechanisms:
 
 `pv lint` Gate 7 enforces reverse coverage threshold. This prevents
 whack-a-mole: new functions cannot escape the contract system silently.
+
+---
+
+## 17. Gradual Enforcement
+
+**Sub-spec**: [sub/gradual-enforcement.md](sub/gradual-enforcement.md)
+
+Five enforcement gaps identified by falsifying against mypy, TypeScript,
+Rust `#[forbid]`, C# nullable, JSpecify, Haskell/LiquidHaskell, ty, and Elm:
+
+1. **Per-contract enforcement levels** — `metadata.enforcement_level: basic | standard | strict | proven`
+   (pattern: mypy per-module, C# per-file `#nullable`, JSpecify `@NullMarked`)
+2. **Stale suppression detection** — `PV-SUP-001` warns when suppressions become unnecessary
+   (pattern: TypeScript `@ts-expect-error`, Rust `#[expect]`, ty `unused-ignore-comment`)
+3. **Multi-stage pipeline** — Four verification tiers with progressive CI gates
+   (pattern: C# `disable → warnings → annotations → enable`)
+4. **Aggregate coverage metric** — `pv lint --coverage --min-coverage 0.70` with CI ratchet
+   (pattern: TypeScript `type-coverage`, mypy typed def count)
+5. **Irreversible level lock** — `metadata.locked_level: L3` cannot regress without `pv unlock`
+   (pattern: Rust `#![forbid(unsafe_code)]`, Elm mandatory totality)
+
+Key references: Bader et al. (2018) "Gradual Program Verification" arXiv:1710.06422;
+Lehmann & Tanter (2023) "Gradual Liquid Type Inference" OOPSLA;
+Meyer (2025) "Software engineering as a domain to formalize" arXiv:2502.11434.
