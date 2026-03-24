@@ -1,0 +1,32 @@
+version: "1.0.0"
+target_crate: "presentar-core"
+bindings:
+  - contract: "color-wcag-v1"
+    equation: "contrast_ratio"
+    status: "not_implemented"
+    function: "Color::contrast_ratio"
+    file: "crates/presentar-core/src/color.rs"
+
+  - contract: "color-wcag-v1"
+    equation: "lerp"
+    status: "implemented"
+    function: "Color::lerp"
+    file: "crates/presentar-core/src/color.rs"
+
+  - contract: "rect-geometry-v1"
+    equation: "intersection"
+    status: "implemented"
+    function: "Rect::intersection"
+    file: "crates/presentar-core/src/geometry.rs"
+
+  - contract: "rect-geometry-v1"
+    equation: "inset"
+    status: "implemented"
+    function: "Rect::inset"
+    file: "crates/presentar-core/src/geometry.rs"
+
+  - contract: "constraints-layout-v1"
+    equation: "constrain"
+    status: "implemented"
+    function: "Constraints::constrain"
+    file: "crates/presentar-core/src/constraints.rs"
