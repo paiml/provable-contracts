@@ -32,6 +32,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 15 | [Verification Extensions](#15-verification-extensions) | [sub/verification-extensions.md](sub/verification-extensions.md) |
 | 16 | [Bidirectional Coverage](#16-bidirectional-coverage) | [sub/bidirectional-coverage.md](sub/bidirectional-coverage.md) |
 | 17 | [Gradual Enforcement](#17-gradual-enforcement) | [sub/gradual-enforcement.md](sub/gradual-enforcement.md) |
+| 18 | [PVScore](#18-pvscore) | [sub/pvscore.md](sub/pvscore.md) |
 
 ---
 
@@ -674,3 +675,37 @@ Rust `#[forbid]`, C# nullable, JSpecify, Haskell/LiquidHaskell, ty, and Elm:
 Key references: Bader et al. (2018) "Gradual Program Verification" arXiv:1710.06422;
 Lehmann & Tanter (2023) "Gradual Liquid Type Inference" OOPSLA;
 Meyer (2025) "Software engineering as a domain to formalize" arXiv:2502.11434.
+
+---
+
+## 18. PVScore
+
+**Sub-spec**: [sub/pvscore.md](sub/pvscore.md)
+
+PVScore is a **0-100 composite** using geometric mean of 10 dimensions.
+Grade A (90+) required for CI merge — this is a HARD requirement.
+
+**10 Dimensions** (all 0-100, geometric mean):
+
+| # | Dimension | Source | Hard to fake because |
+|---|---|---|---|
+| D1 | Spec Depth | `pv score` D1 | Requires actual math from papers |
+| D2 | Falsification Coverage | `pv score` D2 | Property tests, not unit tests |
+| D3 | Kani BMC | `pv score` D3 | Prover actually runs |
+| D4 | Lean 4 Proofs | `pv score` D4 | `sorry` = 0 points |
+| D5 | Binding Compliance | `pv score` D5 | Compiler rejects gaps |
+| D6 | Reverse Coverage | `pv coverage --reverse` | Scans source, not YAML |
+| D7 | Mutation Testing | certeza / cargo-mutants | Ultimate test quality metric |
+| D8 | CI Pipeline Depth | GitHub Actions audit | Auditable CI logs |
+| D9 | Proof Freshness | Kani/Lean CI timestamps | Stale proofs decay to 0 |
+| D10 | Defect Patterns | org-intelligence-plugin | Git history analysis |
+
+```
+pvscore = (D1 * D2 * ... * D10) ^ (1/10)
+```
+
+One zero dimension tanks the entire score. You cannot compensate
+weak formal proofs with good test coverage.
+
+Key references: SQALE (Letouzey 2012), OpenSSF Scorecard (2023),
+Petrovic et al. (2022) "Practical Mutation Testing at Scale" IEEE TSE.
