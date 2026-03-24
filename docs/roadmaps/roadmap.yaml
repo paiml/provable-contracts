@@ -1388,3 +1388,67 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-078
+  github_issue: null
+  item_type: task
+  title: 'CB-1300: contract mandate for all paiml repos >10K LOC + pmat self-enforcement'
+  status: inprogress
+  priority: critical
+  assigned_to: null
+  created: 2026-03-24T17:13:18Z
+  updated: 2026-03-24T17:13:26.351767186+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-079
+  github_issue: null
+  item_type: task
+  title: 'bashrs: initial contracts for shell parser + safety classifier'
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-03-24T17:13:18Z
+  updated: 2026-03-24T17:13:18Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-080
+  github_issue: null
+  item_type: task
+  title: 'depyler: type-preservation + semantic-equivalence contracts'
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-03-24T17:13:18Z
+  updated: 2026-03-24T17:13:18Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-081
+  github_issue: null
+  item_type: task
+  title: 'apr-model-qa-playbook: integrate MQS into PVScore pipeline'
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-03-24T17:13:18Z
+  updated: 2026-03-24T17:13:18Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null

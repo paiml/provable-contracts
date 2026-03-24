@@ -22,17 +22,17 @@ Full audit of all 13 repos in the PAIML sovereign AI stack.
 | forjar | 336K | 13 | N/A | AllImplemented ✓ |
 | **Subtotal** | **2.2M** | **823** | **~5%** | |
 
-### Tier 2: Unenforced (ZERO contracts, ZERO bindings, ZERO build.rs)
+### Tier 2: Newly Registered (binding.yaml created, build.rs pending)
 
-| Repo | LOC | Role | Risk |
-|---|---|---|---|
-| **depyler** | **2.5M** | Python→Rust transpiler | **Transpiler bug → every transpiled program is wrong** |
-| **ruchy** | **829K** | Scripting→Rust transpiler | **Same: transpiler correctness is critical** |
-| **decy** | **460K** | Rust tooling | Code generation correctness |
-| **bashrs/rash** | **388K** | Shell safety tool | **Security tool with no formal guarantees** |
-| **pmat** | **146K** | Quality toolkit | **Enforces others but not itself** |
-| **simular** | **73K** | Simulation engine | Determinism guarantees |
-| **Subtotal** | **4.4M** | | **68% of stack LOC unverified** |
+| Repo | LOC | Role | Bindings | Status |
+|---|---|---|---|---|
+| **depyler** | **2.5M** | Python→Rust transpiler | 7 | Registered, needs build.rs |
+| **ruchy** | **829K** | Scripting→Rust transpiler | 4 | Registered, needs build.rs |
+| **decy** | **460K** | Rust tooling | 5 | Registered, needs build.rs |
+| **bashrs/rash** | **388K** | Shell safety tool | 6 | Registered, needs build.rs |
+| **pmat** | **146K** | Quality toolkit | 4 | Registered, needs build.rs |
+| **simular** | **73K** | Simulation engine | 3 | Registered, needs build.rs |
+| **Subtotal** | **4.4M** | | **29** | **Bindings exist, enforcement pending** |
 
 ### Five-Whys: Why Are 6 Repos Unenforced?
 
