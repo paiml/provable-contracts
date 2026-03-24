@@ -3,7 +3,7 @@ target_crate: "presentar-core"
 bindings:
   - contract: "color-wcag-v1"
     equation: "contrast_ratio"
-    status: "not_implemented"
+    status: "implemented"
     function: "Color::contrast_ratio"
     file: "crates/presentar-core/src/color.rs"
 

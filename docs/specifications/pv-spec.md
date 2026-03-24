@@ -524,11 +524,13 @@ KAIZEN workflow in **[sub/integration.md](sub/integration.md)**.
 
 | Project | Bindings | Policy | Integration |
 |---|---|---|---|
-| aprender | 301 | AllImplemented | Level 3: `build.rs` + `#[contract]` proc macro |
-| entrenar | 96 | WarnOnGaps | Level 3: `build.rs` + `CONTRACT_*` env vars |
-| realizar | 23 | WarnOnGaps | Level 3: `build.rs` + `CONTRACT_*` env vars |
-| trueno | 22 | AllImplemented | Level 3: `build.rs` + `CONTRACT_*` env vars |
-| bashrs | — | — | YAML-only: SSC encoder + classifier contracts |
+| aprender | 330 | **AllImplemented** | Level 3: `build.rs` + `#[contract]` proc macro |
+| entrenar | 117 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| trueno | 42 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| realizar | 58 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| forjar | 13 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| presentar | 5 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| rmedia | 16 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
 
 ### The KAIZEN Contract-First Workflow
 
