@@ -25,6 +25,12 @@ pub struct LintFinding {
     /// Whether this finding is new since the last lint run.
     #[serde(default)]
     pub is_new: bool,
+    /// Optional YAML source snippet showing the problematic line.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub snippet: Option<String>,
+    /// Suggested fix (YAML patch or instruction).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub suggestion: Option<String>,
 }
 
 impl LintFinding {
@@ -45,6 +51,8 @@ impl LintFinding {
             suppressed: false,
             suppression_reason: None,
             is_new: false,
+            snippet: None,
+            suggestion: None,
         }
     }
 
@@ -57,6 +65,18 @@ impl LintFinding {
     #[must_use]
     pub fn with_stem(mut self, stem: impl Into<String>) -> Self {
         self.contract_stem = Some(stem.into());
+        self
+    }
+
+    #[must_use]
+    pub fn with_snippet(mut self, snippet: impl Into<String>) -> Self {
+        self.snippet = Some(snippet.into());
+        self
+    }
+
+    #[must_use]
+    pub fn with_suggestion(mut self, suggestion: impl Into<String>) -> Self {
+        self.suggestion = Some(suggestion.into());
         self
     }
 
@@ -90,6 +110,22 @@ impl LintFinding {
         self.file.hash(&mut hasher);
         self.message.hash(&mut hasher);
         format!("{}:{}:{:016x}", self.rule_id, self.file, hasher.finish())
+    }
+}
+
+/// Read a specific line from a file and return it trimmed, or None if unavailable.
+pub fn read_snippet(file: &str, line: Option<u32>) -> Option<String> {
+    let line_num = line? as usize;
+    if line_num == 0 {
+        return None;
+    }
+    let content = std::fs::read_to_string(file).ok()?;
+    let target = content.lines().nth(line_num - 1)?;
+    let trimmed = target.trim();
+    if trimmed.is_empty() {
+        None
+    } else {
+        Some(trimmed.to_string())
     }
 }
 

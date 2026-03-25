@@ -37,7 +37,7 @@ pub(crate) fn run_verify_gate(
         for ft in &contract.falsification_tests {
             if let Some(ref test_name) = ft.test {
                 let raw = test_name.trim().trim_matches('"');
-                // Extract function name from module path (e.g., "mod::tests::test_foo" → "test_foo")
+                // Extract function name from module path (e.g., "mod::tests::test_foo" -> "test_foo")
                 let name = raw.rsplit("::").next().unwrap_or(raw);
                 if name.starts_with("test_") || name.starts_with("prop_") {
                     total_refs += 1;
@@ -55,6 +55,8 @@ pub(crate) fn run_verify_gate(
                             suppressed: false,
                             suppression_reason: None,
                             is_new: false,
+                            snippet: None,
+                            suggestion: None,
                         });
                     }
                 }
@@ -135,6 +137,10 @@ pub(crate) fn run_enforce_gate(contracts: &[(String, Contract)]) -> (GateResult,
                     suppressed: false,
                     suppression_reason: None,
                     is_new: false,
+                    snippet: None,
+                    suggestion: Some(format!(
+                        "Add to equations.{eq_name}:\n  preconditions:\n    - \"!input.is_empty()\""
+                    )),
                 });
             } else {
                 with_pre += 1;
@@ -145,6 +151,8 @@ pub(crate) fn run_enforce_gate(contracts: &[(String, Contract)]) -> (GateResult,
             if eq.lean_theorem.is_some() {
                 with_lean += 1;
             } else {
+                // Capitalize first letter of equation name for Lean theorem name
+                let lean_name = capitalize_first(eq_name);
                 findings.push(LintFinding {
                     rule_id: "PV-ENF-002".into(),
                     severity: RuleSeverity::Warning,
@@ -157,6 +165,10 @@ pub(crate) fn run_enforce_gate(contracts: &[(String, Contract)]) -> (GateResult,
                     suppressed: false,
                     suppression_reason: None,
                     is_new: false,
+                    snippet: None,
+                    suggestion: Some(format!(
+                        "Add to equations.{eq_name}:\n  lean_theorem: \"Theorems.{lean_name}\""
+                    )),
                 });
             }
         }
@@ -181,6 +193,15 @@ pub(crate) fn run_enforce_gate(contracts: &[(String, Contract)]) -> (GateResult,
         },
         findings,
     )
+}
+
+/// Capitalize the first character of a string.
+fn capitalize_first(s: &str) -> String {
+    let mut chars = s.chars();
+    match chars.next() {
+        None => String::new(),
+        Some(c) => c.to_uppercase().collect::<String>() + chars.as_str(),
+    }
 }
 
 /// Gate 6: Enforcement level — check contracts meet minimum level.
@@ -220,6 +241,8 @@ pub(crate) fn run_enforcement_level_gate(
                 suppressed: false,
                 suppression_reason: None,
                 is_new: false,
+                snippet: None,
+                suggestion: None,
             });
             below += 1;
         }
@@ -238,6 +261,8 @@ pub(crate) fn run_enforcement_level_gate(
                 suppressed: false,
                 suppression_reason: None,
                 is_new: false,
+                snippet: None,
+                suggestion: None,
             });
             below += 1;
         }
@@ -264,6 +289,8 @@ pub(crate) fn run_enforcement_level_gate(
                     suppressed: false,
                     suppression_reason: None,
                     is_new: false,
+                    snippet: None,
+                    suggestion: None,
                 });
             }
         }
@@ -333,6 +360,8 @@ pub(crate) fn run_reverse_coverage_gate(
             suppressed: false,
             suppression_reason: None,
             is_new: false,
+            snippet: None,
+            suggestion: None,
         });
     }
 
@@ -351,6 +380,8 @@ pub(crate) fn run_reverse_coverage_gate(
             suppressed: false,
             suppression_reason: None,
             is_new: false,
+            snippet: None,
+            suggestion: None,
         });
     }
 
@@ -399,6 +430,8 @@ pub(crate) fn check_stale_suppressions(
                 suppressed: false,
                 suppression_reason: None,
                 is_new: false,
+                snippet: None,
+                suggestion: None,
             });
         }
     }
@@ -422,6 +455,8 @@ pub(crate) fn check_stale_suppressions(
                 suppressed: false,
                 suppression_reason: None,
                 is_new: false,
+                snippet: None,
+                suggestion: None,
             });
         }
     }

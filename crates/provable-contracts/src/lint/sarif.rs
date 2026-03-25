@@ -209,6 +209,8 @@ mod tests {
             suppressed: false,
             suppression_reason: None,
             is_new: false,
+            snippet: None,
+            suggestion: None,
         }
     }
 

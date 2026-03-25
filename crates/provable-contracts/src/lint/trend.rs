@@ -239,6 +239,7 @@ mod tests {
             total_duration_ms: 10,
             findings: vec![],
             cache_stats: CacheStats::default(),
+            contract_timings: vec![],
         };
         let path = record_snapshot(&trend, &report, 107).unwrap();
         assert!(path.exists());
@@ -356,6 +357,7 @@ mod tests {
             total_duration_ms: 0,
             findings: vec![],
             cache_stats: CacheStats::default(),
+            contract_timings: vec![],
         };
         assert!((extract_mean_score(&report) - 0.0).abs() < f64::EPSILON);
     }

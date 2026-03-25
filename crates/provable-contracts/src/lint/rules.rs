@@ -14,6 +14,8 @@ pub struct LintRule {
     pub category: RuleCategory,
     pub default_severity: RuleSeverity,
     pub description: &'static str,
+    /// Estimated remediation effort in minutes.
+    pub effort_minutes: u32,
 }
 
 /// Rule categories.
@@ -71,156 +73,187 @@ impl RuleSeverity {
 
 /// All lint rules in the catalog.
 pub static RULES: &[LintRule] = &[
-    // Validation rules
+    // Validation rules (5 min each — fix YAML syntax)
     LintRule {
         id: "PV-VAL-001",
         category: RuleCategory::Validate,
         default_severity: RuleSeverity::Error,
         description: "Schema validation error (parse failure or missing section)",
+        effort_minutes: 5,
     },
     LintRule {
         id: "PV-VAL-002",
         category: RuleCategory::Validate,
         default_severity: RuleSeverity::Error,
         description: "Missing metadata.version",
+        effort_minutes: 5,
     },
     LintRule {
         id: "PV-VAL-003",
         category: RuleCategory::Validate,
         default_severity: RuleSeverity::Warning,
         description: "Missing metadata.created",
+        effort_minutes: 5,
     },
     LintRule {
         id: "PV-VAL-004",
         category: RuleCategory::Validate,
         default_severity: RuleSeverity::Error,
         description: "Empty equation formula",
+        effort_minutes: 5,
     },
     LintRule {
         id: "PV-VAL-005",
         category: RuleCategory::Validate,
         default_severity: RuleSeverity::Error,
         description: "Empty proof obligation property",
+        effort_minutes: 5,
     },
     LintRule {
         id: "PV-VAL-006",
         category: RuleCategory::Validate,
         default_severity: RuleSeverity::Warning,
         description: "Duplicate formal predicate in proof obligations",
+        effort_minutes: 5,
     },
-    // Audit rules
+    // Audit rules (15 min each — add test/reference/domain)
     LintRule {
         id: "PV-AUD-001",
         category: RuleCategory::Audit,
         default_severity: RuleSeverity::Warning,
         description: "Obligation without falsification test",
+        effort_minutes: 15,
     },
     LintRule {
         id: "PV-AUD-002",
         category: RuleCategory::Audit,
         default_severity: RuleSeverity::Info,
         description: "Missing paper reference",
+        effort_minutes: 15,
     },
     LintRule {
         id: "PV-AUD-003",
         category: RuleCategory::Audit,
         default_severity: RuleSeverity::Warning,
         description: "Obligation ID not referenced by any test",
+        effort_minutes: 15,
     },
     LintRule {
         id: "PV-AUD-004",
         category: RuleCategory::Audit,
         default_severity: RuleSeverity::Warning,
         description: "Equation without domain specification",
+        effort_minutes: 15,
     },
     LintRule {
         id: "PV-AUD-005",
         category: RuleCategory::Audit,
         default_severity: RuleSeverity::Warning,
         description: "Missing tolerance for numerical obligation",
+        effort_minutes: 15,
     },
-    // Score rules
+    // Score rules (30 min each — improve score dimension)
     LintRule {
         id: "PV-SCR-001",
         category: RuleCategory::Score,
         default_severity: RuleSeverity::Error,
         description: "Composite score below threshold",
+        effort_minutes: 30,
     },
     LintRule {
         id: "PV-SCR-002",
         category: RuleCategory::Score,
         default_severity: RuleSeverity::Warning,
         description: "Missing binding entry for equation",
+        effort_minutes: 30,
     },
     LintRule {
         id: "PV-SCR-003",
         category: RuleCategory::Score,
         default_severity: RuleSeverity::Info,
         description: "Kani coverage below 50%",
+        effort_minutes: 30,
     },
     LintRule {
         id: "PV-SCR-004",
         category: RuleCategory::Score,
         default_severity: RuleSeverity::Info,
         description: "Lean coverage at 0%",
+        effort_minutes: 30,
     },
-    // Provability rules
+    // Provability rules (60 min each — add Kani harness or falsification test)
     LintRule {
         id: "PV-PRV-001",
         category: RuleCategory::Provability,
         default_severity: RuleSeverity::Error,
         description: "Kernel contract without Kani harnesses",
+        effort_minutes: 60,
     },
     LintRule {
         id: "PV-PRV-002",
         category: RuleCategory::Provability,
         default_severity: RuleSeverity::Error,
         description: "Kernel contract without falsification tests",
+        effort_minutes: 60,
     },
     LintRule {
         id: "PV-PRV-003",
         category: RuleCategory::Provability,
         default_severity: RuleSeverity::Warning,
         description: "Kani harness count < obligation count",
+        effort_minutes: 60,
     },
     LintRule {
         id: "PV-PRV-004",
         category: RuleCategory::Provability,
         default_severity: RuleSeverity::Info,
         description: "No Lean theorems (L5 not attempted)",
+        effort_minutes: 60,
     },
-    // Trend rules
+    // Trend rules (10 min each — review trend)
     LintRule {
         id: "PV-TRD-001",
         category: RuleCategory::Trend,
         default_severity: RuleSeverity::Warning,
         description: "Mean score dropped >5% from 7-day rolling average",
+        effort_minutes: 10,
     },
     LintRule {
         id: "PV-TRD-002",
         category: RuleCategory::Trend,
         default_severity: RuleSeverity::Info,
         description: "Error count increased from previous snapshot",
+        effort_minutes: 10,
     },
-    // Suppression rules (Section 17, Gap 2)
+    // Suppression rules (2 min each — remove stale suppression)
     LintRule {
         id: "PV-SUP-001",
         category: RuleCategory::Suppression,
         default_severity: RuleSeverity::Warning,
         description: "Stale suppression — the finding no longer fires",
+        effort_minutes: 2,
     },
     // Enforcement rules (Section 17, Gaps 1 + 5)
     LintRule {
         id: "PV-ENF-001",
         category: RuleCategory::Enforcement,
         default_severity: RuleSeverity::Warning,
-        description: "Contract below minimum enforcement level",
+        description: "Equation without preconditions",
+        effort_minutes: 20,
+    },
+    LintRule {
+        id: "PV-ENF-002",
+        category: RuleCategory::Enforcement,
+        default_severity: RuleSeverity::Warning,
+        description: "Equation without lean_theorem",
+        effort_minutes: 20,
     },
     LintRule {
         id: "PV-LCK-001",
         category: RuleCategory::Enforcement,
         default_severity: RuleSeverity::Error,
         description: "Contract regressed below locked verification level",
+        effort_minutes: 5,
     },
 ];
 
@@ -241,7 +274,7 @@ mod tests {
     #[test]
     fn rule_catalog_not_empty() {
         assert!(!RULES.is_empty());
-        assert!(RULES.len() >= 20, "Expected 20+ rules, got {}", RULES.len());
+        assert!(RULES.len() >= 21, "Expected 21+ rules, got {}", RULES.len());
     }
 
     #[test]

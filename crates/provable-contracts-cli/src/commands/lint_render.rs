@@ -73,6 +73,7 @@ pub fn print_text(report: &LintReport) {
     }
     println!();
     print_findings_grouped(report);
+    print_contract_timings(report);
     print_summary(report);
 }
 
@@ -190,12 +191,30 @@ fn print_findings_grouped(report: &LintReport) {
                 bold(&f.rule_id),
                 f.message
             );
+            // Feature 5: Show source snippet if available
+            if let Some(ref snippet) = f.snippet {
+                println!("           | {snippet}");
+            }
+            // Feature 10: Show fix suggestion if available
+            if let Some(ref suggestion) = f.suggestion {
+                let mut first = true;
+                for line in suggestion.lines() {
+                    if first {
+                        println!("      fix: {line}");
+                        first = false;
+                    } else {
+                        println!("           {line}");
+                    }
+                }
+            }
         }
     }
     println!();
 }
 
 pub fn print_summary(report: &LintReport) {
+    use provable_contracts::lint::rules::find_rule;
+
     let total = report.findings.len();
     let active = report.findings.iter().filter(|f| !f.suppressed).count();
     let suppressed = total - active;
@@ -232,12 +251,45 @@ pub fn print_summary(report: &LintReport) {
             "0".to_string()
         },
     );
+
+    // Feature 8: Remediation effort estimation
+    let total_effort: u32 = report
+        .findings
+        .iter()
+        .filter(|f| !f.suppressed)
+        .map(|f| find_rule(&f.rule_id).map_or(10, |r| r.effort_minutes))
+        .sum();
+    if total_effort > 0 {
+        let hours = total_effort / 60;
+        let minutes = total_effort % 60;
+        let effort_str = if hours > 0 && minutes > 0 {
+            format!("~{hours}h {minutes}m")
+        } else if hours > 0 {
+            format!("~{hours}h")
+        } else {
+            format!("~{minutes}m")
+        };
+        println!("Estimated remediation: {effort_str}");
+    }
+
     let result = if report.passed {
         green("PASS")
     } else {
         red("FAIL")
     };
     println!("Result: {result}");
+}
+
+/// Print the slowest 5 contracts by processing time (Feature 11).
+fn print_contract_timings(report: &LintReport) {
+    if report.contract_timings.is_empty() {
+        return;
+    }
+    println!("{}:", bold("Slowest contracts"));
+    for (stem, ms) in report.contract_timings.iter().take(5) {
+        println!("  {stem:<40} {ms}ms");
+    }
+    println!();
 }
 
 pub fn print_json(report: &LintReport) -> Result<(), Box<dyn std::error::Error>> {

@@ -104,6 +104,9 @@ pub struct LintReport {
     pub findings: Vec<LintFinding>,
     #[serde(skip)]
     pub cache_stats: cache::CacheStats,
+    /// Per-contract processing times: `(contract_stem, duration_ms)`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub contract_timings: Vec<(String, u64)>,
 }
 
 /// Configuration for `pv lint`.
@@ -153,6 +156,7 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
     let mut gates = Vec::with_capacity(3);
     let mut all_findings = Vec::new();
     let mut stats = cache::CacheStats::default();
+    let mut contract_timings: Vec<(String, u64)> = Vec::new();
 
     let cache_root = if config.no_cache {
         None
@@ -236,6 +240,23 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
 
     all_findings.append(&mut validate_findings);
 
+    // Per-contract timing: measure how long each contract's findings take to process
+    if validation_passed {
+        for (stem, contract) in &contracts {
+            let ct_start = Instant::now();
+            // Validate
+            let _ = crate::schema::validate_contract(contract);
+            // Audit
+            let _ = crate::audit::audit_contract(contract);
+            // Score
+            let _ = crate::scoring::score_contract(contract, binding.as_ref(), stem);
+            let ct_ms = u64::try_from(ct_start.elapsed().as_micros() / 1000).unwrap_or(0);
+            contract_timings.push((format!("{stem}.yaml"), ct_ms));
+        }
+        // Sort by duration descending
+        contract_timings.sort_by(|a, b| b.1.cmp(&a.1));
+    }
+
     // Stale suppression detection (PV-SUP-001, Section 17 Gap 2)
     let mut stale_findings = check_stale_suppressions(
         &all_findings,
@@ -284,6 +305,7 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
         total_duration_ms: u64::try_from(overall_start.elapsed().as_millis()).unwrap_or(u64::MAX),
         findings: all_findings,
         cache_stats: stats,
+        contract_timings,
     }
 }
 
