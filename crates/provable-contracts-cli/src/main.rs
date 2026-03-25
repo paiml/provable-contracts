@@ -112,6 +112,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             coverage,
             min_coverage,
             crate_dir,
+            min_level,
             ..
         } => commands::lint::run(
             &contract_dir,
@@ -133,6 +134,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             coverage,
             min_coverage,
             crate_dir.as_deref(),
+            min_level.as_deref(),
         ),
         Commands::Score {
             path,
@@ -142,6 +144,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             summary,
             top_gaps,
             weights,
+            pvscore,
             ..
         } => commands::score::run(
             &path,
@@ -151,6 +154,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             summary,
             top_gaps,
             weights.as_deref(),
+            pvscore,
         ),
         Commands::Query {
             query,

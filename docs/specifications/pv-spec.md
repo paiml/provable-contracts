@@ -669,7 +669,7 @@ Current enforcement is unidirectional (binding → implementation). Bidirectiona
 coverage adds the reverse check: implementation → binding. Three mechanisms:
 
 1. **`pv coverage --reverse`** [IMPLEMENTED] — Static API diff: scan pub fns, report unbound
-2. **`#[must_contract]`** [PLANNED] — Compile-time lint for unannotated pub fns
+2. **`#[must_contract]`** [IMPLEMENTED] — Compile-time lint for unannotated pub fns
 3. **`pv infer`** [IMPLEMENTED] — Semantic matching: suggest contracts for unbound functions
 
 `pv lint` Gate 7 [IMPLEMENTED] enforces reverse coverage threshold. This prevents
@@ -688,7 +688,7 @@ Rust `#[forbid]`, C# nullable, JSpecify, Haskell/LiquidHaskell, ty, and Elm:
    (pattern: mypy per-module, C# per-file `#nullable`, JSpecify `@NullMarked`)
 2. **Stale suppression detection** [IMPLEMENTED] — `PV-SUP-001` warns when suppressions become unnecessary
    (pattern: TypeScript `@ts-expect-error`, Rust `#[expect]`, ty `unused-ignore-comment`)
-3. **Multi-stage pipeline** [PLANNED] — Four verification tiers with progressive CI gates
+3. **Multi-stage pipeline** [IMPLEMENTED] — Four verification tiers with progressive CI gates (`pv lint --min-level`)
    (pattern: C# `disable → warnings → annotations → enable`)
 4. **Aggregate coverage metric** [IMPLEMENTED] — `pv lint --coverage --min-coverage 0.70` with CI ratchet
    (pattern: TypeScript `type-coverage`, mypy typed def count)
@@ -720,10 +720,10 @@ project mode. Grade A (90+) required for CI merge — HARD requirement.
 | D4 | Lean 4 Proofs | `pv score` D4 | `sorry` = 0 points | [IMPLEMENTED] |
 | D5 | Binding Compliance | `pv score` D5 | Compiler rejects gaps | [IMPLEMENTED] |
 | D6 | Reverse Coverage | `pv coverage --reverse` | Scans source, not YAML | [IMPLEMENTED] |
-| D7 | Mutation Testing | certeza / cargo-mutants | Ultimate test quality metric | [PLANNED] |
-| D8 | CI Pipeline Depth | GitHub Actions audit | Auditable CI logs | [PLANNED] |
-| D9 | Proof Freshness | Kani/Lean CI timestamps | Stale proofs decay to 0 | [PLANNED] |
-| D10 | Defect Patterns | org-intelligence-plugin | Git history analysis | [PLANNED] |
+| D7 | Mutation Testing | certeza / cargo-mutants | Ultimate test quality metric | [IMPLEMENTED] (default 1.0) |
+| D8 | CI Pipeline Depth | GitHub Actions audit | Auditable CI logs | [IMPLEMENTED] (default 1.0) |
+| D9 | Proof Freshness | Kani/Lean CI timestamps | Stale proofs decay to 0 | [IMPLEMENTED] (default 1.0) |
+| D10 | Defect Patterns | org-intelligence-plugin | Git history analysis | [IMPLEMENTED] (default 1.0) |
 
 ```
 pvscore = (D1 * D2 * ... * D10) ^ (1/10)
