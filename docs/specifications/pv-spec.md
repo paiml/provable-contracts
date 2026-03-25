@@ -317,7 +317,7 @@ The `pv` binary provides 29 commands. Full reference with examples, flags, and o
 
 ## 6. Library API
 
-The `provable-contracts` crate exposes 32 public modules. Full API
+The `provable-contracts` crate exposes 34 public modules. Full API
 reference in **[sub/library.md](sub/library.md)**.
 
 ### Core API
