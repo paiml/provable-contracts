@@ -31,6 +31,9 @@ pub struct LintFinding {
     /// Suggested fix (YAML patch or instruction).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub suggestion: Option<String>,
+    /// Structured evidence supporting the finding (counterexample data, metric values).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub evidence: Option<String>,
 }
 
 impl LintFinding {
@@ -53,6 +56,7 @@ impl LintFinding {
             is_new: false,
             snippet: None,
             suggestion: None,
+            evidence: None,
         }
     }
 
@@ -77,6 +81,12 @@ impl LintFinding {
     #[must_use]
     pub fn with_suggestion(mut self, suggestion: impl Into<String>) -> Self {
         self.suggestion = Some(suggestion.into());
+        self
+    }
+
+    #[must_use]
+    pub fn with_evidence(mut self, evidence: impl Into<String>) -> Self {
+        self.evidence = Some(evidence.into());
         self
     }
 

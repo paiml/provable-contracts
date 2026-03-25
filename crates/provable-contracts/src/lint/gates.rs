@@ -200,7 +200,15 @@ pub(crate) fn run_score_gate(
                     ),
                     format!("contracts/{stem}.yaml"),
                 )
-                .with_stem(stem.clone()),
+                .with_stem(stem.clone())
+                .with_evidence(format!(
+                    "spec={:.2} falsify={:.2} kani={:.2} lean={:.2} bind={:.2}",
+                    s.spec_depth,
+                    s.falsification_coverage,
+                    s.kani_coverage,
+                    s.lean_coverage,
+                    s.binding_coverage
+                )),
             );
         }
         scores.push(s);

@@ -8,6 +8,9 @@ use provable_contracts::lint::{GateDetail, LintConfig, LintReport, run_lint};
 #[path = "lint_render.rs"]
 mod lint_render;
 
+#[path = "lint_html.rs"]
+mod lint_html;
+
 /// Print long-form explanation for a lint rule.
 pub fn explain_rule(rule_id: &str) {
     lint_render::print_explain(rule_id);
@@ -35,7 +38,28 @@ pub fn run(
     min_coverage: Option<f64>,
     crate_dir: Option<&Path>,
     min_level: Option<&str>,
+    watch: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    if watch {
+        return run_watch(
+            contract_dir,
+            binding_path,
+            min_score,
+            format,
+            severity,
+            strict,
+            suppress,
+            suppress_rule,
+            suppress_file,
+            rule_overrides,
+            config_path,
+            no_cache,
+            cache_stats,
+            crate_dir,
+            min_level,
+        );
+    }
+
     if show_trend {
         show_trend_history(contract_dir);
         return Ok(());
@@ -225,6 +249,7 @@ fn print_report(format: &str, report: &LintReport) -> Result<(), Box<dyn std::er
         "json" => lint_render::print_json(report)?,
         "sarif" => lint_render::print_sarif(report),
         "github" => lint_render::print_github(report),
+        "html" => println!("{}", lint_html::render_html(report)),
         _ => lint_render::print_text(report),
     }
     Ok(())
@@ -243,6 +268,58 @@ fn count_contracts(report: &LintReport) -> usize {
         }
     }
     0
+}
+
+/// Watch mode: polling-based re-lint every 5 seconds.
+#[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
+fn run_watch(
+    contract_dir: &Path,
+    binding_path: Option<&Path>,
+    min_score: f64,
+    format: Option<&str>,
+    severity: Option<&str>,
+    strict: bool,
+    suppress: Option<&str>,
+    suppress_rule: Option<&str>,
+    suppress_file: Option<&str>,
+    rule_overrides: &[String],
+    config_path: Option<&Path>,
+    no_cache: bool,
+    cache_stats: bool,
+    crate_dir: Option<&Path>,
+    min_level: Option<&str>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    loop {
+        let config = build_config(
+            contract_dir,
+            binding_path,
+            min_score,
+            format,
+            severity,
+            strict,
+            suppress,
+            suppress_rule,
+            suppress_file,
+            rule_overrides,
+            config_path,
+            no_cache,
+            cache_stats,
+            crate_dir,
+            min_level,
+        );
+
+        let report = run_lint(&config);
+
+        if cache_stats {
+            print_cache_stats(&report);
+        }
+
+        let effective_format = resolve_format(format, config_path, contract_dir);
+        print_report(&effective_format, &report)?;
+
+        println!("\n--- Watching for changes (Ctrl+C to stop) ---\n");
+        std::thread::sleep(std::time::Duration::from_secs(5));
+    }
 }
 
 fn resolve_format(format: Option<&str>, config_path: Option<&Path>, contract_dir: &Path) -> String {

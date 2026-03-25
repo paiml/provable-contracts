@@ -32,7 +32,7 @@ in provable-contracts diagnostic output.
 
 | # | Gap | Pattern From | Status |
 |---|-----|-------------|--------|
-| 7 | **Counterexample/evidence data** | Kani concrete-playback, SPARK/Dafny counterexamples | [PLANNED] |
+| 7 | **Counterexample/evidence data** | Kani concrete-playback, SPARK/Dafny counterexamples | [IMPLEMENTED] |
 | 8 | **Remediation effort estimation** | SonarQube time-based debt | [IMPLEMENTED] |
 | 9 | **Issue lifecycle (new/pre-existing)** | SonarQube lifecycle, SPARK justified checks | [IMPLEMENTED] |
 | 10 | **Structured fix suggestions** | Clippy MachineApplicable, ESLint fixable rules | [IMPLEMENTED] |
@@ -42,8 +42,8 @@ in provable-contracts diagnostic output.
 | # | Gap | Pattern From | Status |
 |---|-----|-------------|--------|
 | 11 | **Per-contract resource metrics** | Dafny resource units, Kani per-harness timing | [IMPLEMENTED] |
-| 12 | **HTML report output** | ESLint HTML formatter, SPARK HTML proof report | [PLANNED] |
-| 13 | **Daemon/LSP mode** | mypy dmypy, Dafny IDE, rust-analyzer | [PLANNED] |
+| 12 | **HTML report output** | ESLint HTML formatter, SPARK HTML proof report | [IMPLEMENTED] |
+| 13 | **Daemon/LSP mode** | mypy dmypy, Dafny IDE, rust-analyzer | [IMPLEMENTED] |
 
 ---
 

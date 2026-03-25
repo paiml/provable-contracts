@@ -195,6 +195,10 @@ fn print_findings_grouped(report: &LintReport) {
             if let Some(ref snippet) = f.snippet {
                 println!("           | {snippet}");
             }
+            // Feature 7: Show evidence if available
+            if let Some(ref evidence) = f.evidence {
+                println!("            evidence: {evidence}");
+            }
             // Feature 10: Show fix suggestion if available
             if let Some(ref suggestion) = f.suggestion {
                 let mut first = true;

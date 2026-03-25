@@ -57,6 +57,7 @@ pub(crate) fn run_verify_gate(
                             is_new: false,
                             snippet: None,
                             suggestion: None,
+                            evidence: None,
                         });
                     }
                 }
@@ -141,6 +142,7 @@ pub(crate) fn run_enforce_gate(contracts: &[(String, Contract)]) -> (GateResult,
                     suggestion: Some(format!(
                         "Add to equations.{eq_name}:\n  preconditions:\n    - \"!input.is_empty()\""
                     )),
+                    evidence: None,
                 });
             } else {
                 with_pre += 1;
@@ -169,6 +171,7 @@ pub(crate) fn run_enforce_gate(contracts: &[(String, Contract)]) -> (GateResult,
                     suggestion: Some(format!(
                         "Add to equations.{eq_name}:\n  lean_theorem: \"Theorems.{lean_name}\""
                     )),
+                    evidence: None,
                 });
             }
         }
@@ -243,6 +246,7 @@ pub(crate) fn run_enforcement_level_gate(
                 is_new: false,
                 snippet: None,
                 suggestion: None,
+                evidence: None,
             });
             below += 1;
         }
@@ -263,6 +267,7 @@ pub(crate) fn run_enforcement_level_gate(
                 is_new: false,
                 snippet: None,
                 suggestion: None,
+                evidence: None,
             });
             below += 1;
         }
@@ -291,6 +296,7 @@ pub(crate) fn run_enforcement_level_gate(
                     is_new: false,
                     snippet: None,
                     suggestion: None,
+                    evidence: None,
                 });
             }
         }
@@ -362,6 +368,7 @@ pub(crate) fn run_reverse_coverage_gate(
             is_new: false,
             snippet: None,
             suggestion: None,
+            evidence: None,
         });
     }
 
@@ -382,6 +389,7 @@ pub(crate) fn run_reverse_coverage_gate(
             is_new: false,
             snippet: None,
             suggestion: None,
+            evidence: None,
         });
     }
 
@@ -432,6 +440,7 @@ pub(crate) fn check_stale_suppressions(
                 is_new: false,
                 snippet: None,
                 suggestion: None,
+                evidence: None,
             });
         }
     }
@@ -457,6 +466,7 @@ pub(crate) fn check_stale_suppressions(
                 is_new: false,
                 snippet: None,
                 suggestion: None,
+                evidence: None,
             });
         }
     }

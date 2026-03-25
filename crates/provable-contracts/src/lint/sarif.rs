@@ -211,6 +211,7 @@ mod tests {
             is_new: false,
             snippet: None,
             suggestion: None,
+            evidence: None,
         }
     }
 
