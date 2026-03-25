@@ -1,19 +1,78 @@
 //! Lint output rendering (text, JSON, SARIF, GitHub).
 //! Split from lint.rs to stay under the 500-line limit.
 
+use std::collections::BTreeMap;
+use std::io::{IsTerminal, Write};
+
 use provable_contracts::lint::finding::LintFinding;
 use provable_contracts::lint::rules::RuleSeverity;
 use provable_contracts::lint::sarif::{findings_to_sarif, sarif_to_json};
 use provable_contracts::lint::{GateDetail, LintReport};
 
+/// Whether to use ANSI colors (auto-detected or forced via --color).
+fn use_color() -> bool {
+    // Check NO_COLOR env (https://no-color.org/)
+    if std::env::var("NO_COLOR").is_ok() {
+        return false;
+    }
+    // Check if stdout is a terminal
+    std::io::stdout().is_terminal()
+}
+
+// ANSI escape helpers
+fn red(s: &str) -> String {
+    if use_color() {
+        format!("\x1b[31m{s}\x1b[0m")
+    } else {
+        s.to_string()
+    }
+}
+fn yellow(s: &str) -> String {
+    if use_color() {
+        format!("\x1b[33m{s}\x1b[0m")
+    } else {
+        s.to_string()
+    }
+}
+fn cyan(s: &str) -> String {
+    if use_color() {
+        format!("\x1b[36m{s}\x1b[0m")
+    } else {
+        s.to_string()
+    }
+}
+fn bold(s: &str) -> String {
+    if use_color() {
+        format!("\x1b[1m{s}\x1b[0m")
+    } else {
+        s.to_string()
+    }
+}
+fn green(s: &str) -> String {
+    if use_color() {
+        format!("\x1b[32m{s}\x1b[0m")
+    } else {
+        s.to_string()
+    }
+}
+
+fn severity_colored(sev: RuleSeverity) -> String {
+    match sev {
+        RuleSeverity::Error => red("ERROR"),
+        RuleSeverity::Warning => yellow("WARN"),
+        RuleSeverity::Info => cyan("INFO"),
+        RuleSeverity::Off => "OFF".to_string(),
+    }
+}
+
 pub fn print_text(report: &LintReport) {
-    println!("pv lint — contract quality gate");
-    println!("================================\n");
+    println!("{}", bold("pv lint — contract quality gate"));
+    println!("{}\n", bold("================================"));
     for (i, gate) in report.gates.iter().enumerate() {
         print_gate(i + 1, gate);
     }
     println!();
-    print_findings(report);
+    print_findings_grouped(report);
     print_summary(report);
 }
 
@@ -21,14 +80,15 @@ pub fn print_gate(num: usize, gate: &provable_contracts::lint::GateResult) {
     let icon = if gate.skipped {
         "⏭"
     } else if gate.passed {
-        "✅"
+        &green("✓")
     } else {
-        "❌"
+        &red("✗")
     };
     let summary = gate_summary(&gate.detail);
     println!(
         "  Gate {num}: {:<20} {icon}  ({summary}) [{:.0}ms]",
-        gate.name, gate.duration_ms
+        bold(&gate.name),
+        gate.duration_ms
     );
 }
 
@@ -72,46 +132,56 @@ pub fn gate_summary(detail: &GateDetail) -> String {
     }
 }
 
-#[allow(dead_code)]
-pub fn print_gate_errors(detail: &GateDetail) {
-    match detail {
-        GateDetail::Validate { error_messages, .. } => {
-            for msg in error_messages {
-                println!("    {msg}");
-            }
-        }
-        GateDetail::Audit {
-            finding_messages, ..
-        } => {
-            for msg in finding_messages {
-                println!("    {msg}");
-            }
-        }
-        GateDetail::Score {
-            below_threshold, ..
-        } => {
-            for c in below_threshold {
-                println!("    {c}");
-            }
-        }
-        _ => {}
-    }
-}
-
-pub fn print_findings(report: &LintReport) {
+/// Print findings grouped by contract file, then by rule within each contract.
+fn print_findings_grouped(report: &LintReport) {
     let active: Vec<&LintFinding> = report.findings.iter().filter(|f| !f.suppressed).collect();
     if active.is_empty() {
         return;
     }
-    println!("Findings:");
+
+    // Group by file
+    let mut by_file: BTreeMap<&str, Vec<&LintFinding>> = BTreeMap::new();
     for f in &active {
-        let sev = match f.severity {
-            RuleSeverity::Error => "ERROR",
-            RuleSeverity::Warning => "WARN",
-            RuleSeverity::Info => "INFO",
-            RuleSeverity::Off => "OFF",
+        let key = if f.file.is_empty() {
+            "(global)"
+        } else {
+            &f.file
         };
-        println!("  [{sev}] {} — {}", f.rule_id, f.message);
+        by_file.entry(key).or_default().push(f);
+    }
+
+    println!("{}:", bold("Findings"));
+    for (file, findings) in &by_file {
+        let errors = findings
+            .iter()
+            .filter(|f| f.severity == RuleSeverity::Error)
+            .count();
+        let warnings = findings
+            .iter()
+            .filter(|f| f.severity == RuleSeverity::Warning)
+            .count();
+        let mut parts = Vec::new();
+        if errors > 0 {
+            parts.push(red(&format!(
+                "{errors} error{}",
+                if errors == 1 { "" } else { "s" }
+            )));
+        }
+        if warnings > 0 {
+            parts.push(yellow(&format!(
+                "{warnings} warning{}",
+                if warnings == 1 { "" } else { "s" }
+            )));
+        }
+        let infos = findings.len() - errors - warnings;
+        if infos > 0 {
+            parts.push(format!("{infos} info"));
+        }
+        println!("\n  {} ({})", cyan(file), parts.join(", "));
+        for f in findings {
+            let sev = severity_colored(f.severity);
+            println!("    [{sev}] {} — {}", bold(&f.rule_id), f.message);
+        }
     }
     println!();
 }
@@ -130,8 +200,25 @@ pub fn print_summary(report: &LintReport) {
         .iter()
         .filter(|f| !f.suppressed && f.severity == RuleSeverity::Warning)
         .count();
-    println!("Summary: {errors} errors, {warnings} warnings, {suppressed} suppressed");
-    println!("Result: {}", if report.passed { "PASS" } else { "FAIL" });
+    println!(
+        "Summary: {} errors, {} warnings, {suppressed} suppressed",
+        if errors > 0 {
+            red(&errors.to_string())
+        } else {
+            "0".to_string()
+        },
+        if warnings > 0 {
+            yellow(&warnings.to_string())
+        } else {
+            "0".to_string()
+        },
+    );
+    let result = if report.passed {
+        green("PASS")
+    } else {
+        red("FAIL")
+    };
+    println!("Result: {result}");
 }
 
 pub fn print_json(report: &LintReport) -> Result<(), Box<dyn std::error::Error>> {
@@ -160,4 +247,87 @@ pub fn print_github(report: &LintReport) {
             f.file, f.rule_id, f.message
         );
     }
+}
+
+/// Print long-form explanation for a lint rule.
+pub fn print_explain(rule_id: &str) {
+    use provable_contracts::lint::rules::{RuleCategory, find_rule};
+
+    let Some(rule) = find_rule(rule_id) else {
+        eprintln!("Unknown rule: {rule_id}");
+        eprintln!("Use `pv lint` to see active rules, or check docs/specifications/sub/lint.md");
+        std::process::exit(1);
+    };
+
+    let _ = writeln!(
+        std::io::stdout(),
+        "{}\n",
+        bold(&format!("{}: {}", rule.id, rule.description))
+    );
+    println!(
+        "Category:         {}",
+        format!("{:?}", rule.category).to_lowercase()
+    );
+    println!("Default severity: {}\n", rule.default_severity.as_str());
+
+    // Long-form guidance per rule category
+    let (why, how) = match rule.category {
+        RuleCategory::Validate => (
+            "Schema validation ensures contracts are machine-parseable and complete.\n\
+             Without valid schema, no downstream analysis (audit, score, proof) can run.",
+            "Fix the YAML syntax or add the missing required field.\n\
+             Run `pv validate <contract>` for detailed parse errors.",
+        ),
+        RuleCategory::Audit => (
+            "Audit rules verify the traceability chain from paper to proof.\n\
+             Gaps in traceability mean the contract's claims are not substantiated.",
+            "Add the missing element (test, reference, domain, tolerance).\n\
+             Run `pv audit <contract>` for the full traceability report.",
+        ),
+        RuleCategory::Score => (
+            "Score rules flag contracts below quality thresholds.\n\
+             Low scores indicate incomplete verification coverage.",
+            "Improve the weakest dimension: add falsification tests, Kani\n\
+             harnesses, Lean theorems, or binding entries as needed.\n\
+             Run `pv score <contract>` to see per-dimension breakdown.",
+        ),
+        RuleCategory::Provability => (
+            "Provability rules enforce the core invariant: kernel contracts\n\
+             MUST have proof_obligations, falsification_tests, and kani_harnesses.\n\
+             This is non-negotiable — it's why the project exists.",
+            "Add the missing proof infrastructure to the contract YAML.\n\
+             Use `pv scaffold <contract>` to generate test stubs.\n\
+             Use `pv kani <contract>` to generate Kani harnesses.",
+        ),
+        RuleCategory::Trend => (
+            "Trend rules detect quality regression over time.\n\
+             A declining score means verification coverage is eroding.",
+            "Review recent changes that reduced coverage.\n\
+             Run `pv lint --show-trend` to see historical data.",
+        ),
+        RuleCategory::Suppression => (
+            "Stale suppressions accumulate when findings are fixed but\n\
+             the suppression entry remains. They mask future issues.",
+            "Remove the stale suppression from --suppress-rule or .pv.toml.\n\
+             The finding it suppressed no longer fires.",
+        ),
+        RuleCategory::Enforcement => (
+            "Enforcement rules check per-contract verification levels and\n\
+             prevent regression below locked levels (irreversible gates).",
+            "Either improve the contract to meet its declared enforcement_level,\n\
+             or use `pv unlock <contract> --reason \"...\"` to release the lock.",
+        ),
+    };
+
+    println!("WHY IT MATTERS:");
+    for line in why.lines() {
+        println!("  {line}");
+    }
+    println!("\nHOW TO FIX:");
+    for line in how.lines() {
+        println!("  {line}");
+    }
+    println!("\nREFERENCES:");
+    println!("  - docs/specifications/sub/lint.md");
+    println!("  - docs/specifications/pv-spec.md Section 5 (CLI Reference)");
 }

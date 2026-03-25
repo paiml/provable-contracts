@@ -18,7 +18,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 1 | [Vision and Architecture](#1-vision-and-architecture) | — |
 | 2 | [The Verification Ladder](#2-the-verification-ladder) | — |
 | 3 | [Contract Schema](#3-contract-schema) | [sub/schema.md](sub/schema.md), [sub/eiffel-dbc.md](sub/eiffel-dbc.md) |
-| 4 | [The Seven-Phase Pipeline](#4-the-seven-phase-pipeline) | [sub/pipeline.md](sub/pipeline.md) |
+| 4 | [The Seven-Phase Pipeline](#4-the-seven-phase-pipeline) | [sub/pipeline.md](sub/pipeline.md), [sub/pytorch-extraction.md](sub/pytorch-extraction.md) |
 | 5 | [CLI Reference (`pv`)](#5-cli-reference) | [sub/cli.md](sub/cli.md), [sub/lint.md](sub/lint.md) |
 | 6 | [Library API](#6-library-api) | [sub/library.md](sub/library.md) |
 | 7 | [Scoring System (`pv score`)](#7-scoring-system) | [sub/scoring.md](sub/scoring.md) |
@@ -36,6 +36,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 19 | [Sovereign Stack Audit](#19-sovereign-stack-audit) | [sub/sovereign-stack-audit.md](sub/sovereign-stack-audit.md) |
 | 20 | [UX, Speech, Probar](#20-ux-speech-probar) | [sub/ux-speech-probar.md](sub/ux-speech-probar.md) |
 | 21 | [Contract Gap Analysis](#21-contract-gap-analysis) | [sub/contract-gaps.md](sub/contract-gaps.md) |
+| 22 | [Diagnostic Output](#22-diagnostic-output) | [sub/diagnostics.md](sub/diagnostics.md) |
 
 ---
 
@@ -118,7 +119,7 @@ provable-contracts/
 | Metric | Value |
 |---|---|
 | YAML contracts | 182 |
-| Binding entries (13 crates) | 18,296 |
+| Binding entries (13 crates) | 16,941 |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) |
 | CLI commands | 29 |
 | Consuming projects | 13 Level 3 (all AllImplemented) |
@@ -275,13 +276,14 @@ Kani verification strategies in **[sub/pipeline.md](sub/pipeline.md)**.
 
 ## 5. CLI Reference
 
-The `pv` binary provides 18 commands. Full reference with examples, flags, and output formats in
+The `pv` binary provides 29 commands. Full reference with examples, flags, and output formats in
 **[sub/cli.md](sub/cli.md)**.
 
 ### Command Summary
 
 | Command | Purpose |
 |---|---|
+| `pv explain <contract>` | Narrative walkthrough of equations, obligations, verification |
 | `pv validate <contract>` | Parse + validate YAML against schema |
 | `pv scaffold <contract>` | Generate Rust trait + test stubs |
 | `pv kani <contract>` | Generate `#[kani::proof]` harnesses |
@@ -289,17 +291,27 @@ The `pv` binary provides 18 commands. Full reference with examples, flags, and o
 | `pv status <contract>` | Show contract summary |
 | `pv audit <contract>` | Traceability: paper -> code chain |
 | `pv diff <old> <new>` | Compare versions, suggest semver bump |
-| `pv coverage <dir>` | Cross-contract obligation coverage |
-| `pv generate <contract> -o <dir>` | Write all artifacts to disk |
+| `pv coverage <dir>` | Cross-contract obligation coverage (`--reverse`, `--fuzz`) |
+| `pv generate <contract> -o <dir>` | Write all artifacts to disk (`--readme`, `--ci`) |
 | `pv graph <dir>` | Dependency DAG (text/DOT/JSON/Mermaid) |
 | `pv equations <contract>` | Render math (text/LaTeX/PTX/ASM) |
 | `pv lean <contract>` | Generate Lean 4 files |
 | `pv lean-status <dir>` | Lean proof status report |
 | `pv proof-status <dir>` | L1-L5 level report |
 | `pv book <dir>` | Generate mdBook pages |
-| `pv lint <dir>` | Quality gate: validate + audit + score + SARIF |
-| `pv score <target>` | Score contract or codebase (A-F grades) |
+| `pv lint <dir>` | Quality gate: 7 gates + SARIF (`--min-level`, `--coverage`) |
+| `pv score <target>` | Score contract or codebase (`--pvscore` for 10-dim) |
 | `pv query <terms>` | Semantic search with tier/class/graph filters |
+| `pv extract-pytorch <target>` | Extract kernel equations from PyTorch source |
+| `pv codegen <dir>` | Generate Rust code from contracts |
+| `pv invariants <contract>` | Generate type invariant implementations |
+| `pv coq <contract>` | Generate Coq `.v` theorem stubs |
+| `pv fuzz <contract>` | Generate libfuzzer targets |
+| `pv mirai <contract>` | Generate MIRAI annotations |
+| `pv flux <contract>` | Generate Flux refinement types |
+| `pv tla <dir>` | Generate TLA+ system-level specs |
+| `pv infer <crate>` | Auto-suggest contracts for unbound functions |
+| `pv unlock <contract>` | Remove enforcement level lock (`--reason`) |
 
 ---
 
@@ -407,7 +419,7 @@ Multi-index hybrid approach for sub-second lookups (modeled on
 |---|---|---|
 | Name index | `HashMap<stem, Vec<idx>>` | O(1) |
 | Equation index | `HashMap<eq_name, Vec<idx>>` | O(1) |
-| Full-text corpus | In-memory BM25 | O(n), n=165 |
+| Full-text corpus | In-memory BM25 | O(n), n=182 |
 | Dependency DAG | `BTreeMap<String, Vec<String>>` | O(1) |
 | Score cache [IMPLEMENTED] | `HashMap<stem, f64>` | O(1) |
 | **Cross-project index** | `HashMap<stem, Vec<ProjectRef>>` | O(1) |
@@ -535,7 +547,7 @@ KAIZEN workflow in **[sub/integration.md](sub/integration.md)**.
 | presentar | 1,824 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
 | realizar | 1,724 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
 | ruchy | 1,681 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
-| trueno | 1,448 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| trueno | 93 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
 | depyler | 1,437 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
 | bashrs | 1,040 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
 | forjar | 819 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
@@ -742,7 +754,7 @@ Petrovic et al. (2022) "Practical Mutation Testing at Scale" IEEE TSE.
 **Sub-spec**: [sub/sovereign-stack-audit.md](sub/sovereign-stack-audit.md)
 
 Full audit of all 13 repos in the PAIML sovereign AI stack.
-**6.4M LOC. 100% under contract enforcement. 18,296 bindings.**
+**6.4M LOC. 100% under contract enforcement. 16,941 bindings.**
 
 | Project | Bindings | Policy | Status |
 |---|---|---|---|
@@ -752,7 +764,7 @@ Full audit of all 13 repos in the PAIML sovereign AI stack.
 | presentar | 1,824 | AllImplemented | Level 3 ✓ |
 | realizar | 1,724 | AllImplemented | Level 3 ✓ |
 | ruchy | 1,681 | AllImplemented | Level 3 ✓ |
-| trueno | 1,448 | AllImplemented | Level 3 ✓ |
+| trueno | 93 | AllImplemented | Level 3 ✓ |
 | depyler | 1,437 | AllImplemented | Level 3 ✓ |
 | bashrs | 1,040 | AllImplemented | Level 3 ✓ |
 | forjar | 819 | AllImplemented | Level 3 ✓ |
@@ -821,3 +833,27 @@ Systematic analysis of 9 ML/systems domains against the contract registry.
 3. DPO loss — single equation, known failure modes
 4. BPE tokenization — merge associativity and round-trip provable
 5. PagedAttention — pointer aliasing, exactly what Kani excels at
+
+---
+
+## 22. Diagnostic Output
+
+**Sub-spec**: [sub/diagnostics.md](sub/diagnostics.md)
+
+Falsification against 9 reference tools (Kani, SPARK/Ada, Dafny, Clippy,
+mypy, ESLint, SonarQube, cargo-deny, OpenSSF Scorecard) revealed 13 gaps.
+
+**P0 (implemented):**
+
+1. **Grouped finding display** — findings grouped by contract, then by rule.
+   Per-contract summary with error/warning counts. (pattern: ESLint, Clippy)
+2. **Color terminal output** — ANSI red/yellow/cyan/bold/green. `--color`
+   flag with auto/always/never. (pattern: Clippy, mypy, cargo-deny)
+3. **`pv lint --explain <rule>`** — long-form remediation guidance per rule
+   ID with description, why-it-matters, how-to-fix, references.
+   (pattern: Clippy `--explain`, Rust `--explain E0308`)
+
+**P1-P3 (planned):** probe-level score decomposition, source snippets with
+caret spans, per-obligation verification table, counterexample/evidence
+data, remediation effort estimation, issue lifecycle, structured fix
+patches, per-contract resource metrics, HTML reports, daemon/LSP mode.

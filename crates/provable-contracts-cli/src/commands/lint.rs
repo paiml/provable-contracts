@@ -8,6 +8,11 @@ use provable_contracts::lint::{GateDetail, LintConfig, LintReport, run_lint};
 #[path = "lint_render.rs"]
 mod lint_render;
 
+/// Print long-form explanation for a lint rule.
+pub fn explain_rule(rule_id: &str) {
+    lint_render::print_explain(rule_id);
+}
+
 #[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
 pub fn run(
     contract_dir: &Path,
