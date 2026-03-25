@@ -1,3 +1,4 @@
+#![allow(clippy::format_collect)]
 //! Criterion benchmarks for provable-contracts.
 //!
 //! Benchmarks YAML contract parsing, validation, and equation extraction
