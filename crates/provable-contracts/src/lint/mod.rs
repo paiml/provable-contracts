@@ -121,6 +121,8 @@ pub struct LintConfig<'a> {
     pub cache_stats: bool,
     /// Optional crate directory for reverse coverage gate (Gate 7).
     pub crate_dir: Option<&'a Path>,
+    /// Minimum enforcement level for Gate 6 (from `--min-level`).
+    pub min_level: Option<crate::schema::EnforcementLevel>,
 }
 
 impl<'a> LintConfig<'a> {
@@ -139,6 +141,7 @@ impl<'a> LintConfig<'a> {
             no_cache: false,
             cache_stats: false,
             crate_dir: None,
+            min_level: None,
         }
     }
 }
@@ -205,7 +208,9 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
 
     // Gate 6: enforcement level (Section 17, Gap 1 + Gap 5 level lock)
     if validation_passed {
-        let min_level = crate::schema::EnforcementLevel::Basic;
+        let min_level = config
+            .min_level
+            .unwrap_or(crate::schema::EnforcementLevel::Basic);
         let (level_result, mut level_findings) = run_enforcement_level_gate(&contracts, min_level);
         gates.push(level_result);
         all_findings.append(&mut level_findings);

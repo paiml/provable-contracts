@@ -349,6 +349,50 @@ pub fn invariant(attr: TokenStream, item: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
+/// Marks a public function as requiring a `#[contract]` annotation.
+///
+/// When applied to a `pub fn`, this macro checks at compile time whether
+/// a corresponding `CONTRACT_*` env var exists (set by build.rs from
+/// binding.yaml). If no binding exists, it emits a compile-time warning.
+///
+/// This closes the reverse coverage gap: new pub fns cannot escape
+/// the contract system silently.
+///
+/// # Example
+/// ```rust,ignore
+/// #[must_contract]
+/// pub fn my_kernel(x: &[f32]) -> Vec<f32> {
+///     // Compile warning: no contract binding found for `my_kernel`
+///     // Add #[contract("...", equation = "...")] to silence
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn must_contract(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let input_fn = parse_macro_input!(item as ItemFn);
+    let fn_name = &input_fn.sig.ident;
+    let fn_name_upper = fn_name.to_string().to_uppercase();
+
+    // Look for any CONTRACT_*_<FN_NAME> env var
+    let env_prefix = "CONTRACT_";
+    let has_binding =
+        std::env::vars().any(|(k, _)| k.starts_with(env_prefix) && k.ends_with(&fn_name_upper));
+
+    if has_binding {
+        // Function has a binding — pass through unchanged
+        quote! { #input_fn }.into()
+    } else {
+        // No binding found — emit warning via #[deprecated]
+        let warning_msg = format!(
+            "Function `{fn_name}` has no contract binding. Add #[contract(\"...\", equation = \"...\")] or add a binding.yaml entry."
+        );
+        quote! {
+            #[deprecated(note = #warning_msg)]
+            #input_fn
+        }
+        .into()
+    }
+}
+
 /// Generate the env var key from contract name and equation name.
 ///
 /// Convention: `CONTRACT_<CONTRACT_UPPER>_<EQUATION_UPPER>`

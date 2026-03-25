@@ -230,6 +230,9 @@ pub enum Commands {
         /// Path to crate directory for reverse coverage gate
         #[arg(long)]
         crate_dir: Option<PathBuf>,
+        /// Minimum enforcement level: basic, standard, strict, proven
+        #[arg(long)]
+        min_level: Option<String>,
     },
     /// Score contracts or a codebase directory
     Score {
@@ -257,6 +260,9 @@ pub enum Commands {
         /// Exit with status 1 if any contract below --min-score
         #[arg(long)]
         exit_code: bool,
+        /// Show 10-dimension `PVScore` (geometric mean)
+        #[arg(long)]
+        pvscore: bool,
     },
     /// Search contracts by intent, regex, or literal match
     Query {

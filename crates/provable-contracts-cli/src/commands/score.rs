@@ -9,8 +9,10 @@ use provable_contracts::query::ContractIndex;
 use provable_contracts::schema::parse_contract;
 use provable_contracts::scoring;
 use provable_contracts::scoring::drift;
-use provable_contracts::scoring::{ContractScore, ScoringWeights};
+use provable_contracts::scoring::pvscore_10dim;
+use provable_contracts::scoring::{CodebaseScore, ContractScore, Grade, ScoringWeights};
 
+#[allow(clippy::too_many_arguments)]
 pub fn run(
     path: &Path,
     binding: Option<&Path>,
@@ -19,6 +21,7 @@ pub fn run(
     summary: bool,
     top_gaps: usize,
     weights_json: Option<&str>,
+    pvscore: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let binding_registry = binding
         .map(|p| {
@@ -43,6 +46,7 @@ pub fn run(
             summary,
             top_gaps,
             &weights,
+            pvscore,
         )
     } else {
         run_single(path, binding_registry.as_ref(), format, min_score, &weights)
@@ -96,6 +100,7 @@ fn run_directory(
     summary: bool,
     top_gaps: usize,
     weights: &ScoringWeights,
+    pvscore: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut entries: Vec<_> = std::fs::read_dir(dir)?
         .filter_map(Result::ok)
@@ -197,6 +202,10 @@ fn run_directory(
                 );
             }
             _ => println!("\n{codebase}"),
+        }
+
+        if pvscore {
+            print_pvscore(&codebase);
         }
     }
 
@@ -318,6 +327,58 @@ fn print_top_gaps(scores: &[ContractScore], n: usize, format: &str) {
             }
         }
     }
+}
+
+fn print_pvscore(codebase: &CodebaseScore) {
+    let pv = pvscore_10dim(codebase);
+    let grade = Grade::from_score(pv / 100.0);
+    println!("\nPVScore: {pv:.1} (Grade: {grade})");
+    println!(
+        "  D1  Spec Depth:        {:.1}",
+        codebase.contract_coverage * 100.0
+    );
+    println!(
+        "  D2  Falsification:     {:.1}",
+        codebase.binding_completeness * 100.0
+    );
+    println!(
+        "  D3  Mean Score:        {:.1}",
+        codebase.mean_contract_score * 100.0
+    );
+    println!(
+        "  D4  Proof Depth:       {:.1}",
+        codebase.proof_depth_dist * 100.0
+    );
+    println!("  D5  Drift:             {:.1}", codebase.drift * 100.0);
+    println!(
+        "  D6  Reverse Coverage:  {:.1}{}",
+        codebase.reverse_coverage * 100.0,
+        default_suffix(codebase.reverse_coverage)
+    );
+    println!(
+        "  D7  Mutation Testing:  {:.1}{}",
+        codebase.mutation_testing * 100.0,
+        default_suffix(codebase.mutation_testing)
+    );
+    println!(
+        "  D8  CI Pipeline:       {:.1}{}",
+        codebase.ci_pipeline_depth * 100.0,
+        default_suffix(codebase.ci_pipeline_depth)
+    );
+    println!(
+        "  D9  Proof Freshness:   {:.1}{}",
+        codebase.proof_freshness * 100.0,
+        default_suffix(codebase.proof_freshness)
+    );
+    println!(
+        "  D10 Defect Patterns:   {:.1}{}",
+        codebase.defect_patterns * 100.0,
+        default_suffix(codebase.defect_patterns)
+    );
+}
+
+fn default_suffix(value: f64) -> &'static str {
+    if value == 0.0 { " (default)" } else { "" }
 }
 
 fn score_to_markdown(score: &ContractScore) -> String {

@@ -29,6 +29,7 @@ pub fn run(
     coverage: bool,
     min_coverage: Option<f64>,
     crate_dir: Option<&Path>,
+    min_level: Option<&str>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if show_trend {
         show_trend_history(contract_dir);
@@ -56,6 +57,7 @@ pub fn run(
         no_cache,
         cache_stats,
         crate_dir,
+        min_level,
     );
 
     let report = run_lint(&config);
@@ -267,6 +269,7 @@ fn build_config<'a>(
     no_cache: bool,
     cache_stats: bool,
     crate_dir: Option<&'a Path>,
+    min_level: Option<&str>,
 ) -> LintConfig<'a> {
     let pv_config = config_path
         .and_then(|cp| match load_config(cp) {
@@ -344,6 +347,18 @@ fn build_config<'a>(
         no_cache,
         cache_stats,
         crate_dir,
+        min_level: min_level.and_then(parse_enforcement_level),
+    }
+}
+
+fn parse_enforcement_level(s: &str) -> Option<provable_contracts::schema::EnforcementLevel> {
+    use provable_contracts::schema::EnforcementLevel;
+    match s.to_lowercase().as_str() {
+        "basic" => Some(EnforcementLevel::Basic),
+        "standard" => Some(EnforcementLevel::Standard),
+        "strict" => Some(EnforcementLevel::Strict),
+        "proven" => Some(EnforcementLevel::Proven),
+        _ => None,
     }
 }
 
