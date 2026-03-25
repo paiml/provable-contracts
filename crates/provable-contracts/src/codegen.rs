@@ -184,6 +184,8 @@ mod tests {
                 references: vec![],
                 depends_on: vec![],
                 registry: false,
+                enforcement_level: None,
+                locked_level: None,
             },
             equations: BTreeMap::new(),
             proof_obligations: vec![],

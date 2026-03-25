@@ -95,6 +95,7 @@ pub fn reverse_coverage(crate_dir: &Path, binding_path: &Path) -> ReverseCoverag
 ///
 /// These are standard Rust trait impls, accessors, and constructors
 /// that have no domain-specific invariants to verify.
+#[allow(clippy::too_many_lines)]
 fn is_auto_exempt(fn_name: &str) -> bool {
     // Trait impls (compiler-generated or trivial)
     let trait_impls = [

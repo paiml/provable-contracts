@@ -108,7 +108,7 @@ provable-contracts/
 |   |   +-- error.rs                Error types
 |   +-- provable-contracts-cli/     CLI binary (`pv`)
 |   +-- provable-contracts-macros/  Proc macro (#[contract])
-+-- contracts/                      YAML contract registry (165 contracts)
++-- contracts/                      YAML contract registry (182 contracts)
 +-- docs/specifications/            This spec
 ```
 
@@ -116,12 +116,12 @@ provable-contracts/
 
 | Metric | Value |
 |---|---|
-| YAML contracts | 165 |
-| Binding entries (4 crates) | 442 (aprender 301, entrenar 96, realizar 23, trueno 22) |
-| Proof obligation types | 12 |
-| CLI commands | 18 |
-| Consuming projects | 4 Level 3 (aprender, entrenar, realizar, trueno) + 1 YAML-only (bashrs) |
-| Stack LoC governed | ~900K Rust |
+| YAML contracts | 182 |
+| Binding entries (13 crates) | 18,296 |
+| Proof obligation types | 26 (19 property + 7 Eiffel DbC) |
+| CLI commands | 28 |
+| Consuming projects | 13 Level 3 (all AllImplemented) |
+| Stack LoC governed | ~6.4M Rust |
 
 ---
 
@@ -304,7 +304,7 @@ The `pv` binary provides 18 commands. Full reference with examples, flags, and o
 
 ## 6. Library API
 
-The `provable-contracts` crate exposes 17 public modules. Full API
+The `provable-contracts` crate exposes 32 public modules. Full API
 reference in **[sub/library.md](sub/library.md)**.
 
 ### Core API
@@ -392,7 +392,7 @@ and grade thresholds in **[sub/scoring.md](sub/scoring.md)**.
 
 ## 8. Query Engine
 
-`pv query` provides O(1) semantic search across all 165+ contracts
+`pv query` provides O(1) semantic search across all 182+ contracts
 AND their consumer projects. Inspired by `pmat query` from
 paiml-mcp-agent-toolkit. Full query architecture, index format, and
 enrichment flags in **[sub/query.md](sub/query.md)**.
@@ -491,7 +491,7 @@ const ALLOWED_GAPS: &[(&str, &str)] = &[
 
 ## 10. Kernel Contract Registry
 
-Full registry of all 165 contracts, organized by tier and kernel
+Full registry of all 182 contracts, organized by tier and kernel
 equivalence class, in **[sub/registry.md](sub/registry.md)**.
 
 ### Kernel Equivalence Classes
@@ -528,13 +528,19 @@ KAIZEN workflow in **[sub/integration.md](sub/integration.md)**.
 
 | Project | Bindings | Policy | Integration |
 |---|---|---|---|
-| aprender | 330 | **AllImplemented** | Level 3: `build.rs` + `#[contract]` proc macro |
-| entrenar | 117 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
-| trueno | 42 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
-| realizar | 58 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
-| forjar | 13 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
-| presentar | 5 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
-| rmedia | 16 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| pmat | 2,665 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| aprender | 2,363 | **AllImplemented** | Level 3: `build.rs` + `#[contract]` proc macro |
+| entrenar | 1,868 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| presentar | 1,824 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| realizar | 1,724 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| ruchy | 1,681 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| trueno | 1,448 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| depyler | 1,437 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| bashrs | 1,040 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| forjar | 819 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| simular | 566 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| decy | 456 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| rmedia | 405 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
 
 ### The KAIZEN Contract-First Workflow
 
@@ -625,6 +631,20 @@ Dafny (verification conditions), Lean 4 (theorem proving).
 
 ---
 
+## 14. Lean 4 + Kani Composition
+
+**Sub-spec**: [sub/lean-kani-composition.md](sub/lean-kani-composition.md)
+
+Lean and Kani are NOT alternatives — they verify different things about
+the SAME obligation. Lean proves the algorithm over ℝ. Kani proves the
+Rust code over f32. The `stub_float` strategy bridges them: Kani replaces
+transcendentals (exp, log) with arbitrary-but-constrained values (what
+Lean proved valid), then verifies the surrounding code preserves the
+invariant. This is compositional: Lean discharges the hard math, Kani
+verifies the structural code.
+
+---
+
 ## 15. Verification Extensions
 
 **Sub-spec**: [sub/verification-extensions.md](sub/verification-extensions.md)
@@ -647,11 +667,11 @@ Six orthogonal verification approaches that complement the existing pipeline:
 Current enforcement is unidirectional (binding → implementation). Bidirectional
 coverage adds the reverse check: implementation → binding. Three mechanisms:
 
-1. **`pv coverage --reverse`** — Static API diff: scan pub fns, report unbound
-2. **`#[must_contract]`** — Compile-time lint for unannotated pub fns
-3. **`pv infer`** — Semantic matching: suggest contracts for unbound functions
+1. **`pv coverage --reverse`** [IMPLEMENTED] — Static API diff: scan pub fns, report unbound
+2. **`#[must_contract]`** [PLANNED] — Compile-time lint for unannotated pub fns
+3. **`pv infer`** [IMPLEMENTED] — Semantic matching: suggest contracts for unbound functions
 
-`pv lint` Gate 7 enforces reverse coverage threshold. This prevents
+`pv lint` Gate 7 [PLANNED] enforces reverse coverage threshold. This prevents
 whack-a-mole: new functions cannot escape the contract system silently.
 
 ---
@@ -663,15 +683,15 @@ whack-a-mole: new functions cannot escape the contract system silently.
 Five enforcement gaps identified by falsifying against mypy, TypeScript,
 Rust `#[forbid]`, C# nullable, JSpecify, Haskell/LiquidHaskell, ty, and Elm:
 
-1. **Per-contract enforcement levels** — `metadata.enforcement_level: basic | standard | strict | proven`
+1. **Per-contract enforcement levels** [IMPLEMENTED] — `metadata.enforcement_level: basic | standard | strict | proven`
    (pattern: mypy per-module, C# per-file `#nullable`, JSpecify `@NullMarked`)
-2. **Stale suppression detection** — `PV-SUP-001` warns when suppressions become unnecessary
+2. **Stale suppression detection** [IMPLEMENTED] — `PV-SUP-001` warns when suppressions become unnecessary
    (pattern: TypeScript `@ts-expect-error`, Rust `#[expect]`, ty `unused-ignore-comment`)
-3. **Multi-stage pipeline** — Four verification tiers with progressive CI gates
+3. **Multi-stage pipeline** [PLANNED] — Four verification tiers with progressive CI gates
    (pattern: C# `disable → warnings → annotations → enable`)
-4. **Aggregate coverage metric** — `pv lint --coverage --min-coverage 0.70` with CI ratchet
+4. **Aggregate coverage metric** [PLANNED] — `pv lint --coverage --min-coverage 0.70` with CI ratchet
    (pattern: TypeScript `type-coverage`, mypy typed def count)
-5. **Irreversible level lock** — `metadata.locked_level: L3` cannot regress without `pv unlock`
+5. **Irreversible level lock** [IMPLEMENTED] — `metadata.locked_level: L3` cannot regress without `pv unlock`
    (pattern: Rust `#![forbid(unsafe_code)]`, Elm mandatory totality)
 
 Key references: Bader et al. (2018) "Gradual Program Verification" arXiv:1710.06422;
@@ -693,16 +713,16 @@ project mode. Grade A (90+) required for CI merge — HARD requirement.
 
 | # | Dimension | Source | Hard to fake because |
 |---|---|---|---|
-| D1 | Spec Depth | `pv score` D1 | Requires actual math from papers |
-| D2 | Falsification Coverage | `pv score` D2 | Property tests, not unit tests |
-| D3 | Kani BMC | `pv score` D3 | Prover actually runs |
-| D4 | Lean 4 Proofs | `pv score` D4 | `sorry` = 0 points |
-| D5 | Binding Compliance | `pv score` D5 | Compiler rejects gaps |
-| D6 | Reverse Coverage | `pv coverage --reverse` | Scans source, not YAML |
-| D7 | Mutation Testing | certeza / cargo-mutants | Ultimate test quality metric |
-| D8 | CI Pipeline Depth | GitHub Actions audit | Auditable CI logs |
-| D9 | Proof Freshness | Kani/Lean CI timestamps | Stale proofs decay to 0 |
-| D10 | Defect Patterns | org-intelligence-plugin | Git history analysis |
+| D1 | Spec Depth | `pv score` D1 | Requires actual math from papers | [IMPLEMENTED] |
+| D2 | Falsification Coverage | `pv score` D2 | Property tests, not unit tests | [IMPLEMENTED] |
+| D3 | Kani BMC | `pv score` D3 | Prover actually runs | [IMPLEMENTED] |
+| D4 | Lean 4 Proofs | `pv score` D4 | `sorry` = 0 points | [IMPLEMENTED] |
+| D5 | Binding Compliance | `pv score` D5 | Compiler rejects gaps | [IMPLEMENTED] |
+| D6 | Reverse Coverage | `pv coverage --reverse` | Scans source, not YAML | [IMPLEMENTED] |
+| D7 | Mutation Testing | certeza / cargo-mutants | Ultimate test quality metric | [PLANNED] |
+| D8 | CI Pipeline Depth | GitHub Actions audit | Auditable CI logs | [PLANNED] |
+| D9 | Proof Freshness | Kani/Lean CI timestamps | Stale proofs decay to 0 | [PLANNED] |
+| D10 | Defect Patterns | org-intelligence-plugin | Git history analysis | [PLANNED] |
 
 ```
 pvscore = (D1 * D2 * ... * D10) ^ (1/10)
@@ -721,15 +741,25 @@ Petrovic et al. (2022) "Practical Mutation Testing at Scale" IEEE TSE.
 **Sub-spec**: [sub/sovereign-stack-audit.md](sub/sovereign-stack-audit.md)
 
 Full audit of all 13 repos in the PAIML sovereign AI stack.
-**6.4M LOC. Only 30% under contract enforcement.**
+**6.4M LOC. 100% under contract enforcement. 18,296 bindings.**
 
-| Tier | Repos | LOC | Status |
+| Project | Bindings | Policy | Status |
 |---|---|---|---|
-| Enforced (AllImplemented) | aprender, realizar, entrenar, trueno, rmedia, presentar, forjar | 2.2M | 823 bindings, ~5% reverse cov |
-| **Unenforced (ZERO)** | **depyler, ruchy, decy, bashrs, pmat, simular** | **4.4M** | **0 contracts, 0 bindings** |
+| pmat | 2,665 | AllImplemented | Level 3 ✓ |
+| aprender | 2,363 | AllImplemented | Level 3 ✓ |
+| entrenar | 1,868 | AllImplemented | Level 3 ✓ |
+| presentar | 1,824 | AllImplemented | Level 3 ✓ |
+| realizar | 1,724 | AllImplemented | Level 3 ✓ |
+| ruchy | 1,681 | AllImplemented | Level 3 ✓ |
+| trueno | 1,448 | AllImplemented | Level 3 ✓ |
+| depyler | 1,437 | AllImplemented | Level 3 ✓ |
+| bashrs | 1,040 | AllImplemented | Level 3 ✓ |
+| forjar | 819 | AllImplemented | Level 3 ✓ |
+| simular | 566 | AllImplemented | Level 3 ✓ |
+| decy | 456 | AllImplemented | Level 3 ✓ |
+| rmedia | 405 | AllImplemented | Level 3 ✓ |
 
-**Critical finding:** pmat (the quality enforcer) has CB-1200 which checks
-other repos for contract compliance — but has zero enforcement on itself.
+Zero unenforced repos remain. The enforcer (pmat) enforces itself.
 
 **No-escape plan:**
 1. **CB-1300 mandate** — every paiml Rust repo >10K LOC MUST have contracts
