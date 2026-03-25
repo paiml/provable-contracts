@@ -233,6 +233,9 @@ pub enum Commands {
         /// Minimum enforcement level: basic, standard, strict, proven
         #[arg(long)]
         min_level: Option<String>,
+        /// Explain a lint rule in detail (e.g. PV-ENF-001)
+        #[arg(long)]
+        explain: Option<String>,
     },
     /// Score contracts or a codebase directory
     Score {

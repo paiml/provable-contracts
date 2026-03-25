@@ -36,6 +36,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 19 | [Sovereign Stack Audit](#19-sovereign-stack-audit) | [sub/sovereign-stack-audit.md](sub/sovereign-stack-audit.md) |
 | 20 | [UX, Speech, Probar](#20-ux-speech-probar) | [sub/ux-speech-probar.md](sub/ux-speech-probar.md) |
 | 21 | [Contract Gap Analysis](#21-contract-gap-analysis) | [sub/contract-gaps.md](sub/contract-gaps.md) |
+| 22 | [Diagnostic Output](#22-diagnostic-output) | [sub/diagnostics.md](sub/diagnostics.md) |
 
 ---
 
@@ -832,3 +833,27 @@ Systematic analysis of 9 ML/systems domains against the contract registry.
 3. DPO loss — single equation, known failure modes
 4. BPE tokenization — merge associativity and round-trip provable
 5. PagedAttention — pointer aliasing, exactly what Kani excels at
+
+---
+
+## 22. Diagnostic Output
+
+**Sub-spec**: [sub/diagnostics.md](sub/diagnostics.md)
+
+Falsification against 9 reference tools (Kani, SPARK/Ada, Dafny, Clippy,
+mypy, ESLint, SonarQube, cargo-deny, OpenSSF Scorecard) revealed 13 gaps.
+
+**P0 (implemented):**
+
+1. **Grouped finding display** — findings grouped by contract, then by rule.
+   Per-contract summary with error/warning counts. (pattern: ESLint, Clippy)
+2. **Color terminal output** — ANSI red/yellow/cyan/bold/green. `--color`
+   flag with auto/always/never. (pattern: Clippy, mypy, cargo-deny)
+3. **`pv lint --explain <rule>`** — long-form remediation guidance per rule
+   ID with description, why-it-matters, how-to-fix, references.
+   (pattern: Clippy `--explain`, Rust `--explain E0308`)
+
+**P1-P3 (planned):** probe-level score decomposition, source snippets with
+caret spans, per-obligation verification table, counterexample/evidence
+data, remediation effort estimation, issue lifecycle, structured fix
+patches, per-contract resource metrics, HTML reports, daemon/LSP mode.

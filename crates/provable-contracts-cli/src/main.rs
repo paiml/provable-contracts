@@ -113,29 +113,36 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             min_coverage,
             crate_dir,
             min_level,
+            explain,
             ..
-        } => commands::lint::run(
-            &contract_dir,
-            binding.as_deref(),
-            min_score,
-            format.as_deref(),
-            severity.as_deref(),
-            strict,
-            suppress.as_deref(),
-            suppress_rule.as_deref(),
-            suppress_file.as_deref(),
-            &rule,
-            config.as_deref(),
-            diff_ref.as_deref(),
-            trend,
-            show_trend,
-            no_cache,
-            cache_stats,
-            coverage,
-            min_coverage,
-            crate_dir.as_deref(),
-            min_level.as_deref(),
-        ),
+        } => {
+            if let Some(ref rule_id) = explain {
+                commands::lint::explain_rule(rule_id);
+                return Ok(());
+            }
+            commands::lint::run(
+                &contract_dir,
+                binding.as_deref(),
+                min_score,
+                format.as_deref(),
+                severity.as_deref(),
+                strict,
+                suppress.as_deref(),
+                suppress_rule.as_deref(),
+                suppress_file.as_deref(),
+                &rule,
+                config.as_deref(),
+                diff_ref.as_deref(),
+                trend,
+                show_trend,
+                no_cache,
+                cache_stats,
+                coverage,
+                min_coverage,
+                crate_dir.as_deref(),
+                min_level.as_deref(),
+            )
+        }
         Commands::Score {
             path,
             binding,
