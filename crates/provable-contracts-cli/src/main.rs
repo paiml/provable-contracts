@@ -52,21 +52,16 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             commands::probar::run(&contract, binding.as_deref())
         }
         Commands::Status { contract } => commands::status::run(&contract),
-        Commands::Audit { contract, binding, .. } => {
-            commands::audit::run(&contract, binding.as_deref())
-        }
+        Commands::Audit {
+            contract, binding, ..
+        } => commands::audit::run(&contract, binding.as_deref()),
         Commands::Diff { old, new } => commands::diff::run(&old, &new),
         Commands::Coverage {
             contract_dir,
             binding,
             fuzz,
             reverse,
-        } => commands::coverage::run(
-            &contract_dir,
-            binding.as_deref(),
-            fuzz,
-            reverse.as_deref(),
-        ),
+        } => commands::coverage::run(&contract_dir, binding.as_deref(), fuzz, reverse.as_deref()),
         Commands::Generate {
             contract,
             output,

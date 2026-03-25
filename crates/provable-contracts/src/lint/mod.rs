@@ -193,8 +193,7 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
     // Gate 6: enforcement level (Section 17, Gap 1 + Gap 5 level lock)
     if validation_passed {
         let min_level = crate::schema::EnforcementLevel::Basic;
-        let (level_result, mut level_findings) =
-            run_enforcement_level_gate(&contracts, min_level);
+        let (level_result, mut level_findings) = run_enforcement_level_gate(&contracts, min_level);
         gates.push(level_result);
         all_findings.append(&mut level_findings);
     } else {

@@ -6,8 +6,8 @@ use std::collections::HashSet;
 use std::path::Path;
 use std::time::Instant;
 
-use crate::schema::EnforcementLevel;
 use crate::schema::Contract;
+use crate::schema::EnforcementLevel;
 
 use super::finding::LintFinding;
 use super::rules::RuleSeverity;

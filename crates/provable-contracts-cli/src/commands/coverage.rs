@@ -22,7 +22,10 @@ pub fn run(
         println!("  Annotated (#[contract]): {}", report.annotated_fns);
         println!("  Auto-exempt (trivial): {}", report.exempt_fns);
         println!("  Unbound: {}", report.unbound.len());
-        println!("  Coverage: {:.1}% (bound + exempt / total)", report.coverage_pct);
+        println!(
+            "  Coverage: {:.1}% (bound + exempt / total)",
+            report.coverage_pct
+        );
         if !report.unbound.is_empty() {
             println!("\nUnbound functions:");
             for f in report.unbound.iter().take(20) {

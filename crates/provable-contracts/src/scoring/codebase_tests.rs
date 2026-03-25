@@ -6,8 +6,7 @@ fn load_contracts_and_binding() -> (Vec<(String, Contract)>, BindingRegistry) {
     let content = std::fs::read_to_string(binding_path).unwrap();
     let binding: BindingRegistry = serde_yaml::from_str(&content).unwrap();
 
-    let contracts_dir =
-        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
+    let contracts_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
     let mut parsed = Vec::new();
     for entry in std::fs::read_dir(contracts_dir).unwrap().flatten() {
         let p = entry.path();
