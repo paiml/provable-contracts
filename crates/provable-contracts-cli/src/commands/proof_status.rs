@@ -1,9 +1,8 @@
 use std::path::Path;
 
 use provable_contracts::binding::parse_binding;
-use provable_contracts::proof_status::{
-    format_obligation_table, format_text, obligation_matrix, proof_status_report,
-};
+use provable_contracts::obligation_matrix::{format_obligation_table, obligation_matrix};
+use provable_contracts::proof_status::{format_text, proof_status_report};
 use provable_contracts::schema::parse_contract;
 
 pub fn run(
