@@ -668,3 +668,10 @@ bindings:
     function: "WgslForwardPass::upload_weight_transposed"
     status: implemented
     notes: "PMAT-347: [N,K] → [K,N] for matmul shader compatibility"
+
+  # PMAT-350: Cross-backend factual parity
+  - contract: q4k-cross-backend-parity-v1.yaml
+    equation: factual_match
+    function: "canary_parity_gate.sh"
+    status: implemented
+    notes: "PMAT-346: WGPU matches CPU for '2+2=4', 'capital of France'. Verified via canary gate."

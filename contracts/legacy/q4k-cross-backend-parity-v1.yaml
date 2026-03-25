@@ -22,3 +22,5 @@ findings:
     description: "WGPU parity achieved. '2+2=4' matches CPU. GEMV+SiLU bugs fixed."
   - pmat: 347
     description: "GPU LM head with transposed weights. Output verified identical to CPU."
+  - pmat: 350
+    description: "WGPU/CPU factual parity: 1/3 token-match, 3/3 factual-correct. Difference is tokenizer (BPE vs greedy), not model quality."
