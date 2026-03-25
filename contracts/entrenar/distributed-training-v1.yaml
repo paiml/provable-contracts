@@ -28,6 +28,7 @@ metadata:
   created: "2026-03-03"
   author: "PAIML Engineering"
   description: "Heterogeneous distributed training across CUDA + wgpu backends"
+  registry: true
   references:
     - "distributed-training-spec.md v1.0.0 (SPEC-DIST-2026-001)"
     - "cuda-classify-training-v1.yaml (CUDA backend contract)"

@@ -15,6 +15,7 @@ metadata:
   created: "2026-03-03"
   author: "PAIML Engineering"
   description: "Tensor data stored behind Rc for O(1) clone — eliminates 16 GB redundant copies per step"
+  registry: true
   references:
     - "KAIZEN-019: Tensor::clone() deep-copies data — 16 GB redundant frozen weight copies per step"
     - "lora-gradient-flow-v1.yaml (KAIZEN-018: backward ops that clone tensors)"
@@ -112,3 +113,7 @@ impact:
       Wall-clock savings: ~1-2 seconds per step at ~10 GB/s memcpy rate
     severity: P0
     critical: true
+
+equations:
+  identity:
+    formula: "f(x) = x"

@@ -14,6 +14,7 @@ metadata:
   created: "2026-03-03"
   author: "PAIML Engineering"
   description: "Autograd-aware transpose preserves LoRA gradient flow on wgpu path"
+  registry: true
   references:
     - "KAIZEN-018: LoRA gradients lost in transpose — wgpu path trains only classifier head"
     - "attention-head-extraction-v1.yaml (companion CPU-side optimization)"
@@ -78,3 +79,7 @@ impact:
       - Total: ~5.9M trainable params (1,150x more than before)
     severity: P0
     critical: true
+
+equations:
+  identity:
+    formula: "f(x) = x"

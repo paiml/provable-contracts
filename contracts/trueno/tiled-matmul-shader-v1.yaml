@@ -17,6 +17,7 @@ metadata:
   created: "2026-03-03"
   author: "PAIML Engineering"
   description: "16×16 shared memory tiled matmul shader — reduces global memory bandwidth by ~16×"
+  registry: true
   references:
     - "KAIZEN-021: Naive wgpu matmul shader — no tiling, ~5% GPU utilization"
     - "Standard tiled matmul algorithm (GPU Computing Gems, Ch. 2)"
@@ -127,3 +128,7 @@ impact:
         Tiled: ~1-2s per forward pass (estimated)
     severity: P0
     critical: true
+
+equations:
+  identity:
+    formula: "f(x) = x"

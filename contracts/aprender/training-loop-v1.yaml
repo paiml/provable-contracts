@@ -15,6 +15,7 @@ metadata:
   created: "2026-02-25"
   author: "PAIML Engineering"
   description: "Production training loop with epoch management, validation, checkpointing, and LR scheduling"
+  registry: true
   references:
     - "shell-safety-inference.md v2.2.0 (bashrs spec, Section 14)"
     - "batch-training-v1.yaml (batch training contract)"

@@ -14,6 +14,7 @@ metadata:
   created: "2026-03-03"
   author: "PAIML Engineering"
   description: "Efficient per-head Q/K/V extraction — zero intermediate allocations"
+  registry: true
   references:
     - "KAIZEN-016: Attention head extraction creates 3.5M temporary allocations per forward pass"
     - "wgpu-resident-weights-v1.yaml (GPU-side optimization, complements this CPU-side fix)"
@@ -108,3 +109,7 @@ correctness:
       attention is unchanged. Verified by prop_attention_backward_gradient_check
       property tests for Q, K, and V.
     verification: "prop_attention_backward_gradient_check_{q,k,v} property tests pass"
+
+equations:
+  identity:
+    formula: "f(x) = x"

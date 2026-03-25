@@ -28,6 +28,7 @@ metadata:
   created: "2026-02-18"
   author: "PAIML Engineering"
   description: "Mathematical specification for quantized dot product kernels"
+  registry: true
   references:
     - "Frantar et al. (2022). GPTQ: Accurate Post-Training Quantization. arXiv:2210.17323"
     - "Dettmers et al. (2022). LLM.int8(): 8-bit Matrix Multiplication. NeurIPS 2022"
@@ -318,3 +319,7 @@ qa_gate:
     - "Cross-format isolation holds"
   pass_criteria: "All 5 FALSIFY tests pass"
   falsification: "Introduce a sign error in nibble extraction — gate must catch it"
+
+equations:
+  identity:
+    formula: "f(x) = x"

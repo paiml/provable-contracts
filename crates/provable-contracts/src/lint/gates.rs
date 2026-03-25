@@ -36,6 +36,11 @@ pub(crate) fn load_contracts(dir: &Path) -> (Vec<(String, Contract)>, Vec<(Strin
         if path.is_dir() {
             continue;
         }
+        // Skip binding.yaml files — they're not contracts
+        let fname = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+        if fname == "binding.yaml" || fname == "binding.yml" {
+            continue;
+        }
         let stem = path
             .file_stem()
             .and_then(|s| s.to_str())

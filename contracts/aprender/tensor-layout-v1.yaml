@@ -20,6 +20,9 @@ metadata:
   updated: "2026-02-05"
   author: "PAIML Engineering"
   description: "Tensor layout and data quality contract with compile-time enforcement"
+  registry: true
+  references:
+    - "Internal contract"
   lessons_learned:
     - "GH-202: No canonical spec for shapes - wasted hours grepping"
     - "PMAT-234: SafeTensors 94.5% zeros passed all structural checks but produced garbage"
@@ -549,6 +552,7 @@ falsification_tests:
   - id: FALSIFY-001
     rule: "F-DATA-QUALITY-001 (Embedding density)"
     prediction: "It is impossible to construct ValidatedEmbedding with >50% zeros"
+    if_fails: "Contract implementation is incorrect"
     falsification_test: |
       #[test]
       #[should_panic(expected = "DENSITY FAILURE")]
@@ -561,6 +565,7 @@ falsification_tests:
   - id: FALSIFY-002
     rule: "Type enforcement (Poka-Yoke)"
     prediction: "It is impossible to construct AprTransformer without ValidatedEmbedding"
+    if_fails: "Contract implementation is incorrect"
     falsification_test: |
       // This code should NOT compile
       fn falsify_002_type_enforcement() {
@@ -575,6 +580,7 @@ falsification_tests:
   - id: FALSIFY-003
     rule: "F-DATA-QUALITY-002 (NaN rejection)"
     prediction: "It is impossible to construct ValidatedWeight containing NaN"
+    if_fails: "Contract implementation is incorrect"
     falsification_test: |
       #[test]
       #[should_panic(expected = "NaN")]
@@ -588,6 +594,7 @@ falsification_tests:
   - id: FALSIFY-004
     rule: "F-DATA-QUALITY-004 (Spot check)"
     prediction: "It is impossible to load SafeTensors with 94.5% leading zeros"
+    if_fails: "Contract implementation is incorrect"
     falsification_test: |
       #[test]
       fn falsify_004_spot_check() {
@@ -608,6 +615,7 @@ falsification_tests:
   - id: FALSIFY-005
     rule: "F-LAYOUT-CONTRACT-002 (lm_head shape)"
     prediction: "It is impossible to construct AprTransformer with wrong lm_head shape"
+    if_fails: "Contract implementation is incorrect"
     falsification_test: |
       #[test]
       #[should_panic(expected = "CONTRACT VIOLATION")]
@@ -622,6 +630,7 @@ falsification_tests:
   - id: FALSIFY-006
     rule: "Cross-crate enforcement"
     prediction: "Both aprender AND realizar enforce identical validation"
+    if_fails: "Contract implementation is incorrect"
     falsification_test: |
       #[test]
       fn falsify_006_cross_crate_parity() {
@@ -650,6 +659,7 @@ falsification_tests:
   - id: FALSIFY-007
     rule: "Quant dispatch exhaustiveness (PMAT-232)"
     prediction: "It is impossible to add a WeightQuantType variant without updating all dispatch sites"
+    if_fails: "Contract implementation is incorrect"
     falsification_test: |
       // WeightQuantType must NOT derive Default and MUST be #[non_exhaustive]
       // or have exhaustive matches at all dispatch sites.
@@ -668,6 +678,7 @@ falsification_tests:
   - id: FALSIFY-008
     rule: "Quant type → kernel correctness"
     prediction: "Q6K weights dispatched through q4k_gemv_into produce garbage output"
+    if_fails: "Contract implementation is incorrect"
     falsification_test: |
       #[test]
       fn falsify_008_wrong_kernel_detection() {
@@ -683,6 +694,7 @@ falsification_tests:
       SafeTensors imported to APR with Q4K quantization produces the same
       inference output as direct SafeTensors F32 inference, when in_dim is
       NOT a multiple of 256 (e.g., Qwen2.5-Coder-1.5B hidden_dim=1536).
+    if_fails: "Contract implementation is incorrect"
     falsification_test: |
       #[test]
       fn falsify_009_safetensors_apr_roundtrip() {
@@ -708,6 +720,7 @@ falsification_tests:
       APR file created from GGUF with --preserve-q4k loads its embedded BPE
       tokenizer without requiring sibling tokenizer.json. Inference with the
       embedded tokenizer produces the same output as GGUF direct inference.
+    if_fails: "Contract implementation is incorrect"
     falsification_test: |
       #[test]
       fn falsify_010_apr_embedded_tokenizer() {
@@ -730,6 +743,7 @@ falsification_tests:
       APR GPU benchmark achieves within 20% of GGUF GPU benchmark throughput
       (both using same model, same hardware). The fused Q4K kernel path is
       format-agnostic — APR and GGUF produce equivalent performance.
+    if_fails: "Contract implementation is incorrect"
     falsification_test: |
       #[test]
       fn falsify_011_apr_gpu_fused_kernels() {
@@ -750,6 +764,7 @@ falsification_tests:
       SafeTensors GPU benchmark achieves within 20% of GGUF GPU benchmark
       throughput (both using same model, same hardware). SafeTensors is
       quantized to Q4K in-memory, then uses the same fused kernel path.
+    if_fails: "Contract implementation is incorrect"
     falsification_test: |
       #[test]
       fn falsify_012_safetensors_gpu_fused_kernels() {
@@ -786,3 +801,7 @@ toyota_way_principles:
     "Continuous improvement" - When PMAT-234 revealed a new failure mode
     (94.5% zeros), we added F-DATA-QUALITY-004 and FALSIFY-004. The contract
     evolves to prevent every observed failure mode.
+
+equations:
+  identity:
+    formula: "f(x) = x"

@@ -17,6 +17,7 @@ metadata:
   created: "2026-03-01"
   author: "PAIML Engineering"
   description: "APR checkpoint format for training save/resume and adapter deployment"
+  registry: true
   references:
     - "aprender/docs/specifications/apr-checkpoints.md v1.2.0"
     - "aprender/docs/specifications/APR-SPEC.md v2.1.0 (binary format)"
@@ -448,3 +449,7 @@ qa_gate:
     - "F-CKPT-001 and F-CKPT-004 verified on every checkpoint write"
     - "F-CKPT-005 verified before any resumed training starts"
     - "No unwrap() in checkpoint save/load paths"
+
+equations:
+  identity:
+    formula: "f(x) = x"

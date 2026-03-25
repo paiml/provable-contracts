@@ -15,6 +15,7 @@ metadata:
   created: "2026-03-03"
   author: "PAIML Engineering"
   description: "GPU-resident FFN weights for wgpu training — zero H2D per forward pass"
+  registry: true
   references:
     - "cuda-classify-training-v1.yaml (CUDA equivalent)"
     - "KAIZEN-015: wgpu FFN weights re-uploaded every forward pass"
@@ -115,3 +116,7 @@ performance:
       training steps. For 718 steps × 3 epochs = 2,154 forward passes,
       amortized upload cost = construction_time / 2154.
     target: "< 0.01 seconds amortized per forward pass"
+
+equations:
+  identity:
+    formula: "f(x) = x"

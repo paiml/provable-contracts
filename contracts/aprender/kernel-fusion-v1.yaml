@@ -30,6 +30,9 @@ metadata:
   created: "2026-02-09"
   author: "PAIML Engineering"
   description: "Kernel fusion decision contract with Poka-Yoke enforcement"
+  registry: true
+  references:
+    - "Internal contract"
   lessons_learned:
     - "PAR-077: Fused RMSNorm+Gate+Up+SwiGLU was 3x slower (shared memory overhead)"
     - "Code comments are not contracts — decisions must be falsifiable"
@@ -229,3 +232,7 @@ qa_gate:
     - "No orphaned fusion decisions (contract entry but kernel deleted)"
   pass_criteria: "All checks pass"
   falsification: "Introduce an undocumented fused kernel — gate must catch it"
+
+equations:
+  identity:
+    formula: "f(x) = x"

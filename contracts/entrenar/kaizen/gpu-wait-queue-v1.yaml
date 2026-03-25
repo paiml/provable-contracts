@@ -23,6 +23,7 @@ metadata:
   created: "2026-03-04"
   author: "PAIML Engineering"
   description: "Polling-based VRAM wait queue with timeout and progress reporting"
+  registry: true
   references:
     - "GPU Sharing Spec v2 §1.2 — Wait-and-Retry Mode"
     - "Exponential backoff — standard retry pattern"
@@ -145,6 +146,7 @@ qa_gate:
   id: F-WQ-001
   name: "GPU Wait Queue Contract"
   description: "Polling-based VRAM wait with timeout and progress reporting"
+  registry: true
   checks:
     - "timeout_guarantee"
     - "progress_under_lease_expiry"
@@ -156,11 +158,14 @@ profiling:
   brick_phases:
     - name: "wait_poll"
       description: "Single poll iteration (lock + read + check + unlock)"
+  registry: true
       contract: "C-GPUPROF-001: zero-overhead when disabled"
     - name: "wait_sleep"
       description: "Thread::sleep duration between polls"
+  registry: true
     - name: "wait_total"
       description: "Total wall-clock from first poll to reservation acquired"
+  registry: true
 
 tracing:
   trace_steps:

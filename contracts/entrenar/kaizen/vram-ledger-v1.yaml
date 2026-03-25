@@ -23,6 +23,7 @@ metadata:
   created: "2026-03-04"
   author: "PAIML Engineering"
   description: "Flock-based VRAM reservation ledger with lease expiry and dead PID cleanup"
+  registry: true
   references:
     - "GPU Sharing Spec v2 §1.1 — VRAM Guard + Ledger"
     - "flock(2) — Linux file locking"
@@ -156,6 +157,7 @@ qa_gate:
   id: F-VL-001
   name: "VRAM Ledger Contract"
   description: "Flock-based VRAM reservation with crash safety and lease expiry"
+  registry: true
   checks:
     - "capacity_invariant_under_flock"
     - "atomic_write_crash_safe"
@@ -166,13 +168,17 @@ profiling:
   brick_phases:
     - name: "lock_acq"
       description: "flock(LOCK_EX) acquisition time"
+  registry: true
       contract: "C-GPUPROF-001: zero-overhead when disabled"
     - name: "ledger_rd"
       description: "JSON read + deserialize + PID prune"
+  registry: true
     - name: "ledger_wr"
       description: "Serialize + write tmp + fsync + rename"
+  registry: true
     - name: "lock_rel"
       description: "flock release (close fd)"
+  registry: true
 
 tracing:
   trace_steps:

@@ -15,6 +15,7 @@ metadata:
   created: "2026-03-03"
   author: "PAIML Engineering"
   description: "Pipeline cache + single encoder eliminates per-op shader compilation and queue submission"
+  registry: true
   references:
     - "KAIZEN-022: Pipeline recreation per GPU op — 180 shader compilations per forward pass"
     - "tiled-matmul-shader-v1.yaml (KAIZEN-021: tiled shader being cached)"
@@ -73,3 +74,7 @@ impact:
       Current implementation caches within a single batch execution only.
     severity: P0
     critical: true
+
+equations:
+  identity:
+    formula: "f(x) = x"
