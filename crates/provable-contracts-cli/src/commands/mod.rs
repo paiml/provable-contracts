@@ -25,4 +25,5 @@ pub mod scaffold;
 pub mod score;
 pub mod status;
 pub mod tla;
+pub mod unlock;
 pub mod validate;

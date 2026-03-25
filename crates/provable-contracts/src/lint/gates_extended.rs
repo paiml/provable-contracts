@@ -298,6 +298,74 @@ fn compute_actual_level(contract: &Contract) -> EnforcementLevel {
     }
 }
 
+/// Gate 7: Reverse coverage — detect public functions without contract bindings.
+///
+/// Calls `crate::reverse_coverage::reverse_coverage()` and emits findings
+/// for unbound public functions. Fails if coverage falls below the default
+/// threshold of 50%.
+pub(crate) fn run_reverse_coverage_gate(
+    binding_path: &Path,
+    crate_dir: &Path,
+) -> (GateResult, Vec<LintFinding>) {
+    const DEFAULT_THRESHOLD: f64 = 50.0;
+    let start = Instant::now();
+    let mut findings = Vec::new();
+
+    let report = crate::reverse_coverage::reverse_coverage(crate_dir, binding_path);
+
+    for uf in &report.unbound {
+        findings.push(LintFinding {
+            rule_id: "PV-RCV-001".into(),
+            severity: RuleSeverity::Warning,
+            message: format!(
+                "Public function `{}` has no contract binding ({}:{})",
+                uf.path, uf.file, uf.line,
+            ),
+            file: uf.file.clone(),
+            line: Some(u32::try_from(uf.line).unwrap_or(0)),
+            contract_stem: None,
+            suppressed: false,
+            suppression_reason: None,
+        });
+    }
+
+    let passed = report.coverage_pct >= DEFAULT_THRESHOLD;
+    if !passed {
+        findings.push(LintFinding {
+            rule_id: "PV-RCV-002".into(),
+            severity: RuleSeverity::Error,
+            message: format!(
+                "Reverse coverage {:.1}% is below threshold {DEFAULT_THRESHOLD:.1}%",
+                report.coverage_pct,
+            ),
+            file: String::new(),
+            line: None,
+            contract_stem: None,
+            suppressed: false,
+            suppression_reason: None,
+        });
+    }
+
+    let duration = u64::try_from(start.elapsed().as_millis()).unwrap_or(u64::MAX);
+
+    (
+        GateResult {
+            name: "reverse-coverage".into(),
+            passed,
+            skipped: false,
+            duration_ms: duration,
+            detail: GateDetail::ReverseCoverage {
+                total_pub_fns: report.total_pub_fns,
+                bound_fns: report.bound_fns,
+                unbound_fns: report.unbound.len(),
+                coverage_pct: report.coverage_pct,
+                threshold_pct: DEFAULT_THRESHOLD,
+            },
+        },
+        findings,
+    )
+}
+
 /// Detect stale suppressions: rules/findings that were suppressed but no
 /// longer fire. Returns PV-SUP-001 findings for each stale suppression.
 pub(crate) fn check_stale_suppressions(

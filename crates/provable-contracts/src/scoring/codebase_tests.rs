@@ -44,6 +44,10 @@ fn codebase_display_format() {
         proof_depth_dist: 0.4,
         drift: 1.0,
         reverse_coverage: 0.0,
+        mutation_testing: 1.0,
+        ci_pipeline_depth: 1.0,
+        proof_freshness: 1.0,
+        defect_patterns: 1.0,
         composite: 0.6,
         grade: Grade::C,
         top_gaps: vec![ScoringGap {

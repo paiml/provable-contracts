@@ -10,7 +10,7 @@ fn lint_passes_on_real_contracts() {
     let config = LintConfig::new(&dir, None, 0.0);
     let report = run_lint(&config);
     assert!(report.passed, "lint should pass: {report:?}");
-    assert_eq!(report.gates.len(), 6);
+    assert_eq!(report.gates.len(), 7);
 }
 
 #[test]
@@ -161,14 +161,15 @@ fn lint_validation_failure_skips_audit_and_score() {
     let config = LintConfig::new(tmp.path(), None, 0.0);
     let report = run_lint(&config);
     assert!(!report.passed);
-    // validate should fail, audit/score/verify/enforce/enforcement-level should be skipped
-    assert_eq!(report.gates.len(), 6);
+    // validate should fail, audit/score/verify/enforce/enforcement-level/reverse-coverage should be skipped
+    assert_eq!(report.gates.len(), 7);
     assert!(!report.gates[0].passed); // validate failed
     assert!(report.gates[1].skipped); // audit skipped
     assert!(report.gates[2].skipped); // score skipped
     assert!(report.gates[3].skipped); // verify skipped
     assert!(report.gates[4].skipped); // enforce skipped
     assert!(report.gates[5].skipped); // enforcement-level skipped
+    assert!(report.gates[6].skipped); // reverse-coverage skipped
 }
 
 #[test]

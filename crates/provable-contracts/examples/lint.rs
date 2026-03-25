@@ -120,8 +120,10 @@ fn count_contracts(report: &LintReport) -> usize {
             GateDetail::Validate { contracts, .. }
             | GateDetail::Audit { contracts, .. }
             | GateDetail::Score { contracts, .. } => return *contracts,
-            GateDetail::Skipped { .. } | GateDetail::Verify { .. } | GateDetail::Enforce { .. } => {
-            }
+            GateDetail::Skipped { .. }
+            | GateDetail::Verify { .. }
+            | GateDetail::Enforce { .. }
+            | GateDetail::ReverseCoverage { .. } => {}
         }
     }
     0
@@ -209,6 +211,17 @@ fn gate_summary(detail: &GateDetail) -> String {
         } => {
             format!(
                 "{equations_total} equations, {equations_with_pre} pre, {equations_with_post} post"
+            )
+        }
+        GateDetail::ReverseCoverage {
+            total_pub_fns,
+            bound_fns,
+            coverage_pct,
+            threshold_pct,
+            ..
+        } => {
+            format!(
+                "{bound_fns}/{total_pub_fns} pub fns bound ({coverage_pct:.1}%, threshold {threshold_pct:.1}%)"
             )
         }
     }

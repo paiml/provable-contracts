@@ -221,6 +221,15 @@ pub enum Commands {
         /// Re-lint on file change (polling)
         #[arg(long)]
         watch: bool,
+        /// Show aggregate contract coverage metric
+        #[arg(long)]
+        coverage: bool,
+        /// Minimum coverage percentage (exit 1 if below)
+        #[arg(long)]
+        min_coverage: Option<f64>,
+        /// Path to crate directory for reverse coverage gate
+        #[arg(long)]
+        crate_dir: Option<PathBuf>,
     },
     /// Score contracts or a codebase directory
     Score {
@@ -406,5 +415,13 @@ pub enum Commands {
         /// Maximum number of suggestions to show
         #[arg(long, default_value = "20")]
         top: usize,
+    },
+    /// Remove enforcement level lock from a contract (requires --reason)
+    Unlock {
+        /// Path to the contract YAML file
+        contract: PathBuf,
+        /// Mandatory reason for unlocking (audit trail)
+        #[arg(long)]
+        reason: String,
     },
 }

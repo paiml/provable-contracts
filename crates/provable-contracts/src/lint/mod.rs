@@ -29,7 +29,8 @@ use self::gates::{
     load_binding, load_contracts, run_audit_gate, run_score_gate, run_validate_gate,
 };
 use self::gates_extended::{
-    check_stale_suppressions, run_enforce_gate, run_enforcement_level_gate, run_verify_gate,
+    check_stale_suppressions, run_enforce_gate, run_enforcement_level_gate,
+    run_reverse_coverage_gate, run_verify_gate,
 };
 use self::rules::RuleSeverity;
 
@@ -81,6 +82,14 @@ pub enum GateDetail {
         equations_with_post: usize,
         equations_with_lean: usize,
     },
+    #[serde(rename = "reverse_coverage")]
+    ReverseCoverage {
+        total_pub_fns: usize,
+        bound_fns: usize,
+        unbound_fns: usize,
+        coverage_pct: f64,
+        threshold_pct: f64,
+    },
     #[serde(rename = "skipped")]
     Skipped { reason: String },
 }
@@ -110,6 +119,8 @@ pub struct LintConfig<'a> {
     pub strict: bool,
     pub no_cache: bool,
     pub cache_stats: bool,
+    /// Optional crate directory for reverse coverage gate (Gate 7).
+    pub crate_dir: Option<&'a Path>,
 }
 
 impl<'a> LintConfig<'a> {
@@ -127,11 +138,13 @@ impl<'a> LintConfig<'a> {
             strict: false,
             no_cache: false,
             cache_stats: false,
+            crate_dir: None,
         }
     }
 }
 
 /// Run all lint gates across a contract directory.
+#[allow(clippy::too_many_lines)]
 pub fn run_lint(config: &LintConfig) -> LintReport {
     let overall_start = Instant::now();
     let mut gates = Vec::with_capacity(3);
@@ -200,6 +213,22 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
         gates.push(skipped_gate("enforcement-level", "validation failed"));
     }
 
+    // Gate 7: reverse coverage (optional — skip if no binding or crate dir)
+    if validation_passed {
+        if let (Some(bp), Some(cd)) = (config.binding_path, config.crate_dir) {
+            let (rev_result, mut rev_findings) = run_reverse_coverage_gate(bp, cd);
+            gates.push(rev_result);
+            all_findings.append(&mut rev_findings);
+        } else {
+            gates.push(skipped_gate(
+                "reverse-coverage",
+                "no --binding or --crate-dir provided",
+            ));
+        }
+    } else {
+        gates.push(skipped_gate("reverse-coverage", "validation failed"));
+    }
+
     all_findings.append(&mut validate_findings);
 
     // Stale suppression detection (PV-SUP-001, Section 17 Gap 2)
@@ -239,7 +268,7 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
         all_findings.retain(|f| f.severity >= min_sev);
     }
 
-    let passed = gates.iter().all(|g| g.passed);
+    let passed = gates.iter().all(|g| g.passed || g.skipped);
 
     LintReport {
         passed,

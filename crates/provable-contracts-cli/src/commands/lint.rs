@@ -1,11 +1,12 @@
 use std::path::Path;
 
 use provable_contracts::lint::config::{find_config, load_config};
-use provable_contracts::lint::finding::LintFinding;
 use provable_contracts::lint::rules::RuleSeverity;
-use provable_contracts::lint::sarif::{findings_to_sarif, sarif_to_json};
 use provable_contracts::lint::trend;
 use provable_contracts::lint::{GateDetail, LintConfig, LintReport, run_lint};
+
+#[path = "lint_render.rs"]
+mod lint_render;
 
 #[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
 pub fn run(
@@ -25,6 +26,9 @@ pub fn run(
     show_trend: bool,
     no_cache: bool,
     cache_stats: bool,
+    coverage: bool,
+    min_coverage: Option<f64>,
+    crate_dir: Option<&Path>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if show_trend {
         show_trend_history(contract_dir);
@@ -51,6 +55,7 @@ pub fn run(
         config_path,
         no_cache,
         cache_stats,
+        crate_dir,
     );
 
     let report = run_lint(&config);
@@ -65,6 +70,24 @@ pub fn run(
     let effective_format = resolve_format(format, config_path, contract_dir);
     print_report(&effective_format, &report)?;
 
+    // --coverage: compute and print aggregate contract coverage metric
+    if coverage {
+        let coverage_result = compute_contract_coverage(contract_dir);
+        println!(
+            "\nContract Coverage: {}/{} at Standard+ ({:.1}%)",
+            coverage_result.standard_plus, coverage_result.total, coverage_result.percentage,
+        );
+        if let Some(threshold) = min_coverage {
+            if coverage_result.percentage < threshold {
+                return Err(format!(
+                    "contract coverage {:.1}% is below minimum {:.1}%",
+                    coverage_result.percentage, threshold,
+                )
+                .into());
+            }
+        }
+    }
+
     if report.passed {
         Ok(())
     } else {
@@ -75,6 +98,56 @@ pub fn run(
             report.gates.len()
         )
         .into())
+    }
+}
+
+struct CoverageResult {
+    standard_plus: usize,
+    total: usize,
+    percentage: f64,
+}
+
+/// Count contracts at `Standard+` level (have both `falsification_tests` AND `kani_harnesses`).
+fn compute_contract_coverage(contract_dir: &Path) -> CoverageResult {
+    let mut total = 0usize;
+    let mut standard_plus = 0usize;
+
+    let Ok(entries) = std::fs::read_dir(contract_dir) else {
+        return CoverageResult {
+            standard_plus: 0,
+            total: 0,
+            percentage: 100.0,
+        };
+    };
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.extension().and_then(|e| e.to_str()) != Some("yaml") {
+            continue;
+        }
+        let Ok(contract) = provable_contracts::schema::parse_contract(&path) else {
+            continue;
+        };
+        if contract.is_registry() {
+            continue;
+        }
+        total += 1;
+        if !contract.falsification_tests.is_empty() && !contract.kani_harnesses.is_empty() {
+            standard_plus += 1;
+        }
+    }
+
+    #[allow(clippy::cast_precision_loss)]
+    let percentage = if total > 0 {
+        (standard_plus as f64 / total as f64) * 100.0
+    } else {
+        100.0
+    };
+
+    CoverageResult {
+        standard_plus,
+        total,
+        percentage,
     }
 }
 
@@ -142,10 +215,10 @@ fn record_trend(contract_dir: &Path, report: &LintReport) {
 
 fn print_report(format: &str, report: &LintReport) -> Result<(), Box<dyn std::error::Error>> {
     match format {
-        "json" => print_json(report)?,
-        "sarif" => print_sarif(report),
-        "github" => print_github(report),
-        _ => print_text(report),
+        "json" => lint_render::print_json(report)?,
+        "sarif" => lint_render::print_sarif(report),
+        "github" => lint_render::print_github(report),
+        _ => lint_render::print_text(report),
     }
     Ok(())
 }
@@ -156,8 +229,10 @@ fn count_contracts(report: &LintReport) -> usize {
             GateDetail::Validate { contracts, .. }
             | GateDetail::Audit { contracts, .. }
             | GateDetail::Score { contracts, .. } => return *contracts,
-            GateDetail::Verify { .. } | GateDetail::Enforce { .. } | GateDetail::Skipped { .. } => {
-            }
+            GateDetail::Verify { .. }
+            | GateDetail::Enforce { .. }
+            | GateDetail::ReverseCoverage { .. }
+            | GateDetail::Skipped { .. } => {}
         }
     }
     0
@@ -191,6 +266,7 @@ fn build_config<'a>(
     config_path: Option<&Path>,
     no_cache: bool,
     cache_stats: bool,
+    crate_dir: Option<&'a Path>,
 ) -> LintConfig<'a> {
     let pv_config = config_path
         .and_then(|cp| match load_config(cp) {
@@ -267,6 +343,7 @@ fn build_config<'a>(
         strict: effective_strict,
         no_cache,
         cache_stats,
+        crate_dir,
     }
 }
 
@@ -278,141 +355,4 @@ fn parse_csv(s: Option<&str>) -> Vec<String> {
             .collect()
     })
     .unwrap_or_default()
-}
-
-fn print_text(report: &LintReport) {
-    println!("pv lint — contract quality gate");
-    println!("================================\n");
-    for (i, gate) in report.gates.iter().enumerate() {
-        print_gate(i + 1, gate);
-    }
-    print_findings(report);
-    print_summary(report);
-}
-
-fn print_gate(num: usize, gate: &provable_contracts::lint::GateResult) {
-    let status = if gate.skipped {
-        "SKIP"
-    } else if gate.passed {
-        "PASS"
-    } else {
-        "FAIL"
-    };
-    let summary = gate_summary(&gate.detail);
-    let dots = 30usize.saturating_sub(gate.name.len());
-    let dot_str = ".".repeat(dots);
-    println!(
-        "Gate {num}: {} {dot_str} {status} ({summary}) [{}ms]",
-        gate.name, gate.duration_ms
-    );
-    if !gate.passed && !gate.skipped {
-        print_gate_errors(&gate.detail);
-    }
-}
-
-fn gate_summary(detail: &GateDetail) -> String {
-    match detail {
-        GateDetail::Validate {
-            contracts,
-            errors,
-            warnings,
-            ..
-        } => format!("{contracts} contracts, {errors} errors, {warnings} warnings"),
-        GateDetail::Audit {
-            contracts,
-            findings,
-            ..
-        } => format!("{contracts} contracts, {findings} findings"),
-        GateDetail::Score {
-            contracts,
-            min_score,
-            mean_score,
-            threshold,
-            ..
-        } => format!(
-            "{contracts} contracts, min={min_score:.2}, mean={mean_score:.2}, threshold={threshold:.2}"
-        ),
-        GateDetail::Verify {
-            total_refs,
-            existing,
-            missing,
-        } => format!("{existing}/{total_refs} tests found, {missing} missing"),
-        GateDetail::Enforce {
-            equations_total,
-            equations_with_pre,
-            equations_with_post,
-            equations_with_lean,
-        } => format!(
-            "{equations_total} eqs, {equations_with_pre} pre, {equations_with_post} post, {equations_with_lean} lean"
-        ),
-        GateDetail::Skipped { reason } => reason.clone(),
-    }
-}
-
-fn print_gate_errors(detail: &GateDetail) {
-    let messages: &[String] = match detail {
-        GateDetail::Validate { error_messages, .. } => error_messages,
-        GateDetail::Audit {
-            finding_messages, ..
-        } => finding_messages,
-        GateDetail::Score {
-            below_threshold, ..
-        } => below_threshold,
-        GateDetail::Verify { .. } | GateDetail::Enforce { .. } | GateDetail::Skipped { .. } => {
-            return;
-        }
-    };
-    for msg in messages.iter().take(10) {
-        println!("  {msg}");
-    }
-    let remaining = messages.len().saturating_sub(10);
-    if remaining > 0 {
-        println!("  ... and {remaining} more");
-    }
-}
-
-fn print_findings(report: &LintReport) {
-    if report.findings.is_empty() {
-        return;
-    }
-    let unsuppressed: Vec<&LintFinding> =
-        report.findings.iter().filter(|f| !f.suppressed).collect();
-    let suppressed_count = report.findings.len() - unsuppressed.len();
-    println!(
-        "\nFindings: {} total ({} suppressed)",
-        report.findings.len(),
-        suppressed_count
-    );
-    for f in &unsuppressed {
-        println!("  {f}");
-    }
-}
-
-fn print_summary(report: &LintReport) {
-    let passed_count = report.gates.iter().filter(|g| g.passed).count();
-    let total = report.gates.len();
-    let result = if report.passed { "PASS" } else { "FAIL" };
-    println!(
-        "\nResult: {result} ({passed_count}/{total} gates passed) [{}ms]",
-        report.total_duration_ms
-    );
-}
-
-fn print_json(report: &LintReport) -> Result<(), Box<dyn std::error::Error>> {
-    println!("{}", serde_json::to_string_pretty(report)?);
-    Ok(())
-}
-
-fn print_sarif(report: &LintReport) {
-    let version = env!("CARGO_PKG_VERSION");
-    let sarif = findings_to_sarif(&report.findings, version);
-    println!("{}", sarif_to_json(&sarif, true));
-}
-
-fn print_github(report: &LintReport) {
-    for finding in &report.findings {
-        if !finding.suppressed {
-            println!("{}", finding.to_github_annotation());
-        }
-    }
 }

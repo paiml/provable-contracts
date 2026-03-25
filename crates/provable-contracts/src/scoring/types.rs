@@ -70,6 +70,22 @@ pub struct CodebaseScore {
     /// Set via `pv coverage --reverse` on the consumer crate.
     #[serde(default)]
     pub reverse_coverage: f64,
+    /// D7: Mutation testing score (0.0-1.0) — mutants killed / mutants tested.
+    /// Populated by certeza or cargo-mutants results.
+    #[serde(default)]
+    pub mutation_testing: f64,
+    /// D8: CI pipeline depth (0.0-1.0) — fraction of CI stages present.
+    /// Populated by GitHub Actions audit.
+    #[serde(default)]
+    pub ci_pipeline_depth: f64,
+    /// D9: Proof freshness (0.0-1.0) — decay based on days since last Kani/Lean run.
+    /// Populated from CI timestamps.
+    #[serde(default)]
+    pub proof_freshness: f64,
+    /// D10: Defect patterns (0.0-1.0) — inverse defect density from git history.
+    /// Populated by org-intelligence-plugin analysis.
+    #[serde(default)]
+    pub defect_patterns: f64,
     pub composite: f64,
     pub grade: Grade,
     pub top_gaps: Vec<ScoringGap>,

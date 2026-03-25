@@ -2,15 +2,17 @@
 //!
 //! Provides quantitative quality assessment for individual contracts
 //! and codebases that consume them. Five dimensions per contract,
-//! five dimensions per codebase, grades A-F.
+//! ten dimensions per codebase (`PVScore`), grades A-F.
 //!
-//! Spec: `docs/specifications/sub/scoring.md`
+//! Spec: `docs/specifications/sub/scoring.md`, `docs/specifications/sub/pvscore.md`
 
 mod codebase;
 pub mod drift;
+mod pvscore;
 mod types;
 
 pub use codebase::{score_codebase, score_codebase_full, score_codebase_with_pagerank};
+pub use pvscore::pvscore_10dim;
 pub use types::{CodebaseScore, ContractScore, Grade, ScoringGap, ScoringWeights};
 
 use crate::binding::{BindingRegistry, ImplStatus};

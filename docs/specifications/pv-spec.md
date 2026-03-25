@@ -35,6 +35,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 18 | [PVScore](#18-pvscore) | [sub/pvscore.md](sub/pvscore.md) |
 | 19 | [Sovereign Stack Audit](#19-sovereign-stack-audit) | [sub/sovereign-stack-audit.md](sub/sovereign-stack-audit.md) |
 | 20 | [UX, Speech, Probar](#20-ux-speech-probar) | [sub/ux-speech-probar.md](sub/ux-speech-probar.md) |
+| 21 | [Contract Gap Analysis](#21-contract-gap-analysis) | [sub/contract-gaps.md](sub/contract-gaps.md) |
 
 ---
 
@@ -119,7 +120,7 @@ provable-contracts/
 | YAML contracts | 182 |
 | Binding entries (13 crates) | 18,296 |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) |
-| CLI commands | 28 |
+| CLI commands | 29 |
 | Consuming projects | 13 Level 3 (all AllImplemented) |
 | Stack LoC governed | ~6.4M Rust |
 
@@ -671,7 +672,7 @@ coverage adds the reverse check: implementation → binding. Three mechanisms:
 2. **`#[must_contract]`** [PLANNED] — Compile-time lint for unannotated pub fns
 3. **`pv infer`** [IMPLEMENTED] — Semantic matching: suggest contracts for unbound functions
 
-`pv lint` Gate 7 [PLANNED] enforces reverse coverage threshold. This prevents
+`pv lint` Gate 7 [IMPLEMENTED] enforces reverse coverage threshold. This prevents
 whack-a-mole: new functions cannot escape the contract system silently.
 
 ---
@@ -689,7 +690,7 @@ Rust `#[forbid]`, C# nullable, JSpecify, Haskell/LiquidHaskell, ty, and Elm:
    (pattern: TypeScript `@ts-expect-error`, Rust `#[expect]`, ty `unused-ignore-comment`)
 3. **Multi-stage pipeline** [PLANNED] — Four verification tiers with progressive CI gates
    (pattern: C# `disable → warnings → annotations → enable`)
-4. **Aggregate coverage metric** [PLANNED] — `pv lint --coverage --min-coverage 0.70` with CI ratchet
+4. **Aggregate coverage metric** [IMPLEMENTED] — `pv lint --coverage --min-coverage 0.70` with CI ratchet
    (pattern: TypeScript `type-coverage`, mypy typed def count)
 5. **Irreversible level lock** [IMPLEMENTED] — `metadata.locked_level: L3` cannot regress without `pv unlock`
    (pattern: Rust `#![forbid(unsafe_code)]`, Elm mandatory totality)
@@ -792,3 +793,31 @@ reports pass rate + coverage → feeds into PVScore geometric mean.
 
 apr-model-qa-playbook: MQS (Model Quality Score, 0-1000) certifies
 individual models. Composes with PVScore for codebase + model quality.
+
+---
+
+## 21. Contract Gap Analysis
+
+**Sub-spec**: [sub/contract-gaps.md](sub/contract-gaps.md)
+
+Systematic analysis of 9 ML/systems domains against the contract registry.
+182 contracts cover core kernels well; significant gaps in:
+
+| Domain | Gap Severity | Key Missing |
+|---|---|---|
+| Training infrastructure | **Major** | Allreduce, LR schedulers, gradient clipping |
+| Quantization | Partial | GPTQ, AWQ, FP8, QLoRA |
+| Attention variants | Partial | Flash-Decoding v2, Ring Attention, MLA |
+| Memory management | **Major** | PagedAttention, speculative decoding |
+| Numerical precision | Mostly missing | BF16, FP8, stochastic rounding |
+| Tokenization | **Absent** | BPE, sequence packing |
+| Post-training/alignment | **Absent** | DPO, PPO/GRPO, reward model |
+| Shape algebra | Partial | Broadcast, stride, einsum, operator inference |
+| Inference serving | Mostly missing | Continuous batching, tensor parallelism |
+
+**Top 5 highest-leverage additions** (impact x Kani tractability):
+1. Speculative decoding — tractable BMC, clear acceptance criterion
+2. FP8 e4m3/e5m2 interchange — small state space, needed for trueno
+3. DPO loss — single equation, known failure modes
+4. BPE tokenization — merge associativity and round-trip provable
+5. PagedAttention — pointer aliasing, exactly what Kani excels at

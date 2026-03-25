@@ -109,6 +109,9 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             show_trend,
             no_cache,
             cache_stats,
+            coverage,
+            min_coverage,
+            crate_dir,
             ..
         } => commands::lint::run(
             &contract_dir,
@@ -127,6 +130,9 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             show_trend,
             no_cache,
             cache_stats,
+            coverage,
+            min_coverage,
+            crate_dir.as_deref(),
         ),
         Commands::Score {
             path,
@@ -236,6 +242,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             contract_dir,
             top,
         } => commands::infer::run(&crate_dir, &binding, &contract_dir, top),
+        Commands::Unlock { contract, reason } => commands::unlock::run(&contract, &reason),
     }
 }
 
