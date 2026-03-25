@@ -174,8 +174,8 @@ fn dispatch_score_custom_weights() {
         weights: Some(
             r#"{"spec_depth":0.1,"falsification":0.3,"kani":0.3,"lean":0.1,"binding":0.2}"#
                 .to_string(),
-        exit_code: false,
         ),
+        exit_code: false,
     });
     assert!(result.is_ok());
 }

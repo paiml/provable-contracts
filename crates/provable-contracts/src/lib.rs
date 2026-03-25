@@ -25,6 +25,7 @@
 //! - [`kernels`] — Scalar, AVX2, and PTX kernel implementations
 
 pub mod audit;
+pub(crate) mod auto_exempt;
 pub mod binding;
 pub mod book_gen;
 pub mod build_helper;
@@ -38,8 +39,8 @@ pub mod extract;
 pub mod flux_gen;
 pub mod fuzz_gen;
 pub mod generate;
-pub mod infer;
 pub mod graph;
+pub mod infer;
 pub mod invariant_gen;
 pub mod kani_gen;
 pub mod kernels;

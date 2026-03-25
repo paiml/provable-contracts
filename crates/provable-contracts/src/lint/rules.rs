@@ -25,6 +25,8 @@ pub enum RuleCategory {
     Score,
     Provability,
     Trend,
+    Suppression,
+    Enforcement,
 }
 
 /// Configurable severity levels per rule.
@@ -199,6 +201,26 @@ pub static RULES: &[LintRule] = &[
         category: RuleCategory::Trend,
         default_severity: RuleSeverity::Info,
         description: "Error count increased from previous snapshot",
+    },
+    // Suppression rules (Section 17, Gap 2)
+    LintRule {
+        id: "PV-SUP-001",
+        category: RuleCategory::Suppression,
+        default_severity: RuleSeverity::Warning,
+        description: "Stale suppression — the finding no longer fires",
+    },
+    // Enforcement rules (Section 17, Gaps 1 + 5)
+    LintRule {
+        id: "PV-ENF-001",
+        category: RuleCategory::Enforcement,
+        default_severity: RuleSeverity::Warning,
+        description: "Contract below minimum enforcement level",
+    },
+    LintRule {
+        id: "PV-LCK-001",
+        category: RuleCategory::Enforcement,
+        default_severity: RuleSeverity::Error,
+        description: "Contract regressed below locked verification level",
     },
 ];
 

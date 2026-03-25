@@ -66,6 +66,10 @@ pub struct CodebaseScore {
     pub mean_contract_score: f64,
     pub proof_depth_dist: f64,
     pub drift: f64,
+    /// D6: Reverse coverage (0.0-1.0) — fraction of pub fns with bindings.
+    /// Set via `pv coverage --reverse` on the consumer crate.
+    #[serde(default)]
+    pub reverse_coverage: f64,
     pub composite: f64,
     pub grade: Grade,
     pub top_gaps: Vec<ScoringGap>,

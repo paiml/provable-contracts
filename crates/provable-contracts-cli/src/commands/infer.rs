@@ -41,22 +41,20 @@ pub fn run(
     println!(
         "Crate: {} | Equations: {} | Unbound: {}",
         crate_dir.display(),
-        contracts.iter().map(|(_, c)| c.equations.len()).sum::<usize>(),
+        contracts
+            .iter()
+            .map(|(_, c)| c.equations.len())
+            .sum::<usize>(),
         result.coverage.unbound.len(),
     );
     println!(
         "Reverse coverage: {:.1}% ({}/{})\n",
-        result.coverage.coverage_pct,
-        result.coverage.bound_fns,
-        result.coverage.total_pub_fns,
+        result.coverage.coverage_pct, result.coverage.bound_fns, result.coverage.total_pub_fns,
     );
 
     // Matched bindings
     if !result.matched.is_empty() {
-        println!(
-            "=== Inferred Bindings ({}) ===\n",
-            result.matched.len()
-        );
+        println!("=== Inferred Bindings ({}) ===\n", result.matched.len());
         for (i, m) in result.matched.iter().take(top_n).enumerate() {
             println!(
                 "[{}] {} → {}/{} ({:.0}%, {})",

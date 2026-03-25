@@ -31,46 +31,46 @@ pub struct ReverseCoverageReport {
     pub bound_fns: usize,
     /// Functions that have a #[contract] annotation
     pub annotated_fns: usize,
+    /// Functions marked exempt (trivial, don't need contracts)
+    pub exempt_fns: usize,
     /// Functions without any binding
     pub unbound: Vec<PubFn>,
-    /// Reverse coverage percentage
+    /// Reverse coverage percentage (bound + exempt / total)
     pub coverage_pct: f64,
 }
 
 /// Scan a crate directory for `pub fn` declarations and diff against binding.yaml.
 pub fn reverse_coverage(crate_dir: &Path, binding_path: &Path) -> ReverseCoverageReport {
-    // Collect bound function names from binding.yaml
     let bound_names = extract_bound_functions(binding_path);
-
-    // Scan crate source for pub fn declarations
     let pub_fns = scan_pub_fns(crate_dir);
 
     let total = pub_fns.len();
     let mut bound = 0usize;
     let mut annotated = 0usize;
+    let mut exempt = 0usize;
     let mut unbound = Vec::new();
 
     for f in &pub_fns {
-        let fn_name = f
-            .path
-            .rsplit("::")
-            .next()
-            .unwrap_or(&f.path)
-            .to_lowercase();
+        let fn_name = f.path.rsplit("::").next().unwrap_or(&f.path).to_lowercase();
 
         if f.has_contract_macro {
             annotated += 1;
             bound += 1;
         } else if bound_names.contains(&fn_name) {
             bound += 1;
+        } else if crate::auto_exempt::is_auto_exempt(&fn_name) {
+            exempt += 1;
         } else {
             unbound.push(f.clone());
         }
     }
 
+    let covered = bound + exempt;
     let coverage_pct = if total > 0 {
         #[allow(clippy::cast_precision_loss)]
-        { (bound as f64 / total as f64) * 100.0 }
+        {
+            (covered as f64 / total as f64) * 100.0
+        }
     } else {
         100.0
     };
@@ -79,6 +79,7 @@ pub fn reverse_coverage(crate_dir: &Path, binding_path: &Path) -> ReverseCoverag
         total_pub_fns: total,
         bound_fns: bound,
         annotated_fns: annotated,
+        exempt_fns: exempt,
         unbound,
         coverage_pct,
     }
@@ -90,11 +91,9 @@ fn extract_bound_functions(binding_path: &Path) -> HashSet<String> {
     if let Ok(content) = std::fs::read_to_string(binding_path) {
         for line in content.lines() {
             let trimmed = line.trim();
-            // Handle both "function: X" and "- function: X" YAML formats
             let func_line = trimmed.strip_prefix("- ").unwrap_or(trimmed);
             if let Some(rest) = func_line.strip_prefix("function:") {
                 let fname = rest.trim().trim_matches('"').trim_matches('\'').trim();
-                // Extract just the function name (after last ::)
                 let short = fname.rsplit("::").next().unwrap_or(fname).to_lowercase();
                 names.insert(short);
             }
@@ -107,7 +106,6 @@ fn extract_bound_functions(binding_path: &Path) -> HashSet<String> {
 fn scan_pub_fns(crate_dir: &Path) -> Vec<PubFn> {
     let mut results = Vec::new();
     let src_dirs = [crate_dir.join("src"), crate_dir.join("crates")];
-
     for dir in &src_dirs {
         if dir.exists() {
             scan_dir(dir, &mut results);
@@ -149,7 +147,6 @@ fn scan_file(path: &Path, results: &mut Vec<PubFn>) {
         }
 
         if trimmed.starts_with("pub fn ") || trimmed.starts_with("pub async fn ") {
-            // Extract function name
             let fn_part = trimmed
                 .trim_start_matches("pub async fn ")
                 .trim_start_matches("pub fn ");
@@ -178,33 +175,5 @@ fn scan_file(path: &Path, results: &mut Vec<PubFn>) {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_extract_bound_functions() {
-        let dir = tempfile::tempdir().unwrap();
-        let path = dir.path().join("binding.yaml");
-        std::fs::write(
-            &path,
-            "bindings:\n  - function: \"Foo::bar\"\n    status: implemented\n  - function: baz\n    status: implemented\n",
-        ).unwrap();
-        let names = extract_bound_functions(&path);
-        assert!(names.contains("bar"), "Expected 'bar' in {names:?}");
-        assert!(names.contains("baz"), "Expected 'baz' in {names:?}");
-    }
-
-    #[test]
-    fn test_scan_file() {
-        let tmp = tempfile::NamedTempFile::with_suffix(".rs").unwrap();
-        std::fs::write(
-            tmp.path(),
-            "pub fn hello() {}\n#[contract(\"test\", equation = \"eq\")]\npub fn world() {}\nfn private() {}\n",
-        ).unwrap();
-        let mut results = Vec::new();
-        scan_file(tmp.path(), &mut results);
-        assert_eq!(results.len(), 2);
-        assert!(!results[0].has_contract_macro);
-        assert!(results[1].has_contract_macro);
-    }
-}
+#[path = "reverse_coverage_tests.rs"]
+mod tests;

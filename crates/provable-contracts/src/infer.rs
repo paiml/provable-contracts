@@ -11,7 +11,7 @@
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
-use crate::reverse_coverage::{reverse_coverage, PubFn, ReverseCoverageReport};
+use crate::reverse_coverage::{PubFn, ReverseCoverageReport, reverse_coverage};
 use crate::schema::Contract;
 
 /// A suggested binding for an unbound function.
@@ -157,7 +157,11 @@ pub fn infer(
     }
 
     // Sort by confidence descending
-    matched.sort_by(|a, b| b.confidence.partial_cmp(&a.confidence).unwrap_or(std::cmp::Ordering::Equal));
+    matched.sort_by(|a, b| {
+        b.confidence
+            .partial_cmp(&a.confidence)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
 
     InferResult {
         matched,
@@ -187,11 +191,31 @@ fn tokenize(s: &str) -> Vec<String> {
 /// Check if a function name is trivial (constructor, getter, Display impl).
 fn is_trivial(name: &str) -> bool {
     let trivial = [
-        "new", "default", "from", "into", "as_ref", "as_mut",
-        "len", "is_empty", "clone", "fmt", "display", "debug",
-        "eq", "ne", "hash", "cmp", "partial_cmp", "drop",
-        "deref", "deref_mut", "index", "index_mut",
-        "with_", "set_", "get_",
+        "new",
+        "default",
+        "from",
+        "into",
+        "as_ref",
+        "as_mut",
+        "len",
+        "is_empty",
+        "clone",
+        "fmt",
+        "display",
+        "debug",
+        "eq",
+        "ne",
+        "hash",
+        "cmp",
+        "partial_cmp",
+        "drop",
+        "deref",
+        "deref_mut",
+        "index",
+        "index_mut",
+        "with_",
+        "set_",
+        "get_",
     ];
     let lower = name.to_lowercase();
     trivial.iter().any(|t| lower == *t || lower.starts_with(t))
@@ -226,7 +250,9 @@ fn best_fuzzy_match(
 
             if overlap > 0 && !fn_tokens.is_empty() {
                 #[allow(clippy::cast_precision_loss)]
-                { 0.5 + 0.3 * (overlap as f64 / fn_tokens.len() as f64) }
+                {
+                    0.5 + 0.3 * (overlap as f64 / fn_tokens.len() as f64)
+                }
             } else {
                 0.0
             }
@@ -277,10 +303,7 @@ fn infer_tier_from_path(path: &str) -> u8 {
 
 /// Suggest a contract name from a function name.
 fn suggest_contract_name(fn_name: &str) -> String {
-    let clean = fn_name
-        .to_lowercase()
-        .replace("::", "-")
-        .replace('_', "-");
+    let clean = fn_name.to_lowercase().replace("::", "-").replace('_', "-");
     if clean.len() < 3 || is_trivial(fn_name) {
         return String::new();
     }
@@ -332,7 +355,13 @@ kani_harnesses:
 "#,
         fn_name = suggestion.function.path,
         eq_name = suggestion.function.path.to_lowercase().replace("::", "_"),
-        prefix = suggestion.function.path.to_uppercase().chars().take(3).collect::<String>(),
+        prefix = suggestion
+            .function
+            .path
+            .to_uppercase()
+            .chars()
+            .take(3)
+            .collect::<String>(),
     )
 }
 
@@ -383,8 +412,16 @@ mod tests {
     #[test]
     fn test_fuzzy_match() {
         let eq_keywords = vec![
-            ("softmax-kernel-v1".into(), "softmax".into(), vec!["softmax".into(), "exp".into(), "sum".into()]),
-            ("rmsnorm-kernel-v1".into(), "rmsnorm".into(), vec!["rmsnorm".into(), "sqrt".into(), "mean".into()]),
+            (
+                "softmax-kernel-v1".into(),
+                "softmax".into(),
+                vec!["softmax".into(), "exp".into(), "sum".into()],
+            ),
+            (
+                "rmsnorm-kernel-v1".into(),
+                "rmsnorm".into(),
+                vec!["rmsnorm".into(), "sqrt".into(), "mean".into()],
+            ),
         ];
 
         // Direct substring match
