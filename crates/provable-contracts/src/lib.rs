@@ -25,6 +25,7 @@
 //! - [`kernels`] — Scalar, AVX2, and PTX kernel implementations
 
 pub mod audit;
+pub(crate) mod auto_exempt;
 pub mod binding;
 pub mod book_gen;
 pub mod build_helper;
@@ -51,7 +52,6 @@ pub mod probar_gen;
 pub mod proof_status;
 pub mod query;
 pub mod readme_gen;
-pub(crate) mod auto_exempt;
 pub mod reverse_coverage;
 pub mod scaffold;
 pub mod schema;
