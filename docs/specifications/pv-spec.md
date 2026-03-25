@@ -118,7 +118,7 @@ provable-contracts/
 
 | Metric | Value |
 |---|---|
-| YAML contracts | 182 |
+| YAML contracts | 186 |
 | Binding entries (13 crates) | 16,941 |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) |
 | CLI commands | 29 |
@@ -419,7 +419,7 @@ Multi-index hybrid approach for sub-second lookups (modeled on
 |---|---|---|
 | Name index | `HashMap<stem, Vec<idx>>` | O(1) |
 | Equation index | `HashMap<eq_name, Vec<idx>>` | O(1) |
-| Full-text corpus | In-memory BM25 | O(n), n=182 |
+| Full-text corpus | In-memory BM25 | O(n), n=186 |
 | Dependency DAG | `BTreeMap<String, Vec<String>>` | O(1) |
 | Score cache [IMPLEMENTED] | `HashMap<stem, f64>` | O(1) |
 | **Cross-project index** | `HashMap<stem, Vec<ProjectRef>>` | O(1) |
@@ -813,7 +813,7 @@ individual models. Composes with PVScore for codebase + model quality.
 **Sub-spec**: [sub/contract-gaps.md](sub/contract-gaps.md)
 
 Systematic analysis of 9 ML/systems domains against the contract registry.
-182 contracts cover core kernels well; significant gaps in:
+186 contracts cover core kernels well; significant gaps in:
 
 | Domain | Gap Severity | Key Missing |
 |---|---|---|
