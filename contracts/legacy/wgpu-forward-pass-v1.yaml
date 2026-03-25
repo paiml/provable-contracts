@@ -1,15 +1,26 @@
 name: wgpu-forward-pass-v1
-version: "1.0.0"
+version: "2.0.0"
 equations:
   rmsnorm_correctness:
     description: "WGSL RMSNorm within 1e-5 of CPU"
     measurement: "4.77e-7 (PMAT-324)"
   gemv_dispatch:
-    description: "M=1 uses GEMV, M>1 uses tiled GEMM"
+    description: "M=1 uses GEMV with Params{n,k}, M>1 uses tiled GEMM with Dims{M,K,N}"
+  gemv_params_safety:
+    description: "GEMV params.n must equal output dimension, not batch size m"
+    invariant: "params[0] == output_dim when m == 1"
+    finding: "PMAT-346: params.n was m=1, only row 0 computed"
+  buffer_size_safety:
+    description: "Intermediate buffers must accommodate max usage across all passes"
+    invariant: "attn_out_buf.size >= max(hidden_dim, intermediate_dim)"
+    finding: "PMAT-346: attn_out_buf=1536 but SiLU writes 8960"
+  weight_transpose:
+    description: "Matmul shader expects B in [K,N] layout; upload_weight_transposed converts [N,K]"
+    finding: "PMAT-347: LM head [vocab,hidden] transposed to [hidden,vocab] at init"
   dequant_correctness:
     description: "Q4K->F32 dequant preserves semantics"
 postconditions:
   - name: performance_target
     threshold: 25.0
     unit: "tok/s"
-    measurement: "27.6 (PMAT-331)"
+    measurement: "0.95 (PMAT-347, W5700X single-token)"

@@ -649,3 +649,22 @@ bindings:
     function: "WgslForwardPass::encode_matmul"
     status: implemented
     notes: "PMAT-331: K%4==0 enforced by vec4 GEMV shader"
+
+  # PMAT-348: Contracts from PMAT-346/347 bug findings
+  - contract: wgpu-forward-pass-v1.yaml
+    equation: gemv_params_safety
+    function: "WgslForwardPass::encode_matmul"
+    status: implemented
+    notes: "PMAT-346: params=[n,k,0,0] for GEMV, [m,k,n,0] for GEMM"
+
+  - contract: wgpu-forward-pass-v1.yaml
+    equation: buffer_size_safety
+    function: "WgslForwardPass::new"
+    status: implemented
+    notes: "PMAT-346: attn_out_buf = max(hidden, intermediate)"
+
+  - contract: wgpu-forward-pass-v1.yaml
+    equation: weight_transpose
+    function: "WgslForwardPass::upload_weight_transposed"
+    status: implemented
+    notes: "PMAT-347: [N,K] → [K,N] for matmul shader compatibility"

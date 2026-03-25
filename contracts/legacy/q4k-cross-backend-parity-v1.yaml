@@ -18,3 +18,7 @@ postconditions:
 findings:
   - pmat: 330
     description: "1.5B GPU 'Go' vs CPU 'Rust'. 3B correct."
+  - pmat: 346
+    description: "WGPU parity achieved. '2+2=4' matches CPU. GEMV+SiLU bugs fixed."
+  - pmat: 347
+    description: "GPU LM head with transposed weights. Output verified identical to CPU."
