@@ -675,3 +675,10 @@ bindings:
     function: "canary_parity_gate.sh"
     status: implemented
     notes: "PMAT-346: WGPU matches CPU for '2+2=4', 'capital of France'. Verified via canary gate."
+
+  # PMAT-359: GPU bias+RoPE order contract
+  - contract: wgpu-forward-pass-v1.yaml
+    equation: gpu_bias_rope_order
+    function: "WgslForwardPass::forward_layer"
+    status: implemented
+    notes: "PMAT-358: encode_bias_add before encode_rope in same command encoder"

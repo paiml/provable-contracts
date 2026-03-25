@@ -1,5 +1,5 @@
 name: wgpu-forward-pass-v1
-version: "2.0.0"
+version: "3.0.0"
 equations:
   rmsnorm_correctness:
     description: "WGSL RMSNorm within 1e-5 of CPU"
@@ -22,9 +22,9 @@ equations:
   gpu_bias_rope_order:
     description: "Bias must be applied BEFORE RoPE (they don't commute)"
     invariant: "forward_layer: GEMV → bias_add → RoPE → attention"
-    finding: "PMAT-356: Cannot swap order. Must move both to GPU together."
+    finding: "PMAT-358: Implemented on GPU. GEMV → bias_add → RoPE in same encoder."
 postconditions:
   - name: performance_target
     threshold: 25.0
     unit: "tok/s"
-    measurement: "0.95 (PMAT-347, W5700X single-token)"
+    measurement: "0.72 (PMAT-358, W5700X with GPU bias+RoPE)"
