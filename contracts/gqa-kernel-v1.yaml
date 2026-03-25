@@ -50,6 +50,15 @@ proof_obligations:
     property: "SIMD matches scalar within ULP"
     tolerance: 8.0
     applies_to: simd
+  - type: equivalence
+    property: "GPU PTX matches CPU within cosine >= 0.98"
+    formal: "cosine(gqa_ptx(Q,K,V), gqa_cpu(Q,K,V)) >= 0.98"
+    tolerance: 0.02
+    applies_to: cuda
+  - type: invariant
+    property: "GPU head mapping for non-power-of-2 ratios"
+    formal: "kv_head_idx(q) == q * num_kv_heads / num_heads for all q in [0..num_heads)"
+    applies_to: cuda
 
 kernel_structure:
   phases:
@@ -113,6 +122,26 @@ falsification_tests:
     prediction: "GQA(kv_heads=1) broadcasts single KV to all query heads"
     test: "proptest with kv_heads=1 verifying all heads see same KV"
     if_fails: "Multi-query degenerate case not handled"
+  - id: FALSIFY-GQ-007
+    rule: "GPU parity - non-power-of-2 head ratio"
+    prediction: "cosine(gqa_gpu, gqa_cpu) >= 0.98 for heads=28, kv=4 (ratio=7)"
+    test: "Run CORRECTNESS-011 layer trace with Qwen2.5-7B dimensions"
+    if_fails: "GPU PTX kernel computes wrong function for this head configuration"
+    dimensions:
+      hidden_dim: 3584
+      num_heads: 28
+      num_kv_heads: 4
+      head_dim: 128
+  - id: FALSIFY-GQ-008
+    rule: "GPU parity - power-of-2 head ratio"
+    prediction: "cosine(gqa_gpu, gqa_cpu) >= 0.98 for heads=32, kv=8 (ratio=4)"
+    test: "Run CORRECTNESS-011 layer trace with power-of-2 ratio dimensions"
+    if_fails: "GPU PTX kernel fails even for power-of-2 ratios"
+  - id: FALSIFY-GQ-009
+    rule: "GPU head mapping correctness"
+    prediction: "kv_head_idx(q) == q * num_kv_heads / num_heads for all q"
+    test: "Extract PTX div.u32 output for each q_head_idx, verify mapping"
+    if_fails: "PTX integer division produces wrong kv_head_idx on target GPU"
 
 kani_harnesses:
   - id: KANI-GQ-001
@@ -146,5 +175,5 @@ qa_gate:
     - "mha_equivalence"
     - "convex_bound"
     - "simd_equivalence"
-  pass_criteria: "All 6 falsification tests pass + Kani harnesses verify"
+  pass_criteria: "All 9 falsification tests pass + Kani harnesses verify"
   falsification: "Skip KV head broadcasting, use wrong head index"
