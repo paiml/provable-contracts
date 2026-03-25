@@ -1,32 +1,143 @@
 version: "1.0.0"
 target_crate: depyler-core
 bindings:
+  # --- type-preservation-v1 bindings ---
   - contract: type-preservation-v1.yaml
-    equation: hir_to_rust
+    equation: type_map
     function: "hir_to_rust"
     module_path: "depyler_core::codegen"
     status: implemented
-    notes: "Core transpilation: HIR → Rust source"
+    notes: "Core transpilation: HIR -> Rust source, applies TypeMap compositionally"
 
   - contract: type-preservation-v1.yaml
-    equation: generate_rust
+    equation: type_map
     function: "generate_rust"
     module_path: "depyler_core::codegen"
     status: implemented
-    notes: "syn::File → formatted Rust string"
+    notes: "syn::File -> formatted Rust string with preserved types"
 
-  - contract: semantic-equivalence-v1.yaml
-    equation: convert_stmt
-    function: "StmtConverter::convert"
-    module_path: "depyler_core::ast_bridge::converters"
+  - contract: type-preservation-v1.yaml
+    equation: type_inference
+    function: "get_inferred_var_types"
+    module_path: "depyler_analysis::type_system::constraint_collector"
     status: implemented
+    notes: "Hindley-Milner constraint collection for type inference"
 
-  - contract: semantic-equivalence-v1.yaml
-    equation: convert_expr
+  - contract: type-preservation-v1.yaml
+    equation: type_map
+    function: "TypeMapper::map_type"
+    module_path: "depyler_core::type_mapper"
+    status: implemented
+    notes: "Core Python-to-Rust type mapping function"
+
+  - contract: type-preservation-v1.yaml
+    equation: copy_semantics
+    function: "Type::is_copy"
+    module_path: "depyler_core::hir"
+    status: implemented
+    notes: "Determines if Python type maps to Rust Copy type"
+
+  - contract: type-preservation-v1.yaml
+    equation: container_preservation
+    function: "TypeExtractor::extract"
+    module_path: "depyler_core::ast_bridge::type_extraction"
+    status: implemented
+    notes: "Extracts and preserves container type structure from Python AST"
+
+  - contract: type-preservation-v1.yaml
+    equation: numeric_semantics
     function: "ExprConverter::convert"
     module_path: "depyler_core::ast_bridge::converters"
     status: implemented
+    notes: "Converts numeric expressions preserving //, % semantics"
 
+  # --- semantic-equivalence-v1 bindings ---
+  - contract: semantic-equivalence-v1.yaml
+    equation: statement_equivalence
+    function: "StmtConverter::convert"
+    module_path: "depyler_core::ast_bridge::converters"
+    status: implemented
+    notes: "Statement-level semantic preservation during AST-to-HIR conversion"
+
+  - contract: semantic-equivalence-v1.yaml
+    equation: expression_equivalence
+    function: "ExprConverter::convert"
+    module_path: "depyler_core::ast_bridge::converters"
+    status: implemented
+    notes: "Expression-level semantic preservation during AST-to-HIR conversion"
+
+  - contract: semantic-equivalence-v1.yaml
+    equation: control_flow_equivalence
+    function: "convert_function_to_rust"
+    module_path: "depyler_core::codegen"
+    status: implemented
+    notes: "Control flow transpilation (if/while/for/try) preserving semantics"
+
+  - contract: semantic-equivalence-v1.yaml
+    equation: comprehension_equivalence
+    function: "ExprConverter::convert"
+    module_path: "depyler_core::ast_bridge::converters"
+    status: implemented
+    notes: "List/set/dict comprehension to iterator chain equivalence"
+
+  - contract: semantic-equivalence-v1.yaml
+    equation: observational_equivalence
+    function: "AstBridge::python_to_hir"
+    module_path: "depyler_core::ast_bridge"
+    status: implemented
+    notes: "Top-level Python-to-HIR bridge preserving observable behavior"
+
+  # --- memory-safety-v1 bindings ---
+  - contract: memory-safety-v1.yaml
+    equation: escape_analysis
+    function: "EscapeAnalysis::analyze_function"
+    module_path: "depyler_core::escape_analysis"
+    status: implemented
+    notes: "Interprocedural escape analysis for use-after-move detection"
+
+  - contract: memory-safety-v1.yaml
+    equation: ownership_invariant
+    function: "BorrowingContext::get_pattern"
+    module_path: "depyler_core::borrowing"
+    status: implemented
+    notes: "Determines Owned/Borrowed/MutableBorrow for each parameter"
+
+  - contract: memory-safety-v1.yaml
+    equation: lifetime_safety
+    function: "LifetimeInference::infer"
+    module_path: "depyler_core::lifetime_analysis"
+    status: implemented
+    notes: "Infers lifetime parameters for safe reference generation"
+
+  - contract: memory-safety-v1.yaml
+    equation: use_after_move
+    function: "EscapeAnalysis::detect_use_after_move"
+    module_path: "depyler_core::escape_analysis"
+    status: implemented
+    notes: "Detects variables used after being moved, inserts strategic clones"
+
+  - contract: memory-safety-v1.yaml
+    equation: bounds_safety
+    function: "ExprConverter::convert"
+    module_path: "depyler_core::ast_bridge::converters"
+    status: implemented
+    notes: "Collection indexing transpiled to bounds-checked access"
+
+  - contract: memory-safety-v1.yaml
+    equation: drop_safety
+    function: "StmtConverter::convert"
+    module_path: "depyler_core::ast_bridge::converters"
+    status: implemented
+    notes: "With-statement to RAII/Drop pattern transpilation"
+
+  - contract: memory-safety-v1.yaml
+    equation: ownership_invariant
+    function: "compile_with_cargo"
+    module_path: "depyler_core::cargo_first"
+    status: implemented
+    notes: "Verifies generated Rust passes borrow checker"
+
+  # --- legacy codegen-safety bindings (remapped) ---
   - contract: codegen-safety-v1.yaml
     equation: compile_with_cargo
     function: "compile_with_cargo"
@@ -38,12 +149,6 @@ bindings:
     equation: convert_class_to_struct
     function: "convert_class_to_struct"
     module_path: "depyler_core::direct_rules"
-    status: implemented
-
-  - contract: type-preservation-v1.yaml
-    equation: type_inference
-    function: "get_inferred_var_types"
-    module_path: "depyler_analysis::type_system::constraint_collector"
     status: implemented
 
   # --- Mass auto-accept (pv infer ≥85%) ---

@@ -118,8 +118,8 @@ provable-contracts/
 
 | Metric | Value |
 |---|---|
-| YAML contracts | 186 |
-| Binding entries (13 crates) | 16,941 |
+| YAML contracts | 192 |
+| Binding entries (13 crates) | 16,976 |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) |
 | CLI commands | 29 |
 | Consuming projects | 13 Level 3 (all AllImplemented) |
@@ -419,7 +419,7 @@ Multi-index hybrid approach for sub-second lookups (modeled on
 |---|---|---|
 | Name index | `HashMap<stem, Vec<idx>>` | O(1) |
 | Equation index | `HashMap<eq_name, Vec<idx>>` | O(1) |
-| Full-text corpus | In-memory BM25 | O(n), n=186 |
+| Full-text corpus | In-memory BM25 | O(n), n=192 |
 | Dependency DAG | `BTreeMap<String, Vec<String>>` | O(1) |
 | Score cache [IMPLEMENTED] | `HashMap<stem, f64>` | O(1) |
 | **Cross-project index** | `HashMap<stem, Vec<ProjectRef>>` | O(1) |
@@ -754,7 +754,7 @@ Petrovic et al. (2022) "Practical Mutation Testing at Scale" IEEE TSE.
 **Sub-spec**: [sub/sovereign-stack-audit.md](sub/sovereign-stack-audit.md)
 
 Full audit of all 13 repos in the PAIML sovereign AI stack.
-**6.4M LOC. 100% under contract enforcement. 16,941 bindings.**
+**6.4M LOC. 100% under contract enforcement. 16,976 bindings.**
 
 | Project | Bindings | Policy | Status |
 |---|---|---|---|
@@ -813,7 +813,7 @@ individual models. Composes with PVScore for codebase + model quality.
 **Sub-spec**: [sub/contract-gaps.md](sub/contract-gaps.md)
 
 Systematic analysis of 9 ML/systems domains against the contract registry.
-186 contracts cover core kernels well; significant gaps in:
+192 contracts cover core kernels well; significant gaps in:
 
 | Domain | Gap Severity | Key Missing |
 |---|---|---|
