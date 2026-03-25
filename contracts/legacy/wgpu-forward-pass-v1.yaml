@@ -19,6 +19,10 @@ equations:
     finding: "PMAT-347: LM head [vocab,hidden] transposed to [hidden,vocab] at init"
   dequant_correctness:
     description: "Q4K->F32 dequant preserves semantics"
+  gpu_bias_rope_order:
+    description: "Bias must be applied BEFORE RoPE (they don't commute)"
+    invariant: "forward_layer: GEMV → bias_add → RoPE → attention"
+    finding: "PMAT-356: Cannot swap order. Must move both to GPU together."
 postconditions:
   - name: performance_target
     threshold: 25.0
