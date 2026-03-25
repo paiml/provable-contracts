@@ -45,23 +45,21 @@ equations:
     domain: "p, q in simplex"
     codomain: "R >= 0"
 proof_obligations:
-  - name: "softmax_sums_to_one"
-    equation: "softmax"
+  - type: invariant
     property: "sum(softmax(x)) == 1.0"
     tolerance: 1e-6
-  - name: "layer_norm_zero_mean"
-    equation: "layer_norm"
+  - type: bound
     property: "mean(LN(x)) approx 0"
     tolerance: 1e-5
 falsification_tests:
-  - name: "softmax_overflow"
-    equation: "softmax"
-    input: "[1000.0, 1000.0, 1000.0]"
-    expected: "no NaN or Inf"
-  - name: "cross_entropy_zero_input"
-    equation: "cross_entropy"
-    input: "p=[0.5, 0.5], q=[0.0, 1.0]"
-    expected: "Inf or handled gracefully"
+  - id: "FT-001"
+    rule: "softmax output sums to 1.0"
+    prediction: "softmax([1000, 1000, 1000]) sums to 1.0 within 1e-6"
+    if_fails: "Overflow in exp() not handled; need log-sum-exp trick"
+  - id: "FT-002"
+    rule: "cross-entropy handles zero probabilities"
+    prediction: "CE([0.5,0.5], [0.0,1.0]) returns Inf or clamps gracefully"
+    if_fails: "log(0) produces NaN instead of Inf; add epsilon clamping"
 "#;
 
 fn bench_parse_minimal_contract(c: &mut Criterion) {
