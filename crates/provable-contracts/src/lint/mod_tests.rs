@@ -213,3 +213,115 @@ fn lint_severity_override() {
         }
     }
 }
+
+#[test]
+fn lifecycle_first_run_all_new() {
+    let tmp = tempfile::tempdir().unwrap();
+    let contract_dir = tmp.path().join("contracts");
+    std::fs::create_dir_all(&contract_dir).unwrap();
+    let src = contracts_dir().join("softmax-kernel-v1.yaml");
+    std::fs::copy(&src, contract_dir.join("softmax-kernel-v1.yaml")).unwrap();
+
+    let config = LintConfig::new(&contract_dir, None, 0.99);
+    let report = run_lint(&config);
+    // First run: every finding should be marked new
+    let active: Vec<_> = report.findings.iter().filter(|f| !f.suppressed).collect();
+    assert!(!active.is_empty(), "should have findings");
+    assert!(
+        active.iter().all(|f| f.is_new),
+        "first run: all findings should be new"
+    );
+}
+
+#[test]
+fn lifecycle_second_run_pre_existing() {
+    let tmp = tempfile::tempdir().unwrap();
+    let contract_dir = tmp.path().join("contracts");
+    std::fs::create_dir_all(&contract_dir).unwrap();
+    let src = contracts_dir().join("softmax-kernel-v1.yaml");
+    std::fs::copy(&src, contract_dir.join("softmax-kernel-v1.yaml")).unwrap();
+
+    // First run — seeds .pv/lint-previous.json
+    let config = LintConfig::new(&contract_dir, None, 0.99);
+    let _ = run_lint(&config);
+
+    // Second run — same contract, same findings
+    let report2 = run_lint(&config);
+    let active: Vec<_> = report2.findings.iter().filter(|f| !f.suppressed).collect();
+    assert!(!active.is_empty(), "should have findings");
+    assert!(
+        active.iter().all(|f| !f.is_new),
+        "second identical run: no finding should be new"
+    );
+}
+
+#[test]
+fn lifecycle_persists_fingerprints() {
+    let tmp = tempfile::tempdir().unwrap();
+    let contract_dir = tmp.path().join("contracts");
+    std::fs::create_dir_all(&contract_dir).unwrap();
+    let src = contracts_dir().join("softmax-kernel-v1.yaml");
+    std::fs::copy(&src, contract_dir.join("softmax-kernel-v1.yaml")).unwrap();
+
+    let config = LintConfig::new(&contract_dir, None, 0.99);
+    let _ = run_lint(&config);
+
+    let previous_path = tmp.path().join(".pv").join("lint-previous.json");
+    assert!(
+        previous_path.exists(),
+        ".pv/lint-previous.json should be created"
+    );
+    let content = std::fs::read_to_string(&previous_path).unwrap();
+    let fps: std::collections::HashSet<String> = serde_json::from_str(&content).unwrap();
+    assert!(!fps.is_empty(), "fingerprint set should not be empty");
+}
+
+#[test]
+fn lifecycle_mark_new_findings_unit() {
+    use super::mark_new_findings;
+
+    let tmp = tempfile::tempdir().unwrap();
+    let contract_dir = tmp.path().join("contracts");
+    std::fs::create_dir_all(&contract_dir).unwrap();
+
+    let mut findings = vec![
+        finding::LintFinding::new("PV-VAL-001", RuleSeverity::Error, "msg1", "a.yaml"),
+        finding::LintFinding::new("PV-VAL-002", RuleSeverity::Warning, "msg2", "b.yaml"),
+    ];
+
+    // First call: all new (no previous file)
+    mark_new_findings(&mut findings, &contract_dir);
+    assert!(findings[0].is_new);
+    assert!(findings[1].is_new);
+
+    // Reset is_new for second pass
+    for f in &mut findings {
+        f.is_new = false;
+    }
+
+    // Second call: same findings, none new
+    mark_new_findings(&mut findings, &contract_dir);
+    assert!(!findings[0].is_new);
+    assert!(!findings[1].is_new);
+
+    // Third call: add a new finding
+    findings.push(finding::LintFinding::new(
+        "PV-VAL-003",
+        RuleSeverity::Info,
+        "msg3",
+        "c.yaml",
+    ));
+    for f in &mut findings {
+        f.is_new = false;
+    }
+    mark_new_findings(&mut findings, &contract_dir);
+    assert!(
+        !findings[0].is_new,
+        "pre-existing finding should not be new"
+    );
+    assert!(
+        !findings[1].is_new,
+        "pre-existing finding should not be new"
+    );
+    assert!(findings[2].is_new, "newly added finding should be new");
+}

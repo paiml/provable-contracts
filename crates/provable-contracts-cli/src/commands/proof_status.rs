@@ -1,13 +1,16 @@
 use std::path::Path;
 
 use provable_contracts::binding::parse_binding;
-use provable_contracts::proof_status::{format_text, proof_status_report};
+use provable_contracts::proof_status::{
+    format_obligation_table, format_text, obligation_matrix, proof_status_report,
+};
 use provable_contracts::schema::parse_contract;
 
 pub fn run(
     path: &Path,
     binding_path: Option<&Path>,
     format: &str,
+    table: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let binding = match binding_path {
         Some(bp) => Some(parse_binding(bp)?),
@@ -66,6 +69,11 @@ pub fn run(
         _ => {
             print!("{}", format_text(&report));
         }
+    }
+
+    if table {
+        let matrices = obligation_matrix(&refs);
+        print!("{}", format_obligation_table(&matrices));
     }
 
     Ok(())

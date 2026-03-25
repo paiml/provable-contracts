@@ -81,6 +81,7 @@ fn dispatch_proof_status() {
         path: test_contract(),
         binding: None,
         format: "text".to_string(),
+        table: false,
     });
     assert!(result.is_ok());
 }
@@ -91,6 +92,7 @@ fn dispatch_proof_status_json() {
         path: test_contract(),
         binding: None,
         format: "json".to_string(),
+        table: false,
     });
     assert!(result.is_ok());
 }
@@ -101,6 +103,7 @@ fn dispatch_proof_status_directory() {
         path: contracts_dir(),
         binding: None,
         format: "text".to_string(),
+        table: false,
     });
     assert!(result.is_ok());
 }
@@ -113,6 +116,7 @@ fn dispatch_proof_status_with_binding() {
         path: contracts_dir(),
         binding: Some(binding),
         format: "json".to_string(),
+        table: false,
     });
     assert!(result.is_ok());
 }
@@ -363,6 +367,7 @@ fn dispatch_proof_status_markdown() {
         path: contracts_dir(),
         binding: None,
         format: "markdown".to_string(),
+        table: false,
     });
     assert!(result.is_ok());
 }

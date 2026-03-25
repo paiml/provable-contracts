@@ -272,3 +272,184 @@ bindings:
         assert!(!report.timestamp.is_empty());
         assert!(report.timestamp.ends_with('Z'));
     }
+
+    // ── Obligation matrix tests ─────────────────────────────────────
+
+    #[test]
+    fn obligation_matrix_empty() {
+        let matrices = obligation_matrix(&[]);
+        assert!(matrices.is_empty());
+    }
+
+    #[test]
+    fn obligation_matrix_index_based_l2() {
+        // 3 obligations, 3 tests, 0 kani => all L2 by index
+        let c = minimal_contract(3, 3, 0);
+        let matrices = obligation_matrix(&[("test-v1".to_string(), &c)]);
+        assert_eq!(matrices.len(), 1);
+        assert_eq!(matrices[0].obligations.len(), 3);
+        for ob in &matrices[0].obligations {
+            assert!(ob.l2_tested);
+            assert!(!ob.l3_kani);
+            assert!(!ob.l4_lean);
+            assert_eq!(ob.max_level, ProofLevel::L2);
+        }
+    }
+
+    #[test]
+    fn obligation_matrix_no_tests_is_l1() {
+        // 2 obligations, 0 tests, 0 kani => L1
+        let c = minimal_contract(2, 0, 0);
+        let matrices = obligation_matrix(&[("test-v1".to_string(), &c)]);
+        assert_eq!(matrices[0].obligations.len(), 2);
+        for ob in &matrices[0].obligations {
+            assert!(!ob.l2_tested);
+            assert_eq!(ob.max_level, ProofLevel::L1);
+        }
+    }
+
+    #[test]
+    fn obligation_matrix_lean_proved() {
+        // Build a contract with a Lean-proved obligation
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Test lean"
+  references: ["Paper"]
+equations:
+  f:
+    formula: "f(x) = x"
+proof_obligations:
+  - type: invariant
+    property: "Output sums to 1"
+    lean:
+      theorem: Softmax.partition_of_unity
+      module: ProvableContracts.Softmax
+      status: proved
+  - type: bound
+    property: "Range is strictly positive"
+falsification_tests:
+  - id: FT-001
+    rule: "normalization"
+    prediction: "sums to 1"
+    if_fails: "bug"
+  - id: FT-002
+    rule: "bounded"
+    prediction: "in range"
+    if_fails: "bug"
+kani_harnesses:
+  - id: KH-001
+    obligation: OB-001
+    property: "Output sums to 1"
+    bound: 8
+"#;
+        let c = parse_contract_str(yaml).unwrap();
+        let matrices = obligation_matrix(&[("test-v1".to_string(), &c)]);
+        assert_eq!(matrices[0].obligations.len(), 2);
+
+        // First obligation: L2 (index), L3 (kani property match "sums"), L4 (lean proved)
+        let ob0 = &matrices[0].obligations[0];
+        assert!(ob0.l2_tested);
+        assert!(ob0.l3_kani);
+        assert!(ob0.l4_lean);
+        assert_eq!(ob0.max_level, ProofLevel::L4);
+
+        // Second obligation "Range is strictly positive": L2 (index), no kani match, no lean
+        let ob1 = &matrices[0].obligations[1];
+        assert!(ob1.l2_tested);
+        assert!(!ob1.l3_kani);
+        assert!(!ob1.l4_lean);
+        assert_eq!(ob1.max_level, ProofLevel::L2);
+    }
+
+    #[test]
+    fn obligation_matrix_sorry_is_not_l4() {
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Test sorry"
+  references: ["Paper"]
+equations:
+  f:
+    formula: "f(x) = x"
+proof_obligations:
+  - type: invariant
+    property: "Prop with sorry"
+    lean:
+      theorem: Foo.bar
+      status: sorry
+falsification_tests:
+  - id: FT-001
+    rule: "r"
+    prediction: "p"
+    if_fails: "f"
+kani_harnesses: []
+"#;
+        let c = parse_contract_str(yaml).unwrap();
+        let matrices = obligation_matrix(&[("test-v1".to_string(), &c)]);
+        let ob = &matrices[0].obligations[0];
+        assert!(!ob.l4_lean);
+        assert_eq!(ob.max_level, ProofLevel::L2);
+    }
+
+    #[test]
+    fn property_words_match_basic() {
+        assert!(property_words_match("output sums to one", "sums to one check"));
+        assert!(property_words_match("softmax normalization", "verify normalization"));
+        assert!(!property_words_match("positivity check", "bounded range"));
+    }
+
+    #[test]
+    fn property_words_match_ignores_stop_words() {
+        // "the" and "for" are stop words, should not cause a match
+        assert!(!property_words_match("the output", "the input"));
+        // But "output" is not a stop word
+        assert!(property_words_match("output range", "output check"));
+    }
+
+    #[test]
+    fn format_obligation_table_header() {
+        let c = minimal_contract(1, 1, 0);
+        let matrices = obligation_matrix(&[("test-v1".to_string(), &c)]);
+        let text = format_obligation_table(&matrices);
+        assert!(text.contains("Obligation Status Matrix"));
+        assert!(text.contains("Contract: test-v1"));
+        assert!(text.contains("L2 Test"));
+        assert!(text.contains("L3 Kani"));
+        assert!(text.contains("L4 Lean"));
+        assert!(text.contains("Status"));
+    }
+
+    #[test]
+    fn format_obligation_table_check_marks() {
+        let c = minimal_contract(1, 1, 0);
+        let matrices = obligation_matrix(&[("test-v1".to_string(), &c)]);
+        let text = format_obligation_table(&matrices);
+        // L2 should be checked, L3/L4 should be crossed
+        assert!(text.contains('\u{2713}')); // check mark
+        assert!(text.contains('\u{2717}')); // cross mark
+    }
+
+    #[test]
+    fn format_obligation_table_empty_obligations() {
+        let c = minimal_contract(0, 0, 0);
+        let matrices = obligation_matrix(&[("test-v1".to_string(), &c)]);
+        let text = format_obligation_table(&matrices);
+        // Should not have "Contract: test-v1" since obligations are empty
+        assert!(!text.contains("Contract: test-v1"));
+    }
+
+    #[test]
+    fn obligation_matrix_multiple_contracts() {
+        let c1 = minimal_contract(2, 2, 0);
+        let c2 = minimal_contract(1, 0, 0);
+        let matrices = obligation_matrix(&[
+            ("alpha-v1".to_string(), &c1),
+            ("beta-v1".to_string(), &c2),
+        ]);
+        assert_eq!(matrices.len(), 2);
+        assert_eq!(matrices[0].stem, "alpha-v1");
+        assert_eq!(matrices[0].obligations.len(), 2);
+        assert_eq!(matrices[1].stem, "beta-v1");
+        assert_eq!(matrices[1].obligations.len(), 1);
+    }

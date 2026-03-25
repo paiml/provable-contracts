@@ -44,6 +44,22 @@ impl ScoringWeights {
     }
 }
 
+/// A single probe within a scoring dimension.
+///
+/// Each probe represents one contributing factor to a dimension's score,
+/// e.g. "equation `softmax` has domain" or "obligation `finite` has harness KANI-001".
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ScoreProbe {
+    /// Which scoring dimension this probe belongs to (e.g. `spec_depth`, `kani`).
+    pub dimension: String,
+    /// Human-readable name of the probed item (e.g. equation name, obligation property).
+    pub probe: String,
+    /// Whether this probe passed (true) or failed (false).
+    pub outcome: bool,
+    /// Detail string explaining the result (e.g. harness ID or "(no harness)").
+    pub detail: String,
+}
+
 /// Score for a single contract across 5 dimensions.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ContractScore {
@@ -55,6 +71,9 @@ pub struct ContractScore {
     pub binding_coverage: f64,
     pub composite: f64,
     pub grade: Grade,
+    /// Per-dimension probe breakdown showing what contributed to each score.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub probes: Vec<ScoreProbe>,
 }
 
 /// Score for a codebase that consumes contracts.

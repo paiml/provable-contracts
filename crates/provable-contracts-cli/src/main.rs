@@ -91,7 +91,8 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             path,
             binding,
             format,
-        } => commands::proof_status::run(&path, binding.as_deref(), &format),
+            table,
+        } => commands::proof_status::run(&path, binding.as_deref(), &format, table),
         Commands::Lint {
             contract_dir,
             min_score,

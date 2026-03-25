@@ -158,6 +158,9 @@ pub enum Commands {
         /// Output format: text (default) or json
         #[arg(long, default_value = "text")]
         format: String,
+        /// Show per-obligation verification table
+        #[arg(long)]
+        table: bool,
     },
     /// Run all contract quality gates (validate + audit + score)
     Lint {

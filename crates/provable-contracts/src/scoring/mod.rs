@@ -13,7 +13,7 @@ mod types;
 
 pub use codebase::{score_codebase, score_codebase_full, score_codebase_with_pagerank};
 pub use pvscore::pvscore_10dim;
-pub use types::{CodebaseScore, ContractScore, Grade, ScoringGap, ScoringWeights};
+pub use types::{CodebaseScore, ContractScore, Grade, ScoreProbe, ScoringGap, ScoringWeights};
 
 use crate::binding::{BindingRegistry, ImplStatus};
 use crate::schema::{Contract, KaniHarness, KaniStrategy, LeanStatus};
@@ -42,11 +42,13 @@ pub fn score_contract_weighted(
     weights: &ScoringWeights,
 ) -> ContractScore {
     let w = weights.normalized();
-    let spec_depth = compute_spec_depth(contract);
-    let falsification = compute_falsification_coverage(contract);
-    let kani = compute_kani_coverage(contract);
-    let lean = compute_lean_coverage(contract);
-    let binding_cov = compute_binding_coverage(contract, binding, stem);
+    let mut probes = Vec::new();
+
+    let spec_depth = compute_spec_depth(contract, &mut probes);
+    let falsification = compute_falsification_coverage(contract, &mut probes);
+    let kani = compute_kani_coverage(contract, &mut probes);
+    let lean = compute_lean_coverage(contract, &mut probes);
+    let binding_cov = compute_binding_coverage(contract, binding, stem, &mut probes);
 
     let composite = spec_depth * w.spec_depth
         + falsification * w.falsification
@@ -63,15 +65,54 @@ pub fn score_contract_weighted(
         binding_coverage: binding_cov,
         composite,
         grade: Grade::from_score(composite),
+        probes,
     }
 }
 
-fn compute_spec_depth(contract: &Contract) -> f64 {
+#[allow(clippy::too_many_lines)]
+fn compute_spec_depth(contract: &Contract, probes: &mut Vec<ScoreProbe>) -> f64 {
     let mut score = 0.0;
 
     // Has equations (0.30)
-    if !contract.equations.is_empty() {
+    let has_equations = !contract.equations.is_empty();
+    probes.push(ScoreProbe {
+        dimension: "spec_depth".into(),
+        probe: "has_equations".into(),
+        outcome: has_equations,
+        detail: if has_equations {
+            format!("{} equation(s)", contract.equations.len())
+        } else {
+            "(no equations)".into()
+        },
+    });
+    if has_equations {
         score += 0.30;
+    }
+
+    // Per-equation probes: domain and invariants
+    for (name, eq) in &contract.equations {
+        let has_domain = eq.domain.is_some();
+        probes.push(ScoreProbe {
+            dimension: "spec_depth".into(),
+            probe: format!("{name}: domain"),
+            outcome: has_domain,
+            detail: if has_domain {
+                eq.domain.as_deref().unwrap_or("").to_string()
+            } else {
+                "(no domain)".into()
+            },
+        });
+        let has_inv = !eq.invariants.is_empty();
+        probes.push(ScoreProbe {
+            dimension: "spec_depth".into(),
+            probe: format!("{name}: invariants"),
+            outcome: has_inv,
+            detail: if has_inv {
+                format!("{} invariant(s)", eq.invariants.len())
+            } else {
+                "(no invariants)".into()
+            },
+        });
     }
 
     // Has domains on equations (0.15)
@@ -90,7 +131,18 @@ fn compute_spec_depth(contract: &Contract) -> f64 {
     }
 
     // Has kernel structure (0.15)
-    if contract.kernel_structure.is_some() {
+    let has_ks = contract.kernel_structure.is_some();
+    probes.push(ScoreProbe {
+        dimension: "spec_depth".into(),
+        probe: "kernel_structure".into(),
+        outcome: has_ks,
+        detail: if has_ks {
+            "present".into()
+        } else {
+            "(no kernel_structure)".into()
+        },
+    });
+    if has_ks {
         score += 0.15;
     }
 
@@ -99,17 +151,49 @@ fn compute_spec_depth(contract: &Contract) -> f64 {
         .proof_obligations
         .iter()
         .any(|ob| ob.tolerance.is_some());
+    probes.push(ScoreProbe {
+        dimension: "spec_depth".into(),
+        probe: "has_tolerances".into(),
+        outcome: has_tolerances,
+        detail: if has_tolerances {
+            "at least one obligation has tolerance".into()
+        } else {
+            "(no tolerances)".into()
+        },
+    });
     if has_tolerances {
         score += 0.10;
     }
 
     // Has references (0.10)
-    if !contract.metadata.references.is_empty() {
+    let has_refs = !contract.metadata.references.is_empty();
+    probes.push(ScoreProbe {
+        dimension: "spec_depth".into(),
+        probe: "references".into(),
+        outcome: has_refs,
+        detail: if has_refs {
+            format!("{} reference(s)", contract.metadata.references.len())
+        } else {
+            "(no references)".into()
+        },
+    });
+    if has_refs {
         score += 0.10;
     }
 
     // Has depends_on (0.05)
-    if !contract.metadata.depends_on.is_empty() {
+    let has_deps = !contract.metadata.depends_on.is_empty();
+    probes.push(ScoreProbe {
+        dimension: "spec_depth".into(),
+        probe: "depends_on".into(),
+        outcome: has_deps,
+        detail: if has_deps {
+            format!("{} dep(s)", contract.metadata.depends_on.len())
+        } else {
+            "(no depends_on)".into()
+        },
+    });
+    if has_deps {
         score += 0.05;
     }
 
@@ -117,8 +201,44 @@ fn compute_spec_depth(contract: &Contract) -> f64 {
 }
 
 #[allow(clippy::cast_precision_loss)]
-fn compute_falsification_coverage(contract: &Contract) -> f64 {
+fn compute_falsification_coverage(contract: &Contract, probes: &mut Vec<ScoreProbe>) -> f64 {
     let total = contract.proof_obligations.len();
+
+    // Emit a probe per obligation
+    for ob in &contract.proof_obligations {
+        let matching_test = contract
+            .falsification_tests
+            .iter()
+            .find(|t| t.rule == ob.property);
+        let has_test = matching_test.is_some();
+        probes.push(ScoreProbe {
+            dimension: "falsification".into(),
+            probe: ob.property.clone(),
+            outcome: has_test,
+            detail: if let Some(t) = matching_test {
+                t.id.clone()
+            } else {
+                "(no test)".into()
+            },
+        });
+    }
+
+    // Also probe any tests that don't match an obligation
+    for t in &contract.falsification_tests {
+        let matches_obligation = contract
+            .proof_obligations
+            .iter()
+            .any(|ob| ob.property == t.rule);
+        if !matches_obligation {
+            probes.push(ScoreProbe {
+                dimension: "falsification".into(),
+                probe: t.rule.clone(),
+                outcome: true,
+                detail: format!("{} (unmatched)", t.id),
+            });
+        }
+    }
+
     if total == 0 {
         return if contract.falsification_tests.is_empty() {
             0.0
@@ -126,13 +246,52 @@ fn compute_falsification_coverage(contract: &Contract) -> f64 {
             1.0
         };
     }
+
+    // Preserve original behaviour: min(test_count, obligation_count) / obligation_count
     let covered = contract.falsification_tests.len().min(total);
     covered as f64 / total as f64
 }
 
 #[allow(clippy::cast_precision_loss)]
-fn compute_kani_coverage(contract: &Contract) -> f64 {
+fn compute_kani_coverage(contract: &Contract, probes: &mut Vec<ScoreProbe>) -> f64 {
     let total = contract.proof_obligations.len();
+
+    // Emit a probe per obligation showing which harness covers it
+    for ob in &contract.proof_obligations {
+        let matching_harness = contract
+            .kani_harnesses
+            .iter()
+            .find(|h| h.obligation == ob.property);
+        let has_harness = matching_harness.is_some();
+        probes.push(ScoreProbe {
+            dimension: "kani".into(),
+            probe: ob.property.clone(),
+            outcome: has_harness,
+            detail: if let Some(h) = matching_harness {
+                let strategy_note = h.strategy.map(|s| format!(" [{s}]")).unwrap_or_default();
+                format!("{}{strategy_note}", h.id)
+            } else {
+                "(no harness)".into()
+            },
+        });
+    }
+
+    // Also probe harnesses that don't match any obligation
+    for h in &contract.kani_harnesses {
+        let matches_obligation = contract
+            .proof_obligations
+            .iter()
+            .any(|ob| ob.property == h.obligation);
+        if !matches_obligation {
+            probes.push(ScoreProbe {
+                dimension: "kani".into(),
+                probe: h.obligation.clone(),
+                outcome: true,
+                detail: format!("{} (unmatched)", h.id),
+            });
+        }
+    }
+
     if total == 0 {
         return if contract.kani_harnesses.is_empty() {
             0.0
@@ -156,7 +315,43 @@ fn compute_kani_coverage(contract: &Contract) -> f64 {
 }
 
 #[allow(clippy::cast_precision_loss)]
-fn compute_lean_coverage(contract: &Contract) -> f64 {
+fn compute_lean_coverage(contract: &Contract, probes: &mut Vec<ScoreProbe>) -> f64 {
+    // Emit a probe per obligation showing lean status
+    for ob in &contract.proof_obligations {
+        match &ob.lean {
+            Some(lean) if lean.status != LeanStatus::NotApplicable => {
+                let is_proved = lean.status == LeanStatus::Proved;
+                probes.push(ScoreProbe {
+                    dimension: "lean".into(),
+                    probe: ob.property.clone(),
+                    outcome: is_proved,
+                    detail: if is_proved {
+                        format!("{} (proved)", lean.theorem)
+                    } else {
+                        format!("{} ({})", lean.theorem, lean.status)
+                    },
+                });
+            }
+            Some(lean) => {
+                // NotApplicable — still informative as a probe
+                probes.push(ScoreProbe {
+                    dimension: "lean".into(),
+                    probe: ob.property.clone(),
+                    outcome: false,
+                    detail: format!("{} (not-applicable)", lean.theorem),
+                });
+            }
+            None => {
+                probes.push(ScoreProbe {
+                    dimension: "lean".into(),
+                    probe: ob.property.clone(),
+                    outcome: false,
+                    detail: "(no lean_theorem)".into(),
+                });
+            }
+        }
+    }
+
     let applicable: Vec<_> = contract
         .proof_obligations
         .iter()
@@ -188,15 +383,49 @@ fn compute_binding_coverage(
     _contract: &Contract,
     binding: Option<&BindingRegistry>,
     stem: &str,
+    probes: &mut Vec<ScoreProbe>,
 ) -> f64 {
     let Some(binding) = binding else {
+        probes.push(ScoreProbe {
+            dimension: "binding".into(),
+            probe: "(all)".into(),
+            outcome: false,
+            detail: "(no binding registry)".into(),
+        });
         return 0.0;
     };
 
     let relevant = binding.bindings_for(stem);
 
     if relevant.is_empty() {
+        probes.push(ScoreProbe {
+            dimension: "binding".into(),
+            probe: stem.into(),
+            outcome: false,
+            detail: "(no bindings for this contract)".into(),
+        });
         return 0.0;
+    }
+
+    // Emit a probe per binding entry
+    for b in &relevant {
+        let status_str = match b.status {
+            ImplStatus::Implemented => "implemented",
+            ImplStatus::Partial => "partial",
+            ImplStatus::NotImplemented => "not_implemented",
+        };
+        let is_implemented = b.status == ImplStatus::Implemented;
+        let fn_name = b
+            .function
+            .as_deref()
+            .or(b.module_path.as_deref())
+            .unwrap_or("?");
+        probes.push(ScoreProbe {
+            dimension: "binding".into(),
+            probe: b.equation.clone(),
+            outcome: is_implemented,
+            detail: format!("{fn_name} ({status_str})"),
+        });
     }
 
     let implemented: f64 = relevant

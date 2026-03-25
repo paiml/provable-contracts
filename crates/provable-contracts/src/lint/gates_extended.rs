@@ -54,6 +54,7 @@ pub(crate) fn run_verify_gate(
                             contract_stem: Some(stem.clone()),
                             suppressed: false,
                             suppression_reason: None,
+                            is_new: false,
                         });
                     }
                 }
@@ -133,6 +134,7 @@ pub(crate) fn run_enforce_gate(contracts: &[(String, Contract)]) -> (GateResult,
                     contract_stem: Some(stem.clone()),
                     suppressed: false,
                     suppression_reason: None,
+                    is_new: false,
                 });
             } else {
                 with_pre += 1;
@@ -154,6 +156,7 @@ pub(crate) fn run_enforce_gate(contracts: &[(String, Contract)]) -> (GateResult,
                     contract_stem: Some(stem.clone()),
                     suppressed: false,
                     suppression_reason: None,
+                    is_new: false,
                 });
             }
         }
@@ -216,6 +219,7 @@ pub(crate) fn run_enforcement_level_gate(
                 contract_stem: Some(stem.clone()),
                 suppressed: false,
                 suppression_reason: None,
+                is_new: false,
             });
             below += 1;
         }
@@ -233,6 +237,7 @@ pub(crate) fn run_enforcement_level_gate(
                 contract_stem: Some(stem.clone()),
                 suppressed: false,
                 suppression_reason: None,
+                is_new: false,
             });
             below += 1;
         }
@@ -258,6 +263,7 @@ pub(crate) fn run_enforcement_level_gate(
                     contract_stem: Some(stem.clone()),
                     suppressed: false,
                     suppression_reason: None,
+                    is_new: false,
                 });
             }
         }
@@ -326,6 +332,7 @@ pub(crate) fn run_reverse_coverage_gate(
             contract_stem: None,
             suppressed: false,
             suppression_reason: None,
+            is_new: false,
         });
     }
 
@@ -343,6 +350,7 @@ pub(crate) fn run_reverse_coverage_gate(
             contract_stem: None,
             suppressed: false,
             suppression_reason: None,
+            is_new: false,
         });
     }
 
@@ -390,6 +398,7 @@ pub(crate) fn check_stale_suppressions(
                 contract_stem: None,
                 suppressed: false,
                 suppression_reason: None,
+                is_new: false,
             });
         }
     }
@@ -412,6 +421,7 @@ pub(crate) fn check_stale_suppressions(
                 contract_stem: Some(stem.clone()),
                 suppressed: false,
                 suppression_reason: None,
+                is_new: false,
             });
         }
     }

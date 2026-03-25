@@ -18,7 +18,7 @@ pub mod rules;
 pub mod sarif;
 pub mod trend;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::time::Instant;
 
@@ -244,6 +244,9 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
     );
     all_findings.append(&mut stale_findings);
 
+    // Issue lifecycle: mark each finding as new or pre-existing
+    mark_new_findings(&mut all_findings, config.contract_dir);
+
     // Cache: store findings per-contract for future runs
     if let Some(ref root) = cache_root {
         let rule_cfg = format!("{:?}{:?}", config.severity_overrides, config.strict);
@@ -312,6 +315,43 @@ fn apply_suppressions(findings: &mut [LintFinding], config: &LintConfig) {
             f.suppressed = true;
             f.suppression_reason = Some("Suppressed by --suppress-file".into());
         }
+    }
+}
+
+/// Resolve the `.pv/` state directory relative to the contract directory's parent.
+fn pv_state_dir(contract_dir: &Path) -> std::path::PathBuf {
+    contract_dir.parent().unwrap_or(contract_dir).join(".pv")
+}
+
+/// Load previous fingerprints, compare with current findings, mark new ones,
+/// and persist the current fingerprint set for the next run.
+fn mark_new_findings(findings: &mut [LintFinding], contract_dir: &Path) {
+    let state_dir = pv_state_dir(contract_dir);
+    let previous_path = state_dir.join("lint-previous.json");
+
+    // Load previous fingerprints (empty set if file missing or unreadable)
+    let previous: HashSet<String> = std::fs::read_to_string(&previous_path)
+        .ok()
+        .and_then(|s| serde_json::from_str(&s).ok())
+        .unwrap_or_default();
+
+    // Compute current fingerprints and mark new findings
+    let mut current = HashSet::new();
+    for f in findings.iter_mut() {
+        let fp = f.fingerprint();
+        if !previous.contains(&fp) {
+            f.is_new = true;
+        }
+        current.insert(fp);
+    }
+
+    // Persist current fingerprints for the next run
+    if let Err(e) = std::fs::create_dir_all(&state_dir) {
+        eprintln!("pv lint: cannot create {}: {e}", state_dir.display());
+        return;
+    }
+    if let Ok(json) = serde_json::to_string(&current) {
+        let _ = std::fs::write(&previous_path, json);
     }
 }
 

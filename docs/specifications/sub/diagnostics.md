@@ -24,9 +24,9 @@ in provable-contracts diagnostic output.
 
 | # | Gap | Pattern From | Status |
 |---|-----|-------------|--------|
-| 4 | **Probe-level score decomposition** | OpenSSF Scorecard 44 probes, SonarQube per-rule | [PLANNED] |
+| 4 | **Probe-level score decomposition** | OpenSSF Scorecard 44 probes, SonarQube per-rule | [IMPLEMENTED] |
 | 5 | **Source snippets + caret spans** | Clippy, mypy `--pretty`, Dafny IDE | [PLANNED] |
-| 6 | **Per-obligation verification table** | Kani property table, SPARK proved/unproved matrix | [PLANNED] |
+| 6 | **Per-obligation verification table** | Kani property table, SPARK proved/unproved matrix | [IMPLEMENTED] |
 
 ### Tier P2 (medium impact, medium effort)
 
@@ -34,7 +34,7 @@ in provable-contracts diagnostic output.
 |---|-----|-------------|--------|
 | 7 | **Counterexample/evidence data** | Kani concrete-playback, SPARK/Dafny counterexamples | [PLANNED] |
 | 8 | **Remediation effort estimation** | SonarQube time-based debt | [PLANNED] |
-| 9 | **Issue lifecycle (new/pre-existing)** | SonarQube lifecycle, SPARK justified checks | [PLANNED] |
+| 9 | **Issue lifecycle (new/pre-existing)** | SonarQube lifecycle, SPARK justified checks | [IMPLEMENTED] |
 | 10 | **Structured fix suggestions** | Clippy MachineApplicable, ESLint fixable rules | [PLANNED] |
 
 ### Tier P3 (lower priority)

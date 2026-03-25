@@ -208,6 +208,7 @@ mod tests {
             contract_stem: Some("example-v1".into()),
             suppressed: false,
             suppression_reason: None,
+            is_new: false,
         }
     }
 

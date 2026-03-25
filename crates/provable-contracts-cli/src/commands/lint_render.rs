@@ -180,7 +180,16 @@ fn print_findings_grouped(report: &LintReport) {
         println!("\n  {} ({})", cyan(file), parts.join(", "));
         for f in findings {
             let sev = severity_colored(f.severity);
-            println!("    [{sev}] {} — {}", bold(&f.rule_id), f.message);
+            let new_badge = if f.is_new {
+                format!("  {}", yellow("[NEW]"))
+            } else {
+                String::new()
+            };
+            println!(
+                "    [{sev}] {} — {}{new_badge}",
+                bold(&f.rule_id),
+                f.message
+            );
         }
     }
     println!();
@@ -200,8 +209,18 @@ pub fn print_summary(report: &LintReport) {
         .iter()
         .filter(|f| !f.suppressed && f.severity == RuleSeverity::Warning)
         .count();
+    let new_count = report
+        .findings
+        .iter()
+        .filter(|f| !f.suppressed && f.is_new)
+        .count();
+    let new_part = if new_count > 0 {
+        format!(", {} new", yellow(&new_count.to_string()))
+    } else {
+        String::new()
+    };
     println!(
-        "Summary: {} errors, {} warnings, {suppressed} suppressed",
+        "Summary: {} errors, {} warnings, {suppressed} suppressed{new_part}",
         if errors > 0 {
             red(&errors.to_string())
         } else {

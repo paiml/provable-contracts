@@ -22,6 +22,9 @@ pub struct LintFinding {
     pub suppressed: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suppression_reason: Option<String>,
+    /// Whether this finding is new since the last lint run.
+    #[serde(default)]
+    pub is_new: bool,
 }
 
 impl LintFinding {
@@ -41,6 +44,7 @@ impl LintFinding {
             contract_stem: None,
             suppressed: false,
             suppression_reason: None,
+            is_new: false,
         }
     }
 
@@ -98,9 +102,10 @@ impl std::fmt::Display for LintFinding {
             RuleSeverity::Off => "OFF",
         };
         let suppressed = if self.suppressed { " [suppressed]" } else { "" };
+        let new_badge = if self.is_new { "  [NEW]" } else { "" };
         write!(
             f,
-            "[{sev}] {}: {} ({}){suppressed}",
+            "[{sev}] {}: {} ({}){suppressed}{new_badge}",
             self.rule_id, self.message, self.file
         )
     }
@@ -198,5 +203,40 @@ mod tests {
         let json = serde_json::to_string(&f).unwrap();
         assert!(json.contains("\"suppressed\":true"));
         assert!(json.contains("\"suppression_reason\":\"reason\""));
+    }
+
+    #[test]
+    fn is_new_defaults_to_false() {
+        let f = sample();
+        assert!(!f.is_new);
+    }
+
+    #[test]
+    fn is_new_display_badge() {
+        let mut f = sample();
+        f.is_new = true;
+        let s = f.to_string();
+        assert!(s.contains("[NEW]"));
+    }
+
+    #[test]
+    fn is_new_no_badge_when_false() {
+        let f = sample();
+        assert!(!f.to_string().contains("[NEW]"));
+    }
+
+    #[test]
+    fn is_new_deserializes_default() {
+        let json = r#"{"rule_id":"PV-VAL-001","severity":"error","message":"msg","file":"f.yaml","suppressed":false}"#;
+        let f: LintFinding = serde_json::from_str(json).unwrap();
+        assert!(!f.is_new);
+    }
+
+    #[test]
+    fn is_new_serializes_when_true() {
+        let mut f = sample();
+        f.is_new = true;
+        let json = serde_json::to_string(&f).unwrap();
+        assert!(json.contains("\"is_new\":true"));
     }
 }

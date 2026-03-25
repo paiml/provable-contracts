@@ -70,7 +70,10 @@ fn run_single(
     match format {
         "json" => println!("{}", serde_json::to_string_pretty(&score)?),
         "markdown" => print!("{}", score_to_markdown(&score)),
-        _ => print!("{score}"),
+        _ => {
+            print!("{score}");
+            print_probes(&score);
+        }
     }
 
     if let Some(threshold) = min_score {
@@ -393,4 +396,44 @@ fn score_to_markdown(score: &ContractScore) -> String {
         score.lean_coverage,
         score.binding_coverage
     )
+}
+
+/// Print probe-level score decomposition for a single contract.
+///
+/// Groups probes by dimension and prints each with a pass/fail indicator,
+/// showing what contributed to each dimension's score.
+fn print_probes(score: &ContractScore) {
+    if score.probes.is_empty() {
+        return;
+    }
+
+    // Dimension display order and labels
+    let dimensions = [
+        ("spec_depth", "D1 Spec Depth", score.spec_depth),
+        (
+            "falsification",
+            "D2 Falsification",
+            score.falsification_coverage,
+        ),
+        ("kani", "D3 Kani", score.kani_coverage),
+        ("lean", "D4 Lean", score.lean_coverage),
+        ("binding", "D5 Binding", score.binding_coverage),
+    ];
+
+    println!("  Probes:");
+    for (dim_key, dim_label, dim_score) in &dimensions {
+        let dim_probes: Vec<_> = score
+            .probes
+            .iter()
+            .filter(|p| p.dimension == *dim_key)
+            .collect();
+        if dim_probes.is_empty() {
+            continue;
+        }
+        println!("  {dim_label:20} {dim_score:.2}");
+        for p in &dim_probes {
+            let icon = if p.outcome { "+" } else { "-" };
+            println!("    {icon} {}: {}", p.probe, p.detail);
+        }
+    }
 }
