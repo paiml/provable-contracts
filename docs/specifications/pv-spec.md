@@ -418,7 +418,7 @@ Multi-index hybrid approach for sub-second lookups (modeled on
 |---|---|---|
 | Name index | `HashMap<stem, Vec<idx>>` | O(1) |
 | Equation index | `HashMap<eq_name, Vec<idx>>` | O(1) |
-| Full-text corpus | In-memory BM25 | O(n), n=165 |
+| Full-text corpus | In-memory BM25 | O(n), n=182 |
 | Dependency DAG | `BTreeMap<String, Vec<String>>` | O(1) |
 | Score cache [IMPLEMENTED] | `HashMap<stem, f64>` | O(1) |
 | **Cross-project index** | `HashMap<stem, Vec<ProjectRef>>` | O(1) |
