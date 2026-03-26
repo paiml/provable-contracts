@@ -436,4 +436,15 @@ pub enum Commands {
         #[arg(long)]
         reason: String,
     },
+    /// Generate a Rust test that verifies all bound functions exist
+    VerifyBindings {
+        /// Path to binding.yaml
+        binding: PathBuf,
+        /// Output file path (default: stdout)
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+        /// Crate name for test label
+        #[arg(long)]
+        crate_name: Option<String>,
+    },
 }

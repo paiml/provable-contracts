@@ -476,41 +476,34 @@ pub fn rms_norm(input: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
 }
 ```
 
-### Three-Layer Enforcement
+### Four-Layer Enforcement
 
-| Layer | What it checks | Enforcement | Coverage |
-|-------|---------------|-------------|----------|
-| **L1: build.rs AllImplemented** | Every binding says `implemented` | Build panic | 16,977 bindings |
-| **L2: build.rs verify_source** | Bound function names exist in `src/` | Build panic | All with `function:` field |
-| **L3: #[contract] macro** | Env var exists + injects debug_assert | Compile-time | 35 annotated functions |
+| Layer | What it checks | When | Coverage |
+|-------|---------------|------|----------|
+| **L1: build.rs AllImplemented** | binding.yaml has no `not_implemented` | `cargo build` | 16,977 bindings |
+| **L2: `pv verify-bindings`** | Bound function names exist in `src/` | CI test | All with `function:` field |
+| **L3: `#[contract]` macro** | Env var + `debug_assert!()` injection | Compile-time | Per-function |
+| **L4: `pv lint --reverse`** | Every `pub fn` has a binding | CI gate | Full crate scan |
 
-**Layer 1** catches registry completeness — you can't mark a binding as
-`not_implemented` without the build failing.
+**Layer 1 (build.rs)** catches registry completeness — you can't mark
+a binding as `not_implemented` without the build failing. Deployed in
+all 13 repos.
 
-**Layer 2** (`verify_source_functions()`) catches ghost bindings — you
-can't claim `implemented` for a function that doesn't exist in source.
-This scans `src/` and `crates/` for `pub fn` declarations matching the
-`function:` field in binding.yaml.
+**Layer 2 (`pv verify-bindings`)** generates a test file that
+cross-references function names in binding.yaml against `pub fn`
+declarations in source. Ghost bindings (claimed implemented but
+function deleted/renamed) fail in CI. Uses name-based scanning — no
+build.rs modification needed.
 
-**Layer 3** catches contract drift at the function level — the
-`#[contract]` macro reads `CONTRACT_*` env vars set by build.rs and
-injects `debug_assert!()` for preconditions/postconditions from YAML.
-Uses `option_env!()` (soft) not `env!()` (hard) for crates.io compat.
+**Layer 3 (`#[contract]` macro)** injects `debug_assert!()` for
+preconditions/postconditions from YAML. Uses `option_env!()` (soft) not
+`env!()` (hard) for crates.io compat. Zero cost in release builds.
+
+**Layer 4 (`pv lint --reverse`)** closes the opposite gap — detects
+`pub fn` declarations that have no binding entry. Prevents new functions
+from escaping the contract system.
 
 ### Usage
-
-```rust
-// build.rs — Layer 1 + Layer 2
-provable_contracts::build_helper::verify_bindings(
-    "../provable-contracts/contracts/aprender/binding.yaml",
-    provable_contracts::build_helper::BindingPolicy::AllImplemented,
-);
-provable_contracts::build_helper::verify_source_functions(
-    "../provable-contracts/contracts/aprender/binding.yaml",
-    "src/",
-    true, // hard fail
-);
-```
 
 ```rust
 // src/nn/softmax.rs — Layer 3
@@ -519,6 +512,14 @@ pub fn softmax_1d(x: &[f32]) -> Vec<f32> {
     // debug_assert!(!x.is_empty()) injected from YAML preconditions
     // debug_assert!(ret.len() == x.len()) injected from YAML postconditions
 }
+```
+
+```bash
+# CI — Layer 2: verify bound functions exist in source
+pv verify-bindings contracts/aprender/binding.yaml --crate-name aprender
+
+# CI — Layer 4: verify no pub fn escapes the contract system
+pv coverage --reverse --binding contracts/aprender/binding.yaml ../aprender
 ```
 
 ### Enforcement Policy

@@ -27,3 +27,4 @@ pub mod status;
 pub mod tla;
 pub mod unlock;
 pub mod validate;
+pub mod verify_bindings;

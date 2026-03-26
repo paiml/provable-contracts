@@ -257,6 +257,11 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             top,
         } => commands::infer::run(&crate_dir, &binding, &contract_dir, top),
         Commands::Unlock { contract, reason } => commands::unlock::run(&contract, &reason),
+        Commands::VerifyBindings {
+            binding,
+            output,
+            crate_name,
+        } => commands::verify_bindings::run(&binding, output.as_deref(), crate_name.as_deref()),
     }
 }
 
