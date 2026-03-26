@@ -18,14 +18,14 @@ pub trait AdamwKernelV1 {
     /// Codomain: m_t in R^d
     /// Invariant: m_t is exponential moving average of gradients
     /// Invariant: |m_t| bounded by max(|g_1|, ..., |g_t|) when beta1 < 1
-    fn adam_moments(&self, g_tinrd: &[f32], m_00: &[f32]) -> Vec<f32>;
+    fn adam_moments(&self, g_t: &[f32]) -> Vec<f32>;
 
     /// `adam_variance`: v_t = beta2 * v_{t-1} + (1 - beta2) * g_t^2
     /// Domain: g_t in R^d, v_0 = 0, beta2 in (0, 1)
     /// Codomain: v_t in R_>=0^d
     /// Invariant: v_t >= 0 (non-negative second moment)
     /// Invariant: v_t is exponential moving average of squared gradients
-    fn adam_variance(&self, g_tinrd: &[f32], v_00: &[f32]) -> Vec<f32>;
+    fn adam_variance(&self, g_t: &[f32]) -> Vec<f32>;
 
     /// `bias_correction`: m_hat_t = m_t / (1 - beta1^t), v_hat_t = v_t / (1 - beta2^t)
     /// Domain: t >= 1, beta1 in (0,1), beta2 in (0,1)
@@ -39,5 +39,5 @@ pub trait AdamwKernelV1 {
     /// Codomain: theta_t in R^d
     /// Invariant: Weight decay applied AFTER Adam update (decoupled)
     /// Invariant: Update finite when inputs finite and eps > 0
-    fn weight_update(&self, thetainrd: &[f32]) -> Vec<f32>;
+    fn weight_update(&self, theta: &[f32]) -> Vec<f32>;
 }

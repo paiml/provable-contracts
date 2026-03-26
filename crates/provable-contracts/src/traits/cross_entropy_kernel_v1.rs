@@ -19,7 +19,7 @@ pub trait CrossEntropyKernelV1 {
     /// Invariant: CE >= 0 (non-negativity)
     /// Invariant: CE(one_hot(k), logits) = -log_softmax(logits)_k
     /// Invariant: CE(p, p_logits) = H(p) when p = softmax(p_logits)
-    fn cross_entropy(&self, targetsin0: &[f32], logitsinrn: &[f32]) -> Vec<f32>;
+    fn cross_entropy(&self, targets: &[f32], logits: &[f32]) -> Vec<f32>;
 
     /// `log_softmax`: log_softmax(x)_i = x_i - max(x) - log(sum(exp(x_j - max(x))))
     /// Domain: x in R^n, n >= 1
@@ -27,5 +27,5 @@ pub trait CrossEntropyKernelV1 {
     /// Invariant: log_softmax(x)_i <= 0 for all i
     /// Invariant: exp(log_softmax(x)) = softmax(x)
     /// Invariant: log_sum_exp trick preserves numerical stability
-    fn log_softmax(&self, xinrn: &[f32]) -> Vec<f32>;
+    fn log_softmax(&self, x: &[f32]) -> Vec<f32>;
 }

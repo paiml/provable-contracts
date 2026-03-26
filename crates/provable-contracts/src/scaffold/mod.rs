@@ -132,48 +132,95 @@ fn domain_to_params(domain: Option<&str>) -> String {
         return "&self, input: &[f32]".to_string();
     };
 
-    // Extract variable names before ∈ or "in"
     let mut params = Vec::new();
     for segment in domain.split(',') {
         let segment = segment.trim();
-        // Match "X ∈ ..." or "X in ..."
-        let var = segment
-            .split('∈')
-            .next()
-            .or(segment.split(" in ").next())
-            .map_or("", |s| s.trim());
+
+        // Extract variable name: text BEFORE "∈" or " in "
+        let var = if let Some((left, _)) = segment.split_once('∈') {
+            left.trim()
+        } else if let Some((left, _)) = segment.split_once(" in ") {
+            left.trim()
+        } else {
+            continue; // No separator — skip (e.g., "beta1 = 0.9")
+        };
 
         if var.is_empty() || var.contains('(') || var.contains('>') || var.contains('<') {
             continue;
         }
 
-        // Clean variable name: lowercase, remove subscripts, keep only alphanum + _
+        // Clean: lowercase, keep only ascii alphanumeric + underscore
         let clean: String = var
             .chars()
             .filter(|c| c.is_ascii_alphanumeric() || *c == '_')
-            .collect();
-        let clean = clean.to_lowercase();
+            .collect::<String>()
+            .to_lowercase();
 
-        if !clean.is_empty()
-            && clean.len() <= 20
-            && !clean.starts_with("num")
-            && !clean.starts_with("beta")
-            && !clean.starts_with("eps")
-            && !clean.chars().next().unwrap_or('0').is_ascii_digit()
-            && clean != "0"
+        // Filter out non-variable names
+        if clean.is_empty()
+            || clean.len() > 20
+            || clean.starts_with("num")
+            || clean.starts_with("beta")
+            || clean.starts_with("eps")
+            || clean.chars().next().unwrap_or('0').is_ascii_digit()
         {
-            // Check if this looks like a scalar (contains "ℝ" without matrix dims)
-            let is_scalar =
-                segment.contains("ℝ") && !segment.contains('^') && !segment.contains("×");
-            let rust_type = if is_scalar { "f32" } else { "&[f32]" };
-            params.push(format!("{clean}: {rust_type}"));
+            continue;
         }
+
+        // Scalar vs array: scalar if domain is ℝ without exponent (no ^ or ×)
+        let is_scalar = segment.contains('ℝ') && !segment.contains('^') && !segment.contains('×');
+        let rust_type = if is_scalar { "f32" } else { "&[f32]" };
+        params.push(format!("{clean}: {rust_type}"));
     }
 
     if params.is_empty() {
         "&self, input: &[f32]".to_string()
     } else {
         format!("&self, {}", params.join(", "))
+    }
+}
+
+#[cfg(test)]
+mod domain_tests {
+    use super::domain_to_params;
+
+    #[test]
+    fn single_vector() {
+        assert_eq!(domain_to_params(Some("x ∈ ℝ^n")), "&self, x: &[f32]");
+    }
+
+    #[test]
+    fn qkv_attention() {
+        let result = domain_to_params(Some("Q ∈ ℝ^{n×d_k}, K ∈ ℝ^{m×d_k}, V ∈ ℝ^{m×d_v}"));
+        assert_eq!(result, "&self, q: &[f32], k: &[f32], v: &[f32]");
+    }
+
+    #[test]
+    fn matmul_ab() {
+        let result = domain_to_params(Some("A ∈ ℝ^{m×p}, B ∈ ℝ^{p×n}"));
+        assert_eq!(result, "&self, a: &[f32], b: &[f32]");
+    }
+
+    #[test]
+    fn rope_with_position() {
+        let result = domain_to_params(Some("x ∈ ℝ^d, m ∈ ℕ, θ_k = 10000^(-2k/d)"));
+        assert_eq!(result, "&self, x: &[f32], m: &[f32]");
+    }
+
+    #[test]
+    fn adamw_filters_scalars() {
+        let result = domain_to_params(Some("g_t in R^d, m_0 = 0, beta1 in (0, 1)"));
+        assert_eq!(result, "&self, g_t: &[f32]");
+    }
+
+    #[test]
+    fn none_domain() {
+        assert_eq!(domain_to_params(None), "&self, input: &[f32]");
+    }
+
+    #[test]
+    fn empty_domain() {
+        assert_eq!(domain_to_params(Some("")), "&self, input: &[f32]");
     }
 }
 

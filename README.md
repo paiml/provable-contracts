@@ -288,9 +288,9 @@ via `build.rs` + `#[contract]` proc macro (Level 3 integration):
 | **simular** | 566 | AllImplemented |
 | **decy** | 456 | AllImplemented |
 | **rmedia** | 405 | AllImplemented |
-| **trueno** | 98 | AllImplemented |
+| **trueno** | 100 | AllImplemented |
 
-**Total: 16,977 bindings across 13 repos. 100% AllImplemented.**
+**Total: 16,979 bindings across 13 repos. 100% AllImplemented.**
 
 ### Qwen 3.5 Verification DAG
 

@@ -119,10 +119,10 @@ provable-contracts/
 
 | Metric | Value |
 |---|---|
-| YAML contracts | 192 |
-| Binding entries (13 crates) | 16,977 |
+| YAML contracts | 193 |
+| Binding entries (13 crates) | 16,979 |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) |
-| CLI commands | 29 |
+| CLI commands | 30 |
 | Consuming projects | 13 Level 3 (all AllImplemented) |
 | Stack LoC governed | ~6.4M Rust |
 
@@ -277,7 +277,7 @@ Kani verification strategies in **[sub/pipeline.md](sub/pipeline.md)**.
 
 ## 5. CLI Reference
 
-The `pv` binary provides 29 commands. Full reference with examples, flags, and output formats in
+The `pv` binary provides 30 commands. Full reference with examples, flags, and output formats in
 **[sub/cli.md](sub/cli.md)**.
 
 ### Command Summary
@@ -318,7 +318,7 @@ The `pv` binary provides 29 commands. Full reference with examples, flags, and o
 
 ## 6. Library API
 
-The `provable-contracts` crate exposes 34 public modules. Full API
+The `provable-contracts` crate exposes 35 public modules. Full API
 reference in **[sub/library.md](sub/library.md)**.
 
 ### Core API
@@ -420,7 +420,7 @@ Multi-index hybrid approach for sub-second lookups (modeled on
 |---|---|---|
 | Name index | `HashMap<stem, Vec<idx>>` | O(1) |
 | Equation index | `HashMap<eq_name, Vec<idx>>` | O(1) |
-| Full-text corpus | In-memory BM25 | O(n), n=192 |
+| Full-text corpus | In-memory BM25 | O(n), n=193 |
 | Dependency DAG | `BTreeMap<String, Vec<String>>` | O(1) |
 | Score cache [IMPLEMENTED] | `HashMap<stem, f64>` | O(1) |
 | **Cross-project index** | `HashMap<stem, Vec<ProjectRef>>` | O(1) |
@@ -481,7 +481,7 @@ pub fn rms_norm(input: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
 
 | Layer | What it checks | When | Coverage |
 |-------|---------------|------|----------|
-| **L1: build.rs AllImplemented** | binding.yaml has no `not_implemented` | `cargo build` | 16,977 bindings |
+| **L1: build.rs AllImplemented** | binding.yaml has no `not_implemented` | `cargo build` | 16,979 bindings |
 | **L2: Trait `impl`** | Function exists + correct signature | Rust compiler | Per-contract (§23) |
 | **L3: `#[contract]` macro** | Env var + `debug_assert!()` injection | Compile-time | Per-function |
 | **L4: `pv lint --reverse`** | Every `pub fn` has a binding | CI gate | Full crate scan |
@@ -794,7 +794,7 @@ Petrovic et al. (2022) "Practical Mutation Testing at Scale" IEEE TSE.
 **Sub-spec**: [sub/sovereign-stack-audit.md](sub/sovereign-stack-audit.md)
 
 Full audit of all 13 repos in the PAIML sovereign AI stack.
-**6.4M LOC. 100% under contract enforcement. 16,977 bindings.**
+**6.4M LOC. 100% under contract enforcement. 16,979 bindings.**
 
 | Project | Bindings | Policy | Status |
 |---|---|---|---|
@@ -853,7 +853,7 @@ individual models. Composes with PVScore for codebase + model quality.
 **Sub-spec**: [sub/contract-gaps.md](sub/contract-gaps.md)
 
 Systematic analysis of 9 ML/systems domains against the contract registry.
-192 contracts cover core kernels well; significant gaps in:
+193 contracts cover core kernels well; significant gaps in:
 
 | Domain | Gap Severity | Key Missing |
 |---|---|---|
@@ -910,7 +910,7 @@ patches, per-contract resource metrics, HTML reports, daemon/LSP mode.
 
 build.rs checks that binding.yaml *says* "implemented" — but nothing
 verifies the function *actually exists* with the *correct signature*.
-Of 16,977 bindings, only 35 have `#[contract]` annotations. Build.rs
+Of 16,979 bindings, only 35 have `#[contract]` annotations. Build.rs
 source scanning is fragile: string-matching `pub fn` misses `impl`
 methods, 13 copy-pasted scanners, name-only without signature checking.
 
@@ -950,7 +950,7 @@ No build.rs. No scanning. No name matching. Stable Rust. Zero runtime cost.
 
 | Layer | What | Mechanism | Coverage |
 |-------|------|-----------|----------|
-| L1 | Registry completeness | build.rs AllImplemented | 16,977 bindings |
+| L1 | Registry completeness | build.rs AllImplemented | 16,979 bindings |
 | **L2** | **Function existence + signature** | **Trait `impl`** | **Per-contract** |
 | L3 | Pre/postcondition assertions | `#[contract]` macro | Per-function |
 | L4 | Reverse coverage | `pv lint --reverse` | Full crate scan |
