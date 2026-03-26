@@ -19,12 +19,19 @@ pub trait SwigluKernelV1 {
     /// Invariant: SiLU(0) = 0
     /// Invariant: SiLU(x) > -0.279 for all x (global minimum)
     /// Invariant: SiLU is monotonic for x > 0
-    fn silu(&self, input: &[f32]) -> Vec<f32>;
+    fn silu(&self, xinr: &[f32]) -> Vec<f32>;
 
     /// `swiglu`: SwiGLU(x, W, V, b, c) = SiLU(xW + b) * (xV + c)
     /// Domain: x in R^d, W in R^{d x h}, V in R^{d x h}, b in R^h, c in R^h
     /// Codomain: SwiGLU(x) in R^h
     /// Invariant: SwiGLU(0, W, V, 0, 0) = 0 (zero preservation)
     /// Invariant: Decomposable as gate * value where gate = SiLU(xW+b)
-    fn swiglu(&self, input: &[f32]) -> Vec<f32>;
+    fn swiglu(
+        &self,
+        xinrd: &[f32],
+        winrdxh: &[f32],
+        vinrdxh: &[f32],
+        binrh: &[f32],
+        cinrh: &[f32],
+    ) -> Vec<f32>;
 }

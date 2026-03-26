@@ -20,7 +20,7 @@ pub trait ActivationKernelV1 {
     /// Invariant: GELU(x) → x as x → +∞
     /// Invariant: GELU(x) → 0 as x → -∞
     /// Invariant: GELU(0) = 0
-    fn gelu(&self, input: &[f32]) -> Vec<f32>;
+    fn gelu(&self, x: f32) -> Vec<f32>;
 
     /// `relu`: ReLU(x) = max(0, x)
     /// Domain: x ∈ ℝ
@@ -28,7 +28,7 @@ pub trait ActivationKernelV1 {
     /// Invariant: ReLU(x) ≥ 0 (non-negativity)
     /// Invariant: ReLU(x) = x for x > 0
     /// Invariant: ReLU(x) = 0 for x ≤ 0
-    fn relu(&self, input: &[f32]) -> Vec<f32>;
+    fn relu(&self, x: f32) -> Vec<f32>;
 
     /// `silu`: SiLU(x) = x · σ(x) = x / (1 + exp(-x))
     /// Domain: x ∈ ℝ
@@ -36,5 +36,5 @@ pub trait ActivationKernelV1 {
     /// Invariant: SiLU(x) → x as x → +∞
     /// Invariant: SiLU(x) → 0 as x → -∞
     /// Invariant: SiLU(0) = 0
-    fn silu(&self, input: &[f32]) -> Vec<f32>;
+    fn silu(&self, x: f32) -> Vec<f32>;
 }

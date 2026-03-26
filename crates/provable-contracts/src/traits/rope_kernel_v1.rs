@@ -17,5 +17,5 @@ pub trait RopeKernelV1 {
     /// Codomain: ℝ^d
     /// Invariant: ‖RoPE(x, m)‖ = ‖x‖ (norm preservation)
     /// Invariant: ⟨RoPE(q, m), RoPE(k, n)⟩ depends only on q, k, m-n (relative position)
-    fn rope(&self, input: &[f32]) -> Vec<f32>;
+    fn rope(&self, x: &[f32], m: &[f32]) -> Vec<f32>;
 }

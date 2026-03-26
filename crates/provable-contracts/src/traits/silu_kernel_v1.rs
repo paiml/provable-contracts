@@ -18,7 +18,7 @@ pub trait SiluKernelV1 {
     /// Codomain: sigmoid(x) in (0, 1)
     /// Invariant: sigmoid(0) = 0.5
     /// Invariant: sigmoid(-x) = 1 - sigmoid(x) (symmetry)
-    fn sigmoid(&self, input: &[f32]) -> Vec<f32>;
+    fn sigmoid(&self, xinr: &[f32]) -> Vec<f32>;
 
     /// `silu`: SiLU(x) = x * sigmoid(x) = x / (1 + exp(-x))
     /// Domain: x in R
@@ -27,5 +27,5 @@ pub trait SiluKernelV1 {
     /// Invariant: SiLU(x) > -0.279 for all x (global minimum at x ~ -1.278)
     /// Invariant: SiLU(x) ~ x for large positive x (asymptotic linearity)
     /// Invariant: SiLU is monotonic for x > 0
-    fn silu(&self, input: &[f32]) -> Vec<f32>;
+    fn silu(&self, xinr: &[f32]) -> Vec<f32>;
 }

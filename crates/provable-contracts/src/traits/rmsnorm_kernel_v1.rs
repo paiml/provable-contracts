@@ -18,5 +18,5 @@ pub trait RmsnormKernelV1 {
     /// Codomain: ℝ^n
     /// Invariant: ‖RMSNorm(x)‖² / n ≈ ‖γ‖² / n (scale preservation)
     /// Invariant: RMSNorm(α·x) = sign(α) · RMSNorm(x) · γ (scale invariance)
-    fn rmsnorm(&self, input: &[f32]) -> Vec<f32>;
+    fn rmsnorm(&self, x: &[f32]) -> Vec<f32>;
 }

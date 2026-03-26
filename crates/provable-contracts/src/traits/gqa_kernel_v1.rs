@@ -20,5 +20,5 @@ pub trait GqaKernelV1 {
     /// Invariant: Output is convex combination of V rows per head
     /// Invariant: GQA(kv_heads=num_heads) = standard MHA
     /// Invariant: num_heads must be divisible by num_kv_heads
-    fn gqa(&self, input: &[f32]) -> Vec<f32>;
+    fn gqa(&self, qinrnxd: &[f32], kinrsxd: &[f32], vinrsxd_v: &[f32]) -> Vec<f32>;
 }

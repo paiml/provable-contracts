@@ -112,13 +112,69 @@ pub fn generate_standalone_trait(contract: &Contract, stem: &str) -> String {
         }
         // Use equation name as method name, sanitized
         let method_name = name.replace('-', "_").to_lowercase();
-        out.push_str(&format!(
-            "    fn {method_name}(&self, input: &[f32]) -> Vec<f32>;\n\n"
-        ));
+        let params = domain_to_params(eq.domain.as_deref());
+        out.push_str(&format!("    fn {method_name}({params}) -> Vec<f32>;\n\n"));
     }
 
     out.push_str("}\n");
     out
+}
+
+/// Parse a YAML domain string to generate Rust method parameters.
+///
+/// Examples:
+/// - `"x ∈ ℝ^n"` → `"&self, x: &[f32]"`
+/// - `"Q ∈ ℝ^{n×d_k}, K ∈ ℝ^{m×d_k}, V ∈ ℝ^{m×d_v}"` → `"&self, q: &[f32], k: &[f32], v: &[f32]"`
+/// - `"A ∈ ℝ^{m×p}, B ∈ ℝ^{p×n}"` → `"&self, a: &[f32], b: &[f32]"`
+/// - `None` → `"&self, input: &[f32]"`
+fn domain_to_params(domain: Option<&str>) -> String {
+    let Some(domain) = domain else {
+        return "&self, input: &[f32]".to_string();
+    };
+
+    // Extract variable names before ∈ or "in"
+    let mut params = Vec::new();
+    for segment in domain.split(',') {
+        let segment = segment.trim();
+        // Match "X ∈ ..." or "X in ..."
+        let var = segment
+            .split('∈')
+            .next()
+            .or(segment.split(" in ").next())
+            .map_or("", |s| s.trim());
+
+        if var.is_empty() || var.contains('(') || var.contains('>') || var.contains('<') {
+            continue;
+        }
+
+        // Clean variable name: lowercase, remove subscripts, keep only alphanum + _
+        let clean: String = var
+            .chars()
+            .filter(|c| c.is_ascii_alphanumeric() || *c == '_')
+            .collect();
+        let clean = clean.to_lowercase();
+
+        if !clean.is_empty()
+            && clean.len() <= 20
+            && !clean.starts_with("num")
+            && !clean.starts_with("beta")
+            && !clean.starts_with("eps")
+            && !clean.chars().next().unwrap_or('0').is_ascii_digit()
+            && clean != "0"
+        {
+            // Check if this looks like a scalar (contains "ℝ" without matrix dims)
+            let is_scalar =
+                segment.contains("ℝ") && !segment.contains('^') && !segment.contains("×");
+            let rust_type = if is_scalar { "f32" } else { "&[f32]" };
+            params.push(format!("{clean}: {rust_type}"));
+        }
+    }
+
+    if params.is_empty() {
+        "&self, input: &[f32]".to_string()
+    } else {
+        format!("&self, {}", params.join(", "))
+    }
 }
 
 /// Convert a contract stem to a `PascalCase` trait name.

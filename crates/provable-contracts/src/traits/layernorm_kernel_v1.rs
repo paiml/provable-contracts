@@ -19,12 +19,12 @@ pub trait LayernormKernelV1 {
     /// Invariant: mean(LN(x)) = mean(beta) when gamma = 1 (centering)
     /// Invariant: var(LN(x)) = 1 when gamma = 1, beta = 0 (standardization)
     /// Invariant: LN is invariant to input shift: LN(x + c) = LN(x)
-    fn layernorm(&self, input: &[f32]) -> Vec<f32>;
+    fn layernorm(&self, xinrd: &[f32], gammainrd: &[f32]) -> Vec<f32>;
 
     /// `statistics`: mu = (1/d) * sum(x_i), sigma^2 = (1/d) * sum((x_i - mu)^2)
     /// Domain: x in R^d, d >= 1
     /// Codomain: mu in R, sigma^2 in R_>=0
     /// Invariant: sigma^2 >= 0 (non-negative variance)
     /// Invariant: sigma^2 = 0 iff x is constant
-    fn statistics(&self, input: &[f32]) -> Vec<f32>;
+    fn statistics(&self, xinrd: &[f32]) -> Vec<f32>;
 }

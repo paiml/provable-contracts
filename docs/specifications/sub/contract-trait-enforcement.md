@@ -143,15 +143,15 @@ pub trait SoftmaxKernelV1 {
 }
 ```
 
-### Phase 2: Consumer adoption (incremental) [IN PROGRESS]
+### Phase 2: Consumer adoption (incremental) [IMPLEMENTED]
 
-**Deployed:**
-- aprender: 7/13 traits (softmax, activation, silu, swiglu,
-  cross-entropy, rmsnorm, layernorm) — `tests/contract_traits.rs`
-- trueno: 5/13 traits (softmax, activation, silu, rmsnorm,
-  layernorm) — `tests/contract_traits.rs`
-- entrenar: 8/13 traits (softmax, activation, silu, layernorm,
-  rmsnorm, rope, cross-entropy, adamw) — `tests/contract_traits.rs`
+**Deployed (all 13/13 traits in each):**
+- aprender: 13/13 traits — `tests/contract_traits.rs` (13 tests)
+- trueno: 13/13 traits — `tests/contract_traits.rs` (19 tests)
+- entrenar: 13/13 traits — `tests/contract_traits.rs` (13 tests)
+
+All 45 trait tests pass. Multi-input signatures generated from YAML
+domains (e.g., attention takes Q/K/V, matmul takes A/B).
 
 Consumer crates add a dependency on the trait module and implement it:
 
