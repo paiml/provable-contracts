@@ -16,14 +16,33 @@ jobs:
       repo: ${{ github.event.repository.name }}
     secrets: inherit
 
+  trait-staleness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Check generated traits match YAML contracts
+        run: |
+          cargo build --release --bin pv
+          for contract in contracts/softmax-kernel-v1.yaml contracts/rmsnorm-kernel-v1.yaml contracts/rope-kernel-v1.yaml contracts/activation-kernel-v1.yaml contracts/attention-kernel-v1.yaml contracts/matmul-kernel-v1.yaml contracts/layernorm-kernel-v1.yaml contracts/cross-entropy-kernel-v1.yaml contracts/silu-kernel-v1.yaml contracts/swiglu-kernel-v1.yaml contracts/gqa-kernel-v1.yaml contracts/flash-attention-v1.yaml contracts/adamw-kernel-v1.yaml; do
+            stem=$(basename "$contract" .yaml)
+            target/release/pv scaffold --trait "$contract" -o "/tmp/${stem//-/_}.rs"
+            diff -q "crates/provable-contracts/src/traits/${stem//-/_}.rs" "/tmp/${stem//-/_}.rs" || {
+              echo "STALE TRAIT: ${stem//-/_}.rs does not match $contract"
+              echo "Regenerate with: pv scaffold --trait $contract -o crates/provable-contracts/src/traits/${stem//-/_}.rs"
+              exit 1
+            }
+          done
+          echo "All 13 traits match their YAML contracts"
+
   gate:
-    needs: [ci]
+    needs: [ci, trait-staleness]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - run: |
-          if [ "${{ needs.ci.result }}" != "success" ]; then
-            echo "CI failed"
+          if [ "${{ needs.ci.result }}" != "success" ] || [ "${{ needs.trait-staleness.result }}" != "success" ]; then
+            echo "CI or trait-staleness failed"
             exit 1
           fi
           echo "All checks passed"

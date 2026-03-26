@@ -145,13 +145,16 @@ pub trait SoftmaxKernelV1 {
 
 ### Phase 2: Consumer adoption (incremental) [IMPLEMENTED]
 
-**Deployed (all 13/13 traits in each):**
-- aprender: 13/13 traits — `tests/contract_traits.rs` (13 tests)
-- trueno: 13/13 traits — `tests/contract_traits.rs` (19 tests)
-- entrenar: 13/13 traits — `tests/contract_traits.rs` (13 tests)
+**Deployed to 12/13 repos (depyler has pre-existing compile error):**
+- aprender: 13/13 traits, 13 tests
+- trueno: 13/13 traits, 19 tests
+- entrenar: 13/13 traits, 13 tests
+- realizar, forjar, presentar, rmedia, bashrs, decy, ruchy, simular, pmat:
+  2/13 traits each (SoftmaxKernelV1, ActivationKernelV1), 1 test each
 
-All 45 trait tests pass. Multi-input signatures generated from YAML
-domains (e.g., attention takes Q/K/V, matmul takes A/B).
+Total: 55 trait tests across 12 repos, all passing.
+Multi-input signatures generated from YAML domains.
+CI trait-staleness check added to `.github/workflows/ci.yml`.
 
 Consumer crates add a dependency on the trait module and implement it:
 
