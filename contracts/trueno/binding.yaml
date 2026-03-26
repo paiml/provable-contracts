@@ -709,3 +709,16 @@ bindings:
     function: "forward_all_layers_gpu_to_logits_graphed"
     status: implemented
     notes: "PMAT-369: SKIP_CUDA_GRAPH=1 env var disables cuStreamBeginCapture."
+
+  # PMAT-373: Multi-backend GPU parity
+  - contract: gpu-multi-backend-parity-v1.yaml
+    equation: multi_backend_parity
+    function: "canary_parity_gate.sh"
+    status: implemented
+    notes: "PMAT-350: WGPU/CPU factual parity verified. 3/3 factual-correct."
+
+  - contract: gpu-multi-backend-parity-v1.yaml
+    equation: backend_priority
+    function: "start_realizar_server"
+    status: implemented
+    notes: "PMAT-372: --backend wgpu selects Vulkan. Default selects CUDA. CPU always available."

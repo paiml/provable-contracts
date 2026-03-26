@@ -8926,3 +8926,16 @@ bindings:
     function: "dequant_model_weights"
     status: implemented
     notes: "PMAT-333: Q4K/Q5K/Q6K/F16/F32 → F32 for WGPU upload"
+
+  # PMAT-373: BPE tokenization
+  - contract: bpe-tokenization-v1.yaml
+    equation: encode
+    function: "GGUFModel::encode"
+    status: implemented
+    notes: "PMAT-341: BPE encode with merge rules from GGUF metadata"
+
+  - contract: bpe-tokenization-v1.yaml
+    equation: decode
+    function: "GGUFModel::decode"
+    status: implemented
+    notes: "PMAT-352: GPT-2 byte-level BPE decode with gpt2_unicode_to_byte"
