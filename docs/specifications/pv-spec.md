@@ -37,6 +37,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 20 | [UX, Speech, Probar](#20-ux-speech-probar) | [sub/ux-speech-probar.md](sub/ux-speech-probar.md) |
 | 21 | [Contract Gap Analysis](#21-contract-gap-analysis) | [sub/contract-gaps.md](sub/contract-gaps.md) |
 | 22 | [Diagnostic Output](#22-diagnostic-output) | [sub/diagnostics.md](sub/diagnostics.md) |
+| 23 | [Contract-Trait Enforcement](#23-contract-trait-enforcement) | [sub/contract-trait-enforcement.md](sub/contract-trait-enforcement.md) |
 
 ---
 
@@ -481,7 +482,7 @@ pub fn rms_norm(input: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
 | Layer | What it checks | When | Coverage |
 |-------|---------------|------|----------|
 | **L1: build.rs AllImplemented** | binding.yaml has no `not_implemented` | `cargo build` | 16,977 bindings |
-| **L2: `pv verify-bindings`** | Bound function names exist in `src/` | CI test | All with `function:` field |
+| **L2: Trait `impl`** | Function exists + correct signature | Rust compiler | Per-contract (§23) |
 | **L3: `#[contract]` macro** | Env var + `debug_assert!()` injection | Compile-time | Per-function |
 | **L4: `pv lint --reverse`** | Every `pub fn` has a binding | CI gate | Full crate scan |
 
@@ -890,3 +891,50 @@ mypy, ESLint, SonarQube, cargo-deny, OpenSSF Scorecard) revealed 13 gaps.
 caret spans, per-obligation verification table, counterexample/evidence
 data, remediation effort estimation, issue lifecycle, structured fix
 patches, per-contract resource metrics, HTML reports, daemon/LSP mode.
+
+---
+
+## 23. Contract-Trait Enforcement
+
+**Sub-spec**: [sub/contract-trait-enforcement.md](sub/contract-trait-enforcement.md)
+
+The permanent fix for binding verification: **generate Rust traits from
+YAML contracts, require consumer crates to `impl` them.** The compiler
+itself becomes the enforcement mechanism — missing function = compile
+error, wrong signature = compile error.
+
+### Why traits, not build.rs scanning
+
+Build.rs source scanning (L2) is fragile: string-matching `pub fn`
+misses impl methods, 13 copy-pasted scanners, name-only without
+signature checking. The Rust type system already solves this problem.
+
+### The design
+
+```
+YAML Contract           →  Generated Trait          ←  Consumer Impl
+softmax-kernel-v1.yaml     SoftmaxKernelV1 trait       impl SoftmaxKernelV1
+  equations:                 fn softmax(...)             for NNFunctional { ... }
+    softmax:                 fn log_softmax(...)
+    log_softmax:
+```
+
+`pv scaffold --trait` generates the trait. Consumer adds one `impl`.
+If YAML changes, trait changes, `impl` breaks → compiler catches it.
+
+### Four-layer enforcement (updated)
+
+| Layer | What | Mechanism | Coverage |
+|-------|------|-----------|----------|
+| L1 | Registry completeness | build.rs AllImplemented | 16,977 bindings |
+| **L2** | **Function existence + signature** | **Trait `impl`** | **Per-contract** |
+| L3 | Pre/postcondition assertions | `#[contract]` macro | Per-function |
+| L4 | Reverse coverage | `pv lint --reverse` | Full crate scan |
+
+### Evidence
+
+Approach validated by: SPARK/Ada spec/body separation (AdaCore §7.4),
+Eiffel deferred features (Meyer 1988 §11.1), Kani `proof_for_contract`
+(RFC 0009), Prusti `refine_trait_spec`, Creusot trait laws, Batuta
+`ContractValidation` trait pattern. See arXiv:2410.01981 for the full
+Rust verification landscape survey.
