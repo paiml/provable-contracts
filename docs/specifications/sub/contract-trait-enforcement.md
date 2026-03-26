@@ -120,7 +120,7 @@ update. No build.rs. No scanning. No name matching. The compiler does it.
 
 ## Design
 
-### Phase 1: Trait generation (`pv scaffold --trait`)
+### Phase 1: Trait generation (`pv scaffold --trait`) [IMPLEMENTED]
 
 `pv scaffold` already generates traits. Enhance to produce a standalone
 trait file per contract:
