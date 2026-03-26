@@ -476,18 +476,50 @@ pub fn rms_norm(input: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
 }
 ```
 
-### Mechanism
+### Three-Layer Enforcement
 
-1. **build.rs** in the consuming crate reads `binding.yaml` and sets
-   `CONTRACT_<NAME>_<EQ>=<status>` env vars for each binding.
+| Layer | What it checks | Enforcement | Coverage |
+|-------|---------------|-------------|----------|
+| **L1: build.rs AllImplemented** | Every binding says `implemented` | Build panic | 16,977 bindings |
+| **L2: build.rs verify_source** | Bound function names exist in `src/` | Build panic | All with `function:` field |
+| **L3: #[contract] macro** | Env var exists + injects debug_assert | Compile-time | 35 annotated functions |
 
-2. `#[contract("name", equation = "eq")]` expands to a const that reads
-   the env var via `option_env!()`. Missing env var = soft warning
-   (crates.io compat). `AllImplemented` policy in build.rs = hard
-   failure for unbound equations not in `ALLOWED_GAPS`.
+**Layer 1** catches registry completeness — you can't mark a binding as
+`not_implemented` without the build failing.
 
-3. A static binding string registers the function for runtime audit
-   traceability.
+**Layer 2** (`verify_source_functions()`) catches ghost bindings — you
+can't claim `implemented` for a function that doesn't exist in source.
+This scans `src/` and `crates/` for `pub fn` declarations matching the
+`function:` field in binding.yaml.
+
+**Layer 3** catches contract drift at the function level — the
+`#[contract]` macro reads `CONTRACT_*` env vars set by build.rs and
+injects `debug_assert!()` for preconditions/postconditions from YAML.
+Uses `option_env!()` (soft) not `env!()` (hard) for crates.io compat.
+
+### Usage
+
+```rust
+// build.rs — Layer 1 + Layer 2
+provable_contracts::build_helper::verify_bindings(
+    "../provable-contracts/contracts/aprender/binding.yaml",
+    provable_contracts::build_helper::BindingPolicy::AllImplemented,
+);
+provable_contracts::build_helper::verify_source_functions(
+    "../provable-contracts/contracts/aprender/binding.yaml",
+    "src/",
+    true, // hard fail
+);
+```
+
+```rust
+// src/nn/softmax.rs — Layer 3
+#[provable_contracts_macros::contract("softmax-kernel-v1", equation = "softmax")]
+pub fn softmax_1d(x: &[f32]) -> Vec<f32> {
+    // debug_assert!(!x.is_empty()) injected from YAML preconditions
+    // debug_assert!(ret.len() == x.len()) injected from YAML postconditions
+}
+```
 
 ### Enforcement Policy
 
