@@ -694,5 +694,5 @@ bindings:
   - contract: wgpu-forward-pass-v1.yaml
     equation: q4k_fused_gemv
     function: "Q4K_GEMV_SHADER"
-    status: partial
-    notes: "PMAT-363: Shader + pipeline + upload_q4k_weight ready. Not yet wired to forward_layer."
+    status: implemented
+    notes: "PMAT-365: Fused Q4K GEMV working. 10x VRAM reduction. Scale extraction fixed."

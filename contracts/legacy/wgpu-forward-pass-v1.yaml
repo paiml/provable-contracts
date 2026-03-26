@@ -29,7 +29,7 @@ equations:
     finding: "PMAT-361: WGSL attention shader with per-head softmax + GQA."
   q4k_fused_gemv:
     description: "Fused Q4K dequant+GEMV on GPU — 4× bandwidth vs F32 GEMV"
-    finding: "PMAT-363: WGSL shader ready. upload_q4k_weight + pipeline created. Partial."
+    finding: "PMAT-365: Working. 168 Q4K weights, 625.5 MB (10x vs F32). Scale extraction fixed."
 postconditions:
   - name: performance_target
     threshold: 25.0
