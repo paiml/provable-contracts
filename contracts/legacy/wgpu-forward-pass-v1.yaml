@@ -27,6 +27,9 @@ equations:
     description: "Single-submit: attention runs on GPU with KV cache, no Q/K/V readback"
     invariant: "forward_layer uses 1 submit (was 2). KV cache GPU-resident."
     finding: "PMAT-361: WGSL attention shader with per-head softmax + GQA."
+  q4k_fused_gemv:
+    description: "Fused Q4K dequant+GEMV on GPU — 4× bandwidth vs F32 GEMV"
+    finding: "PMAT-363: WGSL shader ready. upload_q4k_weight + pipeline created. Partial."
 postconditions:
   - name: performance_target
     threshold: 25.0

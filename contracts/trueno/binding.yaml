@@ -689,3 +689,10 @@ bindings:
     function: "WgslForwardPass::forward_layer"
     status: implemented
     notes: "PMAT-361: WGSL attention shader. Single-submit forward_layer with GPU KV cache."
+
+  # PMAT-363: Q4K fused dequant+GEMV
+  - contract: wgpu-forward-pass-v1.yaml
+    equation: q4k_fused_gemv
+    function: "Q4K_GEMV_SHADER"
+    status: partial
+    notes: "PMAT-363: Shader + pipeline + upload_q4k_weight ready. Not yet wired to forward_layer."
