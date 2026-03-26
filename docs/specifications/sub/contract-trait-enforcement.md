@@ -146,8 +146,12 @@ pub trait SoftmaxKernelV1 {
 ### Phase 2: Consumer adoption (incremental) [IN PROGRESS]
 
 **Deployed:**
-- aprender: 7/13 traits implemented (softmax, activation, silu, swiglu,
+- aprender: 7/13 traits (softmax, activation, silu, swiglu,
   cross-entropy, rmsnorm, layernorm) — `tests/contract_traits.rs`
+- trueno: 5/13 traits (softmax, activation, silu, rmsnorm,
+  layernorm) — `tests/contract_traits.rs`
+- entrenar: 8/13 traits (softmax, activation, silu, layernorm,
+  rmsnorm, rope, cross-entropy, adamw) — `tests/contract_traits.rs`
 
 Consumer crates add a dependency on the trait module and implement it:
 
