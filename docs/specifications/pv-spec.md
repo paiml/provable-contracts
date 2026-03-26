@@ -119,7 +119,7 @@ provable-contracts/
 | Metric | Value |
 |---|---|
 | YAML contracts | 192 |
-| Binding entries (13 crates) | 16,976 |
+| Binding entries (13 crates) | 16,977 |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) |
 | CLI commands | 29 |
 | Consuming projects | 13 Level 3 (all AllImplemented) |
@@ -545,11 +545,11 @@ KAIZEN workflow in **[sub/integration.md](sub/integration.md)**.
 | aprender | 2,363 | **AllImplemented** | Level 3: `build.rs` + `#[contract]` proc macro |
 | entrenar | 1,868 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
 | presentar | 1,824 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
-| realizar | 1,724 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| realizar | 1,725 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
 | ruchy | 1,681 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
-| trueno | 93 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
-| depyler | 1,437 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
-| bashrs | 1,040 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| trueno | 98 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| depyler | 1,451 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
+| bashrs | 1,056 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
 | forjar | 819 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
 | simular | 566 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
 | decy | 456 | **AllImplemented** | Level 3: `build.rs` + `CONTRACT_*` env vars |
@@ -754,7 +754,7 @@ Petrovic et al. (2022) "Practical Mutation Testing at Scale" IEEE TSE.
 **Sub-spec**: [sub/sovereign-stack-audit.md](sub/sovereign-stack-audit.md)
 
 Full audit of all 13 repos in the PAIML sovereign AI stack.
-**6.4M LOC. 100% under contract enforcement. 16,976 bindings.**
+**6.4M LOC. 100% under contract enforcement. 16,977 bindings.**
 
 | Project | Bindings | Policy | Status |
 |---|---|---|---|
@@ -762,11 +762,11 @@ Full audit of all 13 repos in the PAIML sovereign AI stack.
 | aprender | 2,363 | AllImplemented | Level 3 ✓ |
 | entrenar | 1,868 | AllImplemented | Level 3 ✓ |
 | presentar | 1,824 | AllImplemented | Level 3 ✓ |
-| realizar | 1,724 | AllImplemented | Level 3 ✓ |
+| realizar | 1,725 | AllImplemented | Level 3 ✓ |
 | ruchy | 1,681 | AllImplemented | Level 3 ✓ |
-| trueno | 93 | AllImplemented | Level 3 ✓ |
-| depyler | 1,437 | AllImplemented | Level 3 ✓ |
-| bashrs | 1,040 | AllImplemented | Level 3 ✓ |
+| trueno | 98 | AllImplemented | Level 3 ✓ |
+| depyler | 1,451 | AllImplemented | Level 3 ✓ |
+| bashrs | 1,056 | AllImplemented | Level 3 ✓ |
 | forjar | 819 | AllImplemented | Level 3 ✓ |
 | simular | 566 | AllImplemented | Level 3 ✓ |
 | decy | 456 | AllImplemented | Level 3 ✓ |

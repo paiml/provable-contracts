@@ -94,7 +94,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-provable-contracts = "0.1"
+provable-contracts = "0.1.1"
 ```
 
 ### CLI
@@ -216,24 +216,30 @@ pv book contracts/ -o book/src/contracts/
 | `status`           | Display contract summary (equations, obligations)        |
 | `audit`            | Run traceability audit with optional binding check       |
 | `diff`             | Compare two contract versions, suggest semver bump       |
-| `coverage`         | Cross-contract obligation coverage report                |
+| `coverage`         | Cross-contract obligation coverage (`--reverse`, `--fuzz`) |
 | `generate`         | End-to-end codegen (scaffold + kani + probar + book)     |
 | `graph`            | Dependency DAG (`text`, `dot`, `json`, `mermaid`)        |
 | `equations`        | Display equations (`text`, `latex`, `ptx`, `asm`)        |
 | `lean`             | Generate Lean 4 definitions and theorem stubs            |
 | `lean-status`      | Report Lean 4 proof status across contracts              |
-| `proof-status`     | Hierarchical proof level (L1-L5) report                  |
-| `score`            | Five-dimension contract quality scoring (A-F)            |
+| `proof-status`     | Hierarchical proof level (L1-L5) report (`--table`)      |
+| `score`            | Contract/codebase scoring (`--pvscore` for 10-dim)       |
 | `query`            | Semantic search with tier/class/graph filters            |
-| `lint`             | Quality gate: validate + audit + score + verify + enforce|
+| `lint`             | 7-gate quality pipeline (`--explain`, `--coverage`, `--watch`) |
 | `invariants`       | Generate type invariant trait + Kani preservation harness |
 | `coq`              | Generate Coq theorem stubs from contract obligations     |
+| `fuzz`             | Generate libfuzzer targets from contracts                |
+| `mirai`            | Generate MIRAI abstract interpretation annotations       |
+| `flux`             | Generate Flux refinement type annotations                |
+| `tla`              | Generate TLA+ system-level specifications                |
+| `infer`            | Auto-suggest contracts for unbound functions             |
+| `unlock`           | Remove enforcement level lock (`--reason` required)      |
 | `book`             | Generate mdBook pages for contracts                      |
 
 ## Contract Registry
 
-164 contract YAML files ship in `contracts/`, organized by seven tiers,
-five equivalence classes (A-E), and five per-crate directories.
+192 contract YAML files ship in `contracts/`, organized by seven tiers,
+five equivalence classes (A-E), and thirteen per-crate directories.
 
 **Tier 1 -- Foundation Kernels**: softmax, rmsnorm, rope, gelu, silu,
 layernorm, batchnorm, cross-entropy, transpose, matmul, embedding,
@@ -244,41 +250,47 @@ swiglu, bidirectional-attention, conv1d, adamw, sliding-window-attention.
 
 **Tier 3 -- System Contracts**: model-config-algebra, tensor-shape-flow,
 roofline-model, kv-cache-sizing, kernel-launch-budget, backend-dispatch,
-sampling-algorithms, and more.
+sampling-algorithms, paged-attention, speculative-decoding, and more.
 
 **Tier 4 -- Training Contracts**: lora-algebra, classification-finetune,
-cuda-classify-training, qlora-hyperparameters.
+cuda-classify-training, qlora-hyperparameters, dpo-loss.
 
 **Tier 5 -- Classical ML**: kmeans, pagerank, decision-tree, lbfgs,
-cma-es, arima, active-learning.
+cma-es, arima, active-learning, bpe-tokenization.
 
 **Tier 6 -- Model-Specific**: qwen2/qwen3/qwen35 e2e verification,
 hybrid-layer-dispatch, gated-delta-net, qwen35-hybrid-forward.
 
-**Per-Crate Contracts**: `aprender/` (8), `entrenar/` (37),
-`trueno/` (7), `forjar/` (5), `realizar/` (binding only).
+**Tier 7 -- Domain-Specific**: bashrs parser-soundness, safety-classifier,
+encoder-roundtrip; depyler type-preservation, semantic-equivalence,
+memory-safety; fp8-interchange.
 
 **Equivalence Classes**: A (Llama/Mistral), B (GPT-2/BERT),
 C (BLOOM/MPT), D (Gemma), E (Qwen).
 
-**Totals** (107 core kernel contracts): 356 equations, 550 proof
-obligations, 590 falsification tests, 211 Kani harnesses. 100%
-obligation coverage.
-
 ### Binding Registries
 
-Six downstream crates have binding registries mapping contract
+Thirteen downstream crates have binding registries mapping contract
 equations to Rust implementations, each with compile-time enforcement
 via `build.rs` + `#[contract]` proc macro (Level 3 integration):
 
-| Crate | Bindings | Policy | Coverage |
-|-------|----------|--------|----------|
-| **aprender** | 301 | AllImplemented | 100% |
-| **entrenar** | 96 | WarnOnGaps | 84% |
-| **realizar** | 23 | WarnOnGaps | 100% |
-| **trueno** | 22 | AllImplemented | 100% |
-| **forjar** | 4 | WarnOnGaps | 100% |
-| **simular** | 3 | WarnOnGaps | 100% |
+| Crate | Bindings | Policy |
+|-------|----------|--------|
+| **pmat** | 2,665 | AllImplemented |
+| **aprender** | 2,363 | AllImplemented |
+| **entrenar** | 1,868 | AllImplemented |
+| **presentar** | 1,824 | AllImplemented |
+| **realizar** | 1,725 | AllImplemented |
+| **ruchy** | 1,681 | AllImplemented |
+| **depyler** | 1,451 | AllImplemented |
+| **bashrs** | 1,056 | AllImplemented |
+| **forjar** | 819 | AllImplemented |
+| **simular** | 566 | AllImplemented |
+| **decy** | 456 | AllImplemented |
+| **rmedia** | 405 | AllImplemented |
+| **trueno** | 98 | AllImplemented |
+
+**Total: 16,977 bindings across 13 repos. 100% AllImplemented.**
 
 ### Qwen 3.5 Verification DAG
 
