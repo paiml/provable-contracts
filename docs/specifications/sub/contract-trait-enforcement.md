@@ -145,29 +145,35 @@ pub trait SoftmaxKernelV1 {
 
 ### Phase 2: Consumer adoption (incremental) [IMPLEMENTED]
 
-**Deployed to 12/13 repos (depyler blocked by pre-existing compile error):**
+**Deployed to ALL 13/13 repos:**
 
 | Repo | Traits | Tests | Status |
 |------|--------|-------|--------|
 | aprender | 13/13 | 13 | All pass |
 | trueno | 13/13 | 19 | All pass |
 | entrenar | 13/13 | 13 | All pass |
+| pmat | 7/13 | 12 | All pass |
 | realizar | 7/13 | 6 | All pass |
 | forjar | 7/13 | 6 | All pass |
 | presentar | 7/13 | 6 | All pass |
 | rmedia | 7/13 | 6 | All pass |
 | bashrs | 7/13 | 6 | All pass |
+| depyler | 7/13 | 6 | All pass |
 | decy | 7/13 | 6 | All pass |
 | ruchy | 7/13 | 6 | All pass |
 | simular | 7/13 | 6 | All pass |
-| pmat | 7/13 | 6 | All pass |
-| depyler | 2/13 | 0 | Pre-existing compile error |
 
-Total: **99 trait tests** across 12 repos, all passing.
+Total: **111 trait tests** across **13/13 repos**, all passing.
+
 Multi-input signatures generated from YAML domains (`split_once` parser).
 CI trait-staleness check in `.github/workflows/ci.yml`.
 Behavioral assertions: softmax sum-to-1, ReLU non-neg, sigmoid range,
 RMS normalization, LayerNorm standardization, CE non-negative loss.
+
+depyler-core required fixing 77 pre-existing compilation errors
+(deleted module files from pmat split cleanup, missing type aliases,
+duplicate method names, borrow conflicts). Five-whys root cause:
+commit `bc8fbafa` deleted critical `impl RustCodeGen` files.
 
 Consumer crates add a dependency on the trait module and implement it:
 
