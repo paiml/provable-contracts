@@ -29,6 +29,20 @@ equations:
       - "If fp8_enabled = true and warmup fails, context MUST be destroyed and recreated"
       - "A poisoned context (CUDA_ERROR_ILLEGAL_ADDRESS) MUST NOT be reused for inference"
 
+  culink_skip:
+    formula: "cuLinkCreate never called — use legacy cuModuleLoadDataEx only"
+    finding: "PMAT-369: cuLinkCreate with CU_JIT_TARGET poisons context on 590.48.01 (sm_89) and 540.5.0 (sm_87). Returns INVALID_VALUE (1), subsequent cuModuleLoadDataEx returns UNKNOWN (901)."
+    invariants:
+      - "compile_ptx_to_cubin() always returns Err (cuLinkCreate skipped)"
+      - "Legacy JIT (cuModuleLoadDataEx) used for all PTX modules"
+
+  cuda_graph_guard:
+    formula: "SKIP_CUDA_GRAPH=1 disables graph capture to prevent context poisoning"
+    finding: "PMAT-369: cuStreamBeginCapture poisons CUDA context. First forward pass succeeds, all subsequent fail with CUDA_ERROR_INVALID_VALUE (1). SKIP_CUDA_GRAPH=1 workaround."
+    invariants:
+      - "When SKIP_CUDA_GRAPH=1, cuStreamBeginCapture is never called"
+      - "Non-graphed path dispatches kernels individually (280 launches vs 1)"
+
 proof_obligations:
   - type: invariant
     property: "FP8 is disabled on Blackwell (cc >= 100)"

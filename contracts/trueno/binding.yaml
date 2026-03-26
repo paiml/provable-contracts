@@ -696,3 +696,16 @@ bindings:
     function: "Q4K_GEMV_SHADER"
     status: implemented
     notes: "PMAT-365: Fused Q4K GEMV working. 10x VRAM reduction. Scale extraction fixed."
+
+  # PMAT-371: CUDA context health — cuLinkCreate and graph capture guards
+  - contract: gpu-context-health-v1.yaml
+    equation: culink_skip
+    function: "CudaModule::from_ptx"
+    status: implemented
+    notes: "PMAT-369: cuLinkCreate skipped. compile_ptx_to_cubin always returns Err."
+
+  - contract: gpu-context-health-v1.yaml
+    equation: cuda_graph_guard
+    function: "forward_all_layers_gpu_to_logits_graphed"
+    status: implemented
+    notes: "PMAT-369: SKIP_CUDA_GRAPH=1 env var disables cuStreamBeginCapture."
