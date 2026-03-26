@@ -39,7 +39,11 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             binding,
         } => commands::explain::run(&contract, binding.as_deref(), &format),
         Commands::Validate { contract } => commands::validate::run(&contract),
-        Commands::Scaffold { contract } => commands::scaffold::run(&contract),
+        Commands::Scaffold {
+            contract,
+            r#trait,
+            output,
+        } => commands::scaffold::run(&contract, r#trait, output.as_deref()),
         Commands::ExtractPytorch { target, output } => {
             commands::extract::run(&target, output.as_deref())
         }

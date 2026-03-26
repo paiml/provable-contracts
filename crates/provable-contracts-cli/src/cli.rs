@@ -26,6 +26,12 @@ pub enum Commands {
     Scaffold {
         /// Path to the contract YAML file
         contract: PathBuf,
+        /// Generate standalone named trait for compiler enforcement (§23)
+        #[arg(long)]
+        r#trait: bool,
+        /// Output file (default: stdout)
+        #[arg(short, long)]
+        output: Option<PathBuf>,
     },
     /// Extract kernel equations from `PyTorch` source into YAML contract
     #[command(name = "extract-pytorch")]

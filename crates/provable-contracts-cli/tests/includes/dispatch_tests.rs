@@ -20,6 +20,8 @@ fn dispatch_validate() {
 fn dispatch_scaffold() {
     let result = run_command(Commands::Scaffold {
         contract: test_contract(),
+        r#trait: false,
+        output: None,
     });
     assert!(result.is_ok());
 }
