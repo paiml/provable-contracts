@@ -682,3 +682,10 @@ bindings:
     function: "WgslForwardPass::forward_layer"
     status: implemented
     notes: "PMAT-358: encode_bias_add before encode_rope in same command encoder"
+
+  # PMAT-362: GPU attention contract
+  - contract: wgpu-forward-pass-v1.yaml
+    equation: gpu_attention
+    function: "WgslForwardPass::forward_layer"
+    status: implemented
+    notes: "PMAT-361: WGSL attention shader. Single-submit forward_layer with GPU KV cache."

@@ -23,6 +23,10 @@ equations:
     description: "Bias must be applied BEFORE RoPE (they don't commute)"
     invariant: "forward_layer: GEMV → bias_add → RoPE → attention"
     finding: "PMAT-358: Implemented on GPU. GEMV → bias_add → RoPE in same encoder."
+  gpu_attention:
+    description: "Single-submit: attention runs on GPU with KV cache, no Q/K/V readback"
+    invariant: "forward_layer uses 1 submit (was 2). KV cache GPU-resident."
+    finding: "PMAT-361: WGSL attention shader with per-head softmax + GQA."
 postconditions:
   - name: performance_target
     threshold: 25.0
