@@ -49,6 +49,7 @@ pub mod lean_gen;
 pub mod lint;
 pub mod mirai_gen;
 pub mod obligation_matrix;
+pub mod pipeline;
 pub mod probar_gen;
 pub mod proof_status;
 pub mod query;

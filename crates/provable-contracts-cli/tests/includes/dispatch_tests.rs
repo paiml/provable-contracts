@@ -409,3 +409,25 @@ fn dispatch_roofline_invalid_hw() {
     });
     assert!(result.is_err());
 }
+
+#[test]
+fn dispatch_pipeline_text() {
+    let pipeline_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../contracts/pipelines/inference-forward-v1.yaml");
+    let result = run_command(Commands::Pipeline {
+        pipeline: pipeline_path,
+        format: "text".to_string(),
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_pipeline_json() {
+    let pipeline_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../contracts/pipelines/inference-forward-v1.yaml");
+    let result = run_command(Commands::Pipeline {
+        pipeline: pipeline_path,
+        format: "json".to_string(),
+    });
+    assert!(result.is_ok());
+}

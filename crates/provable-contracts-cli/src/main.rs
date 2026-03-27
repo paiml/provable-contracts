@@ -268,6 +268,7 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             hardware,
             format,
         } => commands::roofline::run(&contract_dir, params, bits, &hardware, &format),
+        Commands::Pipeline { pipeline, format } => commands::pipeline::run(&pipeline, &format),
         Commands::VerifyBindings {
             binding,
             output,

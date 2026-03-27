@@ -460,6 +460,14 @@ pub enum Commands {
         #[arg(short, long, default_value = "text")]
         format: String,
     },
+    /// Validate a pipeline contract (cross-repo compositional verification)
+    Pipeline {
+        /// Path to the pipeline YAML file
+        pipeline: PathBuf,
+        /// Output format: text (default) or json
+        #[arg(short, long, default_value = "text")]
+        format: String,
+    },
     /// Generate a Rust test that verifies all bound functions exist
     VerifyBindings {
         /// Path to binding.yaml
