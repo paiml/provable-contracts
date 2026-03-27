@@ -120,7 +120,7 @@ provable-contracts/
 | Metric | Value |
 |---|---|
 | YAML contracts | 193 |
-| Binding entries (13 crates) | 16,985 |
+| Binding entries (13 crates) | 16,989 |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) |
 | CLI commands | 30 |
 | Consuming projects | 13 Level 3 (all AllImplemented) |
@@ -152,14 +152,14 @@ Level   Method                  Tool            Guarantee
 |-------|----------------|-----------|----------|--------|
 | **L5** | Algorithm incorrect | Lean 4 proof (no sorry) | 0 contracts | — |
 | **L4** | Logic bugs, overflows | Kani `#[kani::proof]` BMC | 251 harnesses (YAML) | Inputs > bound |
-| **L3** | Violated invariants | `#[contract]` debug_assert | 35 functions | Release builds |
+| **L3** | Violated invariants | `#[contract]` debug_assert | 49 functions | Release builds |
 | **L2** | Renamed/deleted fns | Trait `impl` (§23) | 13/13 repos × 13 traits | Logic bugs |
-| **L1** | Missing bindings | build.rs AllImplemented | 16,985 bindings | Ghost bindings |
+| **L1** | Missing bindings | build.rs AllImplemented | 16,989 bindings | Ghost bindings |
 | **L0.5** | Schema/audit/score | `pv lint` 7 gates | 14/14 targets | Impl bugs |
 | **L0** | Obvious bugs | Human review | — | Everything subtle |
 
 **L0 through L2 enforce on every `cargo build` + `cargo test`.**
-L3 enforces on 35 annotated functions in debug builds.
+L3 enforces on 49 annotated functions in debug builds.
 L4 and L5 are defined in YAML but not yet run in CI.
 
 ### The Provability Claim
@@ -498,7 +498,7 @@ pub fn rms_norm(input: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
 
 | Layer | What it checks | When | Coverage |
 |-------|---------------|------|----------|
-| **L1: build.rs AllImplemented** | binding.yaml has no `not_implemented` | `cargo build` | 16,985 bindings |
+| **L1: build.rs AllImplemented** | binding.yaml has no `not_implemented` | `cargo build` | 16,989 bindings |
 | **L2: Trait `impl`** | Function exists + correct signature | Rust compiler | Per-contract (§23) |
 | **L3: `#[contract]` macro** | Env var + `debug_assert!()` injection | Compile-time | Per-function |
 | **L4: `pv lint --reverse`** | Every `pub fn` has a binding | CI gate | Full crate scan |
@@ -811,7 +811,7 @@ Petrovic et al. (2022) "Practical Mutation Testing at Scale" IEEE TSE.
 **Sub-spec**: [sub/sovereign-stack-audit.md](sub/sovereign-stack-audit.md)
 
 Full audit of all 13 repos in the PAIML sovereign AI stack.
-**6.4M LOC. 100% under contract enforcement. 16,985 bindings.**
+**6.4M LOC. 100% under contract enforcement. 16,989 bindings.**
 
 | Project | Bindings | Policy | Status |
 |---|---|---|---|
@@ -927,7 +927,7 @@ patches, per-contract resource metrics, HTML reports, daemon/LSP mode.
 
 build.rs checks that binding.yaml *says* "implemented" — but nothing
 verifies the function *actually exists* with the *correct signature*.
-Of 16,985 bindings, only 35 have `#[contract]` annotations. Build.rs
+Of 16,989 bindings, only 35 have `#[contract]` annotations. Build.rs
 source scanning is fragile: string-matching `pub fn` misses `impl`
 methods, 13 copy-pasted scanners, name-only without signature checking.
 
@@ -967,7 +967,7 @@ No build.rs. No scanning. No name matching. Stable Rust. Zero runtime cost.
 
 | Layer | What | Mechanism | Coverage |
 |-------|------|-----------|----------|
-| L1 | Registry completeness | build.rs AllImplemented | 16,985 bindings |
+| L1 | Registry completeness | build.rs AllImplemented | 16,989 bindings |
 | **L2** | **Function existence + signature** | **Trait `impl`** | **Per-contract** |
 | L3 | Pre/postcondition assertions | `#[contract]` macro | Per-function |
 | L4 | Reverse coverage | `pv lint --reverse` | Full crate scan |

@@ -290,7 +290,7 @@ via `build.rs` + `#[contract]` proc macro (Level 3 integration):
 | **rmedia** | 405 | AllImplemented |
 | **trueno** | 100 | AllImplemented |
 
-**Total: 16,985 bindings across 13 repos. 100% AllImplemented.**
+**Total: 16,989 bindings across 13 repos. 100% AllImplemented.**
 
 ### Qwen 3.5 Verification DAG
 
