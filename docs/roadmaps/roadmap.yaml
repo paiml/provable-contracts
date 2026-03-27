@@ -1788,3 +1788,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-103
+  github_issue: null
+  item_type: task
+  title: 'Fix pv codegen: binding-aware generation with real pre/postconditions'
+  status: completed
+  priority: critical
+  assigned_to: null
+  created: 2026-03-27T18:17:11Z
+  updated: 2026-03-27T18:19:44.571560858+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
