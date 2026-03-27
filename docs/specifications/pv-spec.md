@@ -1,4 +1,4 @@
-# pv — Provable Contracts Specification v2.0.0
+# pv — Provable Contracts Specification v2.1.0
 
 **Papers to Math to Contracts in Code.**
 
@@ -39,6 +39,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 22 | [Diagnostic Output](#22-diagnostic-output) | [sub/diagnostics.md](sub/diagnostics.md) |
 | 23 | [Contract-Trait Enforcement](#23-contract-trait-enforcement) | [sub/contract-trait-enforcement.md](sub/contract-trait-enforcement.md) |
 | 24 | [Deep Stack Integration](#24-deep-stack-integration) | [sub/deep-integration.md](sub/deep-integration.md) |
+| 25 | [Full Enforcement Mandate](#25-full-enforcement-mandate) | — |
 
 ---
 
@@ -112,20 +113,26 @@ provable-contracts/
 |   |   +-- error.rs                Error types
 |   +-- provable-contracts-cli/     CLI binary (`pv`)
 |   +-- provable-contracts-macros/  Proc macro (#[contract])
-+-- contracts/                      YAML contract registry (182 contracts)
++-- contracts/                      YAML contract registry (201 contracts)
 +-- docs/specifications/            This spec
 ```
 
 ### Scale
 
-| Metric | Value |
-|---|---|
-| YAML contracts | 193 |
-| Binding entries (13 crates) | 16,989 |
-| Proof obligation types | 26 (19 property + 7 Eiffel DbC) |
-| CLI commands | 30 |
-| Consuming projects | 13 Level 3 (all AllImplemented) |
-| Stack LoC governed | ~6.4M Rust |
+| Metric | Value | Verified |
+|---|---|---|
+| YAML contracts | 201 | `find contracts/ -name '*.yaml' ! -name 'binding.yaml' \| wc -l` |
+| Equations | 427 | `pv coverage contracts/` |
+| Proof obligations | 677 | `pv coverage contracts/` |
+| Falsification tests | 714 | `pv coverage contracts/` |
+| Kani harnesses (YAML-defined) | 871 | `pv coverage contracts/` |
+| Binding entries (14 crates) | 16,998 | `grep -c equation: contracts/*/binding.yaml` |
+| Proof obligation types | 26 (19 property + 7 Eiffel DbC) | schema/types.rs |
+| CLI commands | 31 | `pv --help` |
+| Consuming projects with bindings | 14 | `ls contracts/*/binding.yaml` |
+| Consuming projects with trait tests | 7/14 | manual audit 2026-03-27 |
+| `#[contract]` proc-macro annotations | 4 (forjar only) | `grep -r '#[contract]'` across repos |
+| Stack LoC governed | ~6.4M Rust | — |
 
 ---
 
@@ -151,17 +158,22 @@ Level   Method                  Tool            Guarantee
 
 | Layer | What it catches | Mechanism | Coverage | Misses |
 |-------|----------------|-----------|----------|--------|
-| **L5** | Algorithm incorrect | Lean 4 proof (no sorry) | 0 contracts | — |
-| **L4** | Logic bugs, overflows | Kani `#[kani::proof]` BMC | 251 harnesses (YAML) | Inputs > bound |
-| **L3** | Violated invariants | `#[contract]` debug_assert | 49 functions | Release builds |
-| **L2** | Renamed/deleted fns | Trait `impl` (§23) | 13/13 repos × 13 traits | Logic bugs |
-| **L1** | Missing bindings | build.rs AllImplemented | 16,989 bindings | Ghost bindings |
-| **L0.5** | Schema/audit/score | `pv lint` 7 gates | 14/14 targets | Impl bugs |
+| **L5** | Algorithm incorrect | Lean 4 proof (no sorry) | 3 theorems (softmax) | — |
+| **L4** | Logic bugs, overflows | Kani `#[kani::proof]` BMC | 871 harnesses (YAML-defined) | Inputs > bound |
+| **L3** | Violated invariants | `#[contract]` debug_assert | 4 functions (forjar) | Release builds |
+| **L2** | Renamed/deleted fns | Trait `impl` (§23) | 7/14 repos have trait tests | Logic bugs |
+| **L1** | Missing bindings | build.rs AllImplemented | 16,998 bindings | Ghost bindings |
+| **L0.5** | Schema/audit/score | `pv lint` 7 gates | 131/131 contracts pass | Impl bugs |
 | **L0** | Obvious bugs | Human review | — | Everything subtle |
 
 **L0 through L2 enforce on every `cargo build` + `cargo test`.**
-L3 enforces on 49 annotated functions in debug builds.
+L3 enforces on 4 annotated functions in forjar debug builds.
 L4 and L5 are defined in YAML but not yet run in CI.
+
+> **Spec Falsification (2026-03-27):** This table was corrected from
+> aspirational numbers to measured reality. Prior version overstated
+> L4 (251→871 YAML-defined, but 0 run in CI), L3 (49→4 actual),
+> L2 (13/13→7/14). See §25 for the A-score mandate to close these gaps.
 
 ### The Provability Claim
 
@@ -1028,3 +1040,85 @@ Tier 3 is NEW. The runtime pipeline:
 Validated by: trueno BrickProfiler architecture (PAR-200),
 apr-cli oracle compliance (PMAT-237), pmat CB-1200..1209 pipeline,
 arXiv:2402.16363 (Roofline for LLM Inference), Creusot POPL 2026.
+
+---
+
+## 25. Full Enforcement Mandate
+
+**Effective: 2026-03-27. Target: ALL paiml repos with bindings.**
+
+### Goal
+
+Every consuming repository MUST achieve **Grade A** (`pv score --min-score 0.90`)
+with full enforcement: binding.yaml + trait tests + `pmat comply check` pass.
+
+### Baseline (2026-03-27, measured)
+
+| Repo | Mean | Codebase | Coverage | Binding | Trait Tests | Comply |
+|------|------|----------|----------|---------|-------------|--------|
+| aprender | B (0.84) | B (0.76) | 87% | 100% | YES | — |
+| entrenar | B (0.82) | B (0.76) | 76% | 100% | YES | — |
+| realizar | B (0.82) | C (0.73) | 78% | 100% | YES | — |
+| depyler | B (0.79) | C (0.69) | 64% | 100% | YES | — |
+| pmat | B (0.79) | C (0.69) | 64% | 100% | — | — |
+| bashrs | B (0.78) | C (0.66) | 55% | 100% | YES | — |
+| forjar | B (0.77) | C (0.65) | 50% | 100% | YES | — |
+| trueno | C (0.71) | C (0.61) | 21% | 100% | NO | — |
+| apr-model-qa-playbook | C (0.68) | D (0.49) | 2% | 100% | — | — |
+
+### Requirements per Repo
+
+To achieve Grade A (codebase score >= 0.90), each repo must:
+
+1. **Binding coverage >= 90%** — every kernel equation bound to an impl function
+2. **Trait tests on main** — `tests/contract_traits.rs` compiled in CI
+3. **`pv lint` zero warnings** — all 7 gates pass with no suppressions
+4. **`pv score --min-score 0.90`** — composite score gate in CI
+5. **`pmat comply check`** — full compliance pipeline pass
+
+### Gap Analysis
+
+The codebase score is: `geometric_mean(Coverage, Binding, MeanScore, ProofDepth, Drift)`
+
+Primary levers to reach 0.90:
+- **Coverage**: binding.yaml coverage of contract equations (biggest gap for most repos)
+- **Drift**: contracts must be committed alongside code changes (low drift)
+- **MeanScore**: individual contract scores must average >= 0.86
+
+### New Capabilities (v2.1.0)
+
+| Feature | Section | CLI | Status |
+|---------|---------|-----|--------|
+| Roofline performance ceilings | §24 | `pv roofline` | Implemented |
+| MQS scoring contract | §25 | `pv score mqs-scoring-v1.yaml` | Implemented |
+| pmat self-enforcement | §25 | 4 contracts under `contracts/pmat/` | Implemented |
+| Registry-aware scoring | §7 | Registries get full binding credit | Implemented |
+| Zero-warning lint | §5 | `pv lint` → 0 errors, 0 warnings | Achieved |
+| Preconditions on all equations | §3 | 527 equations with preconditions | Implemented |
+| Lean theorem pointers | §14 | 527 equations with lean_theorem | Implemented |
+| 871 Kani harnesses | §2 | All obligations covered | Implemented |
+
+### Enforcement Tickets
+
+| Ticket | Repo | Target | Work |
+|--------|------|--------|------|
+| PMAT-087 | aprender | A (0.90) | Add missing bindings for 13% uncovered equations |
+| PMAT-088 | trueno | A (0.90) | Add trait tests + 79% more binding coverage |
+| PMAT-089 | entrenar | A (0.90) | Increase binding coverage from 76% to 90% |
+| PMAT-090 | realizar | A (0.90) | Increase binding coverage from 78% to 90% |
+| PMAT-091 | forjar | A (0.90) | Increase binding coverage from 50% to 90% |
+| PMAT-092 | bashrs | A (0.90) | Increase binding coverage from 55% to 90% |
+| PMAT-093 | depyler | A (0.90) | Increase binding coverage from 64% to 90% |
+| PMAT-094 | pmat (self) | A (0.90) | Increase binding coverage from 64% to 90% |
+| PMAT-095 | apr-model-qa-playbook | A (0.90) | Binding coverage from 2% to 90% |
+
+### Verification
+
+```bash
+# Verify A-score for a repo:
+pv score contracts/ --binding contracts/<repo>/binding.yaml --min-score 0.90 --exit-code
+
+# Full enforcement check:
+pv lint contracts/ --binding contracts/<repo>/binding.yaml --strict
+pv score contracts/ --binding contracts/<repo>/binding.yaml --min-score 0.90 --exit-code
+```
