@@ -53,6 +53,12 @@ proof_obligations:
   formal: argmax(logits_gpu) == argmax(logits_cpu) for greedy decoding
   tolerance: 0.0001
   applies_to: all
+- type: invariant
+  property: "PMAT-394: Grace Blackwell unified memory — cuMemAllocManaged eager, not lazy"
+  formal: "cuMemAllocManaged on CUDA 13.0/GB10 allocates physical pages immediately (Xid 31 on OOM)"
+  applies_to: "cc >= 120"
+  finding: "32B OOM (150 GB VM). cuMemAllocManaged NOT suitable for large models on current driver. Use mmap+cuMemHostRegister or driver update."
+
 falsification_tests:
 - id: FALSIFY-GWR-001
   rule: Weight residency
