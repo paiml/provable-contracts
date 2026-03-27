@@ -1342,11 +1342,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: pre-commit hook missing cargo fmt gate — repeated CI format failures
-  status: planned
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-03-07T22:06:28Z
-  updated: 2026-03-07T22:06:28Z
+  updated: 2026-03-27T15:08:19.679507636+00:00
   spec: null
   acceptance_criteria:
   - The PMAT-generated pre-commit hook does not run 'cargo fmt --check'. Commits 889d387, 14a078a, e0b8e3e all pushed unformatted code, requiring manual fmt fix commits. Blocked by PMAT-509 (pmat must add fmt to hook template). After PMAT-509 ships, run 'pmat hooks install' to get the updated hook.
