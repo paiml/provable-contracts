@@ -153,6 +153,41 @@ kani_harnesses:
   bound: 48
   strategy: exhaustive
   harness: verify_layer_schedule
+- id: KANI-INFERE-003
+  obligation: Prefill output shape
+  property: Prefill output shape
+  bound: 8
+  strategy: exhaustive
+- id: KANI-INFERE-004
+  obligation: Decode step output shape
+  property: Decode step output shape
+  bound: 8
+  strategy: exhaustive
+- id: KANI-INFERE-005
+  obligation: Residual dimension preservation
+  property: Residual dimension preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-INFERE-006
+  obligation: Residual is pure addition
+  property: Residual is pure addition
+  bound: 8
+  strategy: exhaustive
+- id: KANI-INFERE-007
+  obligation: Layer schedule partition
+  property: Layer schedule partition
+  bound: 8
+  strategy: exhaustive
+- id: KANI-INFERE-008
+  obligation: KV cache monotonically growing
+  property: KV cache monotonically growing
+  bound: 8
+  strategy: exhaustive
+- id: KANI-INFERE-009
+  obligation: All activations finite
+  property: All activations finite
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-INF-001
   name: Inference Pipeline Contract

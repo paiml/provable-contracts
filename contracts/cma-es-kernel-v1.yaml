@@ -141,6 +141,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_cma_weights_normalized
+- id: KANI-CMA_ES-003
+  obligation: Step size positive
+  property: Step size positive
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CMA_ES-004
+  obligation: Covariance positive definite
+  property: Covariance positive definite
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CMA_ES-005
+  obligation: Weights sum to 1
+  property: Weights sum to 1
+  bound: 8
+  strategy: stub_float
+- id: KANI-CMA_ES-006
+  obligation: Covariance symmetry
+  property: Covariance symmetry
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CMA_ES-007
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-CMA-001
   name: CMA-ES Contract

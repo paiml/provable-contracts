@@ -94,6 +94,31 @@ kani_harnesses:
   bound: 8
   strategy: exhaustive
   harness: verify_quantized_dot_bounded
+- id: KANI-MATMUL-002
+  obligation: Output shape correctness
+  property: Output shape correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MATMUL-003
+  obligation: Matmul associativity
+  property: Matmul associativity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MATMUL-004
+  obligation: Matmul distributes
+  property: Matmul distributes
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MATMUL-005
+  obligation: SIMD matches scalar
+  property: SIMD matches scalar
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MATMUL-006
+  obligation: Quantized error bounded
+  property: Quantized error bounded
+  bound: 8
+  strategy: stub_float
 qa_gate:
   id: F-MM-001
   name: Matmul Contract

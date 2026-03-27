@@ -217,6 +217,41 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_loop_count_equivalence
+- id: KANI-SEMANT-006
+  obligation: Input Python function uses only supported syntax
+  property: Input Python function uses only supported syntax
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SEMANT-007
+  obligation: Return value equivalence
+  property: Return value equivalence
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SEMANT-008
+  obligation: Arithmetic equivalence for integers
+  property: Arithmetic equivalence for integers
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SEMANT-009
+  obligation: Arithmetic equivalence for floats
+  property: Arithmetic equivalence for floats
+  bound: 8
+  strategy: stub_float
+- id: KANI-SEMANT-010
+  obligation: String operation equivalence
+  property: String operation equivalence
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SEMANT-011
+  obligation: Collection indexing equivalence
+  property: Collection indexing equivalence
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SEMANT-012
+  obligation: Comprehension equivalence
+  property: Comprehension equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-SE-001
   name: Semantic Equivalence Contract

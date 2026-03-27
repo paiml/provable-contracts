@@ -138,6 +138,26 @@ kani_harnesses:
   strategy: exhaustive
   solver: cadical
   harness: verify_sign_preservation
+- id: KANI-FP8_IN-004
+  obligation: E4M3 encode-decode preserves value within ULP
+  property: E4M3 encode-decode preserves value within ULP
+  bound: 8
+  strategy: exhaustive
+- id: KANI-FP8_IN-005
+  obligation: E5M2 encode-decode preserves value within ULP
+  property: E5M2 encode-decode preserves value within ULP
+  bound: 8
+  strategy: exhaustive
+- id: KANI-FP8_IN-006
+  obligation: E4M3 range [-448, 448]
+  property: E4M3 range [-448, 448]
+  bound: 8
+  strategy: exhaustive
+- id: KANI-FP8_IN-007
+  obligation: E5M2 range [-57344, 57344]
+  property: E5M2 range [-57344, 57344]
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-FP8-001
   name: FP8 Interchange Contract

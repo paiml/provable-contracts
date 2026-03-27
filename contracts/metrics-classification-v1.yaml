@@ -146,6 +146,46 @@ kani_harnesses:
   obligation: '2'
   bound: 4
   strategy: exhaustive
+- id: KANI-METRIC-003
+  obligation: Accuracy bounded
+  property: Accuracy bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-METRIC-004
+  obligation: Precision bounded
+  property: Precision bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-METRIC-005
+  obligation: Recall bounded
+  property: Recall bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-METRIC-006
+  obligation: F1 bounded
+  property: F1 bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-METRIC-007
+  obligation: F1 harmonic mean property
+  property: F1 harmonic mean property
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METRIC-008
+  obligation: Confusion matrix row sums
+  property: Confusion matrix row sums
+  bound: 8
+  strategy: stub_float
+- id: KANI-METRIC-009
+  obligation: Perfect classification identity
+  property: Perfect classification identity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METRIC-010
+  obligation: Micro-average identity
+  property: Micro-average identity
+  bound: 8
+  strategy: exhaustive
 enforcement:
   bounded:
     description: All metrics must be in [0, 1]

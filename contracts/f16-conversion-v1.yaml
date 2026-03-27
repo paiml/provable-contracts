@@ -75,6 +75,26 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_f16_roundtrip
+- id: KANI-F16_CO-002
+  obligation: Bias trick correctness
+  property: Bias trick correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-F16_CO-003
+  obligation: Roundtrip identity
+  property: Roundtrip identity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-F16_CO-004
+  obligation: Sign preservation
+  property: Sign preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-F16_CO-005
+  obligation: SIMD conversion equivalence
+  property: SIMD conversion equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-F16-001
   name: F16 Conversion Contract

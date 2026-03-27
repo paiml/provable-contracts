@@ -138,6 +138,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_entropy_non_negative
+- id: KANI-ACTIVE-004
+  obligation: Uncertainty score in [0, 1]
+  property: Uncertainty score in [0, 1]
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ACTIVE-005
+  obligation: Margin score in [0, 1]
+  property: Margin score in [0, 1]
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ACTIVE-006
+  obligation: Entropy is non-negative
+  property: Entropy is non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ACTIVE-007
+  obligation: Vote entropy is non-negative
+  property: Vote entropy is non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ACTIVE-008
+  obligation: Higher uncertainty selects more ambiguous samples
+  property: Higher uncertainty selects more ambiguous samples
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-AL-001
   name: Active Learning Contract

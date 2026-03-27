@@ -179,6 +179,36 @@ kani_harnesses:
   strategy: exhaustive
   solver: cadical
   harness: verify_optional_roundtrip
+- id: KANI-TYPE_P-005
+  obligation: Input is valid Python with resolvable types
+  property: Input is valid Python with resolvable types
+  bound: 8
+  strategy: exhaustive
+- id: KANI-TYPE_P-006
+  obligation: Every Python type maps to exactly one Rust type
+  property: Every Python type maps to exactly one Rust type
+  bound: 8
+  strategy: exhaustive
+- id: KANI-TYPE_P-007
+  obligation: Type map is compositional
+  property: Type map is compositional
+  bound: 8
+  strategy: exhaustive
+- id: KANI-TYPE_P-008
+  obligation: Numeric precision bounds
+  property: Numeric precision bounds
+  bound: 8
+  strategy: stub_float
+- id: KANI-TYPE_P-009
+  obligation: Optional type preservation
+  property: Optional type preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-TYPE_P-010
+  obligation: Union type preservation
+  property: Union type preservation
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-TP-001
   name: Type Preservation Contract

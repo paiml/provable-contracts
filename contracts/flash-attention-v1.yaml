@@ -80,6 +80,26 @@ kani_harnesses:
   bound: 4
   strategy: stub_float
   harness: verify_online_softmax_2tiles
+- id: KANI-FLASH_-002
+  obligation: Matches standard attention
+  property: Matches standard attention
+  bound: 8
+  strategy: exhaustive
+- id: KANI-FLASH_-003
+  obligation: Online softmax correctness
+  property: Online softmax correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-FLASH_-004
+  obligation: Tile coverage
+  property: Tile coverage
+  bound: 8
+  strategy: exhaustive
+- id: KANI-FLASH_-005
+  obligation: Attention weight conservation
+  property: Attention weight conservation
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-FA-001
   name: Flash Attention Contract

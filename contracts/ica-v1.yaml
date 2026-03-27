@@ -80,6 +80,21 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_ica_output_shape
+- id: KANI-ICA_V1-002
+  obligation: Output shape
+  property: Output shape
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ICA_V1-003
+  obligation: Deterministic output
+  property: Deterministic output
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ICA_V1-004
+  obligation: Component count
+  property: Component count
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-ICA-001
   name: ICA Contract

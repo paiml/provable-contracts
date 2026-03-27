@@ -126,6 +126,41 @@ kani_harnesses:
   obligation: '2'
   bound: 4
   strategy: stub_float
+- id: KANI-METRIC-003
+  obligation: R² upper bound
+  property: R² upper bound
+  bound: 8
+  strategy: stub_float
+- id: KANI-METRIC-004
+  obligation: MSE non-negativity
+  property: MSE non-negativity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METRIC-005
+  obligation: MAE-RMSE ordering (Jensen's inequality)
+  property: MAE-RMSE ordering (Jensen's inequality)
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METRIC-006
+  obligation: Perfect prediction identity
+  property: Perfect prediction identity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METRIC-007
+  obligation: MSE symmetry
+  property: MSE symmetry
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METRIC-008
+  obligation: MAE non-negativity
+  property: MAE non-negativity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METRIC-009
+  obligation: RMSE non-negativity
+  property: RMSE non-negativity
+  bound: 8
+  strategy: exhaustive
 enforcement:
   upper_bound:
     description: R² must not exceed 1.0

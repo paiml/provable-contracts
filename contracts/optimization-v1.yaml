@@ -93,6 +93,21 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_finite_iterates
+- id: KANI-OPTIMI-003
+  obligation: Monotone function decrease
+  property: Monotone function decrease
+  bound: 8
+  strategy: exhaustive
+- id: KANI-OPTIMI-004
+  obligation: Finite iterates
+  property: Finite iterates
+  bound: 8
+  strategy: exhaustive
+- id: KANI-OPTIMI-005
+  obligation: Positive step size
+  property: Positive step size
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-OPT-001
   name: Optimization Contract

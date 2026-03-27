@@ -157,6 +157,41 @@ kani_harnesses:
   bound: 4
   strategy: bounded_int
   harness: verify_qwen3_quant_ordering
+- id: KANI-QWEN3_-003
+  obligation: Parameter count matches architecture
+  property: Parameter count matches architecture
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3_-004
+  obligation: FLOPs bounded by 2P
+  property: FLOPs bounded by 2P
+  bound: 8
+  strategy: stub_float
+- id: KANI-QWEN3_-005
+  obligation: Quantization memory ordering
+  property: Quantization memory ordering
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3_-006
+  obligation: Throughput increases with bandwidth
+  property: Throughput increases with bandwidth
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3_-007
+  obligation: Verification coverage at 100%
+  property: Verification coverage at 100%
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3_-008
+  obligation: Compositional proof structure
+  property: Compositional proof structure
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3_-009
+  obligation: 'End-to-end shape: tokens in -> logits out'
+  property: 'End-to-end shape: tokens in -> logits out'
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-QW3E-001
   name: Qwen3 End-to-End Verification

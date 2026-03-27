@@ -96,6 +96,31 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_dispatch_monotonic
+- id: KANI-BACKEN-002
+  obligation: GPU threshold monotonic
+  property: GPU threshold monotonic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BACKEN-003
+  obligation: Garbage oracle detects repetition
+  property: Garbage oracle detects repetition
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BACKEN-004
+  obligation: QK norm score bound
+  property: QK norm score bound
+  bound: 8
+  strategy: stub_float
+- id: KANI-BACKEN-005
+  obligation: BPE roundtrip
+  property: BPE roundtrip
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BACKEN-006
+  obligation: SIMD dispatch equivalence
+  property: SIMD dispatch equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-BD-001
   name: Backend Dispatch Contract

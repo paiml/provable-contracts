@@ -126,6 +126,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_gelu_approx_accuracy
+- id: KANI-GELU_K-003
+  obligation: Non-negativity for positive inputs
+  property: Non-negativity for positive inputs
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GELU_K-004
+  obligation: Monotonically increasing for positive inputs
+  property: Monotonically increasing for positive inputs
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GELU_K-005
+  obligation: Odd-function symmetry around origin
+  property: Odd-function symmetry around origin
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GELU_K-006
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GELU_K-007
+  obligation: Tanh approximation accuracy
+  property: Tanh approximation accuracy
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-GE-001
   name: GELU Contract

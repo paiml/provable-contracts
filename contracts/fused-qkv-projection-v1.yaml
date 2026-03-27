@@ -131,3 +131,18 @@ kani_harnesses:
   bound: 32
   strategy: exhaustive
   harness: verify_q8_buffer_readonly
+- id: KANI-FUSED_-004
+  obligation: Weight concatenation preserves values
+  property: Weight concatenation preserves values
+  bound: 8
+  strategy: exhaustive
+- id: KANI-FUSED_-005
+  obligation: Bias concatenation preserves values
+  property: Bias concatenation preserves values
+  bound: 8
+  strategy: exhaustive
+- id: KANI-FUSED_-006
+  obligation: Single matvec call
+  property: Single matvec call
+  bound: 8
+  strategy: exhaustive

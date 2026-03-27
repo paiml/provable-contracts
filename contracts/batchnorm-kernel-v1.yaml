@@ -133,6 +133,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_running_variance_nonneg
+- id: KANI-BATCHN-003
+  obligation: Training output standardized
+  property: Training output standardized
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BATCHN-004
+  obligation: Denominator strictly positive
+  property: Denominator strictly positive
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BATCHN-005
+  obligation: Running variance non-negative
+  property: Running variance non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BATCHN-006
+  obligation: Eval mode uses running stats
+  property: Eval mode uses running stats
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BATCHN-007
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-BN-001
   name: BatchNorm Contract

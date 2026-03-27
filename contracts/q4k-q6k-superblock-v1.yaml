@@ -125,6 +125,41 @@ kani_harnesses:
   strategy: exhaustive
   solver: cadical
   harness: verify_superblock_sizes
+- id: KANI-Q4K_Q6-002
+  obligation: Q4K superblock size
+  property: Q4K superblock size
+  bound: 8
+  strategy: exhaustive
+- id: KANI-Q4K_Q6-003
+  obligation: Q6K superblock size
+  property: Q6K superblock size
+  bound: 8
+  strategy: exhaustive
+- id: KANI-Q4K_Q6-004
+  obligation: Total bytes monotonic
+  property: Total bytes monotonic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-Q4K_Q6-005
+  obligation: Dequant produces finite
+  property: Dequant produces finite
+  bound: 8
+  strategy: exhaustive
+- id: KANI-Q4K_Q6-006
+  obligation: Offset vanishing
+  property: Offset vanishing
+  bound: 8
+  strategy: exhaustive
+- id: KANI-Q4K_Q6-007
+  obligation: bsum weight independence
+  property: bsum weight independence
+  bound: 8
+  strategy: stub_float
+- id: KANI-Q4K_Q6-008
+  obligation: SIMD dequant equivalence
+  property: SIMD dequant equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-QS-001
   name: Q4K/Q6K Superblock Contract

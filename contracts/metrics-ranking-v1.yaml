@@ -111,6 +111,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_hit_at_k_binary
+- id: KANI-METRIC-003
+  obligation: All metrics in [0, 1]
+  property: All metrics in [0, 1]
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METRIC-004
+  obligation: NDCG perfect ranking
+  property: NDCG perfect ranking
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METRIC-005
+  obligation: hit@k binary
+  property: hit@k binary
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METRIC-006
+  obligation: MRR bounded
+  property: MRR bounded
+  bound: 8
+  strategy: stub_float
 qa_gate:
   id: F-RANK-001
   name: Ranking Metrics Contract

@@ -225,6 +225,56 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_borrowing_determinism
+- id: KANI-MEMORY-006
+  obligation: Input Python code is valid and parseable
+  property: Input Python code is valid and parseable
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MEMORY-007
+  obligation: Generated Rust compiles without errors
+  property: Generated Rust compiles without errors
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MEMORY-008
+  obligation: No use-after-move in generated code
+  property: No use-after-move in generated code
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MEMORY-009
+  obligation: No dangling references
+  property: No dangling references
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MEMORY-010
+  obligation: No mutable aliasing
+  property: No mutable aliasing
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MEMORY-011
+  obligation: Bounds-checked collection access
+  property: Bounds-checked collection access
+  bound: 8
+  strategy: stub_float
+- id: KANI-MEMORY-012
+  obligation: No unsafe blocks in generated code
+  property: No unsafe blocks in generated code
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MEMORY-013
+  obligation: Drop correctness for with-statements
+  property: Drop correctness for with-statements
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MEMORY-014
+  obligation: Escape analysis correctness
+  property: Escape analysis correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MEMORY-015
+  obligation: Copy type optimization
+  property: Copy type optimization
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-MS-001
   name: Memory Safety Contract

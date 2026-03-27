@@ -82,6 +82,21 @@ kani_harnesses:
   bound: 256
   strategy: exhaustive
   solver: cadical
+- id: KANI-GPU_CO-002
+  obligation: FP8 is disabled on Blackwell (cc >= 100)
+  property: FP8 is disabled on Blackwell (cc >= 100)
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_CO-003
+  obligation: FP8 warmup cannot poison context on incompatible hardware
+  property: FP8 warmup cannot poison context on incompatible hardware
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_CO-004
+  obligation: FP8 dispatch guard prevents runtime FP8 on Blackwell
+  property: FP8 dispatch guard prevents runtime FP8 on Blackwell
+  bound: 8
+  strategy: exhaustive
 five_whys:
   symptom: 32B batch inference crashes with CUDA_ERROR_ILLEGAL_ADDRESS on Blackwell sm_121
   analysis:

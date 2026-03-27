@@ -111,6 +111,36 @@ kani_harnesses:
   bound: 32
   strategy: exhaustive
   harness: verify_relu_monotonic
+- id: KANI-ACTIVA-003
+  obligation: GELU at zero
+  property: GELU at zero
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ACTIVA-004
+  obligation: GELU approximation error
+  property: GELU approximation error
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ACTIVA-005
+  obligation: SiLU at zero
+  property: SiLU at zero
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ACTIVA-006
+  obligation: ReLU monotonic
+  property: ReLU monotonic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ACTIVA-007
+  obligation: ReLU non-negative
+  property: ReLU non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ACTIVA-008
+  obligation: SIMD matches scalar
+  property: SIMD matches scalar
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-ACT-001
   name: Activation Contract

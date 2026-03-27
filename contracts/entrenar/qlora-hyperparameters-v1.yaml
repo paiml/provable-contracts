@@ -147,6 +147,21 @@ kani_harnesses:
   solver: cadical
   bound: 16
   description: Verify warmup fraction stays in [0.03, 0.10]
+- id: KANI-QLORA_-005
+  obligation: Sequence length covers p99 of data
+  property: Sequence length covers p99 of data
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QLORA_-006
+  obligation: Gradient clipping enabled
+  property: Gradient clipping enabled
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QLORA_-007
+  obligation: Sufficient epochs for minority class
+  property: Sufficient epochs for minority class
+  bound: 8
+  strategy: exhaustive
 falsification_tests:
 - id: FALSIFY-HP-001
   rule: C-HP-001 (Learning rate scaling)

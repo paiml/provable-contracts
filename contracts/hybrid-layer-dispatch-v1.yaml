@@ -131,6 +131,36 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_conv1d_causal_length
+- id: KANI-HYBRID-003
+  obligation: Exhaustive partition
+  property: Exhaustive partition
+  bound: 8
+  strategy: exhaustive
+- id: KANI-HYBRID-004
+  obligation: Matrix associativity
+  property: Matrix associativity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-HYBRID-005
+  obligation: Head grouping exact
+  property: Head grouping exact
+  bound: 8
+  strategy: exhaustive
+- id: KANI-HYBRID-006
+  obligation: Residual shape preservation
+  property: Residual shape preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-HYBRID-007
+  obligation: Conv1d causal output length
+  property: Conv1d causal output length
+  bound: 8
+  strategy: exhaustive
+- id: KANI-HYBRID-008
+  obligation: SIMD linear attention equivalence
+  property: SIMD linear attention equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-HL-001
   name: Hybrid Layer Dispatch Contract

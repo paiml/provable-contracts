@@ -88,6 +88,21 @@ kani_harnesses:
   bound: 32
   strategy: exhaustive
   harness: verify_hash_string_prefix
+- id: KANI-BLAKE3-002
+  obligation: 'All hashes have blake3: prefix'
+  property: 'All hashes have blake3: prefix'
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BLAKE3-003
+  obligation: Deterministic hashing
+  property: Deterministic hashing
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BLAKE3-004
+  obligation: Composite hash is order-sensitive
+  property: Composite hash is order-sensitive
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-B3-001
   name: BLAKE3 State Contract

@@ -136,3 +136,23 @@ kani_harnesses:
   obligation: Batched projection matches sequential projection
   bound: 8
   strategy: bounded_int
+- id: KANI-BATCHE-002
+  obligation: Beam selection consistency
+  property: Beam selection consistency
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BATCHE-003
+  obligation: Dimension correctness
+  property: Dimension correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BATCHE-004
+  obligation: Score ordering
+  property: Score ordering
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BATCHE-005
+  obligation: Beam search termination
+  property: Beam search termination
+  bound: 8
+  strategy: exhaustive

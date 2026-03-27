@@ -118,6 +118,36 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_config_divisibility
+- id: KANI-MODEL_-002
+  obligation: Divisibility constraints
+  property: Divisibility constraints
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MODEL_-003
+  obligation: Dimension bounds
+  property: Dimension bounds
+  bound: 8
+  strategy: stub_float
+- id: KANI-MODEL_-004
+  obligation: Parameter ordering
+  property: Parameter ordering
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MODEL_-005
+  obligation: Non-degeneracy
+  property: Non-degeneracy
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MODEL_-006
+  obligation: Cross-parameter constraints
+  property: Cross-parameter constraints
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MODEL_-007
+  obligation: SIMD config equivalence
+  property: SIMD config equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-MCA-001
   name: Model Config Algebra Contract

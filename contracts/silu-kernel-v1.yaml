@@ -139,6 +139,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_silu_positive_monotonicity
+- id: KANI-SILU_K-004
+  obligation: Zero preservation
+  property: Zero preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SILU_K-005
+  obligation: Global lower bound
+  property: Global lower bound
+  bound: 8
+  strategy: stub_float
+- id: KANI-SILU_K-006
+  obligation: Monotonic for positive inputs
+  property: Monotonic for positive inputs
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SILU_K-007
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SILU_K-008
+  obligation: Asymptotic linearity
+  property: Asymptotic linearity
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-SI-001
   name: SiLU Contract

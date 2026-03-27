@@ -111,6 +111,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_drift_status_ordering
+- id: KANI-DRIFT_-003
+  obligation: Drift score non-negative
+  property: Drift score non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DRIFT_-004
+  obligation: DriftStatus transitions correct
+  property: DriftStatus transitions correct
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DRIFT_-005
+  obligation: min_samples respected
+  property: min_samples respected
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DRIFT_-006
+  obligation: Identical distributions yield NoDrift
+  property: Identical distributions yield NoDrift
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-DRIFT-001
   name: Drift Detection Contract

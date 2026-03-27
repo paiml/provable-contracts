@@ -81,3 +81,13 @@ kani_harnesses:
   property: Higher coverage never decreases TDG score
   bound: 8
   strategy: exhaustive
+- id: KANI-TDG_SC-003
+  obligation: Weights sum to unity
+  property: Weights sum to unity
+  bound: 8
+  strategy: stub_float
+- id: KANI-TDG_SC-004
+  obligation: Valid input metrics
+  property: Valid input metrics
+  bound: 8
+  strategy: exhaustive

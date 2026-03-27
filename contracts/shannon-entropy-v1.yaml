@@ -73,6 +73,26 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_entropy_nonneg
+- id: KANI-SHANNO-002
+  obligation: Range bound
+  property: Range bound
+  bound: 8
+  strategy: stub_float
+- id: KANI-SHANNO-003
+  obligation: Constant input zero entropy
+  property: Constant input zero entropy
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SHANNO-004
+  obligation: Uniform entropy monotonic
+  property: Uniform entropy monotonic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SHANNO-005
+  obligation: SIMD entropy equivalence
+  property: SIMD entropy equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-SE-001
   name: Shannon Entropy Contract

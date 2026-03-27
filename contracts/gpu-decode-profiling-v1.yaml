@@ -261,6 +261,76 @@ kani_harnesses:
   strategy: exhaustive
   solver: cadical
   harness: verify_graph_disable_coverage
+- id: KANI-GPU_DE-003
+  obligation: Wall coverage threshold
+  property: Wall coverage threshold
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_DE-004
+  obligation: Coverage upper bound
+  property: Coverage upper bound
+  bound: 8
+  strategy: stub_float
+- id: KANI-GPU_DE-005
+  obligation: Graph disable for profiling
+  property: Graph disable for profiling
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_DE-006
+  obligation: LmHead call count
+  property: LmHead call count
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_DE-007
+  obligation: Layer brick call count
+  property: Layer brick call count
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_DE-008
+  obligation: Brick ordering respects complexity
+  property: Brick ordering respects complexity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_DE-009
+  obligation: Immediate sync detectable
+  property: Immediate sync detectable
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_DE-010
+  obligation: Deferred sync ceiling
+  property: Deferred sync ceiling
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_DE-011
+  obligation: Report fidelity — actual_us matches profiler
+  property: Report fidelity — actual_us matches profiler
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_DE-012
+  obligation: Report fidelity — score computed not hardcoded
+  property: Report fidelity — score computed not hardcoded
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_DE-013
+  obligation: Report completeness — no truncation
+  property: Report completeness — no truncation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_DE-014
+  obligation: Report completeness — falsification accounting
+  property: Report completeness — falsification accounting
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_DE-015
+  obligation: Report denominator — decoded tokens from LmHead
+  property: Report denominator — decoded tokens from LmHead
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_DE-016
+  obligation: Report metadata — no hardcoded nonzero constants
+  property: Report metadata — no hardcoded nonzero constants
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-GDP-001
   name: GPU Decode Profiling Contract

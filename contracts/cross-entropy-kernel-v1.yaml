@@ -162,6 +162,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_cross_entropy_finite
+- id: KANI-CROSS_-004
+  obligation: Non-negativity
+  property: Non-negativity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CROSS_-005
+  obligation: Log-softmax bounded above by zero
+  property: Log-softmax bounded above by zero
+  bound: 8
+  strategy: stub_float
+- id: KANI-CROSS_-006
+  obligation: LogSoftmax + NLL equals CrossEntropy
+  property: LogSoftmax + NLL equals CrossEntropy
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CROSS_-007
+  obligation: Finite output for finite inputs
+  property: Finite output for finite inputs
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CROSS_-008
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-CE-001
   name: Cross-Entropy Contract

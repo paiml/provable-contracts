@@ -125,6 +125,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_pagerank_nonneg
+- id: KANI-PAGERA-003
+  obligation: Probability distribution
+  property: Probability distribution
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PAGERA-004
+  obligation: Convergence
+  property: Convergence
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PAGERA-005
+  obligation: Scores non-negative
+  property: Scores non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PAGERA-006
+  obligation: Normalization preserved per iteration
+  property: Normalization preserved per iteration
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PAGERA-007
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-PR-001
   name: PageRank Contract

@@ -97,6 +97,31 @@ kani_harnesses:
   obligation: '2'
   bound: 4
   strategy: stub_float
+- id: KANI-METRIC-003
+  obligation: Silhouette score bounded
+  property: Silhouette score bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-METRIC-004
+  obligation: Inertia non-negative
+  property: Inertia non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METRIC-005
+  obligation: Silhouette degenerate case
+  property: Silhouette degenerate case
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METRIC-006
+  obligation: Inertia zero at centroids
+  property: Inertia zero at centroids
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METRIC-007
+  obligation: Per-point silhouette bounded
+  property: Per-point silhouette bounded
+  bound: 8
+  strategy: stub_float
 enforcement:
   bounded:
     description: Silhouette must be in [-1, 1]

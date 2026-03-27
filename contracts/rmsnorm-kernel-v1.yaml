@@ -155,6 +155,46 @@ kani_harnesses:
   bound: 16
   strategy: exhaustive
   harness: verify_rms_positive
+- id: KANI-RMSNOR-003
+  obligation: Input and weight vectors finite, same length, epsilon positive
+  property: Input and weight vectors finite, same length, epsilon positive
+  bound: 8
+  strategy: exhaustive
+- id: KANI-RMSNOR-004
+  obligation: Output same length as input, all elements finite
+  property: Output same length as input, all elements finite
+  bound: 8
+  strategy: exhaustive
+- id: KANI-RMSNOR-005
+  obligation: Input vector, weight vector, and epsilon unchanged
+  property: Input vector, weight vector, and epsilon unchanged
+  bound: 8
+  strategy: exhaustive
+- id: KANI-RMSNOR-006
+  obligation: Output is finite
+  property: Output is finite
+  bound: 8
+  strategy: exhaustive
+- id: KANI-RMSNOR-007
+  obligation: Scale invariance
+  property: Scale invariance
+  bound: 8
+  strategy: exhaustive
+- id: KANI-RMSNOR-008
+  obligation: RMS denominator is positive
+  property: RMS denominator is positive
+  bound: 8
+  strategy: exhaustive
+- id: KANI-RMSNOR-009
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
+- id: KANI-RMSNOR-010
+  obligation: Normalized RMS ≈ 1
+  property: Normalized RMS ≈ 1
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-RN-001
   name: RMSNorm Contract

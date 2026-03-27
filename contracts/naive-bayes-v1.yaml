@@ -110,6 +110,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_prior_bounded
+- id: KANI-NAIVE_-003
+  obligation: Prior sums to 1
+  property: Prior sums to 1
+  bound: 8
+  strategy: stub_float
+- id: KANI-NAIVE_-004
+  obligation: Prior bounded
+  property: Prior bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-NAIVE_-005
+  obligation: Posterior probability valid
+  property: Posterior probability valid
+  bound: 8
+  strategy: exhaustive
+- id: KANI-NAIVE_-006
+  obligation: Prediction deterministic
+  property: Prediction deterministic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-NAIVE_-007
+  obligation: Fit-predict class range
+  property: Fit-predict class range
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-NB-001
   name: Naive Bayes Contract

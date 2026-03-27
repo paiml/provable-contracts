@@ -116,6 +116,36 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_kv_bytes_positive
+- id: KANI-KV_CAC-002
+  obligation: Per-token KV bytes
+  property: Per-token KV bytes
+  bound: 8
+  strategy: exhaustive
+- id: KANI-KV_CAC-003
+  obligation: KV total monotonic in sequence length
+  property: KV total monotonic in sequence length
+  bound: 8
+  strategy: exhaustive
+- id: KANI-KV_CAC-004
+  obligation: Hybrid KV layers bounded
+  property: Hybrid KV layers bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-KV_CAC-005
+  obligation: Bias absence
+  property: Bias absence
+  bound: 8
+  strategy: exhaustive
+- id: KANI-KV_CAC-006
+  obligation: Zero input identity
+  property: Zero input identity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-KV_CAC-007
+  obligation: SIMD KV equivalence
+  property: SIMD KV equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-KV-001
   name: KV Cache Sizing Contract

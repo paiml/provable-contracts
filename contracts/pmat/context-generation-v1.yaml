@@ -83,3 +83,13 @@ kani_harnesses:
   property: All call edge endpoints exist in function index
   bound: 8
   strategy: compositional
+- id: KANI-CONTEX-003
+  obligation: Index roundtrip
+  property: Index roundtrip
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CONTEX-004
+  obligation: Valid project
+  property: Valid project
+  bound: 8
+  strategy: exhaustive

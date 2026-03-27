@@ -124,6 +124,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_alibi_slope_positivity
+- id: KANI-ALIBI_-003
+  obligation: Negative bias
+  property: Negative bias
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ALIBI_-004
+  obligation: Slope positivity
+  property: Slope positivity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ALIBI_-005
+  obligation: Causal consistency
+  property: Causal consistency
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ALIBI_-006
+  obligation: Head-monotonic slopes
+  property: Head-monotonic slopes
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ALIBI_-007
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-AL-001
   name: ALiBi Contract

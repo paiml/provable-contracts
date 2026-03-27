@@ -208,6 +208,51 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_softmax_bounded
+- id: KANI-SOFTMA-004
+  obligation: Input vector is finite and non-empty
+  property: Input vector is finite and non-empty
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SOFTMA-005
+  obligation: Output is a valid probability distribution
+  property: Output is a valid probability distribution
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SOFTMA-006
+  obligation: Only output buffer is modified; input vector unchanged
+  property: Only output buffer is modified; input vector unchanged
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SOFTMA-007
+  obligation: Output sums to 1
+  property: Output sums to 1
+  bound: 8
+  strategy: stub_float
+- id: KANI-SOFTMA-008
+  obligation: All outputs strictly positive
+  property: All outputs strictly positive
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SOFTMA-009
+  obligation: Each output bounded in (0,1)
+  property: Each output bounded in (0,1)
+  bound: 8
+  strategy: stub_float
+- id: KANI-SOFTMA-010
+  obligation: Order preservation
+  property: Order preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SOFTMA-011
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SOFTMA-012
+  obligation: Translation invariance
+  property: Translation invariance
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-SM-001
   name: Softmax Contract

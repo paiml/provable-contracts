@@ -102,3 +102,19 @@ falsification_tests:
   rule: GQA divisibility
   prediction: validate() rejects num_heads=7, num_kv_heads=3
   if_fails: Missing GQA divisibility check
+kani_harnesses:
+- id: KANI-MODEL_-001
+  obligation: All required fields within min/max bounds
+  property: All required fields within min/max bounds
+  bound: 8
+  strategy: stub_float
+- id: KANI-MODEL_-002
+  obligation: hidden_dim divisible by num_heads
+  property: hidden_dim divisible by num_heads
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MODEL_-003
+  obligation: num_kv_heads divides num_heads
+  property: num_kv_heads divides num_heads
+  bound: 8
+  strategy: exhaustive

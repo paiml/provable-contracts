@@ -105,6 +105,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_svm_binary_prediction
+- id: KANI-SVM_V1-003
+  obligation: Hinge loss non-negative
+  property: Hinge loss non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SVM_V1-004
+  obligation: Binary prediction
+  property: Binary prediction
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SVM_V1-005
+  obligation: Prediction deterministic
+  property: Prediction deterministic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SVM_V1-006
+  obligation: Separable data perfect accuracy
+  property: Separable data perfect accuracy
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-SVM-001
   name: SVM Contract

@@ -159,6 +159,46 @@ kani_harnesses:
   bound: 32
   strategy: exhaustive
   harness: verify_yarn_ramp
+- id: KANI-ROPE_E-003
+  obligation: Base frequencies positive and decreasing
+  property: Base frequencies positive and decreasing
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ROPE_E-004
+  obligation: NTK identity at original length
+  property: NTK identity at original length
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ROPE_E-005
+  obligation: NTK base grows with target length
+  property: NTK base grows with target length
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ROPE_E-006
+  obligation: Linear interpolation preserves ratios
+  property: Linear interpolation preserves ratios
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ROPE_E-007
+  obligation: YaRN ramp bounded [0,1]
+  property: YaRN ramp bounded [0,1]
+  bound: 8
+  strategy: stub_float
+- id: KANI-ROPE_E-008
+  obligation: YaRN ramp non-decreasing
+  property: YaRN ramp non-decreasing
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ROPE_E-009
+  obligation: Rotation matrix orthogonality
+  property: Rotation matrix orthogonality
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ROPE_E-010
+  obligation: Rotation at position 0 is identity
+  property: Rotation at position 0 is identity
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-REXT-001
   name: RoPE Extrapolation Contract

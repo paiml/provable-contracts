@@ -102,6 +102,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_bias_add_additivity
+- id: KANI-BIAS_A-003
+  obligation: Shape preservation
+  property: Shape preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BIAS_A-004
+  obligation: Zero-bias identity
+  property: Zero-bias identity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BIAS_A-005
+  obligation: Additivity
+  property: Additivity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BIAS_A-006
+  obligation: SIMD matches scalar
+  property: SIMD matches scalar
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-BA-001
   name: Bias Add Contract

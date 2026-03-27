@@ -93,6 +93,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_tied_matmul_equivalence
+- id: KANI-TIED_E-003
+  obligation: Output shape correctness
+  property: Output shape correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-TIED_E-004
+  obligation: Equivalence to separate matmul
+  property: Equivalence to separate matmul
+  bound: 8
+  strategy: exhaustive
+- id: KANI-TIED_E-005
+  obligation: No extra parameters
+  property: No extra parameters
+  bound: 8
+  strategy: exhaustive
+- id: KANI-TIED_E-006
+  obligation: Finite output
+  property: Finite output
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-TE-001
   name: Tied Embeddings Contract

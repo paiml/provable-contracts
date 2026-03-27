@@ -157,6 +157,46 @@ kani_harnesses:
   strategy: exhaustive
   solver: cadical
   harness: verify_qwen3moe_shapes
+- id: KANI-QWEN3M-002
+  obligation: Q projection shape
+  property: Q projection shape
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3M-003
+  obligation: KV projection shape
+  property: KV projection shape
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3M-004
+  obligation: GQA divisibility
+  property: GQA divisibility
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3M-005
+  obligation: MoE expert shape
+  property: MoE expert shape
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3M-006
+  obligation: MoE router top-k
+  property: MoE router top-k
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3M-007
+  obligation: O projection transpose
+  property: O projection transpose
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3M-008
+  obligation: RoPE frequency decreasing
+  property: RoPE frequency decreasing
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3M-009
+  obligation: SIMD shape equivalence
+  property: SIMD shape equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-QM3-001
   name: Qwen3 MoE Shapes Contract

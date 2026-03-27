@@ -112,6 +112,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_conv1d_linearity
+- id: KANI-CONV1D-003
+  obligation: Output shape correctness
+  property: Output shape correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CONV1D-004
+  obligation: Convolution linearity
+  property: Convolution linearity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CONV1D-005
+  obligation: Direct conv matches im2col+GEMM
+  property: Direct conv matches im2col+GEMM
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CONV1D-006
+  obligation: Output bounded by input and kernel
+  property: Output bounded by input and kernel
+  bound: 8
+  strategy: stub_float
+- id: KANI-CONV1D-007
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-CV-001
   name: Conv1d Contract

@@ -140,6 +140,21 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_refcount_consistency
+- id: KANI-PAGED_-004
+  obligation: No two active sequences share a mutable block
+  property: No two active sequences share a mutable block
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PAGED_-005
+  obligation: Physical block index within bounds
+  property: Physical block index within bounds
+  bound: 8
+  strategy: stub_float
+- id: KANI-PAGED_-006
+  obligation: Paged attention output equals standard attention output
+  property: Paged attention output equals standard attention output
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-PA-001
   name: PagedAttention Contract

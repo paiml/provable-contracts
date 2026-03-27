@@ -100,6 +100,31 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_roofline_positive
+- id: KANI-ROOFLI-002
+  obligation: Ceilings positive
+  property: Ceilings positive
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ROOFLI-003
+  obligation: Memory-bound classification
+  property: Memory-bound classification
+  bound: 8
+  strategy: stub_float
+- id: KANI-ROOFLI-004
+  obligation: Throughput bounded
+  property: Throughput bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-ROOFLI-005
+  obligation: Model bytes monotonic
+  property: Model bytes monotonic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ROOFLI-006
+  obligation: SIMD roofline equivalence
+  property: SIMD roofline equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-RM-001
   name: Roofline Model Contract

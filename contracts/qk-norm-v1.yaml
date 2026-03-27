@@ -104,6 +104,41 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_qk_norm_zero_stability
+- id: KANI-QK_NOR-003
+  obligation: Unit RMS after normalization
+  property: Unit RMS after normalization
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QK_NOR-004
+  obligation: Output amplitude bounded
+  property: Output amplitude bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-QK_NOR-005
+  obligation: Idempotent with unit weight
+  property: Idempotent with unit weight
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QK_NOR-006
+  obligation: Zero-input stability
+  property: Zero-input stability
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QK_NOR-007
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QK_NOR-008
+  obligation: GPU kernel matches CPU reference
+  property: GPU kernel matches CPU reference
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QK_NOR-009
+  obligation: Per-head independence
+  property: Per-head independence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-QKN-001
   name: QK Normalization Contract

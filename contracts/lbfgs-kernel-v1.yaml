@@ -132,6 +132,31 @@ kani_harnesses:
   strategy: exhaustive
   solver: cadical
   harness: verify_lbfgs_history_bound
+- id: KANI-LBFGS_-003
+  obligation: Descent direction
+  property: Descent direction
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LBFGS_-004
+  obligation: Curvature condition
+  property: Curvature condition
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LBFGS_-005
+  obligation: History buffer bounded
+  property: History buffer bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-LBFGS_-006
+  obligation: Objective decrease
+  property: Objective decrease
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LBFGS_-007
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-LB-001
   name: L-BFGS Contract

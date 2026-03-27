@@ -106,3 +106,23 @@ kani_harnesses:
   obligation: INT8 matvec approximates fp16 matvec
   bound: 8
   strategy: bounded_int
+- id: KANI-INT8_S-002
+  obligation: 'Compression ratio: 1 byte per weight'
+  property: 'Compression ratio: 1 byte per weight'
+  bound: 8
+  strategy: exhaustive
+- id: KANI-INT8_S-003
+  obligation: Scale positivity for non-zero rows
+  property: Scale positivity for non-zero rows
+  bound: 8
+  strategy: exhaustive
+- id: KANI-INT8_S-004
+  obligation: Quantized range
+  property: Quantized range
+  bound: 8
+  strategy: exhaustive
+- id: KANI-INT8_S-005
+  obligation: Zero-row invariant
+  property: Zero-row invariant
+  bound: 8
+  strategy: exhaustive

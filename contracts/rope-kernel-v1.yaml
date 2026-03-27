@@ -98,6 +98,41 @@ kani_harnesses:
   bound: 4
   strategy: stub_float
   harness: verify_rope_norm_preservation
+- id: KANI-ROPE_K-002
+  obligation: Input dimension is even, position non-negative
+  property: Input dimension is even, position non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ROPE_K-003
+  obligation: Output has same dimension as input, all elements finite
+  property: Output has same dimension as input, all elements finite
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ROPE_K-004
+  obligation: Input vector and position unchanged
+  property: Input vector and position unchanged
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ROPE_K-005
+  obligation: Norm preservation
+  property: Norm preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ROPE_K-006
+  obligation: Relative position encoding
+  property: Relative position encoding
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ROPE_K-007
+  obligation: SIMD matches scalar
+  property: SIMD matches scalar
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ROPE_K-008
+  obligation: Output bounded by input norm
+  property: Output bounded by input norm
+  bound: 8
+  strategy: stub_float
 qa_gate:
   id: F-RP-001
   name: RoPE Contract

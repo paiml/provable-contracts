@@ -120,6 +120,36 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_lora_shape
+- id: KANI-LORA_A-002
+  obligation: Task vector roundtrip
+  property: Task vector roundtrip
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LORA_A-003
+  obligation: Eckart-Young bound
+  property: Eckart-Young bound
+  bound: 8
+  strategy: stub_float
+- id: KANI-LORA_A-004
+  obligation: LoRA shape compatibility
+  property: LoRA shape compatibility
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LORA_A-005
+  obligation: DARE unbiasedness
+  property: DARE unbiasedness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LORA_A-006
+  obligation: Shape preservation
+  property: Shape preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LORA_A-007
+  obligation: SIMD LoRA equivalence
+  property: SIMD LoRA equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-LA-001
   name: LoRA Algebra Contract

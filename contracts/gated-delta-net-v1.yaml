@@ -119,6 +119,31 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_state_shape_preserved
+- id: KANI-GATED_-003
+  obligation: Decay in unit interval
+  property: Decay in unit interval
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GATED_-004
+  obligation: State shape preserved
+  property: State shape preserved
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GATED_-005
+  obligation: Causal conv1d
+  property: Causal conv1d
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GATED_-006
+  obligation: L2 norm preserves direction
+  property: L2 norm preserves direction
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GATED_-007
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-GDN-001
   name: Gated Delta Net Contract

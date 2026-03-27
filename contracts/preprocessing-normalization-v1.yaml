@@ -121,6 +121,36 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_minmax_scaler_bounded
+- id: KANI-PREPRO-003
+  obligation: StandardScaler zero mean
+  property: StandardScaler zero mean
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PREPRO-004
+  obligation: StandardScaler unit variance
+  property: StandardScaler unit variance
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PREPRO-005
+  obligation: MinMaxScaler bounded
+  property: MinMaxScaler bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-PREPRO-006
+  obligation: MinMaxScaler extremes
+  property: MinMaxScaler extremes
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PREPRO-007
+  obligation: StandardScaler inverse
+  property: StandardScaler inverse
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PREPRO-008
+  obligation: MinMaxScaler inverse
+  property: MinMaxScaler inverse
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-PP-001
   name: Preprocessing Normalization Contract

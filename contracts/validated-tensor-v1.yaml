@@ -93,6 +93,26 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_density_gate
+- id: KANI-VALIDA-002
+  obligation: Density gate
+  property: Density gate
+  bound: 8
+  strategy: exhaustive
+- id: KANI-VALIDA-003
+  obligation: NaN/Inf rejection
+  property: NaN/Inf rejection
+  bound: 8
+  strategy: exhaustive
+- id: KANI-VALIDA-004
+  obligation: L2 norm non-degeneracy
+  property: L2 norm non-degeneracy
+  bound: 8
+  strategy: exhaustive
+- id: KANI-VALIDA-005
+  obligation: SIMD validation equivalence
+  property: SIMD validation equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-VT-001
   name: Validated Tensor Contract

@@ -135,3 +135,48 @@ kani_harnesses:
   obligation: Online matches standard softmax
   bound: 8
   strategy: bounded_int
+- id: KANI-ONLINE-002
+  obligation: Running max tracks true max of elements seen
+  property: Running max tracks true max of elements seen
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ONLINE-003
+  obligation: Running sum_exp is correct partial sum
+  property: Running sum_exp is correct partial sum
+  bound: 8
+  strategy: stub_float
+- id: KANI-ONLINE-004
+  obligation: Remaining elements decreases each iteration
+  property: Remaining elements decreases each iteration
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ONLINE-005
+  obligation: Normalizer update preserves equivalence to full recomputation
+  property: Normalizer update preserves equivalence to full recomputation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ONLINE-006
+  obligation: Output sums to 1
+  property: Output sums to 1
+  bound: 8
+  strategy: stub_float
+- id: KANI-ONLINE-007
+  obligation: All outputs strictly positive
+  property: All outputs strictly positive
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ONLINE-008
+  obligation: Order preservation
+  property: Order preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ONLINE-009
+  obligation: Shift invariance
+  property: Shift invariance
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ONLINE-010
+  obligation: Two-pass (not three)
+  property: Two-pass (not three)
+  bound: 8
+  strategy: exhaustive

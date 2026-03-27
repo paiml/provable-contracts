@@ -166,6 +166,46 @@ kani_harnesses:
   bound: 4
   strategy: exhaustive
   description: Exhaustive check that harmonic centrality stays in [0,1] for graphs up to 4 nodes
+- id: KANI-GRAPH_-004
+  obligation: Degree centrality bounded
+  property: Degree centrality bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-GRAPH_-005
+  obligation: Betweenness non-negative
+  property: Betweenness non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GRAPH_-006
+  obligation: Closeness positive for connected
+  property: Closeness positive for connected
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GRAPH_-007
+  obligation: Eigenvector non-negativity
+  property: Eigenvector non-negativity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GRAPH_-008
+  obligation: Katz strictly positive
+  property: Katz strictly positive
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GRAPH_-009
+  obligation: Harmonic centrality bounded
+  property: Harmonic centrality bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-GRAPH_-010
+  obligation: Star graph maximum
+  property: Star graph maximum
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GRAPH_-011
+  obligation: Complete graph symmetry
+  property: Complete graph symmetry
+  bound: 8
+  strategy: exhaustive
 enforcement:
   bounded:
     description: All normalized centralities must be in valid range

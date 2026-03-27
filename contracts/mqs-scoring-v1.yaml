@@ -129,3 +129,18 @@ kani_harnesses:
   property: raw equals sum of 6 dimension scores
   bound: 8
   strategy: exhaustive
+- id: KANI-MQS_SC-004
+  obligation: Deterministic scoring
+  property: Deterministic scoring
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MQS_SC-005
+  obligation: Grade monotonic
+  property: Grade monotonic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-MQS_SC-006
+  obligation: Pass rate bounded
+  property: Pass rate bounded
+  bound: 8
+  strategy: stub_float

@@ -97,6 +97,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_absolute_position_identity
+- id: KANI-ABSOLU-003
+  obligation: Shape preservation
+  property: Shape preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ABSOLU-004
+  obligation: Additive identity
+  property: Additive identity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ABSOLU-005
+  obligation: Max position bound
+  property: Max position bound
+  bound: 8
+  strategy: stub_float
+- id: KANI-ABSOLU-006
+  obligation: Finite output
+  property: Finite output
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-AP-001
   name: Absolute Position Contract

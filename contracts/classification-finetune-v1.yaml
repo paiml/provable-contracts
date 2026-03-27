@@ -129,6 +129,31 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: proof_classifier_weight_shape_invariant
+- id: KANI-CLASSI-004
+  obligation: Logit shape matches num_classes
+  property: Logit shape matches num_classes
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CLASSI-005
+  obligation: Label index in bounds
+  property: Label index in bounds
+  bound: 8
+  strategy: stub_float
+- id: KANI-CLASSI-006
+  obligation: Classifier weight shape
+  property: Classifier weight shape
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CLASSI-007
+  obligation: Softmax sum to one
+  property: Softmax sum to one
+  bound: 8
+  strategy: stub_float
+- id: KANI-CLASSI-008
+  obligation: NaN/Inf rejection
+  property: NaN/Inf rejection
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-FT-001
   name: Classification Fine-Tuning Contract

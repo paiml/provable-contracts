@@ -174,6 +174,31 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_injection_severity
+- id: KANI-SAFETY-004
+  obligation: Zero false negatives on known injection patterns
+  property: Zero false negatives on known injection patterns
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SAFETY-005
+  obligation: Zero false negatives on known secret patterns
+  property: Zero false negatives on known secret patterns
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SAFETY-006
+  obligation: Zero false negatives on known filesystem abuse
+  property: Zero false negatives on known filesystem abuse
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SAFETY-007
+  obligation: Safe patterns produce no security diagnostic
+  property: Safe patterns produce no security diagnostic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SAFETY-008
+  obligation: Diagnostic severity ordering
+  property: Diagnostic severity ordering
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-SEC-001
   name: Safety Classifier Contract

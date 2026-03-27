@@ -78,6 +78,21 @@ kani_harnesses:
   bound: 6
   strategy: exhaustive
   harness: verify_topological_ordering
+- id: KANI-DAG_OR-002
+  obligation: Topological ordering respected
+  property: Topological ordering respected
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DAG_OR-003
+  obligation: Cycle detection is sound
+  property: Cycle detection is sound
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DAG_OR-004
+  obligation: Deterministic output
+  property: Deterministic output
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-DAG-001
   name: DAG Ordering Contract

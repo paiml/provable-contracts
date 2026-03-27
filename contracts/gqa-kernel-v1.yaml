@@ -160,6 +160,46 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_gqa_convex_bound
+- id: KANI-GQA_KE-004
+  obligation: GQA refines standard MHA — accepts same Q/K/V shapes, produces compatible output
+  property: GQA refines standard MHA — accepts same Q/K/V shapes, produces compatible output
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GQA_KE-005
+  obligation: Attention weight normalization
+  property: Attention weight normalization
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GQA_KE-006
+  obligation: GQA degenerates to MHA
+  property: GQA degenerates to MHA
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GQA_KE-007
+  obligation: Output is convex combination of V
+  property: Output is convex combination of V
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GQA_KE-008
+  obligation: KV head broadcasting correctness
+  property: KV head broadcasting correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GQA_KE-009
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GQA_KE-010
+  obligation: GPU PTX matches CPU within cosine >= 0.98
+  property: GPU PTX matches CPU within cosine >= 0.98
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GQA_KE-011
+  obligation: GPU head mapping for non-power-of-2 ratios
+  property: GPU head mapping for non-power-of-2 ratios
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-GQ-001
   name: GQA Contract

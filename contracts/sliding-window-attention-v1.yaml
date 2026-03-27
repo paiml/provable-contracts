@@ -140,6 +140,41 @@ kani_harnesses:
   bound: 16
   strategy: exhaustive
   harness: verify_attention_bound
+- id: KANI-SLIDIN-003
+  obligation: Diagonal always attended
+  property: Diagonal always attended
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SLIDIN-004
+  obligation: Causal constraint
+  property: Causal constraint
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SLIDIN-005
+  obligation: Attention count bounded by window
+  property: Attention count bounded by window
+  bound: 8
+  strategy: stub_float
+- id: KANI-SLIDIN-006
+  obligation: Effective context non-decreasing
+  property: Effective context non-decreasing
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SLIDIN-007
+  obligation: Sparsity zero for dense case
+  property: Sparsity zero for dense case
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SLIDIN-008
+  obligation: Receptive field grows with layers
+  property: Receptive field grows with layers
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SLIDIN-009
+  obligation: Attention weight normalization within window
+  property: Attention weight normalization within window
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-SWA-001
   name: Sliding Window Attention Contract

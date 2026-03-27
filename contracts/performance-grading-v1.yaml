@@ -112,6 +112,31 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_grade_exhaustive
+- id: KANI-PERFOR-002
+  obligation: Ollama grade exhaustive
+  property: Ollama grade exhaustive
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PERFOR-003
+  obligation: Ollama grade monotonic
+  property: Ollama grade monotonic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PERFOR-004
+  obligation: Efficiency grade monotonic
+  property: Efficiency grade monotonic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PERFOR-005
+  obligation: Concrete ceiling bound
+  property: Concrete ceiling bound
+  bound: 8
+  strategy: stub_float
+- id: KANI-PERFOR-006
+  obligation: SIMD grading equivalence
+  property: SIMD grading equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-PG-001
   name: Performance Grading Contract

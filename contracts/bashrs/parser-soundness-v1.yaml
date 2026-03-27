@@ -145,6 +145,36 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_token_count_bound
+- id: KANI-PARSER-004
+  obligation: Parser accepts all valid POSIX sh
+  property: Parser accepts all valid POSIX sh
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PARSER-005
+  obligation: Parser accepts all valid bash
+  property: Parser accepts all valid bash
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PARSER-006
+  obligation: Parser rejects invalid syntax with error
+  property: Parser rejects invalid syntax with error
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PARSER-007
+  obligation: Span fidelity
+  property: Span fidelity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PARSER-008
+  obligation: Deterministic parsing
+  property: Deterministic parsing
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PARSER-009
+  obligation: Lexer termination
+  property: Lexer termination
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-PSR-001
   name: Parser Soundness Contract

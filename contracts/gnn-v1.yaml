@@ -138,6 +138,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_max_pool_bounded
+- id: KANI-GNN_V1-004
+  obligation: GCN preserves node count
+  property: GCN preserves node count
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GNN_V1-005
+  obligation: Message passing preserves node count
+  property: Message passing preserves node count
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GNN_V1-006
+  obligation: Global mean pool output is finite
+  property: Global mean pool output is finite
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GNN_V1-007
+  obligation: Global max pool bounded by node features
+  property: Global max pool bounded by node features
+  bound: 8
+  strategy: stub_float
+- id: KANI-GNN_V1-008
+  obligation: Pooling output dimension matches feature dimension
+  property: Pooling output dimension matches feature dimension
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-GNN-001
   name: GNN Contract

@@ -139,6 +139,41 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_mse_non_negative
+- id: KANI-DECISI-003
+  obligation: Gini bounded
+  property: Gini bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-DECISI-004
+  obligation: Gini pure node
+  property: Gini pure node
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DECISI-005
+  obligation: Gini split reduction
+  property: Gini split reduction
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DECISI-006
+  obligation: MSE non-negative
+  property: MSE non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DECISI-007
+  obligation: MSE zero for constant
+  property: MSE zero for constant
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DECISI-008
+  obligation: Prediction deterministic
+  property: Prediction deterministic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DECISI-009
+  obligation: Fit-predict consistency
+  property: Fit-predict consistency
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-DT-001
   name: Decision Tree Contract

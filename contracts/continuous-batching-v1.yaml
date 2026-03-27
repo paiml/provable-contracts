@@ -181,6 +181,41 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_no_starvation
+- id: KANI-CONTIN-004
+  obligation: Token budget respected
+  property: Token budget respected
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CONTIN-005
+  obligation: Computed tokens monotonic
+  property: Computed tokens monotonic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CONTIN-006
+  obligation: Chunked prefill equivalence
+  property: Chunked prefill equivalence
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CONTIN-007
+  obligation: Decode degradation bounded
+  property: Decode degradation bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-CONTIN-008
+  obligation: No starvation
+  property: No starvation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CONTIN-009
+  obligation: Correctness under batching
+  property: Correctness under batching
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CONTIN-010
+  obligation: No empty outputs
+  property: No empty outputs
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-CB-001
   name: Continuous Batching Contract

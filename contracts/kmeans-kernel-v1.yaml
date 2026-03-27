@@ -132,6 +132,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_kmeans_objective_nonneg
+- id: KANI-KMEANS-003
+  obligation: Nearest centroid assignment
+  property: Nearest centroid assignment
+  bound: 8
+  strategy: exhaustive
+- id: KANI-KMEANS-004
+  obligation: Objective non-increasing
+  property: Objective non-increasing
+  bound: 8
+  strategy: exhaustive
+- id: KANI-KMEANS-005
+  obligation: Objective non-negative
+  property: Objective non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-KMEANS-006
+  obligation: Valid cluster indices
+  property: Valid cluster indices
+  bound: 8
+  strategy: exhaustive
+- id: KANI-KMEANS-007
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-KM-001
   name: K-Means Contract

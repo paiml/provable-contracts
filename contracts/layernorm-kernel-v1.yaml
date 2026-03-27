@@ -170,6 +170,36 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_layernorm_denominator_positive
+- id: KANI-LAYERN-004
+  obligation: Centering
+  property: Centering
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LAYERN-005
+  obligation: Standardization
+  property: Standardization
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LAYERN-006
+  obligation: Denominator strictly positive
+  property: Denominator strictly positive
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LAYERN-007
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LAYERN-008
+  obligation: Idempotent under identity affine
+  property: Idempotent under identity affine
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LAYERN-009
+  obligation: Shift invariance
+  property: Shift invariance
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-LN-001
   name: LayerNorm Contract

@@ -70,3 +70,8 @@ kani_harnesses:
   property: overall_pass iff all non-skipped gates passed
   bound: 8
   strategy: exhaustive
+- id: KANI-COMPLY-003
+  obligation: Valid project path
+  property: Valid project path
+  bound: 8
+  strategy: exhaustive

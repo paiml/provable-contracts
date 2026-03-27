@@ -141,6 +141,36 @@ kani_harnesses:
   obligation: '2'
   bound: 4
   strategy: stub_float
+- id: KANI-LOSS_F-003
+  obligation: All losses non-negative
+  property: All losses non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LOSS_F-004
+  obligation: Zero loss at perfect prediction
+  property: Zero loss at perfect prediction
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LOSS_F-005
+  obligation: BCE monotonicity
+  property: BCE monotonicity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LOSS_F-006
+  obligation: Huber smoothness
+  property: Huber smoothness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LOSS_F-007
+  obligation: L1 symmetry
+  property: L1 symmetry
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LOSS_F-008
+  obligation: NLL lower bound
+  property: NLL lower bound
+  bound: 8
+  strategy: stub_float
 enforcement:
   non_negativity:
     description: All losses must be non-negative

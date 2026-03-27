@@ -110,6 +110,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_forecast_finite
+- id: KANI-ARIMA_-003
+  obligation: Forecast length equals n_periods
+  property: Forecast length equals n_periods
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ARIMA_-004
+  obligation: All forecasts finite
+  property: All forecasts finite
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ARIMA_-005
+  obligation: Differencing reduces order
+  property: Differencing reduces order
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ARIMA_-006
+  obligation: Forecast deterministic
+  property: Forecast deterministic
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-ARIMA-001
   name: ARIMA Contract

@@ -94,6 +94,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_embedding_index_safety
+- id: KANI-EMBEDD-003
+  obligation: Output shape correctness
+  property: Output shape correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-EMBEDD-004
+  obligation: Out-of-bounds panic freedom
+  property: Out-of-bounds panic freedom
+  bound: 8
+  strategy: stub_float
+- id: KANI-EMBEDD-005
+  obligation: Deterministic output
+  property: Deterministic output
+  bound: 8
+  strategy: exhaustive
+- id: KANI-EMBEDD-006
+  obligation: Finite output
+  property: Finite output
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-EM-001
   name: Embedding Lookup Contract

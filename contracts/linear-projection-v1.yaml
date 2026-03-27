@@ -115,6 +115,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_linear_homogeneity
+- id: KANI-LINEAR-003
+  obligation: Output shape correctness
+  property: Output shape correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LINEAR-004
+  obligation: Homogeneity without bias
+  property: Homogeneity without bias
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LINEAR-005
+  obligation: Bias additivity
+  property: Bias additivity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LINEAR-006
+  obligation: Zero input produces bias
+  property: Zero input produces bias
+  bound: 8
+  strategy: exhaustive
+- id: KANI-LINEAR-007
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-LP-001
   name: Linear Projection Contract

@@ -122,6 +122,11 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_greedy_decoding_parity
+- id: KANI-GGUF_C-005
+  obligation: KV cache reduces work from O(n²) to O(n)
+  property: KV cache reduces work from O(n²) to O(n)
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-GGUF-CACHE-001
   name: GGUF CPU KV Cache Contract

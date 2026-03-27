@@ -74,6 +74,26 @@ kani_harnesses:
   strategy: exhaustive
   solver: cadical
   harness: verify_no_hardcoded_emit
+- id: KANI-PTX_TA-003
+  obligation: Target parity
+  property: Target parity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PTX_TA-004
+  obligation: No hardcoded emit_ptx in executor
+  property: No hardcoded emit_ptx in executor
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PTX_TA-005
+  obligation: CudaKernels constructed with device target
+  property: CudaKernels constructed with device target
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PTX_TA-006
+  obligation: JIT success for all kernels
+  property: JIT success for all kernels
+  bound: 8
+  strategy: exhaustive
 falsification_tests:
 - id: FALSIFY-PTP-001
   rule: No hardcoded emit_ptx in executor runtime path

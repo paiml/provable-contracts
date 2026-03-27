@@ -103,6 +103,31 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_greedy_argmax
+- id: KANI-SAMPLI-002
+  obligation: Greedy = argmax
+  property: Greedy = argmax
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SAMPLI-003
+  obligation: Top-K cardinality
+  property: Top-K cardinality
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SAMPLI-004
+  obligation: Top-P cumulative
+  property: Top-P cumulative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SAMPLI-005
+  obligation: Temperature identity
+  property: Temperature identity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SAMPLI-006
+  obligation: SIMD sampling equivalence
+  property: SIMD sampling equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-SA-001
   name: Sampling Algorithms Contract

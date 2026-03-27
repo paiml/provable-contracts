@@ -207,3 +207,24 @@ token_proof_obligations:
 - name: architecture_mapping_complete
   description: Every architecture key maps to a valid family
   check: all(family_key in families for family_key in architecture_mapping.values())
+kani_harnesses:
+- id: KANI-SPECIA-001
+  obligation: EOS token ID within vocab for every family
+  property: EOS token ID within vocab for every family
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SPECIA-002
+  obligation: BOS token ID within vocab when not null
+  property: BOS token ID within vocab when not null
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SPECIA-003
+  obligation: PAD token ID within vocab when not null
+  property: PAD token ID within vocab when not null
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SPECIA-004
+  obligation: Architecture mapping covers all families
+  property: Architecture mapping covers all families
+  bound: 8
+  strategy: exhaustive

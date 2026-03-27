@@ -98,6 +98,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_explained_variance_bounded
+- id: KANI-PCA_V1-003
+  obligation: Dimensionality reduction
+  property: Dimensionality reduction
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PCA_V1-004
+  obligation: Explained variance bounded
+  property: Explained variance bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-PCA_V1-005
+  obligation: Explained variance sums to 1
+  property: Explained variance sums to 1
+  bound: 8
+  strategy: stub_float
+- id: KANI-PCA_V1-006
+  obligation: Perfect reconstruction at full rank
+  property: Perfect reconstruction at full rank
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-PCA-001
   name: PCA Contract

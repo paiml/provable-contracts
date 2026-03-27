@@ -107,6 +107,36 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_page_shape
+- id: KANI-KV_CAC-002
+  obligation: Cache append modifies only new entries; existing KV pairs unchanged
+  property: Cache append modifies only new entries; existing KV pairs unchanged
+  bound: 8
+  strategy: exhaustive
+- id: KANI-KV_CAC-003
+  obligation: Cache length increases by exactly the number of new tokens
+  property: Cache length increases by exactly the number of new tokens
+  bound: 8
+  strategy: exhaustive
+- id: KANI-KV_CAC-004
+  obligation: Prefill/incremental equivalence
+  property: Prefill/incremental equivalence
+  bound: 8
+  strategy: exhaustive
+- id: KANI-KV_CAC-005
+  obligation: Page shape formula
+  property: Page shape formula
+  bound: 8
+  strategy: exhaustive
+- id: KANI-KV_CAC-006
+  obligation: Batched/serial equivalence
+  property: Batched/serial equivalence
+  bound: 8
+  strategy: exhaustive
+- id: KANI-KV_CAC-007
+  obligation: Fused kernel equivalence
+  property: Fused kernel equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-KCE-001
   name: KV Cache Equivalence Contract

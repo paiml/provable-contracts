@@ -143,6 +143,41 @@ kani_harnesses:
   bound: 4
   strategy: stub_float
   harness: verify_embedding_shape
+- id: KANI-EMBEDD-003
+  obligation: Embedding lookup shape
+  property: Embedding lookup shape
+  bound: 8
+  strategy: exhaustive
+- id: KANI-EMBEDD-004
+  obligation: Unembedding output shape
+  property: Unembedding output shape
+  bound: 8
+  strategy: exhaustive
+- id: KANI-EMBEDD-005
+  obligation: Tied weight identity
+  property: Tied weight identity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-EMBEDD-006
+  obligation: Token ID bounds
+  property: Token ID bounds
+  bound: 8
+  strategy: stub_float
+- id: KANI-EMBEDD-007
+  obligation: Embedding non-degeneracy
+  property: Embedding non-degeneracy
+  bound: 8
+  strategy: exhaustive
+- id: KANI-EMBEDD-008
+  obligation: Temperature identity
+  property: Temperature identity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-EMBEDD-009
+  obligation: Temperature scaling effect
+  property: Temperature scaling effect
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-EMB-001
   name: Embedding Algebra Contract

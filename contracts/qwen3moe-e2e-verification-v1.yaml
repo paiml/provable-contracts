@@ -173,6 +173,41 @@ kani_harnesses:
   bound: 4
   strategy: bounded_int
   harness: verify_qwen3moe_quant_ordering
+- id: KANI-QWEN3M-003
+  obligation: Total parameter count matches architecture
+  property: Total parameter count matches architecture
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3M-004
+  obligation: Active parameter count matches designation
+  property: Active parameter count matches designation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3M-005
+  obligation: FLOPs bounded by 2A
+  property: FLOPs bounded by 2A
+  bound: 8
+  strategy: stub_float
+- id: KANI-QWEN3M-006
+  obligation: Quantization memory ordering
+  property: Quantization memory ordering
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3M-007
+  obligation: Throughput increases with bandwidth
+  property: Throughput increases with bandwidth
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3M-008
+  obligation: Compositional proof structure
+  property: Compositional proof structure
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3M-009
+  obligation: 'End-to-end shape: tokens in -> logits out'
+  property: 'End-to-end shape: tokens in -> logits out'
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-QM3E-001
   name: Qwen3 MoE End-to-End Verification

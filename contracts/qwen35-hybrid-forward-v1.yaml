@@ -155,6 +155,41 @@ kani_harnesses:
   bound: 48
   strategy: exhaustive
   harness: verify_layer_type_partition
+- id: KANI-QWEN35-003
+  obligation: Attention sublayer shape preservation
+  property: Attention sublayer shape preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN35-004
+  obligation: GDN sublayer shape preservation
+  property: GDN sublayer shape preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN35-005
+  obligation: FFN sublayer shape preservation
+  property: FFN sublayer shape preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN35-006
+  obligation: Block outputs from exactly one attention type
+  property: Block outputs from exactly one attention type
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN35-007
+  obligation: Activation magnitude bounded
+  property: Activation magnitude bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-QWEN35-008
+  obligation: RMSNorm precedes each sublayer
+  property: RMSNorm precedes each sublayer
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN35-009
+  obligation: Residual identity component
+  property: Residual identity component
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-QHF-001
   name: Qwen3.5 Hybrid Forward Contract

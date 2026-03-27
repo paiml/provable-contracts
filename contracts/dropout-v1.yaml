@@ -114,6 +114,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_dropout_probability_range
+- id: KANI-DROPOU-003
+  obligation: Eval mode is identity
+  property: Eval mode is identity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DROPOU-004
+  obligation: Train mode is unbiased
+  property: Train mode is unbiased
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DROPOU-005
+  obligation: Output shape preserved
+  property: Output shape preserved
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DROPOU-006
+  obligation: Drop probability in valid range
+  property: Drop probability in valid range
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-DO-001
   name: Dropout Contract

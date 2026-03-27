@@ -112,6 +112,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_mean_valid_range
+- id: KANI-GLM_V1-003
+  obligation: Link function invertible
+  property: Link function invertible
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GLM_V1-004
+  obligation: Predicted mean in valid range
+  property: Predicted mean in valid range
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GLM_V1-005
+  obligation: IRLS convergence
+  property: IRLS convergence
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GLM_V1-006
+  obligation: Predictions finite
+  property: Predictions finite
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-GLM-001
   name: GLM Contract

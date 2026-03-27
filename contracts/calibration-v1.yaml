@@ -151,6 +151,41 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_mce_bounded
+- id: KANI-CALIBR-003
+  obligation: ECE bounded
+  property: ECE bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-CALIBR-004
+  obligation: MCE bounded
+  property: MCE bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-CALIBR-005
+  obligation: MCE dominates ECE
+  property: MCE dominates ECE
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CALIBR-006
+  obligation: Perfect calibration zero error
+  property: Perfect calibration zero error
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CALIBR-007
+  obligation: Platt output bounded
+  property: Platt output bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-CALIBR-008
+  obligation: Isotonic monotonicity
+  property: Isotonic monotonicity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CALIBR-009
+  obligation: Reliability bin bounds
+  property: Reliability bin bounds
+  bound: 8
+  strategy: stub_float
 qa_gate:
   id: F-CAL-001
   name: Calibration Metrics Contract

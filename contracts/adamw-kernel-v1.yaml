@@ -197,6 +197,61 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_adamw_finite_update
+- id: KANI-ADAMW_-004
+  obligation: Hyperparameters valid, inputs finite
+  property: Hyperparameters valid, inputs finite
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ADAMW_-005
+  obligation: Updated weights finite, moments non-negative
+  property: Updated weights finite, moments non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ADAMW_-006
+  obligation: Only theta, m, v are modified; gradients and hyperparams unchanged
+  property: Only theta, m, v are modified; gradients and hyperparams unchanged
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ADAMW_-007
+  obligation: Second moment remains non-negative across all training steps
+  property: Second moment remains non-negative across all training steps
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ADAMW_-008
+  obligation: Training step counter advances
+  property: Training step counter advances
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ADAMW_-009
+  obligation: Moments are exponential moving averages of old values
+  property: Moments are exponential moving averages of old values
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ADAMW_-010
+  obligation: Decoupled weight decay
+  property: Decoupled weight decay
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ADAMW_-011
+  obligation: Second moment non-negative
+  property: Second moment non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ADAMW_-012
+  obligation: Bias-corrected moments finite
+  property: Bias-corrected moments finite
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ADAMW_-013
+  obligation: Bias correction factor
+  property: Bias correction factor
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ADAMW_-014
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-AW-001
   name: AdamW Contract

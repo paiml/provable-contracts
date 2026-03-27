@@ -80,3 +80,13 @@ kani_harnesses:
   property: geometric_mean <= arithmetic_mean for all dimension vectors
   bound: 8
   strategy: exhaustive
+- id: KANI-SCORE_-003
+  obligation: Uniform dimensions
+  property: Uniform dimensions
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SCORE_-004
+  obligation: Zero propagation
+  property: Zero propagation
+  bound: 8
+  strategy: exhaustive

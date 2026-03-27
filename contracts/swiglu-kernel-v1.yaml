@@ -130,6 +130,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_silu_lower_bound
+- id: KANI-SWIGLU-004
+  obligation: Zero preservation
+  property: Zero preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SWIGLU-005
+  obligation: Fused matches unfused
+  property: Fused matches unfused
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SWIGLU-006
+  obligation: Gate output bounded below
+  property: Gate output bounded below
+  bound: 8
+  strategy: stub_float
+- id: KANI-SWIGLU-007
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-SG-001
   name: SwiGLU Contract

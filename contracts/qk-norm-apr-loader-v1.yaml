@@ -95,3 +95,13 @@ kani_harnesses:
   obligation: Weight shape matches head_dim
   bound: 8
   strategy: bounded_int
+- id: KANI-QK_NOR-002
+  obligation: Non-regression for non-QK-norm models
+  property: Non-regression for non-QK-norm models
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QK_NOR-003
+  obligation: APR loader matches SafeTensors loader
+  property: APR loader matches SafeTensors loader
+  bound: 8
+  strategy: exhaustive

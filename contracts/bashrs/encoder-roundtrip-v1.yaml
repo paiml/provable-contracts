@@ -172,6 +172,31 @@ kani_harnesses:
   strategy: exhaustive
   solver: cadical
   harness: verify_indent_cache
+- id: KANI-ENCODE-005
+  obligation: Parse-emit-parse equivalence for purifier
+  property: Parse-emit-parse equivalence for purifier
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ENCODE-006
+  obligation: Emitted output is valid POSIX sh
+  property: Emitted output is valid POSIX sh
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ENCODE-007
+  obligation: Variable preservation
+  property: Variable preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ENCODE-008
+  obligation: Control flow structure preservation
+  property: Control flow structure preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ENCODE-009
+  obligation: Output size bounded
+  property: Output size bounded
+  bound: 8
+  strategy: stub_float
 qa_gate:
   id: F-ERT-001
   name: Encoder Roundtrip Contract

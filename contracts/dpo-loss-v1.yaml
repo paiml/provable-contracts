@@ -139,6 +139,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_sigmoid_bounds
+- id: KANI-DPO_LO-004
+  obligation: Log-ratio is finite
+  property: Log-ratio is finite
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DPO_LO-005
+  obligation: Loss decreases as preferred response probability increases
+  property: Loss decreases as preferred response probability increases
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DPO_LO-006
+  obligation: Gradient is zero when pi_theta == pi_ref
+  property: Gradient is zero when pi_theta == pi_ref
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DPO_LO-007
+  obligation: DPO loss is non-negative
+  property: DPO loss is non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-DPO_LO-008
+  obligation: DPO loss at reference policy equals log(2)
+  property: DPO loss at reference policy equals log(2)
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-DPO-001
   name: DPO Loss Contract

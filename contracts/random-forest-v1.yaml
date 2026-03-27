@@ -112,6 +112,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_ensemble_size
+- id: KANI-RANDOM-003
+  obligation: Predictions in label range
+  property: Predictions in label range
+  bound: 8
+  strategy: exhaustive
+- id: KANI-RANDOM-004
+  obligation: Deterministic with same seed
+  property: Deterministic with same seed
+  bound: 8
+  strategy: exhaustive
+- id: KANI-RANDOM-005
+  obligation: Ensemble size respected
+  property: Ensemble size respected
+  bound: 8
+  strategy: exhaustive
+- id: KANI-RANDOM-006
+  obligation: Prediction length matches input
+  property: Prediction length matches input
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-RF-001
   name: Random Forest Contract

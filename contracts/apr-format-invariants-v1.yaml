@@ -102,3 +102,8 @@ kani_harnesses:
   property: valid input always validates; invalid never validates
   bound: 16
   strategy: exhaustive
+- id: KANI-APR_FO-003
+  obligation: Report completeness
+  property: Report completeness
+  bound: 8
+  strategy: exhaustive

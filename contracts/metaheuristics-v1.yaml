@@ -144,6 +144,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_pso_velocity_clamped
+- id: KANI-METAHE-004
+  obligation: Best objective non-increasing across iterations
+  property: Best objective non-increasing across iterations
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METAHE-005
+  obligation: SA best improves or stays same
+  property: SA best improves or stays same
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METAHE-006
+  obligation: GA best improves or stays same
+  property: GA best improves or stays same
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METAHE-007
+  obligation: PSO best improves or stays same
+  property: PSO best improves or stays same
+  bound: 8
+  strategy: exhaustive
+- id: KANI-METAHE-008
+  obligation: SA acceptance probability in (0, 1]
+  property: SA acceptance probability in (0, 1]
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-MH-001
   name: Metaheuristics Contract

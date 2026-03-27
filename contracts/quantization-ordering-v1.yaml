@@ -100,6 +100,31 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_size_ordering
+- id: KANI-QUANTI-002
+  obligation: Size ordering strict
+  property: Size ordering strict
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QUANTI-003
+  obligation: Alpha scaling correctness
+  property: Alpha scaling correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QUANTI-004
+  obligation: Dropout expectation
+  property: Dropout expectation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QUANTI-005
+  obligation: Concrete Qwen3.5 sizes
+  property: Concrete Qwen3.5 sizes
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QUANTI-006
+  obligation: SIMD quantization equivalence
+  property: SIMD quantization equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-QO-001
   name: Quantization Ordering Contract

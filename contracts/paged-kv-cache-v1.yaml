@@ -159,6 +159,41 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_pool_conservation
+- id: KANI-PAGED_-004
+  obligation: Slot mapping bijectivity
+  property: Slot mapping bijectivity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PAGED_-005
+  obligation: Paged/contiguous attention equivalence
+  property: Paged/contiguous attention equivalence
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PAGED_-006
+  obligation: Block allocation monotonic in seq_len
+  property: Block allocation monotonic in seq_len
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PAGED_-007
+  obligation: Block waste bounded
+  property: Block waste bounded
+  bound: 8
+  strategy: stub_float
+- id: KANI-PAGED_-008
+  obligation: No duplicate blocks within request
+  property: No duplicate blocks within request
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PAGED_-009
+  obligation: Graph-compatible fixed shape
+  property: Graph-compatible fixed shape
+  bound: 8
+  strategy: exhaustive
+- id: KANI-PAGED_-010
+  obligation: Block pool conservation
+  property: Block pool conservation
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-PKV-001
   name: Paged KV Cache Contract

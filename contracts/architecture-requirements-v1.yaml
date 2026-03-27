@@ -552,6 +552,41 @@ kani_harnesses:
   bound: 4
   strategy: exhaustive
   harness: verify_role_monotonicity
+- id: KANI-ARCHIT-004
+  obligation: Base roles always required
+  property: Base roles always required
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ARCHIT-005
+  obligation: Constraint matrix exhaustive
+  property: Constraint matrix exhaustive
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ARCHIT-006
+  obligation: Role count correctness
+  property: Role count correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ARCHIT-007
+  obligation: Weight completeness implies correct forward pass
+  property: Weight completeness implies correct forward pass
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ARCHIT-008
+  obligation: Incomplete weights detected before forward pass
+  property: Incomplete weights detected before forward pass
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ARCHIT-009
+  obligation: YAML matches Rust implementation
+  property: YAML matches Rust implementation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ARCHIT-010
+  obligation: Adding features only adds roles
+  property: Adding features only adds roles
+  bound: 8
+  strategy: exhaustive
 enforcement:
   yaml_rust_parity:
     description: YAML contract and Rust implementation must define identical role sets

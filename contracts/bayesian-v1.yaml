@@ -111,6 +111,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_blr_predictions_finite
+- id: KANI-BAYESI-003
+  obligation: Posterior parameters positive
+  property: Posterior parameters positive
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BAYESI-004
+  obligation: Predictions finite
+  property: Predictions finite
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BAYESI-005
+  obligation: Prediction deterministic
+  property: Prediction deterministic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BAYESI-006
+  obligation: Conjugacy preserved
+  property: Conjugacy preserved
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-BAYES-001
   name: Bayesian Inference Contract

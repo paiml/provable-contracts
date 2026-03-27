@@ -138,6 +138,31 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_adjusted_distribution_valid
+- id: KANI-SPECUL-004
+  obligation: Output distribution matches standard autoregressive
+  property: Output distribution matches standard autoregressive
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SPECUL-005
+  obligation: Acceptance rate lower bound
+  property: Acceptance rate lower bound
+  bound: 8
+  strategy: stub_float
+- id: KANI-SPECUL-006
+  obligation: Acceptance rate upper bound
+  property: Acceptance rate upper bound
+  bound: 8
+  strategy: stub_float
+- id: KANI-SPECUL-007
+  obligation: Adjusted distribution validity
+  property: Adjusted distribution validity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SPECUL-008
+  obligation: Acceptance rate increases with draft quality
+  property: Acceptance rate increases with draft quality
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-SD-001
   name: Speculative Decoding Contract

@@ -133,6 +133,31 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_softplus_positive
+- id: KANI-SSM_KE-003
+  obligation: Causality
+  property: Causality
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SSM_KE-004
+  obligation: Softplus positivity
+  property: Softplus positivity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SSM_KE-005
+  obligation: Scan linearity
+  property: Scan linearity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SSM_KE-006
+  obligation: Parallel scan matches sequential scan
+  property: Parallel scan matches sequential scan
+  bound: 8
+  strategy: exhaustive
+- id: KANI-SSM_KE-007
+  obligation: SIMD matches scalar within ULP
+  property: SIMD matches scalar within ULP
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-SSM-001
   name: SSM Contract

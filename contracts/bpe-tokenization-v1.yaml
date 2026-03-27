@@ -134,6 +134,31 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_nonempty_output
+- id: KANI-BPE_TO-004
+  obligation: Decode of encode recovers original text
+  property: Decode of encode recovers original text
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BPE_TO-005
+  obligation: Deterministic encoding
+  property: Deterministic encoding
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BPE_TO-006
+  obligation: Token IDs within vocabulary range
+  property: Token IDs within vocabulary range
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BPE_TO-007
+  obligation: Non-empty input produces non-empty output
+  property: Non-empty input produces non-empty output
+  bound: 8
+  strategy: exhaustive
+- id: KANI-BPE_TO-008
+  obligation: Encoding length bounded by input bytes
+  property: Encoding length bounded by input bytes
+  bound: 8
+  strategy: stub_float
 qa_gate:
   id: F-BPE-001
   name: BPE Tokenization Contract

@@ -112,6 +112,26 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_ensemble_output_finite
+- id: KANI-GBM_V1-003
+  obligation: Predictions binary
+  property: Predictions binary
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GBM_V1-004
+  obligation: Predictions deterministic
+  property: Predictions deterministic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GBM_V1-005
+  obligation: Ensemble output finite
+  property: Ensemble output finite
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GBM_V1-006
+  obligation: Training loss non-increasing
+  property: Training loss non-increasing
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-GBM-001
   name: GBM Contract

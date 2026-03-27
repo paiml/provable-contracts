@@ -105,3 +105,23 @@ kani_harnesses:
   obligation: SIMD matches scalar
   bound: 8
   strategy: bounded_int
+- id: KANI-AVX2_F-002
+  obligation: Zero-allocation
+  property: Zero-allocation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-AVX2_F-003
+  obligation: Commutativity
+  property: Commutativity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-AVX2_F-004
+  obligation: Self-dot non-negative
+  property: Self-dot non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-AVX2_F-005
+  obligation: Empty input returns zero
+  property: Empty input returns zero
+  bound: 8
+  strategy: exhaustive

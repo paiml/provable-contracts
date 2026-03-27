@@ -120,6 +120,31 @@ kani_harnesses:
   bound: 8
   strategy: bounded_int
   harness: verify_transpose_involution
+- id: KANI-TRANSP-003
+  obligation: Shape correctness
+  property: Shape correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-TRANSP-004
+  obligation: Involution (self-inverse)
+  property: Involution (self-inverse)
+  bound: 8
+  strategy: exhaustive
+- id: KANI-TRANSP-005
+  obligation: AVX2 matches scalar
+  property: AVX2 matches scalar
+  bound: 8
+  strategy: exhaustive
+- id: KANI-TRANSP-006
+  obligation: Element correctness
+  property: Element correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-TRANSP-007
+  obligation: All elements transposed
+  property: All elements transposed
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-TP-001
   name: Transpose Kernel Contract

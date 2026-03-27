@@ -150,6 +150,36 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_failed_backend_excluded
+- id: KANI-GPU_MU-003
+  obligation: At least one backend passes parity
+  property: At least one backend passes parity
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_MU-004
+  obligation: Failed backend never serves inference
+  property: Failed backend never serves inference
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_MU-005
+  obligation: Backend selection is deterministic
+  property: Backend selection is deterministic
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_MU-006
+  obligation: wgpu matches CPU within tolerance
+  property: wgpu matches CPU within tolerance
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_MU-007
+  obligation: NVRTC-compiled CUDA matches CPU within tolerance
+  property: NVRTC-compiled CUDA matches CPU within tolerance
+  bound: 8
+  strategy: exhaustive
+- id: KANI-GPU_MU-008
+  obligation: Q4K bandwidth advantage
+  property: Q4K bandwidth advantage
+  bound: 8
+  strategy: exhaustive
 five_whys:
   symptom: GPU inference produces cosine=-0.005 vs CPU on Blackwell sm_121
   analysis:

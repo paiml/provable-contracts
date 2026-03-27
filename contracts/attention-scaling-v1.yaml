@@ -153,6 +153,41 @@ kani_harnesses:
   bound: 16
   strategy: stub_float
   harness: verify_max_subtraction
+- id: KANI-ATTENT-003
+  obligation: Score shape correctness
+  property: Score shape correctness
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ATTENT-004
+  obligation: Variance preservation
+  property: Variance preservation
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ATTENT-005
+  obligation: Score bound with QK-norm
+  property: Score bound with QK-norm
+  bound: 8
+  strategy: stub_float
+- id: KANI-ATTENT-006
+  obligation: Attention entropy non-negative
+  property: Attention entropy non-negative
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ATTENT-007
+  obligation: Attention entropy upper bound
+  property: Attention entropy upper bound
+  bound: 8
+  strategy: stub_float
+- id: KANI-ATTENT-008
+  obligation: Max-subtraction equivalence
+  property: Max-subtraction equivalence
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ATTENT-009
+  obligation: Scaling prevents saturation
+  property: Scaling prevents saturation
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-ASCL-001
   name: Attention Scaling Contract

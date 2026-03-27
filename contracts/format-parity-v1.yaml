@@ -101,6 +101,31 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_transpose_involution
+- id: KANI-FORMAT-002
+  obligation: Transpose involution
+  property: Transpose involution
+  bound: 8
+  strategy: exhaustive
+- id: KANI-FORMAT-003
+  obligation: Element count preserved
+  property: Element count preserved
+  bound: 8
+  strategy: exhaustive
+- id: KANI-FORMAT-004
+  obligation: 1D no transpose
+  property: 1D no transpose
+  bound: 8
+  strategy: exhaustive
+- id: KANI-FORMAT-005
+  obligation: Roundtrip equivalence
+  property: Roundtrip equivalence
+  bound: 8
+  strategy: exhaustive
+- id: KANI-FORMAT-006
+  obligation: SIMD format equivalence
+  property: SIMD format equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-FP-001
   name: Format Parity Contract

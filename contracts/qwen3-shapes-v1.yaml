@@ -154,6 +154,51 @@ kani_harnesses:
   strategy: exhaustive
   solver: cadical
   harness: verify_qwen3_shapes
+- id: KANI-QWEN3_-002
+  obligation: Q projection shape
+  property: Q projection shape
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3_-003
+  obligation: KV projection shape
+  property: KV projection shape
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3_-004
+  obligation: GQA divisibility
+  property: GQA divisibility
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3_-005
+  obligation: SwiGLU expansion ratio
+  property: SwiGLU expansion ratio
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3_-006
+  obligation: O projection transpose
+  property: O projection transpose
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3_-007
+  obligation: RoPE frequency vector length
+  property: RoPE frequency vector length
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3_-008
+  obligation: RoPE frequency decreasing
+  property: RoPE frequency decreasing
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3_-009
+  obligation: Head dimension consistency
+  property: Head dimension consistency
+  bound: 8
+  strategy: exhaustive
+- id: KANI-QWEN3_-010
+  obligation: SIMD shape equivalence
+  property: SIMD shape equivalence
+  bound: 8
+  strategy: exhaustive
 qa_gate:
   id: F-QW3-001
   name: Qwen3 Shapes Contract
