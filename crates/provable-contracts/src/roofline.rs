@@ -74,7 +74,10 @@ pub fn compute_roofline(
     hw: &HardwareProfile,
 ) -> RooflineCeiling {
     // Equation 1: model_bytes
-    let model_bytes = total_params as f64 * bits_per_weight as f64 / 8.0;
+    #[allow(clippy::cast_precision_loss)]
+    // model params fit within f64 mantissa for all real models
+    let total_params_f = total_params as f64;
+    let model_bytes = total_params_f * f64::from(bits_per_weight) / 8.0;
 
     // Equation 2: bw_ceiling (tokens/sec)
     let model_gb = model_bytes / 1e9;
@@ -86,7 +89,7 @@ pub fn compute_roofline(
 
     // Equation 3: compute_ceiling (tokens/sec)
     let compute_ceiling = if hw.ops_per_token > 0.0 {
-        hw.compute_gflops * 1e9 / (total_params as f64 * hw.ops_per_token)
+        hw.compute_gflops * 1e9 / (total_params_f * hw.ops_per_token)
     } else {
         f64::INFINITY
     };
