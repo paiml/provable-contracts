@@ -1772,3 +1772,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-102
+  github_issue: null
+  item_type: task
+  title: 'Spec Section 27: The One Way — unified contract enforcement via Rust nightly contracts'
+  status: completed
+  priority: critical
+  assigned_to: null
+  created: 2026-03-27T18:10:16Z
+  updated: 2026-03-27T18:13:44.901079402+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
