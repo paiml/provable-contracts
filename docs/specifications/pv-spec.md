@@ -126,12 +126,12 @@ provable-contracts/
 | Proof obligations | 677 | `pv coverage contracts/` |
 | Falsification tests | 714 | `pv coverage contracts/` |
 | Kani harnesses (YAML-defined) | 871 | `pv coverage contracts/` |
-| Binding entries (14 crates) | 16,998 | `grep -c equation: contracts/*/binding.yaml` |
+| Binding entries (14 crates) | 20,366 | `grep -c equation: contracts/*/binding.yaml \| paste -sd+ \| bc` |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) | schema/types.rs |
-| CLI commands | 31 | `pv --help` |
+| CLI commands | 32 | `pv --help` |
 | Consuming projects with bindings | 14 | `ls contracts/*/binding.yaml` |
 | Consuming projects with trait tests | 7/14 | manual audit 2026-03-27 |
-| `#[contract]` proc-macro annotations | 4 (forjar only) | `grep -r '#[contract]'` across repos |
+| `#[contract]` proc-macro annotations | 18 (forjar: 4, paiml-mcp-agent-toolkit: 11, batuta: 3) | `grep -rn '#[contract]'` across repos |
 | Stack LoC governed | ~6.4M Rust | — |
 
 ---
@@ -160,20 +160,21 @@ Level   Method                  Tool            Guarantee
 |-------|----------------|-----------|----------|--------|
 | **L5** | Algorithm incorrect | Lean 4 proof (no sorry) | 3 theorems (softmax) | — |
 | **L4** | Logic bugs, overflows | Kani `#[kani::proof]` BMC | 871 harnesses (YAML-defined) | Inputs > bound |
-| **L3** | Violated invariants | `#[contract]` debug_assert | 4 functions (forjar) | Release builds |
+| **L3** | Violated invariants | `#[contract]` debug_assert | 18 functions (forjar: 4, pmat: 11, batuta: 3) | Release builds |
 | **L2** | Renamed/deleted fns | Trait `impl` (§23) | 7/14 repos have trait tests | Logic bugs |
-| **L1** | Missing bindings | build.rs AllImplemented | 16,998 bindings | Ghost bindings |
+| **L1** | Missing bindings | build.rs AllImplemented | 20,366 bindings | Ghost bindings |
 | **L0.5** | Schema/audit/score | `pv lint` 7 gates | 131/131 contracts pass | Impl bugs |
 | **L0** | Obvious bugs | Human review | — | Everything subtle |
 
 **L0 through L2 enforce on every `cargo build` + `cargo test`.**
-L3 enforces on 4 annotated functions in forjar debug builds.
+L3 enforces on 18 annotated functions across forjar, pmat, and batuta debug builds.
 L4 and L5 are defined in YAML but not yet run in CI.
 
-> **Spec Falsification (2026-03-27):** This table was corrected from
-> aspirational numbers to measured reality. Prior version overstated
-> L4 (251→871 YAML-defined, but 0 run in CI), L3 (49→4 actual),
-> L2 (13/13→7/14). See §25 for the A-score mandate to close these gaps.
+> **Spec Falsification (2026-03-27):** This table is verified against
+> measured reality on each update. Falsification round 1 corrected:
+> L4 (251→871), L3 (49→4→18), L2 (13/13→7/14), L1 (16,989→20,366).
+> Round 2 corrected: bindings (16,998→20,366), CLI (31→32),
+> `#[contract]` (4→18). See §25 for the A-score enforcement mandate.
 
 ### The Provability Claim
 
