@@ -112,3 +112,10 @@ five_whys:
     answer: Blackwell didn't exist when FP8 detection was written — assumed cc >= 89 means FP8-capable
   root_cause: Missing architecture upper bound in FP8 auto-detection
   fix: Changed to cc >= 89 && cc < 100 in gpu_profile.rs, attention.rs, gemm.rs (commit a4bcd908)
+qa_gate:
+  id: F-GCHV-001
+  name: gpu-context-health-v1 Contract
+  description: Quality gate for GPU context health contract — ensures FP8 warmup does not po
+  checks:
+  - validation
+  - falsification

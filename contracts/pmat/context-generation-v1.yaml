@@ -93,3 +93,10 @@ kani_harnesses:
   property: Valid project
   bound: 8
   strategy: exhaustive
+qa_gate:
+  id: F-CGV-001
+  name: context-generation-v1 Contract
+  description: Quality gate for Context generation — produce agent-consumable project contex
+  checks:
+  - validation
+  - falsification

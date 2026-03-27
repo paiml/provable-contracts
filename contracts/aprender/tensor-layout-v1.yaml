@@ -659,3 +659,10 @@ equations:
     preconditions:
     - '!input.is_empty()'
     lean_theorem: Theorems.Identity
+qa_gate:
+  id: F-TLV-001
+  name: tensor-layout-v1 Contract
+  description: Quality gate for Tensor layout and data quality contract with compile-time en
+  checks:
+  - validation
+  - falsification

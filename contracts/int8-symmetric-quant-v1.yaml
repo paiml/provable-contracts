@@ -126,3 +126,10 @@ kani_harnesses:
   property: Zero-row invariant
   bound: 8
   strategy: exhaustive
+qa_gate:
+  id: F-ISQV-001
+  name: int8-symmetric-quant-v1 Contract
+  description: Quality gate for INT8 symmetric per-row weight quantization for transformer i
+  checks:
+  - validation
+  - falsification

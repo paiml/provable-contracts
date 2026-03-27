@@ -118,3 +118,10 @@ kani_harnesses:
   property: num_kv_heads divides num_heads
   bound: 8
   strategy: exhaustive
+qa_gate:
+  id: F-MMBV-001
+  name: model-metadata-bounds-v1 Contract
+  description: Quality gate for Valid ranges for model configuration dimensions
+  checks:
+  - validation
+  - falsification

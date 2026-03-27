@@ -90,3 +90,10 @@ kani_harnesses:
   property: Zero propagation
   bound: 8
   strategy: exhaustive
+qa_gate:
+  id: F-SCV-001
+  name: score-composite-v1 Contract
+  description: Quality gate for Composite score — geometric mean of quality dimensions for c
+  checks:
+  - validation
+  - falsification

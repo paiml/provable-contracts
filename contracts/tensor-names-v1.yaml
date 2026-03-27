@@ -865,3 +865,27 @@ enforcement:
     description: PhiForCausalLM != Phi3ForCausalLM
     check: tensor_names::tests::FALSIFY-TNAME-004
     severity: CRITICAL
+qa_gate:
+  id: F-TNV-001
+  name: tensor-names-v1 Contract
+  description: Quality gate for Architecture-specific tensor name resolution — source of tru
+  checks:
+  - validation
+  - falsification
+proof_obligations:
+- type: invariant
+  property: Architecture-specific names tried before fallbacks
+  formal: Architecture-specific names tried before fallbacks
+  applies_to: all
+- type: invariant
+  property: Bare name (without 'model.' prefix) tried as last resort
+  formal: Bare name (without 'model.' prefix) tried as last resort
+  applies_to: all
+- type: invariant
+  property: Unknown architecture defaults to llama (safest default)
+  formal: Unknown architecture defaults to llama (safest default)
+  applies_to: all
+- type: invariant
+  property: Case-sensitive matching on HF class names
+  formal: Case-sensitive matching on HF class names
+  applies_to: all

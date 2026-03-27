@@ -71,3 +71,10 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_output_dimension
+qa_gate:
+  id: F-LPEV-001
+  name: learned-position-embedding-v1 Contract
+  description: Quality gate for Learned absolute position embeddings (RoBERTa-style)
+  checks:
+  - validation
+  - falsification

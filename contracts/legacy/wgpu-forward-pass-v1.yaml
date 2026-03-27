@@ -62,3 +62,10 @@ postconditions:
   threshold: 25.0
   unit: tok/s
   measurement: 0.72 (PMAT-358, W5700X with GPU bias+RoPE)
+qa_gate:
+  id: F-WFPV-001
+  name: wgpu-forward-pass-v1 Contract
+  description: Quality gate for wgpu-forward-pass-v1
+  checks:
+  - validation
+  - falsification

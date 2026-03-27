@@ -92,3 +92,10 @@ equations:
     preconditions:
     - '!input.is_empty()'
     lean_theorem: Theorems.Identity
+qa_gate:
+  id: F-TMSV-001
+  name: tiled-matmul-shader-v1 Contract
+  description: Quality gate for 16×16 shared memory tiled matmul shader — reduces global mem
+  checks:
+  - validation
+  - falsification

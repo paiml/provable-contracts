@@ -1,83 +1,83 @@
-# C-WCLIP-001: GPU-Side Per-Block Workspace Gradient Clipping (KAIZEN-054)
-#
-# Re-enables per-block gradient clipping that was disabled in ALB-067 due to
-# CPU D2H bottleneck. Uses squared_sum_cuda (KAIZEN-049) for GPU-side L2 norm
-# computation — only 9 tiny partial-sum downloads per block instead of 9 full
-# gradient buffer downloads.
-#
-# ALB-067 disabled clipping because compute_workspace_clip_scale() downloaded
-# 9 gradient buffers per block to CPU. For 36 blocks: 324 D2H transfers of
-# full gradient buffers (~58 MB each) pegging CPU at 100%, GPU at 7%.
-
 contract: C-WCLIP-001
-title: "GPU-Side Per-Block Workspace Gradient Clipping"
+title: GPU-Side Per-Block Workspace Gradient Clipping
 kaizen: KAIZEN-054
-parent: C-GPUNORM-001  # Extends KAIZEN-049 GPU L2 norm reduction
+parent: C-GPUNORM-001
 status: implemented
 date: 2026-03-04
-
-# Measured baseline (ALB-067 state: clipping disabled)
 baseline:
-  per_block_clipping: false    # Disabled — no gradient norm control per block
-  d2h_per_block: 0             # No D2H since clipping disabled
-  training_stability: "relies on AdamW second moments + LM head/norm clip only"
-
-# After KAIZEN-054
+  per_block_clipping: false
+  d2h_per_block: 0
+  training_stability: relies on AdamW second moments + LM head/norm clip only
 target:
-  per_block_clipping: true     # Re-enabled via GPU-side norm
-  d2h_per_block: 9             # 9 buffers × ~1KB partial sums = ~9KB per block
-  d2h_bytes_per_block: 9216    # 9 × 1024 bytes (partial sums from squared_sum_cuda)
-  gpu_kernels_per_block: 18    # 9 squared_sum + up to 9 gradient_clip (if norm > max)
-  training_stability: "full per-block gradient norm control restored"
-
-# Safety analysis
+  per_block_clipping: true
+  d2h_per_block: 9
+  d2h_bytes_per_block: 9216
+  gpu_kernels_per_block: 18
+  training_stability: full per-block gradient norm control restored
 safety:
-  norm_computation: |
-    squared_sum_cuda computes sqrt(sum(x[i]^2)) per buffer on GPU.
+  norm_computation: 'squared_sum_cuda computes sqrt(sum(x[i]^2)) per buffer on GPU.
+
     Only the scalar result (~4 bytes) is downloaded per buffer.
+
     Combined L2 norm: sqrt(sum(norm_i^2)) across 9 workspace buffers.
-  clip_scale: |
-    scale = max_norm / grad_norm when grad_norm > max_norm, else 1.0.
+
+    '
+  clip_scale: 'scale = max_norm / grad_norm when grad_norm > max_norm, else 1.0.
+
     When scale == 1.0 (within 1e-7), no clip kernels are launched.
+
     gradient_clip_cuda multiplies each element by scale (in-place).
-  stream_ordering: |
-    backward, squared_sum_cuda, and gradient_clip_cuda all run on the same
+
+    '
+  stream_ordering: 'backward, squared_sum_cuda, and gradient_clip_cuda all run on the same
+
     CUDA stream. Stream ordering guarantees sequential execution.
+
     No explicit stream.synchronize() needed between them.
-    Only squared_sum_cuda's internal sync for D2H of partial sums.
-  workspace_lifetime: |
-    Each block's backward overwrites the shared CudaGradWorkspace.
-    Clipping and optimizer step must complete before next block's backward.
+
+    Only squared_sum_cuda''s internal sync for D2H of partial sums.
+
+    '
+  workspace_lifetime: 'Each block''s backward overwrites the shared CudaGradWorkspace.
+
+    Clipping and optimizer step must complete before next block''s backward.
+
     This is guaranteed by same-stream ordering.
 
-# Preconditions
+    '
 preconditions:
-  - "CudaGradWorkspace has 9 gradient buffers (w_q, w_k, w_v, w_o, gate, up, down, input_norm, post_attn_norm)"
-  - "squared_sum_cuda kernel compiled and cached in OptimKernelCache"
-  - "gradient_clip_cuda kernel compiled and cached in OptimKernelCache"
-  - "max_grad_norm is Some(positive f32) — if None, clipping is skipped entirely"
-  - "Block backward has completed (workspace populated with valid gradients)"
-
-# Postconditions
+- CudaGradWorkspace has 9 gradient buffers (w_q, w_k, w_v, w_o, gate, up, down, input_norm, post_attn_norm)
+- squared_sum_cuda kernel compiled and cached in OptimKernelCache
+- gradient_clip_cuda kernel compiled and cached in OptimKernelCache
+- max_grad_norm is Some(positive f32) — if None, clipping is skipped entirely
+- Block backward has completed (workspace populated with valid gradients)
 postconditions:
-  - "For each workspace buffer: L2_norm(buf) <= max_grad_norm (within f32 precision)"
-  - "Gradient direction preserved — only magnitude scaled"
-  - "clip_workspace_gradients returns pre-clip L2 norm for observability"
-  - "No full gradient buffer D2H transfers"
-
-# Invariants
+- 'For each workspace buffer: L2_norm(buf) <= max_grad_norm (within f32 precision)'
+- Gradient direction preserved — only magnitude scaled
+- clip_workspace_gradients returns pre-clip L2 norm for observability
+- No full gradient buffer D2H transfers
 invariants:
-  - "clip_workspace_gradients is called between backward and optimizer_step per block"
-  - "When scale ≈ 1.0, zero GPU clip kernels launched (early return)"
-  - "compute_workspace_grad_norm available for observability without clipping"
-  - "LM head and final norm weight clipping (KAIZEN-049) remain independent"
-
-# Files modified
+- clip_workspace_gradients is called between backward and optimizer_step per block
+- When scale ≈ 1.0, zero GPU clip kernels launched (early return)
+- compute_workspace_grad_norm available for observability without clipping
+- LM head and final norm weight clipping (KAIZEN-049) remain independent
 files:
-  - path: entrenar/src/train/transformer_trainer/cuda_trainer.rs
-    change: |
-      - Added compute_workspace_clip_scale_gpu() free function (GPU-side norm)
-      - Added clip_workspace_gradients() free function (norm + clip)
-      - Added compute_workspace_grad_norm() free function (observability)
-      - Re-enabled per-block clipping in backward loop (was ALB-067 disabled)
-      - Pattern: if let Some(max_norm) = max_grad_norm { clip_workspace_gradients(...) }
+- path: entrenar/src/train/transformer_trainer/cuda_trainer.rs
+  change: '- Added compute_workspace_clip_scale_gpu() free function (GPU-side norm)
+
+    - Added clip_workspace_gradients() free function (norm + clip)
+
+    - Added compute_workspace_grad_norm() free function (observability)
+
+    - Re-enabled per-block clipping in backward loop (was ALB-067 disabled)
+
+    - Pattern: if let Some(max_norm) = max_grad_norm { clip_workspace_gradients(...) }
+
+    '
+qa_gate:
+  id: F-GWCV-001
+  name: gpu-workspace-clip-v1 Contract
+  description: Quality gate for gpu-workspace-clip-v1
+  checks:
+  - validation
+  - falsification

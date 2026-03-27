@@ -379,3 +379,19 @@ falsification_tests:
   prediction: DeepSeek eps is 1e-6, not 1e-5 (bug fix from hand-maintained code)
   test: Regression test in realizar config tests
   if_fails: DeepSeek eps reverted to incorrect default 1e-5
+qa_gate:
+  id: F-ACV-001
+  name: arch-constraints-v1 Contract
+  description: Quality gate for Per-architecture inference constraints — source of truth
+  checks:
+  - validation
+  - falsification
+proof_obligations:
+- type: invariant
+  property: Every GGUF general.architecture value maps to exactly one constraint set
+  formal: Every GGUF general.architecture value maps to exactly one constraint set
+  applies_to: all
+- type: invariant
+  property: Enum fields are exhaustive over the defined enum variants
+  formal: Enum fields are exhaustive over the defined enum variants
+  applies_to: all

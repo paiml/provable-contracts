@@ -89,3 +89,10 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_no_causal_mask
+qa_gate:
+  id: F-BAV-001
+  name: bidirectional-attention-v1 Contract
+  description: 'Quality gate for Bidirectional (encoder) attention -- full attention without '
+  checks:
+  - validation
+  - falsification

@@ -228,3 +228,10 @@ kani_harnesses:
   property: Architecture mapping covers all families
   bound: 8
   strategy: exhaustive
+qa_gate:
+  id: F-STRV-001
+  name: special-tokens-registry-v1 Contract
+  description: Quality gate for Canonical EOS/BOS/PAD token IDs per model family
+  checks:
+  - validation
+  - falsification

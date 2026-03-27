@@ -125,3 +125,10 @@ kani_harnesses:
   property: Empty input returns zero
   bound: 8
   strategy: exhaustive
+qa_gate:
+  id: F-AFDV-001
+  name: avx2-fma-dot-v1 Contract
+  description: Quality gate for AVX2+FMA dot product — zero-alloc, fused multiply-add for de
+  checks:
+  - validation
+  - falsification

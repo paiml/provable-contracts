@@ -75,3 +75,10 @@ kani_harnesses:
   property: Valid project path
   bound: 8
   strategy: exhaustive
+qa_gate:
+  id: F-CCV-001
+  name: comply-check-v1 Contract
+  description: Quality gate for Compliance check — run all quality gates (TDG, lint, deny, t
+  checks:
+  - validation
+  - falsification

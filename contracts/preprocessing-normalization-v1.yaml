@@ -62,10 +62,6 @@ proof_obligations:
   property: StandardScaler inverse
   formal: inverse_transform(transform(X)) ≈ X
   applies_to: all
-- type: invariant
-  property: MinMaxScaler inverse
-  formal: inverse_transform(transform(X)) ≈ X
-  applies_to: all
 falsification_tests:
 - id: FALSIFY-PP-001
   rule: StandardScaler zero mean

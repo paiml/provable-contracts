@@ -88,3 +88,10 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_trainable_param_count
+qa_gate:
+  id: F-LPCV-001
+  name: linear-probe-classifier-v1 Contract
+  description: Quality gate for Linear probe classifier -- frozen encoder + trained linear h
+  checks:
+  - validation
+  - falsification

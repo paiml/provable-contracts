@@ -351,3 +351,12 @@ qa_gate:
     Run same data on 1 vs 2 GPUs to verify loss equivalence.
 
     '
+proof_obligations:
+- type: invariant
+  property: g_avg computed identically on all workers (deterministic order)
+  formal: g_avg computed identically on all workers (deterministic order)
+  applies_to: all
+- type: invariant
+  property: AdamW moments (m, v) identical across workers
+  formal: AdamW moments (m, v) identical across workers
+  applies_to: all

@@ -91,3 +91,10 @@ kani_harnesses:
   property: Valid input metrics
   bound: 8
   strategy: exhaustive
+qa_gate:
+  id: F-TSV-001
+  name: tdg-scoring-v1 Contract
+  description: Quality gate for TDG scoring — weighted composite of test, documentation, and
+  checks:
+  - validation
+  - falsification

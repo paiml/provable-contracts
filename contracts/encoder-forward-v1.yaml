@@ -99,3 +99,10 @@ kani_harnesses:
   strategy: stub_float
   solver: cadical
   harness: verify_cls_pooling
+qa_gate:
+  id: F-EFV-001
+  name: encoder-forward-v1 Contract
+  description: Quality gate for Encoder forward pass -- full pipeline from tokens to [CLS] e
+  checks:
+  - validation
+  - falsification

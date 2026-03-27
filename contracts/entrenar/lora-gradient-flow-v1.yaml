@@ -79,3 +79,10 @@ equations:
     preconditions:
     - '!input.is_empty()'
     lean_theorem: Theorems.Identity
+qa_gate:
+  id: F-LGFV-001
+  name: lora-gradient-flow-v1 Contract
+  description: Quality gate for Autograd-aware transpose preserves LoRA gradient flow on wgp
+  checks:
+  - validation
+  - falsification

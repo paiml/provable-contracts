@@ -144,3 +144,10 @@ kani_harnesses:
   property: Pass rate bounded
   bound: 8
   strategy: stub_float
+qa_gate:
+  id: F-MSV-001
+  name: mqs-scoring-v1 Contract
+  description: 'Quality gate for Model Quality Score (MQS) — composite quality metric for ML '
+  checks:
+  - validation
+  - falsification

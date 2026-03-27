@@ -156,3 +156,10 @@ kani_harnesses:
   property: Beam search termination
   bound: 8
   strategy: exhaustive
+qa_gate:
+  id: F-BBSV-001
+  name: batched-beam-search-v1 Contract
+  description: 'Quality gate for Batched beam search — convert N sequential matvecs into one '
+  checks:
+  - validation
+  - falsification

@@ -129,3 +129,10 @@ equations:
     preconditions:
     - '!input.is_empty()'
     lean_theorem: Theorems.Identity
+qa_gate:
+  id: F-WRWV-001
+  name: wgpu-resident-weights-v1 Contract
+  description: Quality gate for GPU-resident FFN weights for wgpu training — zero H2D per fo
+  checks:
+  - validation
+  - falsification

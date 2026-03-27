@@ -26,3 +26,10 @@ kani_harnesses:
   bound: 8
   strategy: bounded_int
   solver: cadical
+qa_gate:
+  id: F-CV-001
+  name: configuration-v1 Contract
+  description: Quality gate for Generic configuration contract — common Rust API pattern
+  checks:
+  - validation
+  - falsification

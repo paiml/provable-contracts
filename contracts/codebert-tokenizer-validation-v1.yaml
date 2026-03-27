@@ -190,3 +190,12 @@ qa_gate:
   - no_token_explosion
   - deterministic_encoding
   pass_criteria: All 5 checks pass
+proof_obligations:
+- type: invariant
+  property: Vocab size = 50265
+  formal: Vocab size = 50265
+  applies_to: all
+- type: invariant
+  property: Every non-empty input produces at least 1 token
+  formal: Every non-empty input produces at least 1 token
+  applies_to: all

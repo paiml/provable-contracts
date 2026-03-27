@@ -180,3 +180,10 @@ kani_harnesses:
   property: Two-pass (not three)
   bound: 8
   strategy: exhaustive
+qa_gate:
+  id: F-OSV-001
+  name: online-softmax-v1 Contract
+  description: 'Quality gate for Online softmax — single-pass max+sum via running normalizer '
+  checks:
+  - validation
+  - falsification

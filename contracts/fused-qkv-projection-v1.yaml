@@ -146,3 +146,10 @@ kani_harnesses:
   property: Single matvec call
   bound: 8
   strategy: exhaustive
+qa_gate:
+  id: F-FQPV-001
+  name: fused-qkv-projection-v1 Contract
+  description: Quality gate for Fused QKV projection — concatenated weight matrix for single
+  checks:
+  - validation
+  - falsification

@@ -107,3 +107,10 @@ kani_harnesses:
   property: Report completeness
   bound: 8
   strategy: exhaustive
+qa_gate:
+  id: F-AFIV-001
+  name: apr-format-invariants-v1 Contract
+  description: Quality gate for APR format invariants — serialization roundtrip, schema vali
+  checks:
+  - validation
+  - falsification

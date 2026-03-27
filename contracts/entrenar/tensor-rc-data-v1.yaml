@@ -129,3 +129,10 @@ equations:
     preconditions:
     - '!input.is_empty()'
     lean_theorem: Theorems.Identity
+qa_gate:
+  id: F-TRDV-001
+  name: tensor-rc-data-v1 Contract
+  description: 'Quality gate for Tensor data stored behind Rc for O(1) clone — eliminates 16 '
+  checks:
+  - validation
+  - falsification

@@ -78,3 +78,10 @@ equations:
     preconditions:
     - '!input.is_empty()'
     lean_theorem: Theorems.Identity
+qa_gate:
+  id: F-PCV-001
+  name: pipeline-cache-v1 Contract
+  description: Quality gate for Pipeline cache + single encoder eliminates per-op shader com
+  checks:
+  - validation
+  - falsification
