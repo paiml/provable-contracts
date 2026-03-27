@@ -16,8 +16,12 @@ equations:
     - var(LN(x)) = 1 when gamma = 1, beta = 0 (standardization)
     - 'LN is invariant to input shift: LN(x + c) = LN(x)'
     preconditions:
-    - '!input.is_empty()'
+    - x.len() > 0
+    - x.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Layernorm
+    postconditions:
+    - result.len() == x.len()
+    - result.iter().all(|v| v.is_finite())
   statistics:
     formula: mu = (1/d) * sum(x_i), sigma^2 = (1/d) * sum((x_i - mu)^2)
     domain: x in R^d, d >= 1

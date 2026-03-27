@@ -16,8 +16,13 @@ equations:
     - 'Matmul is associative: (AB)C = A(BC)'
     - 'Matmul distributes over addition: A(B+C) = AB + AC'
     preconditions:
-    - '!input.is_empty()'
+    - a.len() == m * k
+    - b.len() == k * n
+    - m > 0 && k > 0 && n > 0
     lean_theorem: Theorems.Matmul
+    postconditions:
+    - result.len() == m * n
+    - result.iter().all(|v| v.is_finite())
   quantized_dot:
     formula: q_dot(a, b, s_a, s_b) = s_a · s_b · Σ_k a_k · b_k
     domain: a, b ∈ ℤ^n (int8), s_a, s_b ∈ ℝ (scales)

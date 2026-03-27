@@ -17,8 +17,12 @@ equations:
     - Attention weights ∈ (0,1)
     - Output rows are convex combinations of V rows
     preconditions:
-    - '!input.is_empty()'
+    - query.len() > 0
+    - key.len() > 0
+    - value.len() > 0
     lean_theorem: Theorems.Attention
+    postconditions:
+    - result.iter().all(|v| v.is_finite())
 proof_obligations:
 - type: invariant
   property: Attention weights normalize

@@ -1526,32 +1526,65 @@ inspector. Quality is built in at the station, not bolted on at the
 end. Translated to software: the contract IS the code, not a separate
 YAML file that a separate tool checks.
 
+### Falsification (2026-03-27)
+
+The "One Way" was falsified before implementation:
+
+| # | Claim | Reality | Severity |
+|---|-------|---------|----------|
+| F1 | `pv codegen` generates enforcement | Yes, generates macro stubs | OK |
+| F2 | Preconditions are meaningful | All 427 are `!input.is_empty()` (generic) | **HIGH** |
+| F3 | Repos use the output | **0/26** include or call the macros | **CRITICAL** |
+| F4 | Postconditions work | **0** postconditions in any contract | **CRITICAL** |
+| F5 | Macros bind to real functions | Hardcoded `input` var, not real signatures | **HIGH** |
+
+**Root cause:** The mass-generation in PMAT-082 added `!input.is_empty()`
+to every equation as a placeholder. Real preconditions require
+domain-specific assertions derived from the equation's `domain` and
+`invariants` fields. Postconditions were never populated in the YAML.
+
 ### The One Way for provable-contracts
 
-**Eliminate build.rs and trait tests. One mechanism: `pv codegen`
-generates `#[core::contracts::requires]` / `#[core::contracts::ensures]`
-from YAML equations, and the Rust compiler enforces them.**
+**One mechanism: `pv codegen --binding` reads both the contract YAML
+and the binding.yaml to generate function-specific `debug_assert!()`
+calls that reference real parameter names from the binding signatures.**
 
 The flow:
 
 ```
-YAML contract (source of truth)
+YAML contract (equations + domain + invariants)
+  + binding.yaml (function signatures + module paths)
   ↓
-pv codegen (generates Rust with #[requires]/#[ensures])
+pv codegen --binding contracts/<repo>/binding.yaml
   ↓
-Rust compiler (enforces contracts at compile time)
+generated_contracts.rs (debug_assert! with real param names)
   ↓
--Zcontract-checks=on (enforces at runtime in debug/test)
+Consumer crate: mod generated_contracts; // one line
+  ↓
+contract_pre_softmax!(x);  // at function entry
+contract_post_softmax!(result);  // before return
 ```
 
-No build.rs. No trait tests. No per-repo setup. One tool (`pv codegen`)
-generates the enforcement code. The Rust compiler does the rest.
+Phase 0 generates `debug_assert!()`. When `#[core::contracts::requires]`
+stabilizes, `pv codegen` switches output format — the YAML and binding
+don't change.
+
+### What Must Be Fixed (PMAT-103)
+
+1. **Binding-aware codegen**: Read function signatures from binding.yaml
+   to generate macros with correct parameter names
+2. **Domain-derived preconditions**: Parse equation `domain` field to
+   generate meaningful assertions (e.g., `x.len() > 0 && x.iter().all(|v| v.is_finite())`)
+3. **Postconditions from invariants**: Generate postcondition macros
+   from equation `invariants` (e.g., `(result.iter().sum::<f32>() - 1.0).abs() < 1e-6`)
+4. **Include mechanism**: Generated file must be `include!`d or `mod`d
+   by the consumer crate — document the one-line setup
 
 ### Transition Plan
 
 | Phase | When | What |
 |-------|------|------|
-| **Phase 0 (now)** | Stable Rust | `pv codegen` generates `debug_assert!()` from YAML preconditions/postconditions. Works on stable. Already implemented (§5). |
+| **Phase 0 (now)** | Stable Rust | `pv codegen --binding` generates `debug_assert!()` with real parameter names from binding signatures. |
 | **Phase 1 (nightly)** | Rust nightly | `pv codegen --contracts` generates `#[core::contracts::requires]` / `#[core::contracts::ensures]`. Requires `#![feature(contracts)]`. |
 | **Phase 2 (stable)** | Contracts RFC stabilized | `pv codegen` generates stable contract attributes. build.rs and trait tests become dead code. Delete them. |
 

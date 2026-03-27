@@ -18,8 +18,13 @@ equations:
     - CE(one_hot(k), logits) = -log_softmax(logits)_k
     - CE(p, p_logits) = H(p) when p = softmax(p_logits)
     preconditions:
-    - '!input.is_empty()'
+    - logits.len() > 0
+    - logits.iter().all(|v| v.is_finite())
+    - target < logits.len()
     lean_theorem: Theorems.Cross_Entropy
+    postconditions:
+    - result.is_finite()
+    - result >= 0.0
   log_softmax:
     formula: log_softmax(x)_i = x_i - max(x) - log(sum(exp(x_j - max(x))))
     domain: x in R^n, n >= 1

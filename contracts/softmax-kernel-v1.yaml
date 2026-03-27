@@ -16,8 +16,13 @@ equations:
     - σ(x)_i > 0 for all i (strict positivity)
     - argmax(σ(x)) = argmax(x) (order preservation)
     preconditions:
-    - '!input.is_empty()'
+    - x.len() > 0
+    - x.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Softmax
+    postconditions:
+    - result.len() == x.len()
+    - result.iter().all(|v| *v > 0.0)
+    - (result.iter().sum::<f32>() - 1.0).abs() < 1e-5
 proof_obligations:
 - type: precondition
   property: Input vector is finite and non-empty

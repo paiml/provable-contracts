@@ -17,8 +17,12 @@ equations:
     - 'Deterministic: same token_ids and W always produce the same output'
     - All output elements are finite (no NaN, no Inf)
     preconditions:
-    - '!input.is_empty()'
+    - token_ids.iter().all(|&id| (id as usize) < vocab_size)
+    - vocab_size > 0
     lean_theorem: Theorems.Embedding_Lookup
+    postconditions:
+    - result.len() == token_ids.len() * embed_dim
+    - result.iter().all(|v| v.is_finite())
 proof_obligations:
 - type: bound
   property: Output shape correctness

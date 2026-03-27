@@ -15,8 +15,13 @@ equations:
     - ‖RMSNorm(x)‖² / n ≈ ‖γ‖² / n (scale preservation)
     - RMSNorm(α·x) = sign(α) · RMSNorm(x) · γ (scale invariance)
     preconditions:
-    - '!input.is_empty()'
+    - x.len() > 0
+    - x.iter().all(|v| v.is_finite())
+    - weight.len() == x.len()
     lean_theorem: Theorems.Rmsnorm
+    postconditions:
+    - result.len() == x.len()
+    - result.iter().all(|v| v.is_finite())
 proof_obligations:
 - type: precondition
   property: Input and weight vectors finite, same length, epsilon positive

@@ -18,8 +18,13 @@ equations:
     - SwiGLU(0, W, V, 0, 0) = 0 (zero preservation)
     - Decomposable as gate * value where gate = SiLU(xW+b)
     preconditions:
-    - '!input.is_empty()'
+    - x.len() > 0
+    - gate.len() == x.len()
+    - x.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Swiglu
+    postconditions:
+    - result.len() == x.len()
+    - result.iter().all(|v| v.is_finite())
   silu:
     formula: SiLU(x) = x * sigmoid(x) = x / (1 + exp(-x))
     domain: x in R
