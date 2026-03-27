@@ -54,6 +54,7 @@ pub mod proof_status;
 pub mod query;
 pub mod readme_gen;
 pub mod reverse_coverage;
+pub mod roofline;
 pub mod scaffold;
 pub mod schema;
 pub mod scoring;
