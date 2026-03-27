@@ -38,6 +38,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 21 | [Contract Gap Analysis](#21-contract-gap-analysis) | [sub/contract-gaps.md](sub/contract-gaps.md) |
 | 22 | [Diagnostic Output](#22-diagnostic-output) | [sub/diagnostics.md](sub/diagnostics.md) |
 | 23 | [Contract-Trait Enforcement](#23-contract-trait-enforcement) | [sub/contract-trait-enforcement.md](sub/contract-trait-enforcement.md) |
+| 24 | [Deep Stack Integration](#24-deep-stack-integration) | [sub/deep-integration.md](sub/deep-integration.md) |
 
 ---
 
@@ -985,3 +986,45 @@ Eiffel deferred features (Meyer 1988 §11.1), Kani `proof_for_contract`
 (RFC 0009), Prusti `refine_trait_spec`, Creusot trait laws, Batuta
 `ContractValidation` trait pattern. See arXiv:2410.01981 for the full
 Rust verification landscape survey.
+
+---
+
+## 24. Deep Stack Integration
+
+**Sub-spec**: [sub/deep-integration.md](sub/deep-integration.md)
+
+Make contracts first-class citizens in the inference, profiling, and
+quality pipelines — not just the build system.
+
+### Four Gaps
+
+1. **apr-cli roofline disconnected** — `apr serve plan` uses hardcoded
+   formulas, not `roofline-model-v1.yaml` equations
+2. **trueno ComputeBrick budget not contract-derived** — thresholds
+   are manual, not loaded from contract YAML
+3. **Tracing not contract-aware** — `ModelTracer` observes but doesn't
+   verify postconditions against contract invariants
+4. **pmat CB-1209 not exercised** — trait enforcement exists but isn't
+   run in the `pmat comply check` pipeline end-to-end
+
+### Three-Tier Integration
+
+```
+Tier 1 (Compile): YAML → build.rs → #[contract] → trait impl
+Tier 2 (CI):      pv lint → verify-bindings → pmat CB-1200..1209
+Tier 3 (Runtime): apr serve → roofline from YAML → BrickProfiler
+                  → ContractTracingLayer → postcondition checks
+```
+
+Tier 3 is NEW. The runtime pipeline:
+- `apr serve plan` derives TPS ceilings from `roofline-model-v1.yaml`
+- `ComputeBrick` loads budget from `kernel-launch-budget-v1.yaml`
+- `ContractTracingLayer` intercepts spans tagged with contract IDs
+  and verifies postconditions against recorded values
+- Violations emit SARIF-compatible diagnostics
+
+### Evidence
+
+Validated by: trueno BrickProfiler architecture (PAR-200),
+apr-cli oracle compliance (PMAT-237), pmat CB-1200..1209 pipeline,
+arXiv:2402.16363 (Roofline for LLM Inference), Creusot POPL 2026.
