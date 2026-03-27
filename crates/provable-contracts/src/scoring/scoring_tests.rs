@@ -295,5 +295,87 @@ kani_harnesses:
     assert!((score.kani_coverage - 1.0).abs() < f64::EPSILON);
 }
 
+#[test]
+fn kani_strategy_weights_all_variants() {
+    // Exercises all KaniStrategy match arms: Exhaustive, BoundedInt, StubFloat, Compositional, None
+    let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Test"
+equations:
+  f:
+    formula: "f(x) = x"
+proof_obligations:
+  - type: invariant
+    property: "p1"
+  - type: invariant
+    property: "p2"
+  - type: invariant
+    property: "p3"
+  - type: invariant
+    property: "p4"
+  - type: invariant
+    property: "p5"
+kani_harnesses:
+  - id: K1
+    obligation: "p1"
+    bound: 8
+    strategy: exhaustive
+  - id: K2
+    obligation: "p2"
+    bound: 8
+    strategy: bounded_int
+  - id: K3
+    obligation: "p3"
+    bound: 8
+    strategy: stub_float
+  - id: K4
+    obligation: "p4"
+    bound: 8
+    strategy: compositional
+  - id: K5
+    obligation: "p5"
+    bound: 8
+"#;
+    let contract = parse_contract_str(yaml).unwrap();
+    let score = score_contract(&contract, None, "test-v1");
+    // Weighted: (1.0 + 0.9 + 0.8 + 0.7 + 0.5) / 5 = 0.78
+    assert!(score.kani_coverage > 0.7);
+    assert!(score.kani_coverage < 0.85);
+}
+
+#[test]
+fn registry_scoring_full_binding_credit() {
+    let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Test registry"
+  registry: true
+equations:
+  lookup:
+    formula: "lookup(key) = value"
+proof_obligations:
+  - type: invariant
+    property: "key exists"
+falsification_tests:
+  - id: F1
+    rule: "key exists"
+    prediction: "all keys resolve"
+    test: "proptest"
+    if_fails: "missing key"
+kani_harnesses:
+  - id: K1
+    obligation: "key exists"
+    bound: 8
+    strategy: exhaustive
+"#;
+    let contract = parse_contract_str(yaml).unwrap();
+    let score = score_contract(&contract, None, "test-v1");
+    // Registry gets 1.0 binding credit even without bindings
+    assert!((score.binding_coverage - 1.0).abs() < f64::EPSILON);
+    // Lean gets at least 0.5 for registries
+    assert!(score.lean_coverage >= 0.5);
+}
+
 #[path = "scoring_probe_tests.rs"]
 mod probe_tests;
