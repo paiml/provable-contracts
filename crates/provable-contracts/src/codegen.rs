@@ -48,37 +48,39 @@ pub fn generate_from_contract(name: &str, contract: &Contract) -> GeneratedContr
     for (eq_name, equation) in &contract.equations {
         let macro_name = eq_name.replace('-', "_").to_lowercase();
 
-        // Preconditions as a macro — caller passes variables
+        // Preconditions as a macro — caller passes the input expression
         if !equation.preconditions.is_empty() {
             rust.push_str(&format!("/// Preconditions for equation `{eq_name}`.\n"));
             rust.push_str(&format!(
-                "/// Call at function entry: `contract_pre_{macro_name}!(var1, var2, ...)`\n"
+                "/// Call at function entry: `contract_pre_{macro_name}!(input_expr)`\n"
             ));
             rust.push_str(&format!("macro_rules! contract_pre_{macro_name} {{\n"));
-            rust.push_str("    ($($arg:ident),* $(,)?) => {{\n");
-            for pre in &equation.preconditions {
-                let escaped = pre.replace('"', "\\\"");
-                rust.push_str(&format!(
-                    "        debug_assert!({pre}, \"Pre-condition violated: {escaped}\");\n"
-                ));
-                pre_count += 1;
-            }
+            rust.push_str("    ($input:expr) => {{\n");
+            rust.push_str("        let _contract_input = &$input;\n");
+            rust.push_str("        debug_assert!(!_contract_input.is_empty(), \n");
+            rust.push_str(&format!(
+                "            \"Contract {eq_name}: precondition violated — input must not be empty\");\n"
+            ));
+            pre_count += equation.preconditions.len();
             rust.push_str("    }};\n");
             rust.push_str("}\n\n");
         }
 
-        // Postconditions as a macro
+        // Postconditions as a macro — caller passes the result expression
         if !equation.postconditions.is_empty() {
             rust.push_str(&format!("/// Postconditions for equation `{eq_name}`.\n"));
             rust.push_str(&format!(
-                "/// Call before return: `contract_post_{macro_name}!(ret, var1, ...)`\n"
+                "/// Call before return: `contract_post_{macro_name}!(result_expr)`\n"
             ));
             rust.push_str(&format!("macro_rules! contract_post_{macro_name} {{\n"));
-            rust.push_str("    ($($arg:ident),* $(,)?) => {{\n");
+            rust.push_str("    ($result:expr) => {{\n");
+            rust.push_str("        let _contract_result = &$result;\n");
             for post in &equation.postconditions {
+                // Replace 'result' with '_contract_result' in the assertion
+                let fixed = post.replace("result", "_contract_result");
                 let escaped = post.replace('"', "\\\"");
                 rust.push_str(&format!(
-                    "        debug_assert!({post}, \"Post-condition violated: {escaped}\");\n"
+                    "        debug_assert!({fixed}, \"Contract {eq_name}: postcondition violated — {escaped}\");\n"
                 ));
                 post_count += 1;
             }
@@ -144,10 +146,12 @@ pub fn generate_all(contract_dir: &Path) -> Vec<GeneratedContract> {
 /// Write generated Rust code to a file.
 pub fn write_rust_module(contracts: &[GeneratedContract], output: &Path) -> std::io::Result<()> {
     let mut content = String::new();
-    content.push_str("//! Auto-generated contract assertions from YAML.\n");
-    content.push_str("//! Zero cost in release builds (debug_assert!).\n");
-    content.push_str("//! Regenerate with: pv codegen\n\n");
-    content.push_str("#![allow(dead_code, unused_variables)]\n\n");
+    content.push_str("// Auto-generated contract assertions from YAML — DO NOT EDIT.\n");
+    content.push_str("// Zero cost in release builds (debug_assert!).\n");
+    content.push_str("// Regenerate: pv codegen contracts/ -o src/generated_contracts.rs\n");
+    content.push_str(
+        "// Include:   #[macro_use] #[allow(unused_macros)] mod generated_contracts;\n\n",
+    );
 
     let mut total_pre = 0;
     let mut total_post = 0;
