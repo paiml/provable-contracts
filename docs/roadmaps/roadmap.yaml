@@ -1376,11 +1376,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Implement Eiffel DbC spec: pv explain, obligation types, CI contracts job'
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-03-22T11:56:07Z
-  updated: 2026-03-27T14:30:23.478901528+00:00
+  updated: 2026-03-27T14:42:16.883654145+00:00
   spec: null
   acceptance_criteria: []
   phases: []
