@@ -1424,11 +1424,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'depyler: type-preservation + semantic-equivalence contracts'
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-03-24T17:13:18Z
-  updated: 2026-03-27T14:33:07.101067860+00:00
+  updated: 2026-03-27T14:41:56.621918015+00:00
   spec: null
   acceptance_criteria: []
   phases: []
