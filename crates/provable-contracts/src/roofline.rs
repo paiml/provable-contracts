@@ -141,10 +141,10 @@ mod tests {
             ops_per_token: 2.0,
         };
         let r = compute_roofline(7_000_000_000, 4, &hw);
-        assert_eq!(r.model_bytes, 3_500_000_000.0); // 7B * 4 / 8 = 3.5GB
+        assert!((r.model_bytes - 3_500_000_000.0).abs() < 1.0); // 7B * 4 / 8 = 3.5GB
         assert!(r.bw_ceiling > 0.0);
         assert!(r.compute_ceiling > 0.0);
-        assert_eq!(r.throughput_ceiling, r.bw_ceiling.min(r.compute_ceiling));
+        assert!((r.throughput_ceiling - r.bw_ceiling.min(r.compute_ceiling)).abs() < f64::EPSILON);
         assert_eq!(r.bottleneck, Bottleneck::Bandwidth); // Memory-bound at 4-bit
     }
 
