@@ -130,9 +130,10 @@ provable-contracts/
 
 ## 2. The Verification Ladder
 
-Every proof obligation is verified at multiple levels. Higher levels
-subsume lower ones. The goal is to push every obligation as high as
-practically possible.
+Two complementary hierarchies: **proof levels** (what we verify about
+the math) and **enforcement layers** (how we enforce it in the build).
+
+### Proof Levels (theoretical guarantees)
 
 ```
 Level   Method                  Tool            Guarantee
@@ -144,6 +145,22 @@ Level   Method                  Tool            Guarantee
   L1    Type system             rustc           True by construction.
   L0    Code review             Human eyes      "Looks right to me."
 ```
+
+### Enforcement Layers (practical deployment, strictest first)
+
+| Layer | What it catches | Mechanism | Coverage | Misses |
+|-------|----------------|-----------|----------|--------|
+| **L5** | Algorithm incorrect | Lean 4 proof (no sorry) | 0 contracts | — |
+| **L4** | Logic bugs, overflows | Kani `#[kani::proof]` BMC | 251 harnesses (YAML) | Inputs > bound |
+| **L3** | Violated invariants | `#[contract]` debug_assert | 35 functions | Release builds |
+| **L2** | Renamed/deleted fns | Trait `impl` (§23) | 13/13 repos × 13 traits | Logic bugs |
+| **L1** | Missing bindings | build.rs AllImplemented | 16,985 bindings | Ghost bindings |
+| **L0.5** | Schema/audit/score | `pv lint` 7 gates | 14/14 targets | Impl bugs |
+| **L0** | Obvious bugs | Human review | — | Everything subtle |
+
+**L0 through L2 enforce on every `cargo build` + `cargo test`.**
+L3 enforces on 35 annotated functions in debug builds.
+L4 and L5 are defined in YAML but not yet run in CI.
 
 ### The Provability Claim
 
