@@ -152,18 +152,19 @@ pub trait SoftmaxKernelV1 {
 | aprender | 13/13 | 13 | All pass |
 | trueno | 13/13 | 19 | All pass |
 | entrenar | 13/13 | 13 | All pass |
-| pmat | 7/13 | 12 | All pass |
-| realizar | 13/13 | 6 | All pass |
-| forjar | 13/13 | 6 | All pass |
-| presentar | 13/13 | 6 | All pass |
-| rmedia | 13/13 | 6 | All pass |
-| bashrs | 13/13 | 6 | All pass |
-| depyler | 13/13 | 6 | All pass |
-| decy | 13/13 | 6 | All pass |
-| ruchy | 13/13 | 6 | All pass |
-| simular | 13/13 | 6 | All pass |
+| pmat | 13/13 | 12 | All pass |
+| realizar | 13/13 | 9 | All pass |
+| forjar | 13/13 | 9 | All pass |
+| presentar | 13/13 | 9 | All pass |
+| rmedia | 13/13 | 9 | All pass |
+| bashrs | 13/13 | 9 | All pass |
+| depyler | 13/13 | 9 | All pass |
+| decy | 13/13 | 9 | All pass |
+| ruchy | 13/13 | 9 | All pass |
+| simular | 13/13 | 9 | All pass |
 
 Total: **138 trait tests** across **13/13 repos**, all passing.
+All 13 contracts compiler-enforced in every consumer repo.
 
 Multi-input signatures generated from YAML domains (`split_once` parser).
 CI trait-staleness check in `.github/workflows/ci.yml`.
