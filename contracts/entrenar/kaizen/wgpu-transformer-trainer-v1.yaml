@@ -34,9 +34,29 @@ invariants:
   - test_ffn_backward_gradient_flow — PASS on AMD W5700X
   severity: high
 
+- id: C-WGPU-TRAIN-003
+  description: NF4 weight loading from safetensors + GPU dequant
+  preconditions:
+  - Qwen3-4B safetensors shards exist on disk
+  - WGPU device available
+  postconditions:
+  - All 7 projections per layer loaded and quantized to NF4
+  - GPU dequant produces finite values with >50% non-zero
+  - Per-layer memory < 60MB NF4
+  verified_by:
+  - test_load_qwen3_4b_layer0_nf4 — PASS on AMD W5700X (3.4s)
+  severity: critical
+
 affected_files:
 - path: src/train/transformer_trainer/wgpu_trainer.rs
   functions:
   - 'WgpuTransformerTrainer::new: initialize with WgpuForwardPass + GpuDevice'
   - 'train_step: forward→loss→backward_a→backward_b→adamw'
   - 'ffn_backward: down_proj→silu→gate/up_proj backward chain'
+- path: src/train/transformer_trainer/wgpu_nf4.rs
+  functions:
+  - 'Nf4LayerWeights::from_safetensors: load 7 projections as NF4'
+  - 'quantize_to_nf4: pure Rust NF4 quantization'
+  - 'quantize_projection: safetensors→NF4 pipeline'
+  - 'dequant_gate/up/down: GPU NF4→fp32 dispatch'
+  - 'LoraAdapter::new: Kaiming-uniform A, zero B'
