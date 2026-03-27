@@ -1820,3 +1820,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-105
+  github_issue: null
+  item_type: task
+  title: 'Fix 3 bugs: --exit-code not working (score, query), roofline 0-params'
+  status: completed
+  priority: critical
+  assigned_to: null
+  created: 2026-03-27T22:51:03Z
+  updated: 2026-03-27T22:54:10.929328670+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
