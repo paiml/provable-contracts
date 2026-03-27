@@ -37,17 +37,22 @@ pub fn pvscore_10dim(score: &CodebaseScore) -> f64 {
         score.defect_patterns,
     ];
 
-    // Map each 0.0-1.0 dimension to 0-100 scale
-    let scaled: [f64; 10] = std::array::from_fn(|i| dims[i] * 100.0);
+    // Only include measured dimensions (> 0). D6-D10 default to 0 when
+    // not populated; excluding them avoids zeroing the entire score.
+    let measured: Vec<f64> = dims
+        .iter()
+        .filter(|&&d| d > 0.0)
+        .map(|d| d * 100.0)
+        .collect();
 
-    // If any dimension is zero, the geometric mean is zero
-    if scaled.contains(&0.0) {
+    if measured.is_empty() {
         return 0.0;
     }
 
     // Geometric mean: exp( (1/N) * sum(ln(d_i)) )
-    let n = scaled.len() as f64;
-    let log_sum: f64 = scaled.iter().map(|d| d.ln()).sum();
+    #[allow(clippy::cast_precision_loss)]
+    let n = measured.len() as f64;
+    let log_sum: f64 = measured.iter().map(|d| d.ln()).sum();
     (log_sum / n).exp()
 }
 
@@ -86,13 +91,14 @@ mod tests {
     }
 
     #[test]
-    fn one_zero_returns_zero() {
-        // D3 (mean_contract_score) is zero, everything else is 1.0
+    fn one_zero_excluded_from_mean() {
+        // D3 (mean_contract_score) is zero — excluded from geometric mean
         let score = make_score([1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]);
         let pv = pvscore_10dim(&score);
+        // 9 dimensions at 100 => geometric mean = 100
         assert!(
-            pv.abs() < 1e-9,
-            "One zero dimension should give 0.0, got {pv}"
+            (pv - 100.0).abs() < 1e-6,
+            "Zero dimension excluded, rest = 100.0, got {pv}"
         );
     }
 

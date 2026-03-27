@@ -20,6 +20,13 @@ pub fn run(
         }
     };
 
+    if params == 0 {
+        return Err("--params must be > 0 (model has no parameters)".into());
+    }
+    if bits == 0 {
+        return Err("--bits must be > 0".into());
+    }
+
     let desc = roofline::load_roofline_contract(contract_dir);
     let r = roofline::compute_roofline(params, bits, &hw);
 
