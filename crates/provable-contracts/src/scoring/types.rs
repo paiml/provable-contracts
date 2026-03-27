@@ -17,10 +17,10 @@ pub struct ScoringWeights {
 impl Default for ScoringWeights {
     fn default() -> Self {
         Self {
-            spec_depth: 0.20,
+            spec_depth: 0.25,
             falsification: 0.25,
             kani: 0.25,
-            lean: 0.10,
+            lean: 0.05,
             binding: 0.20,
         }
     }
