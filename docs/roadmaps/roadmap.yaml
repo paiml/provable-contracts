@@ -1380,7 +1380,7 @@ roadmap:
   priority: high
   assigned_to: null
   created: 2026-03-22T11:56:07Z
-  updated: 2026-03-25T09:15:02.961408129+00:00
+  updated: 2026-03-27T14:30:23.478901528+00:00
   spec: null
   acceptance_criteria: []
   phases: []
@@ -1396,7 +1396,7 @@ roadmap:
   priority: critical
   assigned_to: null
   created: 2026-03-24T17:13:18Z
-  updated: 2026-03-26T14:54:01.635489053+00:00
+  updated: 2026-03-27T14:32:23.546833628+00:00
   spec: null
   acceptance_criteria: []
   phases: []
@@ -1408,11 +1408,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'bashrs: initial contracts for shell parser + safety classifier'
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-03-24T17:13:18Z
-  updated: 2026-03-25T13:46:02.482110202+00:00
+  updated: 2026-03-27T14:41:36.630122996+00:00
   spec: null
   acceptance_criteria: []
   phases: []
@@ -1428,7 +1428,7 @@ roadmap:
   priority: high
   assigned_to: null
   created: 2026-03-24T17:13:18Z
-  updated: 2026-03-25T16:29:23.730375970+00:00
+  updated: 2026-03-27T14:33:07.101067860+00:00
   spec: null
   acceptance_criteria: []
   phases: []
@@ -1444,7 +1444,7 @@ roadmap:
   priority: medium
   assigned_to: null
   created: 2026-03-24T17:13:18Z
-  updated: 2026-03-25T16:29:34.323914646+00:00
+  updated: 2026-03-27T14:33:08.477704964+00:00
   spec: null
   acceptance_criteria: []
   phases: []
