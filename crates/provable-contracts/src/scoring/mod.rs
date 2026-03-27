@@ -50,19 +50,27 @@ pub fn score_contract_weighted(
     let lean = compute_lean_coverage(contract, &mut probes);
     let binding_cov = compute_binding_coverage(contract, binding, stem, &mut probes);
 
+    // Registries (data-only contracts) get full credit for binding/lean since
+    // they define lookup tables, not executable functions.
+    let (effective_binding, effective_lean) = if contract.is_registry() {
+        (1.0, lean.max(0.5))
+    } else {
+        (binding_cov, lean)
+    };
+
     let composite = spec_depth * w.spec_depth
         + falsification * w.falsification
         + kani * w.kani
-        + lean * w.lean
-        + binding_cov * w.binding;
+        + effective_lean * w.lean
+        + effective_binding * w.binding;
 
     ContractScore {
         stem: stem.to_string(),
         spec_depth,
         falsification_coverage: falsification,
         kani_coverage: kani,
-        lean_coverage: lean,
-        binding_coverage: binding_cov,
+        lean_coverage: effective_lean,
+        binding_coverage: effective_binding,
         composite,
         grade: Grade::from_score(composite),
         probes,

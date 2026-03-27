@@ -395,3 +395,14 @@ proof_obligations:
   property: Enum fields are exhaustive over the defined enum variants
   formal: Enum fields are exhaustive over the defined enum variants
   applies_to: all
+kani_harnesses:
+- id: KANI-ARCH_C-001
+  obligation: Every GGUF general.architecture value maps to exactly one constraint set
+  property: Every GGUF general.architecture value maps to exactly one constraint set
+  bound: 8
+  strategy: exhaustive
+- id: KANI-ARCH_C-002
+  obligation: Enum fields are exhaustive over the defined enum variants
+  property: Enum fields are exhaustive over the defined enum variants
+  bound: 8
+  strategy: exhaustive

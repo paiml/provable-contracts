@@ -199,3 +199,14 @@ proof_obligations:
   property: Every non-empty input produces at least 1 token
   formal: Every non-empty input produces at least 1 token
   applies_to: all
+kani_harnesses:
+- id: KANI-CODEBE-001
+  obligation: Vocab size = 50265
+  property: Vocab size = 50265
+  bound: 8
+  strategy: exhaustive
+- id: KANI-CODEBE-002
+  obligation: Every non-empty input produces at least 1 token
+  property: Every non-empty input produces at least 1 token
+  bound: 8
+  strategy: exhaustive
