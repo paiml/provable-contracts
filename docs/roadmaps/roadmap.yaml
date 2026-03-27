@@ -1584,11 +1584,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'entrenar: A-score enforcement — binding coverage 76%→90%'
-  status: planned
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-03-27T16:14:56Z
-  updated: 2026-03-27T16:14:56Z
+  updated: 2026-03-27T16:23:10.256112947+00:00
   spec: null
   acceptance_criteria: []
   phases: []
