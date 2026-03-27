@@ -120,7 +120,7 @@ provable-contracts/
 | Metric | Value |
 |---|---|
 | YAML contracts | 193 |
-| Binding entries (13 crates) | 16,979 |
+| Binding entries (13 crates) | 16,985 |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) |
 | CLI commands | 30 |
 | Consuming projects | 13 Level 3 (all AllImplemented) |
@@ -481,7 +481,7 @@ pub fn rms_norm(input: &[f32], weight: &[f32], eps: f32) -> Vec<f32> {
 
 | Layer | What it checks | When | Coverage |
 |-------|---------------|------|----------|
-| **L1: build.rs AllImplemented** | binding.yaml has no `not_implemented` | `cargo build` | 16,979 bindings |
+| **L1: build.rs AllImplemented** | binding.yaml has no `not_implemented` | `cargo build` | 16,985 bindings |
 | **L2: Trait `impl`** | Function exists + correct signature | Rust compiler | Per-contract (§23) |
 | **L3: `#[contract]` macro** | Env var + `debug_assert!()` injection | Compile-time | Per-function |
 | **L4: `pv lint --reverse`** | Every `pub fn` has a binding | CI gate | Full crate scan |
@@ -794,7 +794,7 @@ Petrovic et al. (2022) "Practical Mutation Testing at Scale" IEEE TSE.
 **Sub-spec**: [sub/sovereign-stack-audit.md](sub/sovereign-stack-audit.md)
 
 Full audit of all 13 repos in the PAIML sovereign AI stack.
-**6.4M LOC. 100% under contract enforcement. 16,979 bindings.**
+**6.4M LOC. 100% under contract enforcement. 16,985 bindings.**
 
 | Project | Bindings | Policy | Status |
 |---|---|---|---|
@@ -910,7 +910,7 @@ patches, per-contract resource metrics, HTML reports, daemon/LSP mode.
 
 build.rs checks that binding.yaml *says* "implemented" — but nothing
 verifies the function *actually exists* with the *correct signature*.
-Of 16,979 bindings, only 35 have `#[contract]` annotations. Build.rs
+Of 16,985 bindings, only 35 have `#[contract]` annotations. Build.rs
 source scanning is fragile: string-matching `pub fn` misses `impl`
 methods, 13 copy-pasted scanners, name-only without signature checking.
 
@@ -950,7 +950,7 @@ No build.rs. No scanning. No name matching. Stable Rust. Zero runtime cost.
 
 | Layer | What | Mechanism | Coverage |
 |-------|------|-----------|----------|
-| L1 | Registry completeness | build.rs AllImplemented | 16,979 bindings |
+| L1 | Registry completeness | build.rs AllImplemented | 16,985 bindings |
 | **L2** | **Function existence + signature** | **Trait `impl`** | **Per-contract** |
 | L3 | Pre/postcondition assertions | `#[contract]` macro | Per-function |
 | L4 | Reverse coverage | `pv lint --reverse` | Full crate scan |
