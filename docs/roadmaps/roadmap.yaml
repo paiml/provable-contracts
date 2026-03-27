@@ -1440,11 +1440,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'apr-model-qa-playbook: integrate MQS into PVScore pipeline'
-  status: inprogress
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-03-24T17:13:18Z
-  updated: 2026-03-27T14:33:08.477704964+00:00
+  updated: 2026-03-27T14:55:11.220167588+00:00
   spec: null
   acceptance_criteria: []
   phases: []
