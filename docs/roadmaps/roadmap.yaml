@@ -1692,3 +1692,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-097
+  github_issue: null
+  item_type: task
+  title: 'Spec Section 26: Cross-Repo Compositional Contracts + two-tier architecture docs'
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-03-27T17:01:24Z
+  updated: 2026-03-27T17:03:40.458980028+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
