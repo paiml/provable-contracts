@@ -442,6 +442,24 @@ pub enum Commands {
         #[arg(long)]
         reason: String,
     },
+    /// Compute roofline performance ceilings from contract equations
+    Roofline {
+        /// Directory containing contract YAML files (must have roofline-model-v1.yaml)
+        #[arg(long, default_value = "contracts")]
+        contract_dir: PathBuf,
+        /// Total model parameters (e.g. 7000000000 for 7B)
+        #[arg(long)]
+        params: u64,
+        /// Bits per weight (2, 4, 8, 16, 32)
+        #[arg(long, default_value = "4")]
+        bits: u32,
+        /// Hardware profile: apple-m, a100
+        #[arg(long, default_value = "apple-m")]
+        hardware: String,
+        /// Output format: text (default) or json
+        #[arg(short, long, default_value = "text")]
+        format: String,
+    },
     /// Generate a Rust test that verifies all bound functions exist
     VerifyBindings {
         /// Path to binding.yaml

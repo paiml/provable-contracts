@@ -21,6 +21,7 @@ pub mod mirai;
 pub mod probar;
 pub mod proof_status;
 pub mod query;
+pub mod roofline;
 pub mod scaffold;
 pub mod score;
 pub mod status;

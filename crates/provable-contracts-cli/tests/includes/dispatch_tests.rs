@@ -373,3 +373,39 @@ fn dispatch_proof_status_markdown() {
     });
     assert!(result.is_ok());
 }
+
+#[test]
+fn dispatch_roofline_text() {
+    let result = run_command(Commands::Roofline {
+        contract_dir: contracts_dir(),
+        params: 7_000_000_000,
+        bits: 4,
+        hardware: "apple-m".to_string(),
+        format: "text".to_string(),
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_roofline_json() {
+    let result = run_command(Commands::Roofline {
+        contract_dir: contracts_dir(),
+        params: 7_000_000_000,
+        bits: 4,
+        hardware: "a100".to_string(),
+        format: "json".to_string(),
+    });
+    assert!(result.is_ok());
+}
+
+#[test]
+fn dispatch_roofline_invalid_hw() {
+    let result = run_command(Commands::Roofline {
+        contract_dir: contracts_dir(),
+        params: 7_000_000_000,
+        bits: 4,
+        hardware: "invalid".to_string(),
+        format: "text".to_string(),
+    });
+    assert!(result.is_err());
+}
