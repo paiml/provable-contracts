@@ -1472,11 +1472,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Expand Kani harness coverage on top-5 impact contracts
-  status: planned
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-03-27T15:21:38Z
-  updated: 2026-03-27T15:21:38Z
+  updated: 2026-03-27T15:28:37.021492324+00:00
   spec: null
   acceptance_criteria: []
   phases: []
