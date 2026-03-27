@@ -47,6 +47,30 @@ invariants:
   - test_load_qwen3_4b_layer0_nf4 — PASS on AMD W5700X (3.4s)
   severity: critical
 
+- id: C-WGPU-TRAIN-004
+  description: LoRA forward adds adapter contribution when B is non-zero
+  preconditions:
+  - LoRA A initialized (non-zero), B initialized
+  postconditions:
+  - B=0 → output equals base (x @ W^T only)
+  - B≠0 → output differs from base (LoRA contributes)
+  verified_by:
+  - test_lora_forward_adds_to_base — PASS on AMD W5700X
+  severity: high
+
+- id: C-WGPU-TRAIN-005
+  description: LoRA backward produces non-zero gradients for A, B, and x
+  preconditions:
+  - Non-zero grad_output, non-zero x, non-zero A and B
+  postconditions:
+  - grad_A norm > 1e-6
+  - grad_B norm > 1e-6
+  - grad_x norm > 1e-6
+  - All gradients finite
+  verified_by:
+  - test_lora_backward_gradient_flow — PASS on AMD W5700X
+  severity: critical
+
 affected_files:
 - path: src/train/transformer_trainer/wgpu_trainer.rs
   functions:
