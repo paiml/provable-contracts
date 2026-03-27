@@ -1500,3 +1500,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-085
+  github_issue: null
+  item_type: task
+  title: Add qa_gate to 22 contracts missing SCHEMA-013 + fix 3 AUD-003 missing obligations
+  status: completed
+  priority: medium
+  assigned_to: null
+  created: 2026-03-27T15:41:15Z
+  updated: 2026-03-27T15:43:15.154166373+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
