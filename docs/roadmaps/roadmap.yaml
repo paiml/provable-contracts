@@ -1724,3 +1724,51 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-099
+  github_issue: null
+  item_type: task
+  title: Implement pv pipeline CLI command — cross-repo contract validation
+  status: planned
+  priority: critical
+  assigned_to: null
+  created: 2026-03-27T17:43:05Z
+  updated: 2026-03-27T17:43:05Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-100
+  github_issue: null
+  item_type: task
+  title: Create inference-forward-v1 pipeline contract YAML (trueno→realizar→aprender)
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-03-27T17:43:05Z
+  updated: 2026-03-27T17:50:09.110250704+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-101
+  github_issue: null
+  item_type: task
+  title: Create binding.yaml for 16 missing sovereign stack repos
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-03-27T17:43:05Z
+  updated: 2026-03-27T17:43:05Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
