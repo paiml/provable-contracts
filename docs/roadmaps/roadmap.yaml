@@ -1452,3 +1452,51 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-082
+  github_issue: null
+  item_type: task
+  title: Add preconditions to top-impact kernel equations (PV-ENF-001 reduction)
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-03-27T15:21:37Z
+  updated: 2026-03-27T15:25:54.229274488+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-083
+  github_issue: null
+  item_type: task
+  title: Expand Kani harness coverage on top-5 impact contracts
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-03-27T15:21:38Z
+  updated: 2026-03-27T15:21:38Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-084
+  github_issue: null
+  item_type: task
+  title: Add lean_theorem pointers for existing Lean-proved equations
+  status: planned
+  priority: medium
+  assigned_to: null
+  created: 2026-03-27T15:21:39Z
+  updated: 2026-03-27T15:21:39Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
