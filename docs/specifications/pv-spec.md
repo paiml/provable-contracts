@@ -41,6 +41,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 24 | [Deep Stack Integration](#24-deep-stack-integration) | [sub/deep-integration.md](sub/deep-integration.md) |
 | 25 | [Full Enforcement Mandate](#25-full-enforcement-mandate) | — |
 | 26 | [Two-Tier Architecture and Compositional Contracts](#26-two-tier-architecture-and-compositional-contracts) | — |
+| 27 | [The One Way](#27-the-one-way) | — |
 
 ---
 
@@ -1470,3 +1471,145 @@ each kernel (softmax, matmul, rmsnorm) independently, then compose.
   via Assume-Guarantee Reasoning."
 - Williams et al. (2009). "Roofline: An Insightful Visual Performance
   Model for Multicore Architectures." CACM 52(4).
+
+---
+
+## 27. The One Way
+
+### The Problem: Three Mechanisms, One Job
+
+Contract enforcement currently uses three separate mechanisms:
+
+| Mechanism | Where it lives | What it checks | Who must set it up |
+|-----------|---------------|----------------|-------------------|
+| `build.rs` | Consumer's build script | Binding.yaml parseable, policy satisfied | Each repo manually |
+| Trait tests | `tests/contract_traits.rs` | Function signatures exist and compile | Each repo manually |
+| `pv lint` | CI or local | YAML structure, score thresholds | provable-contracts |
+
+Result: 6/26 repos have all three. 14/26 have none. The mechanisms
+are redundant (all check "do the declared bindings exist?") and their
+per-repo setup creates waste.
+
+### What Others Do: One Mechanism
+
+**Eiffel (Meyer, 1988).** One mechanism: `require`/`ensure`/`invariant`
+clauses in the language syntax. The compiler handles everything.
+Enforcement is a compiler flag (`-Xassertions`), not a per-file setup.
+Meyer's key insight: **seamlessness** — one notation, one tool, one
+place to look.
+
+> "The Eiffel experience shows that, to be effective, contractual
+> mechanisms must be built right into the notation, the tools, and the
+> development culture. Retrofitting them is not enough."
+> — Meyer, *Object-Oriented Software Construction* (1997)
+
+**Haskell / LiquidHaskell.** One mechanism: refinement types in
+function signatures. `{-@ foo :: {v:Int | v > 0} -> {v:Int | v > 0} @-}`
+The compiler (via SMT solver) verifies at compile time. No runtime
+checks, no separate test files, no build scripts.
+
+**Rust Nightly (2025+).** One mechanism arriving in the language itself:
+
+```rust
+#![feature(contracts)]
+
+#[core::contracts::requires(x > 0)]
+#[core::contracts::ensures(|ret| *ret > 0)]
+fn foo(x: i32) -> i32 { x }
+```
+
+Compile with `-Zcontract-checks=on` → runtime panic on violation.
+Verified working on `rustc 1.94.0-nightly (2026-01-02)`.
+
+**Toyota Production System.** One piece flow. Every operator is an
+inspector. Quality is built in at the station, not bolted on at the
+end. Translated to software: the contract IS the code, not a separate
+YAML file that a separate tool checks.
+
+### The One Way for provable-contracts
+
+**Eliminate build.rs and trait tests. One mechanism: `pv codegen`
+generates `#[core::contracts::requires]` / `#[core::contracts::ensures]`
+from YAML equations, and the Rust compiler enforces them.**
+
+The flow:
+
+```
+YAML contract (source of truth)
+  ↓
+pv codegen (generates Rust with #[requires]/#[ensures])
+  ↓
+Rust compiler (enforces contracts at compile time)
+  ↓
+-Zcontract-checks=on (enforces at runtime in debug/test)
+```
+
+No build.rs. No trait tests. No per-repo setup. One tool (`pv codegen`)
+generates the enforcement code. The Rust compiler does the rest.
+
+### Transition Plan
+
+| Phase | When | What |
+|-------|------|------|
+| **Phase 0 (now)** | Stable Rust | `pv codegen` generates `debug_assert!()` from YAML preconditions/postconditions. Works on stable. Already implemented (§5). |
+| **Phase 1 (nightly)** | Rust nightly | `pv codegen --contracts` generates `#[core::contracts::requires]` / `#[core::contracts::ensures]`. Requires `#![feature(contracts)]`. |
+| **Phase 2 (stable)** | Contracts RFC stabilized | `pv codegen` generates stable contract attributes. build.rs and trait tests become dead code. Delete them. |
+
+### What Dies
+
+When Phase 2 lands:
+
+- **build.rs binding verification** — dead. The compiler checks contracts directly.
+- **Trait tests** — dead. Contract attributes on real functions replace trait impls on test structs.
+- **`#[contract]` proc macro** — dead. Replaced by `#[core::contracts::requires]`.
+- **Per-repo setup** — dead. `pv codegen` is the only tool needed.
+
+### What Survives
+
+- **YAML contracts** — the source of truth. Equations, obligations, invariants.
+- **binding.yaml** — maps equations to functions. `pv codegen` reads this to know where to emit attributes.
+- **`pv codegen`** — the one tool that generates enforcement code.
+- **`pv lint`** — validates YAML structure (not enforcement).
+- **`pv score`** — measures contract quality (not enforcement).
+- **Kani** — bounded model checking. Orthogonal to runtime contracts.
+- **Lean 4** — theorem proving. Orthogonal to runtime contracts.
+
+### The Eiffel Parallel
+
+```
+Eiffel                          provable-contracts (Phase 2)
+─────                           ──────────────────────────────
+require clause                  #[core::contracts::requires(...)]
+ensure clause                   #[core::contracts::ensures(...)]
+class invariant                 impl core::marker::Invariant
+-Xassertions:all               -Zcontract-checks=on
+ONE language, ONE compiler      ONE YAML, ONE codegen, ONE compiler
+```
+
+### Why This Matters
+
+The current three-mechanism approach is **muda** (waste):
+
+- **Over-processing**: Three tools checking the same property.
+- **Inventory**: build.rs files, trait test files, proc macro crate — all sitting in repos, maintained, but redundant.
+- **Motion**: Developer must set up build.rs + traits + binding in each repo.
+- **Defects**: 14/26 repos have zero enforcement because the setup wasn't done.
+
+The Toyota Way says: eliminate the waste. Build quality in at the source.
+The source is the YAML contract. The enforcement is the compiler.
+Everything in between is muda.
+
+### References (Section 27)
+
+- Meyer (1997). *Object-Oriented Software Construction.* Prentice Hall.
+  Chapter 11: Design by Contract.
+- Meyer (1992). "Applying Design by Contract." IEEE Computer 25(10).
+- Vazou et al. (2014). "LiquidHaskell: Experience with Refinement
+  Types in the Real World." ICFP 2014.
+- Rust Project Goals (2025). "Instrument the Rust Standard Library
+  with Safety Contracts." rust-lang.github.io
+- Rust Tracking Issue #128044. "Contracts." github.com/rust-lang/rust
+- Ohno (1988). *Toyota Production System: Beyond Large-Scale
+  Production.* Productivity Press.
+- Liker (2004). *The Toyota Way.* McGraw-Hill. Principle 7:
+  Use visual control so no problems are hidden.
