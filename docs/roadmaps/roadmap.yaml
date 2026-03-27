@@ -1488,11 +1488,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Add lean_theorem pointers for existing Lean-proved equations
-  status: planned
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-03-27T15:21:39Z
-  updated: 2026-03-27T15:21:39Z
+  updated: 2026-03-27T15:26:23.676290422+00:00
   spec: null
   acceptance_criteria: []
   phases: []
