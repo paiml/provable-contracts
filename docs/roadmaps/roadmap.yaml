@@ -1728,11 +1728,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Implement pv pipeline CLI command — cross-repo contract validation
-  status: planned
+  status: completed
   priority: critical
   assigned_to: null
   created: 2026-03-27T17:43:05Z
-  updated: 2026-03-27T17:43:05Z
+  updated: 2026-03-27T17:50:28.291667234+00:00
   spec: null
   acceptance_criteria: []
   phases: []
