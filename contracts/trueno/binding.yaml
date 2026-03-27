@@ -2515,3 +2515,41 @@ bindings:
   equation: identity
   function: identity
   status: implemented
+- contract: wgpu-backward-training-v1.yaml
+  equation: silu_backward
+  module_path: trueno::backends::gpu::device::backward
+  function: silu_backward
+  signature: 'fn silu_backward(&self, input: &[f32], grad_output: &[f32], grad_input: &mut [f32]) -> Result<(), String>'
+  status: implemented
+  notes: WGSL compute shader verified on AMD W5700X (FALSIFY-WGPU-001)
+- contract: wgpu-backward-training-v1.yaml
+  equation: gemm_backward_a
+  module_path: trueno::backends::gpu::device::backward
+  function: gemm_backward_a
+  signature: 'fn gemm_backward_a(&self, grad_c: &[f32], b: &[f32], grad_a: &mut [f32], m: u32, k: u32, n: u32) -> Result<(), String>'
+  status: implemented
+- contract: wgpu-backward-training-v1.yaml
+  equation: gemm_backward_b
+  module_path: trueno::backends::gpu::device::backward
+  function: gemm_backward_b
+  status: implemented
+- contract: wgpu-backward-training-v1.yaml
+  equation: rope_backward
+  module_path: trueno::backends::gpu::device::backward
+  function: rope_backward
+  status: implemented
+- contract: wgpu-backward-training-v1.yaml
+  equation: adamw_step
+  module_path: trueno::backends::gpu::device::backward
+  function: adamw_step
+  status: implemented
+- contract: wgpu-backward-training-v1.yaml
+  equation: rmsnorm_backward
+  module_path: trueno::backends::gpu::device::backward
+  function: rmsnorm_backward
+  status: implemented
+- contract: wgpu-backward-training-v1.yaml
+  equation: nf4_dequant
+  module_path: trueno::backends::gpu::device::backward
+  function: nf4_dequant
+  status: implemented
