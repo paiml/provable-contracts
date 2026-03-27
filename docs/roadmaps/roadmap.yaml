@@ -1760,11 +1760,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Create binding.yaml for 16 missing sovereign stack repos
-  status: planned
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-03-27T17:43:05Z
-  updated: 2026-03-27T17:43:05Z
+  updated: 2026-03-27T17:52:31.570972542+00:00
   spec: null
   acceptance_criteria: []
   phases: []
