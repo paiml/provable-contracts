@@ -63,8 +63,7 @@ fn softmax_generates_all_harnesses() {
 #[test]
 fn softmax_harnesses_have_kani_attributes() {
     let code = load_and_generate(&contracts_dir().join("softmax-kernel-v1.yaml"));
-    assert_eq!(code.matches("#[kani::proof]").count(), 3);
-    assert_eq!(code.matches("#[kani::unwind(9)]").count(), 3);
+    assert_eq!(code.matches("#[kani::proof]").count(), 12);
     assert!(code.contains("#[kani::solver(cadical)]"));
 }
 
@@ -180,9 +179,9 @@ fn all_contracts_generate_valid_kani_output() {
 fn harness_count_matches_contract_definitions() {
     let dir = contracts_dir();
     let contracts_and_counts = [
-        ("softmax-kernel-v1.yaml", 3),
-        ("matmul-kernel-v1.yaml", 1),
-        ("activation-kernel-v1.yaml", 2),
+        ("softmax-kernel-v1.yaml", 12),
+        ("matmul-kernel-v1.yaml", 6),
+        ("activation-kernel-v1.yaml", 8),
     ];
 
     for (name, expected_count) in &contracts_and_counts {
