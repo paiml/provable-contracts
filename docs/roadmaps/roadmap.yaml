@@ -1708,3 +1708,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-098
+  github_issue: null
+  item_type: task
+  title: 'Spec Section 26 update: arXiv citations + batuta oracle + sovereign stack pipeline map'
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-03-27T17:30:13Z
+  updated: 2026-03-27T17:31:54.905911362+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
