@@ -8939,3 +8939,22 @@ bindings:
     function: "GGUFModel::decode"
     status: implemented
     notes: "PMAT-352: GPT-2 byte-level BPE decode with gpt2_unicode_to_byte"
+
+  # PMAT-380: CPU compute contracts
+  - contract: avx2-fma-dot-v1.yaml
+    equation: dot_product
+    function: "fused_q4k_dot"
+    status: implemented
+    notes: "AVX2+FMA Q4K dot product in realizr quantize module"
+
+  - contract: avx2-fma-dot-v1.yaml
+    equation: fma_accumulation
+    function: "dequantize_q4_k_simd"
+    status: implemented
+    notes: "4-accumulator FMA pipeline for Q4K dequant+dot"
+
+  - contract: cpu-q4k-activation-quant-v1.yaml
+    equation: current_path
+    function: "forward_layer_q4k"
+    status: implemented
+    notes: "CPU Q4K→F32 dequant + FP32 matmul path"
