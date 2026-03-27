@@ -1516,3 +1516,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-086
+  github_issue: null
+  item_type: task
+  title: 'Push contract scores from B to A: fix registries + Kani gaps + drift'
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-03-27T15:54:43Z
+  updated: 2026-03-27T16:02:44.737157896+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
