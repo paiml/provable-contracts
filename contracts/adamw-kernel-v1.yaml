@@ -1,245 +1,210 @@
-# =============================================================================
-# AdamW Kernel Contract v1.0.0
-# =============================================================================
-#
-# Specifies the AdamW optimizer: Adam with decoupled weight decay.
-# The key distinction from L2 regularization is that weight decay is applied
-# AFTER the Adam update, not inside the gradient computation.
-#
-# Key equations:
-#   - First moment:  m_t = beta1 * m_{t-1} + (1-beta1) * g_t
-#   - Second moment: v_t = beta2 * v_{t-1} + (1-beta2) * g_t^2
-#   - Bias correction: m_hat = m/(1-beta1^t), v_hat = v/(1-beta2^t)
-#   - Update: theta -= lr * (m_hat / (sqrt(v_hat)+eps) + lambda*theta)
-#
-# Key properties:
-#   - Weight decay is decoupled (applied to theta, not gradient)
-#   - Second moment v_t >= 0 for all t (non-negative)
-#   - Bias correction factor > 1 for all t >= 1
-#   - Update is finite when inputs are finite and eps > 0
-#
-# References:
-#   - Loshchilov & Hutter (2017) "Decoupled Weight Decay Regularization"
-#   - Kingma & Ba (2014) "Adam: A Method for Stochastic Optimization"
-#
-# ENFORCEMENT: contract_tests::FALSIFY-AW-001 through FALSIFY-AW-006
-# =============================================================================
-
 metadata:
-  version: "1.0.0"
-  created: "2026-02-18"
-  author: "PAIML Engineering"
-  description: "AdamW kernel — Adam optimizer with decoupled weight decay"
+  version: 1.0.0
+  created: '2026-02-18'
+  author: PAIML Engineering
+  description: AdamW kernel — Adam optimizer with decoupled weight decay
   references:
-    - "Loshchilov & Hutter (2017) Decoupled Weight Decay Regularization"
-    - "Kingma & Ba (2014) Adam: A Method for Stochastic Optimization"
-
-# Mathematical equations: moment updates, bias correction, and decoupled weight decay
+  - Loshchilov & Hutter (2017) Decoupled Weight Decay Regularization
+  - 'Kingma & Ba (2014) Adam: A Method for Stochastic Optimization'
 equations:
   adam_moments:
-    formula: "m_t = beta1 * m_{t-1} + (1 - beta1) * g_t"
-    domain: "g_t in R^d, m_0 = 0, beta1 in (0, 1)"
-    codomain: "m_t in R^d"
+    formula: m_t = beta1 * m_{t-1} + (1 - beta1) * g_t
+    domain: g_t in R^d, m_0 = 0, beta1 in (0, 1)
+    codomain: m_t in R^d
     invariants:
-      - "m_t is exponential moving average of gradients"
-      - "|m_t| bounded by max(|g_1|, ..., |g_t|) when beta1 < 1"
+    - m_t is exponential moving average of gradients
+    - '|m_t| bounded by max(|g_1|, ..., |g_t|) when beta1 < 1'
+    preconditions:
+    - '!input.is_empty()'
+    lean_theorem: Theorems.Adam_Moments
   adam_variance:
-    formula: "v_t = beta2 * v_{t-1} + (1 - beta2) * g_t^2"
-    domain: "g_t in R^d, v_0 = 0, beta2 in (0, 1)"
-    codomain: "v_t in R_>=0^d"
+    formula: v_t = beta2 * v_{t-1} + (1 - beta2) * g_t^2
+    domain: g_t in R^d, v_0 = 0, beta2 in (0, 1)
+    codomain: v_t in R_>=0^d
     invariants:
-      - "v_t >= 0 (non-negative second moment)"
-      - "v_t is exponential moving average of squared gradients"
+    - v_t >= 0 (non-negative second moment)
+    - v_t is exponential moving average of squared gradients
+    preconditions:
+    - '!input.is_empty()'
+    lean_theorem: Theorems.Adam_Variance
   bias_correction:
-    formula: "m_hat_t = m_t / (1 - beta1^t), v_hat_t = v_t / (1 - beta2^t)"
-    domain: "t >= 1, beta1 in (0,1), beta2 in (0,1)"
-    codomain: "m_hat_t in R^d, v_hat_t in R_>=0^d"
+    formula: m_hat_t = m_t / (1 - beta1^t), v_hat_t = v_t / (1 - beta2^t)
+    domain: t >= 1, beta1 in (0,1), beta2 in (0,1)
+    codomain: m_hat_t in R^d, v_hat_t in R_>=0^d
     invariants:
-      - "Correction factor > 1 for all t >= 1"
-      - "Correction approaches 1 as t -> inf"
+    - Correction factor > 1 for all t >= 1
+    - Correction approaches 1 as t -> inf
+    preconditions:
+    - '!input.is_empty()'
+    lean_theorem: Theorems.Bias_Correction
   weight_update:
-    formula: "theta_t = theta_{t-1} - lr * (m_hat_t / (sqrt(v_hat_t) + eps) + lambda * theta_{t-1})"
-    domain: "theta in R^d, lr > 0, lambda >= 0, eps > 0"
-    codomain: "theta_t in R^d"
+    formula: theta_t = theta_{t-1} - lr * (m_hat_t / (sqrt(v_hat_t) + eps) + lambda * theta_{t-1})
+    domain: theta in R^d, lr > 0, lambda >= 0, eps > 0
+    codomain: theta_t in R^d
     invariants:
-      - "Weight decay applied AFTER Adam update (decoupled)"
-      - "Update finite when inputs finite and eps > 0"
-
-# Proof obligations: DbC + decoupling, non-negativity, finiteness, SIMD equivalence
+    - Weight decay applied AFTER Adam update (decoupled)
+    - Update finite when inputs finite and eps > 0
+    preconditions:
+    - '!input.is_empty()'
+    lean_theorem: Theorems.Weight_Update
 proof_obligations:
-  # Eiffel DbC
-  - type: precondition
-    property: "Hyperparameters valid, inputs finite"
-    formal: "lr > 0 ∧ β1 ∈ (0,1) ∧ β2 ∈ (0,1) ∧ ε > 0 ∧ λ ≥ 0 ∧ t ≥ 1 ∧ ∀i: isFinite(g_i)"
-  - type: postcondition
-    property: "Updated weights finite, moments non-negative"
-    formal: "∀i: isFinite(θ_i) ∧ v_t_i ≥ 0"
-    requires: "AW-PRE-001"
-  - type: frame
-    property: "Only theta, m, v are modified; gradients and hyperparams unchanged"
-    formal: "modifies(θ, m, v) ∧ preserves(g, lr, β1, β2, ε, λ)"
-  - type: loop_invariant
-    property: "Second moment remains non-negative across all training steps"
-    formal: "∀ step t, ∀i: v_t_i ≥ 0"
-    applies_to_phase: "moment_update"
-  - type: loop_variant
-    property: "Training step counter advances"
-    formal: "V = max_steps - t, V ≥ 0, V strictly decreasing"
-  - type: old_state
-    property: "Moments are exponential moving averages of old values"
-    formal: "m_t = β1 · old(m_{t-1}) + (1-β1) · g_t"
-  # Original obligations
-  - type: invariant
-    property: "Decoupled weight decay"
-    formal: "Weight decay term is lambda * theta, not lambda * theta in gradient"
-    applies_to: all
-  - type: bound
-    property: "Second moment non-negative"
-    formal: "v_t >= 0 for all t and all dimensions"
-    applies_to: all
-  - type: bound
-    property: "Bias-corrected moments finite"
-    formal: "m_hat_t and v_hat_t are finite when g_t is finite"
-    applies_to: all
-  - type: invariant
-    property: "Bias correction factor"
-    formal: "1 / (1 - beta^t) > 1 for t >= 1 and beta in (0, 1)"
-    applies_to: all
-  - type: equivalence
-    property: "SIMD matches scalar within ULP"
-    tolerance: 8.0
-    applies_to: simd
-
-# Kernel computation phases: moment update -> bias correct -> adam step -> decay
+- type: precondition
+  property: Hyperparameters valid, inputs finite
+  formal: 'lr > 0 ∧ β1 ∈ (0,1) ∧ β2 ∈ (0,1) ∧ ε > 0 ∧ λ ≥ 0 ∧ t ≥ 1 ∧ ∀i: isFinite(g_i)'
+- type: postcondition
+  property: Updated weights finite, moments non-negative
+  formal: '∀i: isFinite(θ_i) ∧ v_t_i ≥ 0'
+  requires: AW-PRE-001
+- type: frame
+  property: Only theta, m, v are modified; gradients and hyperparams unchanged
+  formal: modifies(θ, m, v) ∧ preserves(g, lr, β1, β2, ε, λ)
+- type: loop_invariant
+  property: Second moment remains non-negative across all training steps
+  formal: '∀ step t, ∀i: v_t_i ≥ 0'
+  applies_to_phase: moment_update
+- type: loop_variant
+  property: Training step counter advances
+  formal: V = max_steps - t, V ≥ 0, V strictly decreasing
+- type: old_state
+  property: Moments are exponential moving averages of old values
+  formal: m_t = β1 · old(m_{t-1}) + (1-β1) · g_t
+- type: invariant
+  property: Decoupled weight decay
+  formal: Weight decay term is lambda * theta, not lambda * theta in gradient
+  applies_to: all
+- type: bound
+  property: Second moment non-negative
+  formal: v_t >= 0 for all t and all dimensions
+  applies_to: all
+- type: bound
+  property: Bias-corrected moments finite
+  formal: m_hat_t and v_hat_t are finite when g_t is finite
+  applies_to: all
+- type: invariant
+  property: Bias correction factor
+  formal: 1 / (1 - beta^t) > 1 for t >= 1 and beta in (0, 1)
+  applies_to: all
+- type: equivalence
+  property: SIMD matches scalar within ULP
+  tolerance: 8.0
+  applies_to: simd
 kernel_structure:
   phases:
-    - name: update_first_moment
-      description: "m_t = beta1 * m_{t-1} + (1 - beta1) * g_t"
-      invariant: "m_t is linear combination of m_{t-1} and g_t"
-    - name: update_second_moment
-      description: "v_t = beta2 * v_{t-1} + (1 - beta2) * g_t^2"
-      invariant: "v_t >= 0"
-    - name: bias_correct
-      description: "Compute bias-corrected m_hat and v_hat"
-      invariant: "Correction factor > 1"
-    - name: adam_step
-      description: "Compute lr * m_hat / (sqrt(v_hat) + eps)"
-      invariant: "Step is finite when eps > 0"
-    - name: weight_decay
-      description: "Subtract lr * lambda * theta (decoupled)"
-      invariant: "Decay applied to theta, not gradient"
-
-# SIMD dispatch: (adamw x ISA) -> kernel mapping
+  - name: update_first_moment
+    description: m_t = beta1 * m_{t-1} + (1 - beta1) * g_t
+    invariant: m_t is linear combination of m_{t-1} and g_t
+  - name: update_second_moment
+    description: v_t = beta2 * v_{t-1} + (1 - beta2) * g_t^2
+    invariant: v_t >= 0
+  - name: bias_correct
+    description: Compute bias-corrected m_hat and v_hat
+    invariant: Correction factor > 1
+  - name: adam_step
+    description: Compute lr * m_hat / (sqrt(v_hat) + eps)
+    invariant: Step is finite when eps > 0
+  - name: weight_decay
+    description: Subtract lr * lambda * theta (decoupled)
+    invariant: Decay applied to theta, not gradient
 simd_dispatch:
   adamw:
     scalar: adamw_step_scalar
     avx2: adamw_step_avx2
     ptx: adamw_ptx
-
-# Enforcement rules: critical invariants that gate optimizer deployment
 enforcement:
   decoupled_decay:
-    description: "Weight decay must be decoupled from gradient update"
-    check: "contract_tests::FALSIFY-AW-001"
-    severity: "ERROR"
+    description: Weight decay must be decoupled from gradient update
+    check: contract_tests::FALSIFY-AW-001
+    severity: ERROR
   moment_positivity:
-    description: "Second moment must remain non-negative"
-    check: "contract_tests::FALSIFY-AW-002"
-    severity: "ERROR"
-
-# Falsification tests: Popperian predictions for AdamW correctness
+    description: Second moment must remain non-negative
+    check: contract_tests::FALSIFY-AW-002
+    severity: ERROR
 falsification_tests:
-  - id: FALSIFY-AW-001
-    rule: "Decoupled weight decay"
-    prediction: "AdamW(g, lambda) != Adam(g + lambda*theta) for lambda > 0"
-    test: "proptest comparing AdamW vs L2-regularized Adam"
-    if_fails: "Weight decay is coupled (L2 reg instead of decoupled)"
-  - id: FALSIFY-AW-002
-    rule: "Second moment non-negativity"
-    prediction: "v_t >= 0 for all t after random gradient updates"
-    test: "proptest with 100 random gradient steps"
-    if_fails: "Floating-point underflow in EMA update"
-  - id: FALSIFY-AW-003
-    rule: "Bias correction"
-    prediction: "1/(1-beta^t) > 1 for t in [1, 10000] and beta in (0, 1)"
-    test: "proptest with random t and beta values"
-    if_fails: "Integer overflow in power computation or division by zero"
-  - id: FALSIFY-AW-004
-    rule: "Update finiteness"
-    prediction: "theta_t is finite when g_t is finite and eps > 0"
-    test: "proptest with extreme gradients near f32::MIN/MAX"
-    if_fails: "Division by near-zero denominator when eps too small"
-  - id: FALSIFY-AW-005
-    rule: "SIMD equivalence"
-    prediction: "|adamw_avx2(args) - adamw_scalar(args)| < 8 ULP"
-    test: "proptest comparing scalar vs SIMD full update step"
-    if_fails: "SIMD sqrt or reciprocal approximation differs"
-  - id: FALSIFY-AW-006
-    rule: "Boundary - zero gradient"
-    prediction: "With g=0, only weight decay modifies theta"
-    test: "proptest with zero gradient, nonzero lambda"
-    if_fails: "Bias correction or moment update incorrect at zero"
-
-  # DbC falsification tests
-  - id: FALSIFY-AW-007
-    rule: "Precondition - invalid hyperparameters"
-    prediction: "adamw_step with β1=0 or β2=1 or ε=0 returns Err or panics"
-    test: "proptest: boundary hyperparameter values"
-    if_fails: "Missing hyperparameter validation"
-  - id: FALSIFY-AW-008
-    rule: "Frame condition"
-    prediction: "Gradient vector unchanged after adamw_step"
-    test: "proptest: clone gradient before step, assert unchanged after"
-    if_fails: "Optimizer modifies gradient buffer"
-  - id: FALSIFY-AW-009
-    rule: "Loop invariant - moment non-negativity across steps"
-    prediction: "v_t ≥ 0 after 1000 consecutive random gradient steps"
-    test: "proptest: run 1000 steps with random gradients, check v at each"
-    if_fails: "EMA accumulation produces negative second moment"
-  - id: FALSIFY-AW-010
-    rule: "Old state - moment EMA"
-    prediction: "m_t = β1·old_m + (1-β1)·g_t verified at each step"
-    test: "proptest: compute m both ways, assert equality within ε"
-    if_fails: "First moment update formula incorrect"
-  - id: FALSIFY-AW-011
-    rule: "Loop variant - step counter"
-    prediction: "Training loop terminates when step reaches max_steps"
-    test: "Run training loop with max_steps=100, verify exactly 100 iterations"
-    if_fails: "Loop counter not advancing or off-by-one"
-
-# Kani bounded model checking harnesses for formal AdamW verification
+- id: FALSIFY-AW-001
+  rule: Decoupled weight decay
+  prediction: AdamW(g, lambda) != Adam(g + lambda*theta) for lambda > 0
+  test: proptest comparing AdamW vs L2-regularized Adam
+  if_fails: Weight decay is coupled (L2 reg instead of decoupled)
+- id: FALSIFY-AW-002
+  rule: Second moment non-negativity
+  prediction: v_t >= 0 for all t after random gradient updates
+  test: proptest with 100 random gradient steps
+  if_fails: Floating-point underflow in EMA update
+- id: FALSIFY-AW-003
+  rule: Bias correction
+  prediction: 1/(1-beta^t) > 1 for t in [1, 10000] and beta in (0, 1)
+  test: proptest with random t and beta values
+  if_fails: Integer overflow in power computation or division by zero
+- id: FALSIFY-AW-004
+  rule: Update finiteness
+  prediction: theta_t is finite when g_t is finite and eps > 0
+  test: proptest with extreme gradients near f32::MIN/MAX
+  if_fails: Division by near-zero denominator when eps too small
+- id: FALSIFY-AW-005
+  rule: SIMD equivalence
+  prediction: '|adamw_avx2(args) - adamw_scalar(args)| < 8 ULP'
+  test: proptest comparing scalar vs SIMD full update step
+  if_fails: SIMD sqrt or reciprocal approximation differs
+- id: FALSIFY-AW-006
+  rule: Boundary - zero gradient
+  prediction: With g=0, only weight decay modifies theta
+  test: proptest with zero gradient, nonzero lambda
+  if_fails: Bias correction or moment update incorrect at zero
+- id: FALSIFY-AW-007
+  rule: Precondition - invalid hyperparameters
+  prediction: adamw_step with β1=0 or β2=1 or ε=0 returns Err or panics
+  test: 'proptest: boundary hyperparameter values'
+  if_fails: Missing hyperparameter validation
+- id: FALSIFY-AW-008
+  rule: Frame condition
+  prediction: Gradient vector unchanged after adamw_step
+  test: 'proptest: clone gradient before step, assert unchanged after'
+  if_fails: Optimizer modifies gradient buffer
+- id: FALSIFY-AW-009
+  rule: Loop invariant - moment non-negativity across steps
+  prediction: v_t ≥ 0 after 1000 consecutive random gradient steps
+  test: 'proptest: run 1000 steps with random gradients, check v at each'
+  if_fails: EMA accumulation produces negative second moment
+- id: FALSIFY-AW-010
+  rule: Old state - moment EMA
+  prediction: m_t = β1·old_m + (1-β1)·g_t verified at each step
+  test: 'proptest: compute m both ways, assert equality within ε'
+  if_fails: First moment update formula incorrect
+- id: FALSIFY-AW-011
+  rule: Loop variant - step counter
+  prediction: Training loop terminates when step reaches max_steps
+  test: Run training loop with max_steps=100, verify exactly 100 iterations
+  if_fails: Loop counter not advancing or off-by-one
 kani_harnesses:
-  - id: KANI-AW-001
-    obligation: AW-INV-001
-    property: "Weight decay is decoupled from Adam update"
-    bound: 4
-    strategy: stub_float
-    solver: cadical
-    harness: verify_adamw_decoupled
-  - id: KANI-AW-002
-    obligation: AW-BND-001
-    property: "Second moment stays non-negative"
-    bound: 8
-    strategy: stub_float
-    solver: cadical
-    harness: verify_adamw_moment_positive
-  - id: KANI-AW-003
-    obligation: AW-BND-002
-    property: "Update is finite with positive epsilon"
-    bound: 4
-    strategy: stub_float
-    solver: cadical
-    harness: verify_adamw_finite_update
-
-# QA gate: all 6 falsification tests + Kani harnesses must pass
+- id: KANI-AW-001
+  obligation: AW-INV-001
+  property: Weight decay is decoupled from Adam update
+  bound: 4
+  strategy: stub_float
+  solver: cadical
+  harness: verify_adamw_decoupled
+- id: KANI-AW-002
+  obligation: AW-BND-001
+  property: Second moment stays non-negative
+  bound: 8
+  strategy: stub_float
+  solver: cadical
+  harness: verify_adamw_moment_positive
+- id: KANI-AW-003
+  obligation: AW-BND-002
+  property: Update is finite with positive epsilon
+  bound: 4
+  strategy: stub_float
+  solver: cadical
+  harness: verify_adamw_finite_update
 qa_gate:
   id: F-AW-001
-  name: "AdamW Contract"
-  description: "Decoupled weight decay optimizer quality gate"
+  name: AdamW Contract
+  description: Decoupled weight decay optimizer quality gate
   checks:
-    - "decoupled_decay"
-    - "moment_positivity"
-    - "update_finiteness"
-    - "simd_equivalence"
-  pass_criteria: "All 11 falsification tests pass + Kani harnesses verify"
-  falsification: "Move weight decay inside gradient (L2 instead of decoupled)"
+  - decoupled_decay
+  - moment_positivity
+  - update_finiteness
+  - simd_equivalence
+  pass_criteria: All 11 falsification tests pass + Kani harnesses verify
+  falsification: Move weight decay inside gradient (L2 instead of decoupled)

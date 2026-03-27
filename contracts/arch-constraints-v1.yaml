@@ -1,88 +1,47 @@
-# =============================================================================
-# Architecture Constraints Contract v1.0.0
-# =============================================================================
-#
-# THE SOURCE OF TRUTH for per-architecture inference constraints.
-# Maps GGUF `general.architecture` values to their structural behavior.
-#
-# Problem: `ArchConstraints::from_architecture()` was a hand-maintained ~200-line
-# match statement that drifted from the model-family YAML contracts.
-#
-# Solution: Contract-driven codegen via build.rs.
-# Pattern: YAML → build.rs → const match table → include!() in Rust.
-#
-# Derived from: aprender/contracts/model-families/*.yaml (constraints sections)
-#
-# References:
-#   - GH-323: ArchConstraints codegen
-#   - realizar/src/gguf/config.rs: Consumer of generated code
-#   - aprender/contracts/model-families/*.yaml: Source model-family contracts
-#
-# ENFORCEMENT: FALSIFY-ARCH-CONSTRAINTS-001 through FALSIFY-ARCH-CONSTRAINTS-003
-# =============================================================================
-
 metadata:
-  version: "1.0.0"
-  created: "2026-02-23"
-  author: "PAIML Engineering"
-  description: "Per-architecture inference constraints — source of truth"
+  version: 1.0.0
+  created: '2026-02-23'
+  author: PAIML Engineering
+  description: Per-architecture inference constraints — source of truth
   registry: true
   references:
-    - "GH-323: ArchConstraints codegen"
-    - "realizar/src/gguf/config.rs: Consumer"
-    - "aprender/contracts/model-families/*.yaml: Source data"
-
+  - 'GH-323: ArchConstraints codegen'
+  - 'realizar/src/gguf/config.rs: Consumer'
+  - 'aprender/contracts/model-families/*.yaml: Source data'
 equations:
   arch_constraint_lookup:
-    formula: "constraints(arch) = { norm_type, activation, pos_enc, mlp_type, weight_layout, has_bias, tied_emb, has_qk_norm, eps }"
-    domain: "arch ∈ { llama, mistral, phi3, qwen2, qwen3, deepseek2, gemma, gemma2, gpt2, bloom, stablelm, falcon, falcon_7b, falcon_40b, yi, internlm2, command-r, mamba, smollm, olmo, granite, starcoder }"
-    codomain: "ArchConstraints struct"
+    formula: constraints(arch) = { norm_type, activation, pos_enc, mlp_type, weight_layout, has_bias, tied_emb, has_qk_norm,
+      eps }
+    domain: arch ∈ { llama, mistral, phi3, qwen2, qwen3, deepseek2, gemma, gemma2, gpt2, bloom, stablelm, falcon, falcon_7b,
+      falcon_40b, yi, internlm2, command-r, mamba, smollm, olmo, granite, starcoder }
+    codomain: ArchConstraints struct
     invariants:
-      - "Every GGUF general.architecture value maps to exactly one constraint set"
-      - "Enum fields are exhaustive over the defined enum variants"
-      - "DeepSeek eps = 1e-6 (not default 1e-5)"
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Enum Definitions
-# ─────────────────────────────────────────────────────────────────────────────
-#
-# These define the valid values for constraint fields. The codegen generates
-# corresponding Rust enums.
-
+    - Every GGUF general.architecture value maps to exactly one constraint set
+    - Enum fields are exhaustive over the defined enum variants
+    - DeepSeek eps = 1e-6 (not default 1e-5)
+    preconditions:
+    - '!input.is_empty()'
+    lean_theorem: Theorems.Arch_Constraint_Lookup
 enums:
   NormType:
-    LayerNorm: "Standard Layer Normalization with optional bias"
-    RmsNorm: "Root Mean Square Normalization without bias"
-
+    LayerNorm: Standard Layer Normalization with optional bias
+    RmsNorm: Root Mean Square Normalization without bias
   Activation:
-    Gelu: "Gaussian Error Linear Unit"
-    Silu: "Sigmoid Linear Unit"
-
+    Gelu: Gaussian Error Linear Unit
+    Silu: Sigmoid Linear Unit
   PositionalEncoding:
-    Absolute: "Learned absolute position embeddings"
-    Rope: "Rotary Position Embedding"
-    Alibi: "Attention with Linear Biases"
-    None: "No positional encoding (SSM/recurrence)"
-
+    Absolute: Learned absolute position embeddings
+    Rope: Rotary Position Embedding
+    Alibi: Attention with Linear Biases
+    None: No positional encoding (SSM/recurrence)
   MlpType:
-    GeluMlp: "Standard GELU MLP: up → GELU → down"
-    SwiGlu: "SwiGLU: gate ⊙ SiLU(up) → down"
-    GatedMlp: "Gated MLP: gate ⊙ GELU(up) → down"
-
+    GeluMlp: 'Standard GELU MLP: up → GELU → down'
+    SwiGlu: 'SwiGLU: gate ⊙ SiLU(up) → down'
+    GatedMlp: 'Gated MLP: gate ⊙ GELU(up) → down'
   WeightLayout:
-    Linear: "Standard [out_features, in_features] — no transpose"
-    Conv1D: "Conv1D [in_features, out_features] — requires transpose"
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Architecture Constraints
-# ─────────────────────────────────────────────────────────────────────────────
-#
-# Each entry maps a canonical architecture key (plus GGUF aliases) to its
-# constraint values. Unknown architectures fall back to LLaMA defaults.
-
+    Linear: Standard [out_features, in_features] — no transpose
+    Conv1D: Conv1D [in_features, out_features] — requires transpose
 architectures:
-  # ── GPT-2 ──────────────────────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/gpt2.yaml
   gpt2:
     aliases: []
     norm_type: LayerNorm
@@ -93,12 +52,10 @@ architectures:
     has_bias: true
     tied_embeddings: true
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── LLaMA 3 / LLaMA 3.2 ──────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/llama.yaml
+    default_eps: 1.0e-05
   llama:
-    aliases: ["llama3"]
+    aliases:
+    - llama3
     norm_type: RmsNorm
     activation: Silu
     positional_encoding: Rope
@@ -107,12 +64,11 @@ architectures:
     has_bias: false
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── Qwen2 / Qwen2.5-Coder ────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/qwen2.yaml
+    default_eps: 1.0e-05
   qwen2:
-    aliases: ["qwen2.5", "qwen"]
+    aliases:
+    - qwen2.5
+    - qwen
     norm_type: RmsNorm
     activation: Silu
     positional_encoding: Rope
@@ -121,10 +77,7 @@ architectures:
     has_bias: true
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-6
-
-  # ── Qwen3 ─────────────────────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/qwen3.yaml
+    default_eps: 1.0e-06
   qwen3:
     aliases: []
     norm_type: RmsNorm
@@ -135,10 +88,7 @@ architectures:
     has_bias: false
     tied_embeddings: false
     has_qk_norm: true
-    default_eps: 1.0e-6
-
-  # ── Mistral / Mixtral ─────────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/mistral.yaml
+    default_eps: 1.0e-06
   mistral:
     aliases: []
     norm_type: RmsNorm
@@ -149,11 +99,7 @@ architectures:
     has_bias: false
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── Phi-1.5 / Phi-2 (CodeGen-style) ──────────────────────────────────────
-  # Phi-1/1.5/2 use GELU MLP (no gate weight), not SwiGLU.
-  # NOT in a separate YAML — phi.yaml covers Phi-3+ only.
+    default_eps: 1.0e-05
   phi2:
     aliases: []
     norm_type: LayerNorm
@@ -164,12 +110,11 @@ architectures:
     has_bias: true
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── Phi-3 / Phi-3.5 ──────────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/phi.yaml
+    default_eps: 1.0e-05
   phi:
-    aliases: ["phi3", "phi4"]
+    aliases:
+    - phi3
+    - phi4
     norm_type: LayerNorm
     activation: Silu
     positional_encoding: Rope
@@ -178,12 +123,11 @@ architectures:
     has_bias: true
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── Google Gemma ──────────────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/gemma.yaml
+    default_eps: 1.0e-05
   gemma:
-    aliases: ["gemma2", "gemma3"]
+    aliases:
+    - gemma2
+    - gemma3
     norm_type: RmsNorm
     activation: Gelu
     positional_encoding: Rope
@@ -192,12 +136,10 @@ architectures:
     has_bias: false
     tied_embeddings: true
     has_qk_norm: false
-    default_eps: 1.0e-6
-
-  # ── DeepSeek ──────────────────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/deepseek.yaml
+    default_eps: 1.0e-06
   deepseek:
-    aliases: ["deepseek2"]
+    aliases:
+    - deepseek2
     norm_type: RmsNorm
     activation: Silu
     positional_encoding: Rope
@@ -206,10 +148,7 @@ architectures:
     has_bias: false
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-6
-
-  # ── Google BERT ───────────────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/bert.yaml
+    default_eps: 1.0e-06
   bert:
     aliases: []
     norm_type: LayerNorm
@@ -221,9 +160,6 @@ architectures:
     tied_embeddings: true
     has_qk_norm: false
     default_eps: 1.0e-12
-
-  # ── OpenAI Whisper ────────────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/whisper.yaml
   whisper:
     aliases: []
     norm_type: LayerNorm
@@ -234,10 +170,7 @@ architectures:
     has_bias: true
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── Mamba SSM ─────────────────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/mamba.yaml
+    default_eps: 1.0e-05
   mamba:
     aliases: []
     norm_type: RmsNorm
@@ -248,13 +181,10 @@ architectures:
     has_bias: false
     tied_embeddings: true
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── Qwen3.5 ───────────────────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/qwen3_5.yaml
-  # Unlike Qwen3, Qwen3.5 does NOT use QK norm
+    default_eps: 1.0e-05
   qwen3_5:
-    aliases: ["qwen3.5"]
+    aliases:
+    - qwen3.5
     norm_type: RmsNorm
     activation: Silu
     positional_encoding: Rope
@@ -263,13 +193,10 @@ architectures:
     has_bias: false
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-6
-
-  # ── Falcon-H1 ─────────────────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/falcon_h1.yaml
-  # Hybrid GQA attention + Mamba-2 SSM
+    default_eps: 1.0e-06
   falcon_h1:
-    aliases: ["falcon-h1"]
+    aliases:
+    - falcon-h1
     norm_type: RmsNorm
     activation: Silu
     positional_encoding: Rope
@@ -278,11 +205,7 @@ architectures:
     has_bias: false
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-6
-
-  # ── Apple OpenELM ─────────────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/openelm.yaml
-  # Variable-width attention (per-layer num_heads)
+    default_eps: 1.0e-06
   openelm:
     aliases: []
     norm_type: RmsNorm
@@ -293,10 +216,7 @@ architectures:
     has_bias: false
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-6
-
-  # ── UsefulSensors Moonshine ───────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/moonshine.yaml
+    default_eps: 1.0e-06
   moonshine:
     aliases: []
     norm_type: LayerNorm
@@ -307,13 +227,10 @@ architectures:
     has_bias: false
     tied_embeddings: true
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── RWKV-7 ────────────────────────────────────────────────────────────────
-  # Source: aprender/contracts/model-families/rwkv7.yaml
-  # Linear recurrence, not attention
+    default_eps: 1.0e-05
   rwkv7:
-    aliases: ["rwkv"]
+    aliases:
+    - rwkv
     norm_type: LayerNorm
     activation: Gelu
     positional_encoding: None
@@ -322,12 +239,11 @@ architectures:
     has_bias: false
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── Falcon 7B ─────────────────────────────────────────────────────────────
-  # P1: Wrong defaults — uses LayerNorm + GELU + RoPE (not LLaMA defaults)
+    default_eps: 1.0e-05
   falcon_7b:
-    aliases: ["falcon-7b", "falcon7b"]
+    aliases:
+    - falcon-7b
+    - falcon7b
     norm_type: LayerNorm
     activation: Gelu
     positional_encoding: Rope
@@ -336,12 +252,12 @@ architectures:
     has_bias: true
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── Falcon 40B ───────────────────────────────────────────────────────────
-  # P1: Wrong defaults — uses LayerNorm + GELU + ALiBi (not LLaMA defaults)
+    default_eps: 1.0e-05
   falcon_40b:
-    aliases: ["falcon-40b", "falcon40b", "falcon"]
+    aliases:
+    - falcon-40b
+    - falcon40b
+    - falcon
     norm_type: LayerNorm
     activation: Gelu
     positional_encoding: Alibi
@@ -350,12 +266,11 @@ architectures:
     has_bias: true
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── StableLM ─────────────────────────────────────────────────────────────
-  # P1: Wrong defaults — uses LayerNorm (not RmsNorm)
+    default_eps: 1.0e-05
   stablelm:
-    aliases: ["stable-lm", "stable_lm"]
+    aliases:
+    - stable-lm
+    - stable_lm
     norm_type: LayerNorm
     activation: Silu
     positional_encoding: Rope
@@ -364,12 +279,10 @@ architectures:
     has_bias: true
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── Yi ───────────────────────────────────────────────────────────────────
-  # P2: Same constraints as LLaMA (correct by coincidence, explicit is better)
+    default_eps: 1.0e-05
   yi:
-    aliases: ["yi-coder"]
+    aliases:
+    - yi-coder
     norm_type: RmsNorm
     activation: Silu
     positional_encoding: Rope
@@ -378,12 +291,11 @@ architectures:
     has_bias: false
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── InternLM2 ────────────────────────────────────────────────────────────
-  # P2: Same as LLaMA but has_bias=true
+    default_eps: 1.0e-05
   internlm2:
-    aliases: ["internlm", "internlm2.5"]
+    aliases:
+    - internlm
+    - internlm2.5
     norm_type: RmsNorm
     activation: Silu
     positional_encoding: Rope
@@ -392,12 +304,10 @@ architectures:
     has_bias: true
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── SmolLM ───────────────────────────────────────────────────────────────
-  # P2: Same constraints as LLaMA (correct by coincidence, explicit is better)
+    default_eps: 1.0e-05
   smollm:
-    aliases: ["smollm2"]
+    aliases:
+    - smollm2
     norm_type: RmsNorm
     activation: Silu
     positional_encoding: Rope
@@ -406,12 +316,10 @@ architectures:
     has_bias: false
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── OLMo ─────────────────────────────────────────────────────────────────
-  # P2: Same constraints as LLaMA (correct by coincidence, explicit is better)
+    default_eps: 1.0e-05
   olmo:
-    aliases: ["olmo2"]
+    aliases:
+    - olmo2
     norm_type: RmsNorm
     activation: Silu
     positional_encoding: Rope
@@ -420,12 +328,10 @@ architectures:
     has_bias: false
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── Granite ──────────────────────────────────────────────────────────────
-  # P2: Same constraints as LLaMA (correct by coincidence, explicit is better)
+    default_eps: 1.0e-05
   granite:
-    aliases: ["granite-code"]
+    aliases:
+    - granite-code
     norm_type: RmsNorm
     activation: Silu
     positional_encoding: Rope
@@ -434,12 +340,10 @@ architectures:
     has_bias: false
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-  # ── StarCoder ────────────────────────────────────────────────────────────
-  # P2: LayerNorm + GELU + Absolute positional encoding
+    default_eps: 1.0e-05
   starcoder:
-    aliases: ["starcoder1"]
+    aliases:
+    - starcoder1
     norm_type: LayerNorm
     activation: Gelu
     positional_encoding: Absolute
@@ -448,15 +352,7 @@ architectures:
     has_bias: true
     tied_embeddings: false
     has_qk_norm: false
-    default_eps: 1.0e-5
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Default (LLaMA-like)
-# ─────────────────────────────────────────────────────────────────────────────
-#
-# Unknown architectures fall back to these values (the most common pattern
-# in modern LLMs).
-
+    default_eps: 1.0e-05
 default:
   norm_type: RmsNorm
   activation: Silu
@@ -466,27 +362,20 @@ default:
   has_bias: false
   tied_embeddings: false
   has_qk_norm: false
-  default_eps: 1.0e-5
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Falsification Tests
-# ─────────────────────────────────────────────────────────────────────────────
-
+  default_eps: 1.0e-05
 falsification_tests:
-  - id: FALSIFY-ARCH-CONSTRAINTS-001
-    rule: "Model-family consistency"
-    prediction: "Every model-family YAML's constraints section matches this contract"
-    test: "Cross-reference aprender/contracts/model-families/*.yaml constraints"
-    if_fails: "Contract drifted from model-family source YAMLs"
-
-  - id: FALSIFY-ARCH-CONSTRAINTS-002
-    rule: "Enum exhaustiveness"
-    prediction: "No architecture has unknown enum values"
-    test: "build.rs parse validation — invalid enum value causes build error"
-    if_fails: "New architecture added without updating contract enums"
-
-  - id: FALSIFY-ARCH-CONSTRAINTS-003
-    rule: "DeepSeek epsilon regression"
-    prediction: "DeepSeek eps is 1e-6, not 1e-5 (bug fix from hand-maintained code)"
-    test: "Regression test in realizar config tests"
-    if_fails: "DeepSeek eps reverted to incorrect default 1e-5"
+- id: FALSIFY-ARCH-CONSTRAINTS-001
+  rule: Model-family consistency
+  prediction: Every model-family YAML's constraints section matches this contract
+  test: Cross-reference aprender/contracts/model-families/*.yaml constraints
+  if_fails: Contract drifted from model-family source YAMLs
+- id: FALSIFY-ARCH-CONSTRAINTS-002
+  rule: Enum exhaustiveness
+  prediction: No architecture has unknown enum values
+  test: build.rs parse validation — invalid enum value causes build error
+  if_fails: New architecture added without updating contract enums
+- id: FALSIFY-ARCH-CONSTRAINTS-003
+  rule: DeepSeek epsilon regression
+  prediction: DeepSeek eps is 1e-6, not 1e-5 (bug fix from hand-maintained code)
+  test: Regression test in realizar config tests
+  if_fails: DeepSeek eps reverted to incorrect default 1e-5
