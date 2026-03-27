@@ -1648,11 +1648,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'depyler: A-score enforcement — binding coverage 64%→90%'
-  status: planned
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-03-27T16:14:56Z
-  updated: 2026-03-27T16:14:56Z
+  updated: 2026-03-27T16:24:26.763539671+00:00
   spec: null
   acceptance_criteria: []
   phases: []
