@@ -9065,3 +9065,14 @@ bindings:
   equation: identity
   function: identity
   status: implemented
+- contract: wgpu-transformer-trainer-v1.yaml
+  equation: train_step
+  module_path: entrenar::train::transformer_trainer::wgpu_trainer
+  function: train_step
+  status: implemented
+  notes: Phase 3 — forward/loss/backward/AdamW on AMD W5700X
+- contract: wgpu-transformer-trainer-v1.yaml
+  equation: ffn_backward
+  module_path: entrenar::train::transformer_trainer::wgpu_trainer
+  function: ffn_backward
+  status: implemented

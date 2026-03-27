@@ -1,0 +1,42 @@
+contract: wgpu-transformer-trainer-v1
+version: 1.0.0
+status: implemented
+kaizen: 203
+description: >
+  WgpuTransformerTrainer: end-to-end training loop on non-NVIDIA GPUs.
+  Forward (CPU/WGPU) → cross-entropy loss → GEMM backward A/B (GPU) → AdamW (GPU).
+  Delegates backward compute to trueno GpuDevice WGSL shaders.
+
+invariants:
+- id: C-WGPU-TRAIN-001
+  description: Training step updates weights and decreases loss
+  preconditions:
+  - WGPU device available (Vulkan/Metal/DX12)
+  - Hidden states and lm_head weights are finite fp32
+  - Optimizer state (m, v) initialized to zero
+  postconditions:
+  - Loss is finite and positive
+  - lm_head_weight is modified after step (weight update applied)
+  - Loss decreases by >10% within 50 steps on toy data
+  verified_by:
+  - test_falsify_wgpu_002_toy_convergence — PASS on AMD W5700X
+  severity: critical
+
+- id: C-WGPU-TRAIN-002
+  description: FFN backward produces non-zero gradients through gate/up/down projections
+  preconditions:
+  - grad_output is non-zero
+  - Cached forward activations (gate, up, silu_gate) are available
+  postconditions:
+  - grad_ffn_input has non-zero norm (gradient flow works)
+  - All gradient values are finite
+  verified_by:
+  - test_ffn_backward_gradient_flow — PASS on AMD W5700X
+  severity: high
+
+affected_files:
+- path: src/train/transformer_trainer/wgpu_trainer.rs
+  functions:
+  - 'WgpuTransformerTrainer::new: initialize with WgpuForwardPass + GpuDevice'
+  - 'train_step: forward→loss→backward_a→backward_b→adamw'
+  - 'ffn_backward: down_proj→silu→gate/up_proj backward chain'
