@@ -722,3 +722,10 @@ bindings:
     function: "start_realizar_server"
     status: implemented
     notes: "PMAT-372: --backend wgpu selects Vulkan. Default selects CUDA. CPU always available."
+
+  # PMAT-379: WGPU streaming TPOT
+  - contract: streaming-tpot-v1.yaml
+    equation: tpot_definition
+    function: "wgpu_chat_completion"
+    status: implemented
+    notes: "PMAT-378: Stop chunk includes usage + x_wgpu_tok_s. TPOT = 1/tok_s."
