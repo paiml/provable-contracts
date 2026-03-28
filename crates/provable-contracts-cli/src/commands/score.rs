@@ -453,10 +453,10 @@ fn collect_yaml_files(dir: &Path, out: &mut Vec<std::path::PathBuf>) {
                 continue;
             }
             collect_yaml_files(&path, out);
-        } else if path.extension().and_then(|e| e.to_str()) == Some("yaml") {
-            if path.file_name().and_then(|n| n.to_str()) != Some("binding.yaml") {
-                out.push(path);
-            }
+        } else if path.extension().and_then(|e| e.to_str()) == Some("yaml")
+            && path.file_name().and_then(|n| n.to_str()) != Some("binding.yaml")
+        {
+            out.push(path);
         }
     }
 }

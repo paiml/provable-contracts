@@ -9,7 +9,7 @@ use std::collections::BTreeMap;
 pub struct Contract {
     pub metadata: Metadata,
     /// Equations are optional — kaizen, pipeline, and registry contracts
-    /// may define only proof_obligations without mathematical equations.
+    /// may define only `proof_obligations` without mathematical equations.
     #[serde(default)]
     pub equations: BTreeMap<String, Equation>,
     #[serde(default)]
