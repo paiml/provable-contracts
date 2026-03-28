@@ -1900,3 +1900,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-110
+  github_issue: null
+  item_type: task
+  title: 'Spec Section 28: Correctness + Completeness two-dimension enforcement model'
+  status: completed
+  priority: critical
+  assigned_to: null
+  created: 2026-03-28T10:01:07Z
+  updated: 2026-03-28T10:03:26.157458926+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
