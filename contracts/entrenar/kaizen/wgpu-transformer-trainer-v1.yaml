@@ -84,6 +84,19 @@ invariants:
   - test_checkpoint_round_trip — PASS
   severity: critical
 
+- id: C-WGPU-CACHE-001
+  description: FFN weight dequant cache eliminates redundant NF4 ops
+  preconditions:
+  - WgpuModelState with NF4 layers loaded
+  - GpuDevice available for initial dequant
+  postconditions:
+  - First call to populate_ffn_cache dequants all 36 layers (~54s on W5700X)
+  - Subsequent steps skip dequant entirely (cache hit, 0s)
+  - Cached weights match direct dequant output bit-identically
+  verified_by:
+  - full_train_step uses cached_ffn for all forward passes — PASS
+  severity: high
+
 - id: C-WGPU-CKPT-002
   description: Checkpoint rejects dimension mismatch on load
   preconditions:
