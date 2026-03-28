@@ -2395,12 +2395,12 @@ value health          profiler record       throughput gate
 
 | Component | Status | Evidence |
 |-----------|--------|----------|
-| `pv codegen` macros in repos | **6/7 DONE** | trueno, entrenar, realizar, forjar, bashrs, depyler have `mod generated_contracts` |
-| Contract macro call sites | **3 in trueno** | softmax, rmsnorm, gemm have `contract_pre_!()` calls |
+| `pv codegen` macros in repos | **7/7 DONE** | aprender, trueno, entrenar, realizar, forjar, bashrs, depyler |
+| Contract macro call sites | **4 total** | trueno: softmax, rmsnorm, gemm. aprender: softmax |
 | `contracts/assets/` directory | **NOT IMPLEMENTED** | Directory does not exist |
 | `pv verify-asset` CLI | **NOT IMPLEMENTED** | No such subcommand |
 | `execute_with_contract()` | **NOT IMPLEMENTED** | Proposed design only |
-| `load_model_verified()` | **NOT IMPLEMENTED** | aprender git corrupted, cannot modify |
+| `load_model_verified()` | **NOT IMPLEMENTED** | Proposed design (aprender recovered) |
 | apr-cli roofline integration | **NOT IMPLEMENTED** | Only in generated_contracts.rs |
 | BrickStats violation tracking | **NOT IMPLEMENTED** | No violation field |
 | Shape contract vs real files | **NOT IMPLEMENTED** | No code reads shapes YAML |
