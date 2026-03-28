@@ -2265,12 +2265,136 @@ falsification_tests:
 | P4 | Value contracts | Scan tensor data for dead neurons, norms. High. |
 | P5 | CD6 in codebase scoring | Wire into `pv score` when `assets:` present. Low. |
 
+### Runtime Integration: trueno BrickLayer + apr-cli
+
+Asset contracts become useful only when the runtime **checks them**.
+Two integration points exist in the sovereign stack today:
+
+#### trueno: BrickLayer contract-aware tracing
+
+trueno already has a per-kernel profiling system:
+
+```
+ComputeBrick<Op>       — wraps a kernel operation
+BrickLayer             — orchestrates bricks, manages execution graph
+BrickSample / BrickStats — records timing, memory, launch counts
+AsyncTaskProfiler      — profiles async kernel dispatch
+PerfMetrics            — records load, prefill, decode timings
+```
+
+**What exists:** `record_kernel_launch()` captures timing and memory.
+`record_prefill()` / `record_decode()` track phase performance.
+
+**What's missing:** No contract check at the recording site. The
+profiler observes but doesn't verify postconditions. The integration:
+
+```rust
+// trueno/src/brick/compute_brick.rs (proposed)
+impl<Op: ComputeOp> ComputeBrick<Op> {
+    pub fn execute_with_contract(&self, input: &[f32]) -> Vec<f32> {
+        contract_pre_softmax!(input);        // from generated_contracts.rs
+        let result = self.op.execute(input);
+        contract_post_softmax!(result);      // postcondition check
+        self.profiler.record_kernel_launch(  // existing profiling
+            &self.name, elapsed, input.len()
+        );
+        result
+    }
+}
+```
+
+The `generated_contracts.rs` macros already exist in trueno
+(Section 27). The integration is: call the precondition macro before
+execution and the postcondition macro after — then record the result
+in the existing `BrickStats`.
+
+**Contract violation → BrickStats anomaly.** When a postcondition
+fires (e.g., softmax output doesn't sum to 1.0), the profiler records
+it as a `contract_violation` event. This connects runtime behavior
+to the contract-derived invariant, making `BrickLayer` a
+**contract-aware execution engine**.
+
+#### apr-cli: Contract-verified model loading
+
+aprender's `load_model` currently:
+1. Reads safetensors file
+2. Deserializes weights into tensors
+3. Returns `Module`
+
+**What's missing:** No verification that tensor shapes match the
+architecture contract or that values are finite.
+
+```rust
+// aprender/src/nn/serialize.rs (proposed)
+pub fn load_model_verified<M: Module>(
+    path: &Path,
+    shape_contract: Option<&Path>,  // e.g. qwen2-7b-shapes-v1.yaml
+) -> Result<M> {
+    let model = load_model::<M>(path)?;
+
+    if let Some(contract) = shape_contract {
+        // pv verify-asset logic embedded:
+        let shapes = extract_tensor_shapes(&model);
+        let expected = parse_shape_contract(contract)?;
+        verify_shapes(&shapes, &expected)?;  // errors on mismatch
+    }
+
+    // Quick health check: all finite
+    for tensor in model.tensors() {
+        assert!(tensor.data().iter().all(|v| v.is_finite()),
+            "NaN/Inf detected in loaded model weights");
+    }
+
+    Ok(model)
+}
+```
+
+aprender already has `WeightHealth` / `health_status()` in
+`src/inspect/weight_stats.rs` — this is the hook point.
+
+#### Roofline-derived serving budget
+
+apr-cli's `serve plan` should derive performance ceilings from
+`roofline-model-v1.yaml` instead of hardcoded formulas. The `pv
+roofline` module (Section 24, already implemented) provides:
+
+```rust
+let ceiling = roofline::compute_roofline(
+    model.total_params(),
+    model.bits_per_weight(),
+    &HardwareProfile::detect(),  // auto-detect hardware
+);
+// ceiling.throughput_ceiling = max achievable tok/s
+// Use as SLA: warn if observed TPOT > 1/ceiling
+```
+
+### Full Verification Chain
+
+```
+                    Asset Contracts (§29)
+                          │
+    ┌─────────────────────┼──────────────────────┐
+    │                     │                      │
+load_model_verified  BrickLayer.execute    pv roofline
+    │                with_contract              │
+    │                     │                      │
+shape check           pre/post check        SLA budget
+value health          profiler record       throughput gate
+    │                     │                      │
+    └─────────────────────┼──────────────────────┘
+                          │
+              Contract-verified inference
+```
+
 ### Why This Matters
 
 The inference pipeline is: **load model → run kernels → produce output**.
 We verify the kernels (Section 2-28) but not the model load. A corrupt
 weight file silently produces wrong outputs even with perfect kernels.
 Asset contracts close the last gap in the verification chain.
+
+The trueno BrickLayer and apr-cli load_model are the two insertion
+points where asset + function contracts meet runtime execution.
 
 ### References (Section 29)
 
