@@ -2396,7 +2396,7 @@ value health          profiler record       throughput gate
 | Component | Status | Evidence |
 |-----------|--------|----------|
 | `pv codegen` macros in repos | **7/7 DONE** | aprender, trueno, entrenar, realizar, forjar, bashrs, depyler |
-| Contract macro call sites | **4 total** | trueno: softmax, rmsnorm, gemm. aprender: softmax |
+| Contract macro call sites | **12 total** | trueno: 3, entrenar: 2, realizar: 2, forjar: 2, aprender: 1, bashrs: 1, depyler: 1 |
 | `contracts/assets/` directory | **NOT IMPLEMENTED** | Directory does not exist |
 | `pv verify-asset` CLI | **NOT IMPLEMENTED** | No such subcommand |
 | `execute_with_contract()` | **NOT IMPLEMENTED** | Proposed design only |
