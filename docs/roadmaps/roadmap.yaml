@@ -1964,3 +1964,35 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-114
+  github_issue: null
+  item_type: task
+  title: Add real bindings + critical_path for 17 sovereign stack repos at Grade F
+  status: completed
+  priority: critical
+  assigned_to: null
+  created: 2026-03-28T10:57:38Z
+  updated: 2026-03-28T11:01:28.983269768+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-115
+  github_issue: null
+  item_type: task
+  title: 'New task: PMAT-115'
+  status: inprogress
+  priority: medium
+  assigned_to: null
+  created: 2026-03-28T10:57:38.478749321+00:00
+  updated: 2026-03-28T10:57:38.478749321+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
