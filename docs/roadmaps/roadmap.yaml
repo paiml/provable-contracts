@@ -1932,3 +1932,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-112
+  github_issue: null
+  item_type: task
+  title: 'Spec Section 28 v3: domain-aware critical path keywords'
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-03-28T10:11:59Z
+  updated: 2026-03-28T10:13:50.583049406+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
