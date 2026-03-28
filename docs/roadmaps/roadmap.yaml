@@ -1852,3 +1852,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-107
+  github_issue: null
+  item_type: task
+  title: Option C scoring fix + pmat comply integration guide in spec
+  status: completed
+  priority: critical
+  assigned_to: null
+  created: 2026-03-28T09:22:54Z
+  updated: 2026-03-28T09:26:54.733319560+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
