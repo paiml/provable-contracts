@@ -2184,6 +2184,77 @@ CD6: Asset coverage = verified_assets / declared_assets
 Only scores when `assets:` section is present in binding.yaml.
 Repos without assets get no penalty (same as critical_path fallback).
 
+### Asset Type Registry
+
+`pv verify-asset` detects the contract type from the file extension:
+
+| Contract Type | Extensions | Invariants |
+|--------------|------------|------------|
+| `tensor_weights` | `.safetensors` `.gguf` `.apr` `.onnx` | shapes match config, all finite, no dead neurons |
+| `tokenizer` | `tokenizer.json` `vocab.json` `merges.txt` | vocab_size == embedding rows, special tokens valid |
+| `config` | `config.json` `*.toml` `*.yaml` | required fields present, values in declared bounds |
+| `media_video` | `.mp4` `.webm` `.mkv` | valid container, decodeable streams, duration > 0 |
+| `media_audio` | `.wav` `.flac` `.mp3` `.ogg` | valid headers, sample_rate > 0, channels in {1,2} |
+| `media_image` | `.png` `.jpg` `.svg` `.webp` | valid format, dimensions > 0, finite pixel values |
+| `document` | `.md` `.html` `.pdf` `.tex` | parses clean, no broken internal links |
+| `binary_artifact` | `.wasm` `.so` `.dylib` `.ptx` `.spv` | valid format, expected exports/entry points |
+| `structured_data` | `.json` `.jsonl` `.parquet` `.arrow` `.csv` | schema conformance, row count, no null in required cols |
+| `proof` | `.lean` `.olean` | compiles, no sorry, hash matches source |
+
+Each sovereign stack component maps to specific asset types:
+
+```
+aprender/realizar   → tensor_weights, tokenizer, config
+whisper.apr         → tensor_weights, media_audio, tokenizer
+trueno              → binary_artifact (PTX, SPIR-V, Metal)
+presentar           → media_image, document (SVG, PDF, MD)
+rmedia              → media_video, media_audio, media_image
+forjar              → binary_artifact (WASM, .so)
+trueno-db           → structured_data (Parquet, SQLite)
+trueno-rag          → structured_data, tensor_weights (embeddings)
+provable-contracts  → proof (.lean), config (.yaml)
+```
+
+### Asset Contract YAML Schema
+
+```yaml
+# contracts/assets/safetensors-schema-v1.yaml
+metadata:
+  version: "1.0.0"
+  description: "Safetensors format schema contract"
+  asset_type: tensor_weights       # ← from type registry
+  extensions: [".safetensors"]
+
+invariants:
+  schema:                           # Type 1: format well-formedness
+    - "header is valid JSON"
+    - "header size < 100MB"
+    - "each tensor has dtype, shape, data_offsets"
+    - "data_offsets monotonically increasing"
+    - "no overlapping tensor regions"
+    - "total file size == header_size + sum(tensor_bytes)"
+
+  shape:                            # Type 2: dimension matching
+    - "tensor.shape matches architecture config when provided"
+    - "embedding.weight[0] == vocab_size"
+    - "all linear projections have 2 dimensions"
+
+  value:                            # Type 3: numeric health
+    - "all elements finite (no NaN, no Inf)"
+    - "||weight||_2 < 10000 per tensor"
+    - "no all-zero rows in linear projections"
+
+falsification_tests:
+  - id: FALSIFY-ST-001
+    rule: "Truncated file detection"
+    prediction: "File truncated at random offset → schema error, not panic"
+    test: "Truncate valid safetensors at 100 random positions"
+  - id: FALSIFY-ST-002
+    rule: "NaN injection detection"
+    prediction: "Single NaN in weight tensor → value check fails"
+    test: "Inject NaN at random position in valid file"
+```
+
 ### Implementation Path
 
 | Phase | What | Complexity |
