@@ -129,8 +129,8 @@ provable-contracts/
 | Proof obligations | 678 | `pv coverage contracts/` |
 | Falsification tests | 715 | `pv coverage contracts/` |
 | Kani harnesses (YAML-defined) | 871 | `pv coverage contracts/` |
-| **Real bindings (with module_path)** | **433** | Ghost bindings stripped 2026-03-28 |
-| Binding repos with entries | 26 directories, 12 with real bindings | `ls contracts/*/binding.yaml` |
+| **Real bindings (with module_path)** | **660** | Ghost bindings stripped 2026-03-28 |
+| Binding repos with entries | 26 directories, 26 with real bindings | `ls contracts/*/binding.yaml` |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) | schema/types.rs |
 | CLI commands | 33 | `pv --help` (includes `pv pipeline`) |
 | Repos with build.rs enforcement | 7/26 | aprender, trueno, entrenar, realizar, forjar, ruchy, simular |
