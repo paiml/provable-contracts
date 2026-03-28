@@ -191,6 +191,20 @@ bindings:
   function: quantize
   status: implemented
   notes: Auto-inferred by pv infer
+- contract: roofline-model-v1.yaml
+  equation: bandwidth_ceiling
+  module_path: trueno::monitor::compute_device
+  function: ComputeDevice::memory_bandwidth_gbps
+  signature: 'fn memory_bandwidth_gbps(&self) -> anyhow::Result<f64>'
+  status: implemented
+  notes: 'PMAT-405: Peak memory BW for roofline model. Trait method on ComputeDevice'
+- contract: roofline-model-v1.yaml
+  equation: throughput_bound
+  module_path: trueno::blis::backend_selection
+  function: BackendCostModel::roofline_analysis
+  signature: 'pub fn roofline_analysis(&self, m: usize, n: usize, k: usize) -> RooflineResult'
+  status: implemented
+  notes: 'PMAT-405: min(compute_ceiling, bandwidth * arithmetic_intensity). 5x PCIe rule'
 - contract: gpu-context-health-v1.yaml
   equation: culink_skip
   module_path: trueno_gpu::driver::module

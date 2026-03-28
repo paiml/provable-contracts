@@ -396,6 +396,132 @@ bindings:
   function: sample
   status: implemented
   notes: Auto-inferred by pv infer
+- contract: continuous-batching-v1.yaml
+  equation: request_state
+  module_path: realizar::scheduler::mod_max_scheduler
+  function: SlotState
+  signature: 'pub enum SlotState { Idle, Processing, Generating }'
+  status: implemented
+  notes: 'PMAT-405: Slot state machine. Also CommandSlotState for GPU path'
+- contract: continuous-batching-v1.yaml
+  equation: scheduling_fairness
+  module_path: realizar::scheduler::mod_max_scheduler
+  function: handle_preemption
+  signature: 'fn handle_preemption(&mut self, output: &mut SchedulerOutput, kv_cache: &mut PagedKvCache)'
+  status: implemented
+  notes: 'PMAT-405: Preemption logic for fairness under load'
+- contract: inference-pipeline-v1.yaml
+  equation: residual_stream
+  module_path: realizar::apply
+  function: forward_layer
+  signature: 'fn forward_layer(&mut self, layer_idx: usize, hidden: &[f32]) -> Result<Vec<f32>>'
+  status: implemented
+  notes: 'PMAT-405: hidden += attn_proj, residual += ffn_out. Also GPU PTX residualadd kernel'
+- contract: inference-pipeline-v1.yaml
+  equation: layer_composition
+  module_path: realizar::gpu::adapters::using
+  function: forward_layer
+  signature: 'fn forward_layer(&self, executor: &mut CudaExecutor, input: &GpuBuffer<f32>, layer_idx: usize, seq_len: usize) -> Result<GpuBuffer<f32>>'
+  status: implemented
+  notes: 'PMAT-405: Chained forward through num_layers. CPU and GPU paths'
+- contract: inference-pipeline-v1.yaml
+  equation: hybrid_layer_schedule
+  module_path: realizar::safetensors::safetensors_config
+  function: SafeTensorsConfig::is_hybrid_attention
+  signature: 'pub fn is_hybrid_attention(&self) -> bool'
+  status: implemented
+  notes: 'PMAT-405: GDN/attention dispatch per layer_types array (Qwen3.5 MoE)'
+- contract: inference-pipeline-v1.yaml
+  equation: kv_cache_growth
+  module_path: realizar::verification_specs
+  function: verify_kv_cache_size
+  signature: 'fn verify_kv_cache_size(num_layers: u64, num_heads: u64, head_dim: u64, max_seq_len: u64) -> u64'
+  status: implemented
+  notes: 'PMAT-405: KV cache = 2 * layers * seq_len * kv_dim * 4 bytes'
+- contract: q4k-q6k-superblock-v1.yaml
+  equation: q4k_superblock
+  module_path: realizar::quantize::format_trait
+  function: Q4K
+  signature: 'impl QuantBlockFormat for Q4K { ELEMENTS_PER_SUPERBLOCK: 256, SUPERBLOCK_BYTES: 144, QUANT_BITS: 4 }'
+  status: implemented
+  notes: 'PMAT-405: 144 bytes/256 elements. 12-byte packed scales+mins'
+- contract: q4k-q6k-superblock-v1.yaml
+  equation: q6k_superblock
+  module_path: realizar::quantize::format_trait
+  function: Q6K
+  signature: 'impl QuantBlockFormat for Q6K { ELEMENTS_PER_SUPERBLOCK: 256, SUPERBLOCK_BYTES: 210, QUANT_BITS: 6 }'
+  status: implemented
+  notes: 'PMAT-405: 210 bytes/256 elements. Higher precision for LmHead'
+- contract: q4k-q6k-superblock-v1.yaml
+  equation: dequantization
+  module_path: realizar::quantize::format_trait
+  function: Q4K::dequant_value
+  signature: 'fn dequant_value(superblock: &[u8], i: usize) -> f32'
+  status: implemented
+  notes: 'PMAT-405: Per-element Q4K→FP32. Also fused_q4k_dot for dot+dequant'
+- contract: q4k-q6k-superblock-v1.yaml
+  equation: bsum
+  module_path: realizar::quantize::bsum_precompute
+  function: precompute_q8k_bsums
+  signature: 'pub fn precompute_q8k_bsums(q8k_quants: &[i8], num_superblocks: usize) -> Result<Vec<[i32; 8]>>'
+  status: implemented
+  notes: 'PMAT-405: Block sums for DP4A correction term. 8 sub-blocks per superblock'
+- contract: roofline-model-v1.yaml
+  equation: model_bytes
+  module_path: realizar::lambda
+  function: model_size_bytes
+  signature: 'pub fn model_size_bytes(&self) -> usize'
+  status: implemented
+  notes: 'PMAT-405: Total weight bytes for roofline BW calculation'
+- contract: roofline-model-v1.yaml
+  equation: compute_ceiling
+  module_path: realizar::brick::fused
+  function: CoalescedDp4aBrick::arithmetic_intensity
+  signature: 'pub fn arithmetic_intensity(&self) -> f64'
+  status: implemented
+  notes: 'PMAT-405: FLOP/byte ratio for roofline compute bound'
+- contract: format-parity-v1.yaml
+  equation: transpose_involution
+  module_path: realizar::contract_gate
+  function: transpose_f32
+  signature: 'pub fn transpose_f32(data: &[f32], rows: usize, cols: usize) -> Vec<f32>'
+  status: implemented
+  notes: 'PMAT-405: transpose(transpose(x)) == x. Delegates to trueno::blis::transpose'
+- contract: format-parity-v1.yaml
+  equation: name_bijection
+  module_path: realizar::tensor_names
+  function: resolve_global
+  signature: 'pub(crate) fn resolve_global<S: TensorSource>(source: &S, arch: &str, role: GlobalTensorRole) -> Result<Vec<f32>>'
+  status: implemented
+  notes: 'PMAT-405: Weight name mapping across GGUF/SafeTensors/APR formats'
+- contract: backend-dispatch-v1.yaml
+  equation: simd_only_threshold
+  module_path: realizar::quantize::fused_k
+  function: fused_q4k_dot_simd
+  signature: 'pub fn fused_q4k_dot_simd(q4k_data: &[u8], activations: &[f32]) -> Result<f32>'
+  status: implemented
+  notes: 'PMAT-405: Runtime AVX2 detection + scalar fallback. 5x PCIe rule for CPU vs GPU'
+- contract: backend-dispatch-v1.yaml
+  equation: garbage_oracle
+  module_path: realizar::inference_trace::mod_get_top_compute
+  function: is_garbage_output
+  signature: 'fn is_garbage_output(text: &str) -> bool'
+  status: implemented
+  notes: 'PMAT-405: Detects garbled output from quantization errors'
+- contract: backend-dispatch-v1.yaml
+  equation: qk_norm_score_bound
+  module_path: realizar::cuda::executor::layers::apply
+  function: apply_qk_norm
+  signature: 'fn apply_qk_norm(&mut self, q_buf: &GpuBuffer<f32>, k_buf: &GpuBuffer<f32>, layer_weights: &ValidatedLayerWeights, epsilon: f32) -> Result<(), GpuError>'
+  status: implemented
+  notes: 'PMAT-405: QK normalization bounds attention scores. CPU and GPU paths'
+- contract: kv-cache-equivalence-v1.yaml
+  equation: page_shape
+  module_path: realizar::paged_kv::mod_paged
+  function: PagedKvCache::new
+  signature: 'pub fn new(total_pages: usize, block_size: usize, num_heads: usize, head_dim: usize) -> Self'
+  status: implemented
+  notes: 'PMAT-405: KvPage shape [block_size, num_heads, head_dim]. tokens_to_pages rounding'
 - contract: gpu-context-health-v1.yaml
   equation: fp8_architecture_guard
   module_path: realizar::cuda::gpu_profile
