@@ -42,23 +42,21 @@ pub fn run(
         None => None,
     };
 
-    // Collect all .yaml contracts from the directory
+    // Collect all .yaml contracts recursively from the directory
+    let mut yaml_paths = Vec::new();
+    collect_yaml_files(contract_dir, &mut yaml_paths);
+
     let mut contracts = Vec::new();
-    let entries = std::fs::read_dir(contract_dir)?;
-    for entry in entries {
-        let entry = entry?;
-        let path = entry.path();
-        if path.extension().and_then(|e| e.to_str()) == Some("yaml") {
-            let stem = path
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or("unknown")
-                .to_string();
-            match parse_contract(&path) {
-                Ok(c) => contracts.push((stem, c)),
-                Err(e) => {
-                    eprintln!("warning: skipping {}: {e}", path.display());
-                }
+    for path in &yaml_paths {
+        let stem = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("unknown")
+            .to_string();
+        match parse_contract(path) {
+            Ok(c) => contracts.push((stem, c)),
+            Err(e) => {
+                eprintln!("warning: skipping {}: {e}", path.display());
             }
         }
     }
@@ -110,4 +108,25 @@ pub fn run(
     println!("Overall obligation coverage: {pct:.1}%");
 
     Ok(())
+}
+
+/// Recursively collect `.yaml` contract files, skipping non-contract directories.
+fn collect_yaml_files(dir: &Path, out: &mut Vec<std::path::PathBuf>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            let dirname = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+            if dirname == "kaizen" || dirname == "legacy" || dirname == "pipelines" {
+                continue;
+            }
+            collect_yaml_files(&path, out);
+        } else if path.extension().and_then(|e| e.to_str()) == Some("yaml")
+            && path.file_name().and_then(|n| n.to_str()) != Some("binding.yaml")
+        {
+            out.push(path);
+        }
+    }
 }

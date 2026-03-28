@@ -1,4 +1,4 @@
-# pv — Provable Contracts Specification v2.2.0
+# pv — Provable Contracts Specification v2.3.0
 
 **Papers to Math to Contracts in Code.**
 
@@ -125,11 +125,12 @@ provable-contracts/
 
 | Metric | Value | Verified |
 |---|---|---|
-| YAML contracts | 204 | `find contracts/ -name '*.yaml' ! -name 'binding.yaml' \| wc -l` |
-| Equations | 427 | `pv coverage contracts/` |
-| Proof obligations | 678 | `pv coverage contracts/` |
-| Falsification tests | 715 | `pv coverage contracts/` |
-| Kani harnesses (YAML-defined) | 871 | `pv coverage contracts/` |
+| YAML contracts (total files) | 204 | `find contracts/ -name '*.yaml' ! -name 'binding.yaml' \| wc -l` |
+| Parseable kernel contracts | 165 | `pv coverage` (excludes kaizen/, legacy/, pipelines/) |
+| Equations | 516 | `pv coverage contracts/` (recursive, v2.3.0) |
+| Proof obligations | 790 | `pv coverage contracts/` (recursive, v2.3.0) |
+| Falsification tests | 868 | `pv coverage contracts/` (recursive, v2.3.0) |
+| Kani harnesses (YAML-defined) | 975 | `pv coverage contracts/` (recursive, v2.3.0) |
 | **Real bindings (with module_path)** | **660** | Ghost bindings stripped 2026-03-28 |
 | Binding repos with entries | 26 directories, 26 with real bindings | `ls contracts/*/binding.yaml` |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) | schema/types.rs |
@@ -141,10 +142,14 @@ provable-contracts/
 
 > **v2.2.0 Correction (2026-03-28):** Previous versions inflated binding
 > counts with mass-generated entries lacking `module_path`. v2.2.0 stripped
-> 28,206 ghost bindings, leaving 540 real bindings that reference actual
+> 28,206 ghost bindings, leaving 660 real bindings that reference actual
 > module paths. Of those, ~234 resolve to functions in source code.
-> The honest binding rate is **234 verified / 427 equations = 55%** for
+> The honest binding rate is **234 verified / 516 equations = 45%** for
 > the best-covered repo (aprender), not the 100% previously claimed.
+>
+> **v2.3.0 Correction (2026-03-28):** `pv coverage` recursion bug fixed —
+> previously only scanned top-level contracts/ (131 files), now recurses
+> into subdirectories (165 parseable contracts). Totals updated accordingly.
 
 ---
 
@@ -171,11 +176,11 @@ Level   Method                  Tool            Guarantee
 | Layer | What it catches | Mechanism | Coverage | Misses |
 |-------|----------------|-----------|----------|--------|
 | **L5** | Algorithm incorrect | Lean 4 proof (no sorry) | 3 theorems (softmax) | — |
-| **L4** | Logic bugs, overflows | Kani `#[kani::proof]` BMC | 871 harnesses (YAML-defined) | Inputs > bound |
+| **L4** | Logic bugs, overflows | Kani `#[kani::proof]` BMC | 975 harnesses (YAML-defined) | Inputs > bound |
 | **L3** | Violated invariants | `#[contract]` debug_assert | 18 functions (forjar: 4, pmat: 11, batuta: 3) | Release builds |
 | **L2** | Renamed/deleted fns | Trait `impl` (§23) | 12/26 repos have trait tests | Logic bugs |
 | **L1** | Missing bindings | build.rs AllImplemented | 540 real bindings (~234 verified) | Ghost bindings |
-| **L0.5** | Schema/audit/score | `pv lint` 7 gates | 131/131 contracts pass | Impl bugs |
+| **L0.5** | Schema/audit/score | `pv lint` 7 gates | 165/165 contracts pass | Impl bugs |
 | **L0** | Obvious bugs | Human review | — | Everything subtle |
 
 **L0 through L2 enforce on every `cargo build` + `cargo test`** in
@@ -422,21 +427,21 @@ and grade thresholds in **[sub/scoring.md](sub/scoring.md)**.
 
 | # | Dimension | Weight | Measures |
 |---|---|---|---|
-| D1 | Specification Depth | 20% | Equations, domains, invariants, tolerances |
+| D1 | Specification Depth | 25% | Equations, domains, invariants, tolerances |
 | D2 | Falsification Coverage | 25% | Obligations with tests / total obligations |
 | D3 | Kani Proof Coverage | 25% | Obligations with harnesses (strategy-weighted) |
-| D4 | Lean Proof Coverage | 10% | Obligations with proved Lean theorems |
+| D4 | Lean Proof Coverage | 5% | Obligations with proved Lean theorems |
 | D5 | Binding Coverage | 20% | Equations with implemented bindings |
 
 ### Five Scoring Dimensions (Codebase)
 
 | # | Dimension | Weight | Measures |
 |---|---|---|---|
-| CD1 | Contract Coverage | 30% | Kernel functions with contracts |
-| CD2 | Binding Completeness | 20% | Implemented / total bindings |
+| CD1 | Contract Coverage | 25% | Declared contracts resolved / declared |
+| CD2 | Critical Path Completeness | 20% | `critical_path` entries with bindings (§28) |
 | CD3 | Mean Contract Score | 20% | Avg composite of bound contracts |
 | CD4 | Proof Depth Distribution | 15% | Weighted L1-L5 distribution |
-| CD5 | Drift Detection | 15% | Contract freshness vs code |
+| CD5 | Drift Detection | 20% | Contract freshness vs code |
 
 ### Grade Thresholds
 
@@ -1199,7 +1204,7 @@ Primary levers to reach 0.90:
 | Zero-warning lint | §5 | `pv lint` → 0 errors, 0 warnings | Achieved |
 | Preconditions on all equations | §3 | 527 equations with preconditions | Implemented |
 | Lean theorem pointers | §14 | 527 equations with lean_theorem | Implemented |
-| 871 Kani harnesses | §2 | All obligations covered | Implemented |
+| 975 Kani harnesses | §2 | All obligations covered | Implemented |
 
 ### Enforcement Tickets
 
@@ -1633,8 +1638,8 @@ The "One Way" was falsified before implementation:
 | # | Claim | Reality | Severity |
 |---|-------|---------|----------|
 | F1 | `pv codegen` generates enforcement | Yes, generates macro stubs | OK |
-| F2 | Preconditions are meaningful | All 427 are `!input.is_empty()` (generic) | **HIGH** |
-| F3 | Repos use the output | **0/26** include or call the macros | **CRITICAL** |
+| F2 | Preconditions are meaningful | Most of 516 are `!input.is_empty()` (generic) | **HIGH** |
+| F3 | Repos use the output | **7/26** have active `pv codegen` call sites (12 total) | **IMPROVED** |
 | F4 | Postconditions work | **0** postconditions in any contract | **CRITICAL** |
 | F5 | Macros bind to real functions | Hardcoded `input` var, not real signatures | **HIGH** |
 
