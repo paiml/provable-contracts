@@ -1884,3 +1884,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-109
+  github_issue: null
+  item_type: task
+  title: Fix unparseable YAML contracts blocking B→A for trueno/entrenar/bashrs/depyler
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-03-28T09:37:59Z
+  updated: 2026-03-28T09:47:47.102400213+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
