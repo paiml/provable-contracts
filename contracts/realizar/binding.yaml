@@ -396,6 +396,41 @@ bindings:
   function: sample
   status: implemented
   notes: Auto-inferred by pv infer
+- contract: fused-qkv-projection-v1.yaml
+  equation: fused_qkv
+  module_path: realizar::gpu::scheduler::model_forward_block_gpu
+  function: fused_qkv_projection
+  signature: 'pub fn fused_qkv_projection(&mut self, input: &[f32]) -> Result<(Vec<f32>, Vec<f32>, Vec<f32>)>'
+  status: implemented
+  notes: 'PMAT-408: Fused QKV projection. CUDA path: fused_qkv_into with DP4A shared Q8'
+- contract: sampling-algorithms-v1.yaml
+  equation: temperature
+  module_path: realizar::gpu::scheduler::ops
+  function: sample_topk
+  signature: 'pub(super) fn sample_topk(logits: &[f32], temperature: f32, top_k: usize) -> usize'
+  status: implemented
+  notes: 'PMAT-408: Temperature scaling applied before top-k/top-p sampling'
+- contract: bpe-tokenization-v1.yaml
+  equation: merge_rule
+  module_path: realizar::gguf::token
+  function: GgufTokenizer::merge_rules
+  signature: 'pub fn merge_rules(&self) -> Option<Vec<(String, String)>>'
+  status: implemented
+  notes: 'PMAT-408: BPE merge pairs from GGUF metadata'
+- contract: bpe-tokenization-v1.yaml
+  equation: encode
+  module_path: realizar::tokenizer
+  function: Tokenizer::encode
+  signature: 'pub fn encode(&self, text: &str) -> Vec<u32>'
+  status: implemented
+  notes: 'PMAT-408: BPE tokenization. Also GGUF path at gguf::token'
+- contract: bpe-tokenization-v1.yaml
+  equation: decode
+  module_path: realizar::tokenizer
+  function: Tokenizer::decode
+  signature: 'pub fn decode(&self, token_ids: &[u32]) -> Result<String>'
+  status: implemented
+  notes: 'PMAT-408: BPE detokenization. GPT-2 byte-level BPE for WGPU path'
 - contract: continuous-batching-v1.yaml
   equation: request_state
   module_path: realizar::scheduler::mod_max_scheduler
