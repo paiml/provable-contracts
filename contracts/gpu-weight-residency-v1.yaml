@@ -123,5 +123,5 @@ qa_gate:
   - throughput_target
   - no_pcie_transfers
   - output_parity
-  pass_criteria: All 4 falsification tests pass + throughput ≥ 180 tok/s
+  pass_criteria: All 5 falsification tests pass + throughput ≥ 180 tok/s
   falsification: Force weights to host memory — measure throughput delta

@@ -105,16 +105,13 @@ fn run_directory(
     weights: &ScoringWeights,
     pvscore: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut entries: Vec<_> = std::fs::read_dir(dir)?
-        .filter_map(Result::ok)
-        .filter(|e| e.path().extension().and_then(|x| x.to_str()) == Some("yaml"))
-        .collect();
-    entries.sort_by_key(std::fs::DirEntry::path);
+    let mut yaml_paths: Vec<std::path::PathBuf> = Vec::new();
+    collect_yaml_files(dir, &mut yaml_paths);
+    yaml_paths.sort();
 
     let mut scores = Vec::new();
-    for entry in &entries {
-        let path = entry.path();
-        let Ok(contract) = parse_contract(&path) else {
+    for path in &yaml_paths {
+        let Ok(contract) = parse_contract(path) else {
             continue;
         };
         let stem = path
@@ -146,12 +143,10 @@ fn run_directory(
     // Codebase scoring if binding is provided
     if let Some(binding) = binding {
         let mut parsed = Vec::new();
-        for entry in &entries {
-            let path = entry.path();
-            let Ok(contract) = parse_contract(&path) else {
+        for path in &yaml_paths {
+            let Ok(contract) = parse_contract(path) else {
                 continue;
             };
-            // Binding uses filename WITH .yaml extension as stem
             let stem = path
                 .file_name()
                 .and_then(|s| s.to_str())
@@ -434,6 +429,24 @@ fn print_probes(score: &ContractScore) {
         for p in &dim_probes {
             let icon = if p.outcome { "+" } else { "-" };
             println!("    {icon} {}: {}", p.probe, p.detail);
+        }
+    }
+}
+
+/// Recursively collect all `.yaml` files (excluding `binding.yaml`) from a directory.
+fn collect_yaml_files(dir: &Path, out: &mut Vec<std::path::PathBuf>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            collect_yaml_files(&path, out);
+        } else if path.extension().and_then(|e| e.to_str()) == Some("yaml") {
+            // Skip binding.yaml files
+            if path.file_name().and_then(|n| n.to_str()) != Some("binding.yaml") {
+                out.push(path);
+            }
         }
     }
 }
