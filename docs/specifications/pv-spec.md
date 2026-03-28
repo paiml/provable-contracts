@@ -2265,7 +2265,12 @@ falsification_tests:
 | P4 | Value contracts | Scan tensor data for dead neurons, norms. High. |
 | P5 | CD6 in codebase scoring | Wire into `pv score` when `assets:` present. Low. |
 
-### Runtime Integration: trueno BrickLayer + apr-cli
+### Runtime Integration: trueno BrickLayer + apr-cli (PROPOSED)
+
+> **Falsification (2026-03-28):** All runtime integration below is
+> PROPOSED DESIGN. None of this code exists in trueno or aprender yet.
+> Only `WeightHealth` (F7) exists. The spec describes what SHOULD be
+> built, not what IS built. See implementation status table at end.
 
 Asset contracts become useful only when the runtime **checks them**.
 Two integration points exist in the sovereign stack today:
@@ -2385,6 +2390,20 @@ value health          profiler record       throughput gate
                           │
               Contract-verified inference
 ```
+
+### Implementation Status (measured 2026-03-28)
+
+| Component | Status | Evidence |
+|-----------|--------|----------|
+| `contracts/assets/` directory | **NOT IMPLEMENTED** | Directory does not exist |
+| `pv verify-asset` CLI | **NOT IMPLEMENTED** | No such subcommand |
+| `execute_with_contract()` | **NOT IMPLEMENTED** | Not in trueno source |
+| `load_model_verified()` | **NOT IMPLEMENTED** | Not in aprender source |
+| Contract macro call sites | **NOT IMPLEMENTED** | 0 calls in trueno prod code |
+| apr-cli roofline integration | **NOT IMPLEMENTED** | Only in generated_contracts.rs |
+| BrickStats violation tracking | **NOT IMPLEMENTED** | No violation field |
+| Shape contract vs real files | **NOT IMPLEMENTED** | No code reads shapes YAML |
+| `WeightHealth` NaN/Inf check | **EXISTS** | aprender/src/inspect/weight_stats.rs:22 |
 
 ### Why This Matters
 
