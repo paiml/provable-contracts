@@ -396,6 +396,41 @@ bindings:
   function: sample
   status: implemented
   notes: Auto-inferred by pv infer
+- contract: gpu-decode-profiling-v1.yaml
+  equation: graph_disable
+  module_path: realizar::cuda::executor::layers::graphed_capture
+  function: try_graph_capture
+  signature: 'fn try_graph_capture(&mut self) -> bool'
+  status: implemented
+  notes: 'PMAT-403: CUDA_GRAPH_ENABLE=1 required. Profiling requires graphs OFF (bricks only measured during capture, not replay)'
+- contract: gpu-decode-profiling-v1.yaml
+  equation: report_fidelity
+  module_path: realizar::cuda::executor::executor_api
+  function: ExecutorApi::start_brick_id
+  signature: 'pub(crate) fn start_brick_id(&mut self, brick_id: BrickId) -> Option<BrickIdTimer>'
+  status: implemented
+  notes: 'PMAT-403: JSON actual_us must equal profiler per-call avg. start/stop_brick_id provide ground truth'
+- contract: gpu-decode-profiling-v1.yaml
+  equation: report_completeness
+  module_path: realizar::cuda::executor::executor_api
+  function: ExecutorApi::stop_brick_id
+  signature: 'pub(crate) fn stop_brick_id(&mut self, timer: Option<BrickIdTimer>, elements: u64)'
+  status: implemented
+  notes: 'PMAT-403: Every profiler brick must appear in output. No silent truncation'
+- contract: gpu-decode-profiling-v1.yaml
+  equation: report_denominator
+  module_path: realizar::cuda::executor::executor_api
+  function: ExecutorApi::start_brick_id
+  signature: 'pub(crate) fn start_brick_id(&mut self, brick_id: BrickId) -> Option<BrickIdTimer>'
+  status: implemented
+  notes: 'PMAT-403: decoded_tokens = LmHead.count (exactly 1 LmHead per decoded token). Never use profiler.total_tokens'
+- contract: gpu-decode-profiling-v1.yaml
+  equation: report_metadata
+  module_path: realizar::cuda::executor::executor_api
+  function: ExecutorApi::start_brick_id
+  signature: 'pub(crate) fn start_brick_id(&mut self, brick_id: BrickId) -> Option<BrickIdTimer>'
+  status: implemented
+  notes: 'PMAT-403: metadata fields must be measured or zero. No hardcoded nonzero constants (137, 173.9, etc.)'
 critical_path:
 - forward
 - flash_attention

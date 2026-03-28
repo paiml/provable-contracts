@@ -191,6 +191,34 @@ bindings:
   function: quantize
   status: implemented
   notes: Auto-inferred by pv infer
+- contract: gpu-decode-profiling-v1.yaml
+  equation: wall_coverage
+  module_path: trueno::brick::profiler::BrickProfiler
+  function: BrickProfiler::total_ns
+  signature: 'pub fn total_ns(&self) -> u64'
+  status: implemented
+  notes: 'PMAT-403: sum(brick_total_ns) / wall_clock_ns >= 0.85 when profiling valid'
+- contract: gpu-decode-profiling-v1.yaml
+  equation: sync_verification
+  module_path: trueno::brick::profiler::BrickProfiler
+  function: BrickProfiler::set_sync_mode
+  signature: 'pub fn set_sync_mode(&mut self, mode: SyncMode)'
+  status: implemented
+  notes: 'PMAT-403: Immediate sync = brick avg correlates with kernel complexity; Deferred < 100us'
+- contract: gpu-decode-profiling-v1.yaml
+  equation: token_accounting
+  module_path: trueno::brick::profiler::BrickProfiler
+  function: BrickProfiler::total_tokens
+  signature: 'pub fn total_tokens(&self) -> u64'
+  status: implemented
+  notes: 'PMAT-403: Counts brick ELEMENTS not decoded tokens. LmHead.count = decoded tokens'
+- contract: gpu-decode-profiling-v1.yaml
+  equation: brick_ordering
+  module_path: trueno::brick::profiler::BrickProfiler
+  function: BrickProfiler::all_brick_stats
+  signature: 'pub fn all_brick_stats(&self) -> impl Iterator<Item = &BrickStats>'
+  status: implemented
+  notes: 'PMAT-403: Per-call avg must respect kernel complexity (LmHead > Gate > RmsNorm)'
 critical_path:
 - softmax
 - matmul
