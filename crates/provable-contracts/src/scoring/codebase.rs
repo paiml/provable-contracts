@@ -2,7 +2,7 @@
 
 use std::collections::{BTreeSet, HashMap};
 
-use crate::binding::{BindingRegistry, ImplStatus};
+use crate::binding::{BindingRegistry, ImplStatus, normalize_contract_id};
 use crate::schema::{Contract, LeanStatus};
 
 use super::score_contract;
@@ -54,17 +54,29 @@ pub fn score_codebase_full(
         .map(|b| b.contract.as_str())
         .collect();
 
-    let total_contracts = contracts.len();
-    let bound_count = contracts
+    // CD1: Contract coverage (Option C — fraction of DECLARED contracts covered)
+    // Only counts contracts the binding.yaml references, not all 427 equations.
+    // A repo that declares 49 bindings and implements all 49 gets 100%.
+    let unique_declared: BTreeSet<_> = binding
+        .bindings
         .iter()
-        .filter(|(stem, _)| bound_stems.contains(stem.as_str()))
-        .count();
+        .map(|b| normalize_contract_id(&b.contract))
+        .collect();
+    let declared_count = unique_declared.len();
 
-    // CD1: Contract coverage
-    let contract_coverage = if total_contracts == 0 {
+    let contract_coverage = if declared_count == 0 {
         0.0
     } else {
-        bound_count as f64 / total_contracts as f64
+        // How many declared contracts actually exist in the contract directory?
+        let resolved = unique_declared
+            .iter()
+            .filter(|stem| {
+                contracts
+                    .iter()
+                    .any(|(s, _)| normalize_contract_id(s) == **stem)
+            })
+            .count();
+        resolved as f64 / declared_count as f64
     };
 
     // CD2: Binding completeness

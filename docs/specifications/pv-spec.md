@@ -1096,6 +1096,87 @@ To achieve honest Grade A (codebase score >= 0.90), each repo must:
 4. **Trait tests on main** — `tests/contract_traits.rs` compiled in CI
 5. **`pv lint` zero warnings** — all 7 gates pass
 
+### Scoring Model (v2.2.0 — Option C)
+
+Coverage is now **declared / resolved**, not **bound / all_equations**:
+
+```
+coverage = contracts_in_binding_that_exist / unique_contracts_in_binding
+```
+
+A repo that declares 49 bindings and all 49 reference real contracts
+gets 100%. A repo with 0 bindings gets 0%. No ghost inflation possible.
+
+| Repo | Real Bindings | Coverage | Codebase |
+|------|--------------|----------|----------|
+| aprender | 233 | 100% | **A (0.95)** |
+| realizar | 58 | 100% | **A (0.96)** |
+| apr-model-qa-playbook | 9 | 100% | **A (0.95)** |
+| trueno | 49 | 100% | **B (0.85)** |
+| entrenar | 119 | 100% | **C (0.75)** |
+
+### Finding Missing Contracts with pmat
+
+```bash
+# 1. Full compliance audit — shows ALL provable-contracts enforcement gaps
+pmat comply check
+
+# Key checks:
+#   CB-1208: Binding Existence — which bound functions don't exist in src/
+#   CB-1209: Contract Trait Enforcement — are all 13 kernel traits implemented
+#   CB-1210: Precondition Quality — are preconditions real or mass-generated
+
+# 2. Find critical functions that LACK contracts
+pmat query "forward" --faults --exclude-tests --limit 20
+pmat query "backward" --faults --exclude-tests --limit 20
+pmat query "kernel" --faults --exclude-tests --limit 20
+
+# 3. Check specific enforcement checks
+pmat comply check 2>&1 | grep -E 'CB-1202|CB-1203|CB-1208|CB-1209|CB-1210'
+
+# 4. Ghost binding detection
+pmat comply check 2>&1 | grep 'CB-1208'
+# Shows: "52/136 bound fns not found (L3, 62% verified)"
+# Named functions are your missing implementations
+
+# 5. Check enforcement level
+# L0 = ghost bindings (no enforcement)
+# L1 = build.rs only (checks YAML, not code)
+# L2 = trait tests only
+# L3 = full (build.rs + traits)
+
+# 6. Infra-score PV bonus
+pmat infra-score -v 2>&1 | grep -A5 'Provable Contracts'
+```
+
+### What Each Check Means
+
+| Check | What's Missing | How to Fix |
+|-------|---------------|------------|
+| CB-1208 lists function names | Functions in binding.yaml don't exist in src/ | Implement the function OR remove the ghost binding |
+| CB-1209 < 13/13 | Missing contract trait impls | Add `tests/contract_traits.rs` with `impl XxxKernelV1 for YourStruct` |
+| CB-1210 warns "0 postconditions" | Contracts have no postconditions | Add `postconditions:` to YAML equations |
+| CB-1202 < 100% | Critical functions without contracts | Create YAML contracts for missing keywords |
+| CB-1208 says "L0 paper-only" | binding.yaml exists but nothing reads it | Add build.rs enforcement OR trait tests |
+
+### Quick Start: Add Missing Contracts to Your Repo
+
+```bash
+# Step 1: See what's missing
+pmat comply check 2>&1 | grep '✗'
+
+# Step 2: Generate trait stubs from existing contracts
+cd ../provable-contracts
+pv scaffold --trait contracts/softmax-kernel-v1.yaml
+
+# Step 3: Add trait test to your repo (copy pattern from aprender)
+cp ~/src/aprender/tests/contract_traits.rs tests/
+
+# Step 4: Verify
+cargo test --test contract_traits
+pmat comply check  # Should show CB-1209: 13/13
+```
+
 ### Gap Analysis
 
 The codebase score is: `geometric_mean(Coverage, Binding, MeanScore, ProofDepth, Drift)`
