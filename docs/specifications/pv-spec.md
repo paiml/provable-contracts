@@ -1,4 +1,4 @@
-# pv — Provable Contracts Specification v2.1.0
+# pv — Provable Contracts Specification v2.2.0
 
 **Papers to Math to Contracts in Code.**
 
@@ -125,16 +125,24 @@ provable-contracts/
 |---|---|---|
 | YAML contracts | 201 | `find contracts/ -name '*.yaml' ! -name 'binding.yaml' \| wc -l` |
 | Equations | 427 | `pv coverage contracts/` |
-| Proof obligations | 677 | `pv coverage contracts/` |
+| Proof obligations | 678 | `pv coverage contracts/` |
 | Falsification tests | 714 | `pv coverage contracts/` |
 | Kani harnesses (YAML-defined) | 871 | `pv coverage contracts/` |
-| Binding entries (14 crates) | 20,366 | `grep -c equation: contracts/*/binding.yaml \| paste -sd+ \| bc` |
+| **Real bindings (with module_path)** | **540** | Ghost bindings stripped 2026-03-28 |
+| Binding repos with entries | 26 directories, 12 with real bindings | `ls contracts/*/binding.yaml` |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) | schema/types.rs |
-| CLI commands | 32 | `pv --help` |
-| Consuming projects with bindings | 14 | `ls contracts/*/binding.yaml` |
-| Consuming projects with trait tests | 7/14 | manual audit 2026-03-27 |
-| `#[contract]` proc-macro annotations | 18 (forjar: 4, paiml-mcp-agent-toolkit: 11, batuta: 3) | `grep -rn '#[contract]'` across repos |
+| CLI commands | 33 | `pv --help` (includes `pv pipeline`) |
+| Repos with build.rs enforcement | 7/26 | aprender, trueno, entrenar, realizar, forjar, ruchy, simular |
+| Repos with trait tests | 12/26 | manual audit 2026-03-28 |
+| `#[contract]` proc-macro annotations | 18 | forjar: 4, paiml-mcp-agent-toolkit: 11, batuta: 3 |
 | Stack LoC governed | ~6.4M Rust | — |
+
+> **v2.2.0 Correction (2026-03-28):** Previous versions inflated binding
+> counts with mass-generated entries lacking `module_path`. v2.2.0 stripped
+> 28,206 ghost bindings, leaving 540 real bindings that reference actual
+> module paths. Of those, ~234 resolve to functions in source code.
+> The honest binding rate is **234 verified / 427 equations = 55%** for
+> the best-covered repo (aprender), not the 100% previously claimed.
 
 ---
 
@@ -163,20 +171,23 @@ Level   Method                  Tool            Guarantee
 | **L5** | Algorithm incorrect | Lean 4 proof (no sorry) | 3 theorems (softmax) | — |
 | **L4** | Logic bugs, overflows | Kani `#[kani::proof]` BMC | 871 harnesses (YAML-defined) | Inputs > bound |
 | **L3** | Violated invariants | `#[contract]` debug_assert | 18 functions (forjar: 4, pmat: 11, batuta: 3) | Release builds |
-| **L2** | Renamed/deleted fns | Trait `impl` (§23) | 7/14 repos have trait tests | Logic bugs |
-| **L1** | Missing bindings | build.rs AllImplemented | 20,366 bindings | Ghost bindings |
+| **L2** | Renamed/deleted fns | Trait `impl` (§23) | 12/26 repos have trait tests | Logic bugs |
+| **L1** | Missing bindings | build.rs AllImplemented | 540 real bindings (~234 verified) | Ghost bindings |
 | **L0.5** | Schema/audit/score | `pv lint` 7 gates | 131/131 contracts pass | Impl bugs |
 | **L0** | Obvious bugs | Human review | — | Everything subtle |
 
-**L0 through L2 enforce on every `cargo build` + `cargo test`.**
-L3 enforces on 18 annotated functions across forjar, pmat, and batuta debug builds.
-L4 and L5 are defined in YAML but not yet run in CI.
+**L0 through L2 enforce on every `cargo build` + `cargo test`** in
+the 7 repos with build.rs (aprender, trueno, entrenar, realizar,
+forjar, ruchy, simular). The other 19 repos have YAML bindings only.
 
-> **Spec Falsification (2026-03-27):** This table is verified against
-> measured reality on each update. Falsification round 1 corrected:
-> L4 (251→871), L3 (49→4→18), L2 (13/13→7/14), L1 (16,989→20,366).
-> Round 2 corrected: bindings (16,998→20,366), CLI (31→32),
-> `#[contract]` (4→18). See §25 for the A-score enforcement mandate.
+L3 enforces on 18 annotated functions across forjar, pmat, and batuta
+debug builds. L4 and L5 are defined in YAML but not yet run in CI.
+
+> **Spec Falsification (2026-03-28, v2.2.0):** Round 3 stripped 28,206
+> ghost bindings (mass-generated entries without `module_path`). Honest
+> count: 540 real bindings, ~234 verified in source. Previous claim of
+> 20,366 bindings / "Grade A for 26 repos" was a scoring artifact of
+> YAML inflation, not real integration. See §25 for corrected baseline.
 
 ### The Provability Claim
 
@@ -1055,29 +1066,35 @@ arXiv:2402.16363 (Roofline for LLM Inference), Creusot POPL 2026.
 Every consuming repository MUST achieve **Grade A** (`pv score --min-score 0.90`)
 with full enforcement: binding.yaml + trait tests + `pmat comply check` pass.
 
-### Baseline (2026-03-27, measured)
+### Baseline (2026-03-28, measured — ghost bindings stripped)
 
-| Repo | Mean | Codebase | Coverage | Binding | Trait Tests | Comply |
-|------|------|----------|----------|---------|-------------|--------|
-| aprender | B (0.84) | B (0.76) | 87% | 100% | YES | — |
-| entrenar | B (0.82) | B (0.76) | 76% | 100% | YES | — |
-| realizar | B (0.82) | C (0.73) | 78% | 100% | YES | — |
-| depyler | B (0.79) | C (0.69) | 64% | 100% | YES | — |
-| pmat | B (0.79) | C (0.69) | 64% | 100% | — | — |
-| bashrs | B (0.78) | C (0.66) | 55% | 100% | YES | — |
-| forjar | B (0.77) | C (0.65) | 50% | 100% | YES | — |
-| trueno | C (0.71) | C (0.61) | 21% | 100% | NO | — |
-| apr-model-qa-playbook | C (0.68) | D (0.49) | 2% | 100% | — | — |
+| Repo | Real Bindings | Verified | build.rs | Traits | Codebase |
+|------|--------------|----------|----------|--------|----------|
+| aprender | 233 | 80 | YES | YES | B (0.78) |
+| entrenar | 119 | 62 | YES | YES | C (0.69) |
+| realizar | 58 | 38 | YES | YES | C (0.71) |
+| trueno | 49 | 41 | YES | NO | C (0.66) |
+| forjar | 13 | 13 | YES | YES | D (0.35) |
+| depyler | 21 | ? | NO | YES | D (0.35) |
+| bashrs | 22 | ? | NO | YES | D (0.35) |
+| apr-model-qa-playbook | 9 | ? | NO | NO | C (0.65) |
+| pmat | 4 | ? | NO | NO | D (0.35) |
+| 14 sovereign stack repos | 0 | 0 | NO | NO | F (0.15) |
+
+> **v2.2.0:** Previous version claimed "26/26 repos at Grade A (0.95)"
+> based on 20,366 bindings. After stripping 28,206 ghost entries, the
+> honest count is 540 real bindings. Only ~234 resolve in source code.
 
 ### Requirements per Repo
 
-To achieve Grade A (codebase score >= 0.90), each repo must:
+To achieve honest Grade A (codebase score >= 0.90), each repo must:
 
-1. **Binding coverage >= 90%** — every kernel equation bound to an impl function
-2. **Trait tests on main** — `tests/contract_traits.rs` compiled in CI
-3. **`pv lint` zero warnings** — all 7 gates pass with no suppressions
-4. **`pv score --min-score 0.90`** — composite score gate in CI
-5. **`pmat comply check`** — full compliance pipeline pass
+1. **Real bindings with `module_path`** — every binding must reference
+   an actual Rust module path, not a generic function name
+2. **`pv verify-bindings --crate-dir`** — bound functions must exist in source
+3. **build.rs reads binding.yaml** — compile-time enforcement
+4. **Trait tests on main** — `tests/contract_traits.rs` compiled in CI
+5. **`pv lint` zero warnings** — all 7 gates pass
 
 ### Gap Analysis
 
