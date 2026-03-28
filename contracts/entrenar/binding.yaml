@@ -330,6 +330,27 @@ bindings:
   function: gelu
   status: implemented
   notes: Auto-inferred by pv infer
+- contract: wgpu-transformer-trainer-v1.yaml
+  equation: C-WGPU-TRAIN-001
+  module_path: entrenar::train::transformer_trainer::wgpu_trainer
+  function: full_train_step
+  signature: 'fn full_train_step(&mut self, hidden: &[f32], targets: &[u32], model: &mut WgpuModelState) -> Result<(f32, f32), String>'
+  status: implemented
+  notes: 36-layer Qwen3-4B forward + lm_head + loss + backward + AdamW on WGPU
+- contract: wgpu-transformer-trainer-v1.yaml
+  equation: C-WGPU-CKPT-001
+  module_path: entrenar::train::transformer_trainer::wgpu_trainer
+  function: save_checkpoint
+  signature: 'fn save_checkpoint(&self, dir: &Path, step: u32, loss: f32, rank: u32, alpha: f32) -> Result<PathBuf, String>'
+  status: implemented
+  notes: Serializes LoRA A/B + optimizer state to JSON
+- contract: wgpu-transformer-trainer-v1.yaml
+  equation: C-WGPU-CKPT-002
+  module_path: entrenar::train::transformer_trainer::wgpu_trainer
+  function: load_checkpoint
+  signature: 'fn load_checkpoint(&mut self, path: &Path) -> Result<(u32, f32), String>'
+  status: implemented
+  notes: Restores LoRA adapters with dimension validation
 critical_path:
 - forward
 - backward

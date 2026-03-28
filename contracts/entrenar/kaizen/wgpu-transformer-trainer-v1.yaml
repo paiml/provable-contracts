@@ -1,5 +1,5 @@
 contract: wgpu-transformer-trainer-v1
-version: 1.0.0
+version: 2.0.0
 status: implemented
 kaizen: 203
 description: >
@@ -71,12 +71,54 @@ invariants:
   - test_lora_backward_gradient_flow — PASS on AMD W5700X
   severity: critical
 
+- id: C-WGPU-CKPT-001
+  description: Checkpoint round-trip preserves all LoRA weights bit-identically
+  preconditions:
+  - WgpuModelState with LoRA adapters (Q+V per layer)
+  - Output directory exists or can be created
+  postconditions:
+  - Saved checkpoint file is valid JSON
+  - Loaded checkpoint reproduces identical A, B, m_a, v_a, m_b, v_b per adapter
+  - Step and loss metadata preserved
+  verified_by:
+  - test_checkpoint_round_trip — PASS
+  severity: critical
+
+- id: C-WGPU-CKPT-002
+  description: Checkpoint rejects dimension mismatch on load
+  preconditions:
+  - Checkpoint saved from model with hidden_size=H1
+  - Target model has hidden_size=H2 where H1≠H2
+  postconditions:
+  - load_checkpoint returns Err with descriptive message
+  - Model state is unchanged (no partial load)
+  verified_by:
+  - test_checkpoint_dimension_mismatch — PASS
+  severity: high
+
+- id: C-WGPU-TRAIN-006
+  description: Training converges on real data (loss < initial within 500 steps)
+  preconditions:
+  - Qwen3-4B model loaded on WGPU device
+  - conversations_v4.jsonl tokenized
+  postconditions:
+  - Loss decreases from initial ~11-17 to < 3.0 within 500 steps
+  - All losses and gradients finite
+  verified_by:
+  - Live training on AMD W5700X — loss=1.956 at step 356 (verified 2026-03-28)
+  severity: critical
+
 affected_files:
 - path: src/train/transformer_trainer/wgpu_trainer.rs
   functions:
   - 'WgpuTransformerTrainer::new: initialize with WgpuForwardPass + GpuDevice'
   - 'train_step: forward→loss→backward_a→backward_b→adamw'
+  - 'full_train_step: 36-layer forward + lm_head + loss + backward + AdamW'
   - 'ffn_backward: down_proj→silu→gate/up_proj backward chain'
+  - 'lora_forward: x@W^T + (alpha/rank)*x@B^T@A^T'
+  - 'lora_backward: grad_A, grad_B, grad_x via GPU GEMM'
+  - 'save_checkpoint: serialize LoRA adapters + optimizer state to JSON'
+  - 'load_checkpoint: restore LoRA adapters from JSON with validation'
 - path: src/train/transformer_trainer/wgpu_nf4.rs
   functions:
   - 'Nf4LayerWeights::from_safetensors: load 7 projections as NF4'
@@ -84,3 +126,7 @@ affected_files:
   - 'quantize_projection: safetensors→NF4 pipeline'
   - 'dequant_gate/up/down: GPU NF4→fp32 dispatch'
   - 'LoraAdapter::new: Kaiming-uniform A, zero B'
+  - 'LoraCheckpoint: serializable checkpoint format'
+- path: src/train/transformer_trainer/wgpu_runner.rs
+  functions:
+  - 'run_wgpu_training: tokenize→embed→36-layer train loop→checkpoint'
