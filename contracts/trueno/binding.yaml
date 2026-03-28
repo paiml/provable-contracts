@@ -191,6 +191,20 @@ bindings:
   function: quantize
   status: implemented
   notes: Auto-inferred by pv infer
+- contract: gpu-context-health-v1.yaml
+  equation: culink_skip
+  module_path: trueno_gpu::driver::module
+  function: compile_ptx_to_cubin
+  signature: 'fn compile_ptx_to_cubin(driver: &CudaDriver, ptx: &str, jit_target: c_uint) -> Result<Vec<u8>, GpuError>'
+  status: implemented
+  notes: 'PMAT-404: Always returns Err — cuLinkCreate skipped (PMAT-369). Legacy JIT used.'
+- contract: gpu-weight-residency-v1.yaml
+  equation: pcie_overhead
+  module_path: trueno_gpu::driver::memory::buffer
+  function: GpuBuffer::from_host_registered
+  signature: 'pub unsafe fn from_host_registered(host_ptr: *mut T, len: usize) -> Result<Self, GpuError>'
+  status: implemented
+  notes: 'PMAT-404: Zero-copy on unified memory (cc>=120). Eliminates PCIe transfer. cuMemHostRegister path.'
 - contract: gpu-decode-profiling-v1.yaml
   equation: wall_coverage
   module_path: trueno::brick::profiler::BrickProfiler

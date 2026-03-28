@@ -396,6 +396,34 @@ bindings:
   function: sample
   status: implemented
   notes: Auto-inferred by pv infer
+- contract: gpu-context-health-v1.yaml
+  equation: fp8_architecture_guard
+  module_path: realizar::cuda::gpu_profile
+  function: detect_fp8_prefill
+  signature: 'fn detect_fp8_prefill(cc: u32) -> bool'
+  status: implemented
+  notes: 'PMAT-404: cc >= 89 && cc < 100. Blackwell (cc>=121) excluded.'
+- contract: gpu-context-health-v1.yaml
+  equation: context_health
+  module_path: realizar::cuda::executor::layers::cublas_prefill::attention
+  function: CudaExecutor::warmup_fp8_cache
+  signature: 'pub(crate) fn warmup_fp8_cache(&mut self, num_layers: usize, hidden_dim: u32, ...)'
+  status: implemented
+  notes: 'PMAT-404: No-op when cc >= 100. Prevents context poisoning on Blackwell.'
+- contract: gpu-context-health-v1.yaml
+  equation: cuda_graph_guard
+  module_path: realizar::cuda::executor::layers::graphed_capture
+  function: try_graph_capture
+  signature: 'fn try_graph_capture(&mut self) -> bool'
+  status: implemented
+  notes: 'PMAT-404: Opt-IN via CUDA_GRAPH_ENABLE=1. ThreadLocal capture mode (PMAT-374).'
+- contract: gpu-weight-residency-v1.yaml
+  equation: throughput_target
+  module_path: realizar::cuda::executor::weights
+  function: CudaExecutor::load_weights
+  signature: 'pub fn load_weights(&mut self, name: &str, weights: &[f32]) -> Result<usize, GpuError>'
+  status: implemented
+  notes: 'PMAT-404: Pre-uploads all weights at startup. Uses from_host_registered on cc>=120.'
 - contract: gpu-decode-profiling-v1.yaml
   equation: graph_disable
   module_path: realizar::cuda::executor::layers::graphed_capture
