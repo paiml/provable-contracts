@@ -124,17 +124,17 @@ provable-contracts/
 
 | Metric | Value | Verified |
 |---|---|---|
-| YAML contracts | 201 | `find contracts/ -name '*.yaml' ! -name 'binding.yaml' \| wc -l` |
+| YAML contracts | 204 | `find contracts/ -name '*.yaml' ! -name 'binding.yaml' \| wc -l` |
 | Equations | 427 | `pv coverage contracts/` |
 | Proof obligations | 678 | `pv coverage contracts/` |
-| Falsification tests | 714 | `pv coverage contracts/` |
+| Falsification tests | 715 | `pv coverage contracts/` |
 | Kani harnesses (YAML-defined) | 871 | `pv coverage contracts/` |
-| **Real bindings (with module_path)** | **540** | Ghost bindings stripped 2026-03-28 |
+| **Real bindings (with module_path)** | **433** | Ghost bindings stripped 2026-03-28 |
 | Binding repos with entries | 26 directories, 12 with real bindings | `ls contracts/*/binding.yaml` |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) | schema/types.rs |
 | CLI commands | 33 | `pv --help` (includes `pv pipeline`) |
 | Repos with build.rs enforcement | 7/26 | aprender, trueno, entrenar, realizar, forjar, ruchy, simular |
-| Repos with trait tests | 12/26 | manual audit 2026-03-28 |
+| Repos with trait tests | 11/26 | manual audit 2026-03-28 |
 | `#[contract]` proc-macro annotations | 18 | forjar: 4, paiml-mcp-agent-toolkit: 11, batuta: 3 |
 | Stack LoC governed | ~6.4M Rust | — |
 
