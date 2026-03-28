@@ -19,7 +19,10 @@ equations:
     - cc < 89 implies fp8_enabled = false (pre-Ada)
     - cc >= 89 && cc < 100 implies fp8_enabled = true (Ada/Hopper)
     - cc >= 100 implies fp8_enabled = false (Blackwell+, incompatible FP8 E4M3)
-    notes: Blackwell sm_121 has cc=121 which passes cc >= 89 but FP8 E4M3 cuBLASLt kernels are Ada/Hopper-specific
+    notes: 'Blackwell sm_121 has cc=121 which passes cc >= 89 but FP8 E4M3 cuBLASLt kernels are Ada/Hopper-specific.
+      PMAT-409: warmup_fp8_cache also has internal cc range check — even FP8_PREFILL=1 override
+      does not produce cached plans on sm_121. Combined with PMAT-400 skip_fp16_unified, prefill
+      falls back to DP4A GEMV (5.8x regression). Fix: FORCE_FP16_CACHE=1 for models that fit.'
     preconditions:
     - '!input.is_empty()'
     lean_theorem: Theorems.Fp8_Architecture_Guard
