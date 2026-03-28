@@ -1948,3 +1948,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-113
+  github_issue: null
+  item_type: task
+  title: 'Spec Section 28 v4 + implement: critical_path in binding.yaml + CD2'
+  status: inprogress
+  priority: critical
+  assigned_to: null
+  created: 2026-03-28T10:20:30Z
+  updated: 2026-03-28T10:20:30.526419535+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null

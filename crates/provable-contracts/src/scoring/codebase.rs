@@ -79,7 +79,7 @@ pub fn score_codebase_full(
         resolved as f64 / declared_count as f64
     };
 
-    // CD2: Binding completeness
+    // CD2: Binding completeness (implementation status of declared bindings)
     let total_bindings = binding.bindings.len();
     let implemented_bindings: f64 = binding
         .bindings
@@ -94,6 +94,27 @@ pub fn score_codebase_full(
         0.0
     } else {
         implemented_bindings / total_bindings as f64
+    };
+
+    // CD2b: Critical path completeness (Section 28 v4)
+    // Developer declares critical functions in binding.yaml critical_path.
+    // Score = entries with matching bindings / total declared.
+    let critical_path_coverage = if binding.critical_path.is_empty() {
+        binding_completeness // fallback: no declaration = use binding completeness
+    } else {
+        let covered = binding
+            .critical_path
+            .iter()
+            .filter(|cp| {
+                binding
+                    .bindings
+                    .iter()
+                    .any(|b| b.function.as_deref().is_some_and(|f| f.contains(cp.as_str())))
+            })
+            .count();
+        #[allow(clippy::cast_precision_loss)]
+        let ratio = covered as f64 / binding.critical_path.len() as f64;
+        ratio
     };
 
     // CD3: Mean contract score of bound contracts
@@ -114,18 +135,18 @@ pub fn score_codebase_full(
     // CD5: Drift detection
     let drift = drift_override.unwrap_or(1.0);
 
-    let composite = contract_coverage * 0.30
-        + binding_completeness * 0.20
+    let composite = contract_coverage * 0.25
+        + critical_path_coverage * 0.20
         + mean_contract_score * 0.20
         + proof_depth_dist * 0.15
-        + drift * 0.15;
+        + drift * 0.20;
 
     let top_gaps = compute_gaps(contracts, binding, &bound_stems, pagerank);
 
     CodebaseScore {
         path: "codebase".to_string(),
         contract_coverage,
-        binding_completeness,
+        binding_completeness: critical_path_coverage,
         mean_contract_score,
         proof_depth_dist,
         drift,

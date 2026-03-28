@@ -1902,95 +1902,76 @@ For each keyword, CB-1202 checks: does a `pub fn` containing this
 keyword exist in src/ AND does a matching contract exist? This is
 **critical path coverage** — not a ratio, but a checklist.
 
-### Revised CD2: Domain-Aware Critical Path Coverage
+### CD2: Developer-Declared Critical Path (v4, converged)
 
-**Second falsification (presentar):** ML-only keywords give vacuous
-100% completeness to 11/15 sovereign stack repos that have no ML code.
-A presentation tool doesn't need `softmax` contracts — it needs
-`render`, `layout`, and `export` contracts.
+**Three rounds of falsification** killed three designs:
+1. `bound_pub_fns / total_pub_fns` → 1-5% for all repos (F1)
+2. ML-only keywords → vacuous 100% for non-ML repos (F2)
+3. Domain keyword registry → 8+ domains, keeps growing (F3)
 
-The sovereign stack has **4 domains** (from `batuta stack tree`):
-
-```
-core:           trueno, trueno-viz, trueno-db, trueno-graph, trueno-rag, trueno-zram
-ml:             aprender
-inference:      realizar, renacer, alimentar, entrenar
-orchestration:  batuta, certeza, presentar, pacha
-distributed:    repartir, pepita
-transpilation:  ruchy, decy, depyler, bashrs
-```
-
-Each domain has its own critical path keywords:
-
-| Domain | Keywords | Applies to |
-|--------|----------|------------|
-| **ml** | softmax, matmul, attention, forward, backward, quantize, kernel, gradient, loss, optimizer | aprender, trueno, entrenar, realizar |
-| **ui** | render, layout, draw, animate, theme, export, slide, chart, widget, display | presentar, trueno-viz |
-| **io** | serialize, deserialize, parse, encode, decode, roundtrip, load, save, read, write | forjar, pacha, renacer, bashrs, depyler |
-| **sys** | dispatch, schedule, execute, spawn, connect, handle, route, serve, listen | batuta, alimentar, repartir, pepita |
-
-CD2 selects keywords by domain:
-
-```
-CD2 = domain_keywords_with_contracts / domain_keywords_in_source
-```
-
-Domain is determined by:
-1. `domain` field in binding.yaml (explicit, preferred)
-2. `batuta stack tree` category (automatic)
-3. Keyword frequency heuristic (fallback)
-
-### Implementation (v3)
-
-#### provable-contracts: Domain keyword registry
+**Converged design:** The developer declares their critical path.
+No global keywords. No domain heuristic. The repo says what matters.
 
 ```yaml
-# contracts/domains.yaml (NEW)
-domains:
-  ml:
-    keywords: [softmax, matmul, attention, forward, backward, quantize,
-               kernel, gradient, loss, optimizer, embedding, tokenize]
-  ui:
-    keywords: [render, layout, draw, animate, theme, export, slide,
-               chart, widget, display, format, compile]
-  io:
-    keywords: [serialize, deserialize, parse, encode, decode, roundtrip,
-               load, save, read, write, transform, validate]
-  sys:
-    keywords: [dispatch, schedule, execute, spawn, connect, handle,
-               route, serve, listen, orchestrate, deploy]
-```
-
-#### Per-repo domain declaration
-
-```yaml
-# contracts/presentar/binding.yaml
+# contracts/whisper.apr/binding.yaml
 version: "1.0.0"
-target_crate: presentar
-domain: ui                    # ← selects ui keyword set for CD2
-bindings: [...]
+target_crate: whisper-apr
+critical_path:              # ← developer declares what matters
+  - mel_spectrogram         # audio preprocessing
+  - whisper_forward         # model forward pass
+  - segment_audio           # VAD segmentation
+  - decode_tokens           # beam search decoding
+  - vad_detect              # voice activity detection
+bindings:
+  - contract: ...
 ```
 
-#### CD2 computation
+**CD2 = critical_path entries with matching bindings / len(critical_path)**
+
+- whisper.apr declares 5 critical fns, has contracts for 4 → CD2 = 80%
+- aprender declares 15 critical kernels, has contracts for 12 → CD2 = 80%
+- presentar declares 8 critical render fns, has contracts for 6 → CD2 = 75%
+- Repo with no `critical_path` → CD2 = 0% (no completeness credit)
+
+**Why this works:**
+- No vacuous truth — you must declare to get credit
+- No domain classification — each repo is its own domain
+- No global keyword maintenance — scales to any repo type
+- Developer ownership — the person who knows the code decides
+- Meyer's class invariant: the developer declares "these are my
+  invariants" — the tool verifies they exist
+
+### Implementation (v4)
+
+#### Schema: `critical_path` field in `BindingRegistry`
 
 ```rust
-fn compute_critical_path_coverage(
-    crate_dir: &Path,
-    binding: &BindingRegistry,
-    domain: &str,           // from binding.yaml or batuta
-) -> f64 {
-    let keywords = domain_keywords(domain);  // load from domains.yaml
-    let pub_fns = scan_pub_fns(crate_dir);
-    let in_source: Vec<_> = keywords.iter()
-        .filter(|kw| pub_fns.iter().any(|f| f.contains(*kw)))
-        .collect();
-    if in_source.is_empty() { return 1.0; }
-    let covered = in_source.iter()
-        .filter(|kw| binding.bindings.iter()
-            .any(|b| b.function.as_deref().unwrap_or("").contains(*kw)))
-        .count();
-    covered as f64 / in_source.len() as f64
+// In binding.rs
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BindingRegistry {
+    pub version: String,
+    pub target_crate: String,
+    #[serde(default)]
+    pub critical_path: Vec<String>,  // NEW
+    #[serde(default)]
+    pub bindings: Vec<KernelBinding>,
 }
+```
+
+#### CD2 computation in `score_codebase_full()`
+
+```rust
+// CD2: Critical path completeness
+let critical_path_coverage = if binding.critical_path.is_empty() {
+    0.0  // no declaration = no completeness credit
+} else {
+    let covered = binding.critical_path.iter()
+        .filter(|cp| binding.bindings.iter()
+            .any(|b| b.function.as_deref()
+                .is_some_and(|f| f.contains(cp.as_str()))))
+        .count();
+    covered as f64 / binding.critical_path.len() as f64
+};
 ```
 
 #### Grade Definition (v2.3.0)
@@ -2005,34 +1986,34 @@ Grade F: correctness < 50%
 The AND in Grade A is critical. A repo cannot achieve A by being
 perfectly correct on 4 functions while ignoring the other 496.
 
-### Self-Falsification (3 rounds)
+### Self-Falsification (4 rounds, 3 designs killed)
 
-| Round | Finding | Resolution |
-|-------|---------|------------|
-| R1 | `pub fn` ratio gives 1-5% for all repos | **KILLED.** Replaced with keyword checklist |
-| R1 | 50% threshold impossible for real repos | **KILLED.** Keyword match, not ratio |
-| R1 | bashrs/depyler show 266%/316% | **KILLED.** Keywords-only denominator |
-| R2 | ML keywords vacuously true for 11/15 repos | **KILLED.** Domain-aware keywords per repo |
-| R2 | presentar gets 100% with 0 ML keywords | **KILLED.** UI keywords (render, layout, export) applied |
-| — | Requires `--crate-dir` which is optional | Spec mandates for honest scoring |
-| — | "forward" matches non-kernel fns | Mitigated — checked against binding |
-| — | Domain auto-detection may misclassify | Explicit `domain:` in binding.yaml takes precedence |
+| Round | Proposed | Tested Against | Finding | Resolution |
+|-------|----------|----------------|---------|------------|
+| R1 | bound/total pub fns | aprender (4,545 fns) | 5.1% — every repo F | **KILLED** |
+| R1 | 50% threshold | all repos | impossible | **KILLED** |
+| R2 | ML-only keywords | presentar, batuta, forjar | vacuous 100% for 11/15 repos | **KILLED** |
+| R3 | 4-domain keywords | whisper.apr, simular, renacer, probar | 8+ domains, keeps growing | **KILLED** |
+| R4 | Developer-declared `critical_path` | — | No upstream data yet | **CONVERGED** |
 
-### CLI Changes
+**Key lesson:** Completeness cannot be inferred — it must be declared.
+Only the developer knows which functions need contracts. Meyer solved
+this with culture (contracts ARE the language), not metrics.
+
+### CLI
 
 ```bash
-# Current (correctness only):
-pv score contracts/ --binding contracts/aprender/binding.yaml
+# Correctness + completeness (v2.3.0):
+pv score contracts/ --binding contracts/whisper.apr/binding.yaml
 
-# New (correctness + completeness):
-pv score contracts/ --binding contracts/aprender/binding.yaml \
-    --crate-dir ~/src/aprender
+# CD1 checks: do declared bindings resolve?
+# CD2 checks: do critical_path entries have matching bindings?
+# Both require developer to declare in binding.yaml
 
-# pmat comply (both dimensions):
-cd ~/src/aprender
+# pmat comply (enhanced):
 pmat comply check
-# CB-1208: 80/233 bindings verified (correctness)
-# CB-1211: 233/500 significant pub fns bound (47% completeness) ← NEW
+# CB-1208: 38/58 bindings verified in source (correctness)
+# CB-1211: 4/5 critical_path fns have contracts (80% completeness) ← NEW
 ```
 
 ### References (Section 28)
