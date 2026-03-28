@@ -251,7 +251,7 @@ mod status {
         assert_eq!(contract.equations.len(), 1);
         assert_eq!(contract.proof_obligations.len(), 9);
         assert_eq!(contract.falsification_tests.len(), 9);
-        assert_eq!(contract.kani_harnesses.len(), 3);
+        assert_eq!(contract.kani_harnesses.len(), 12);
     }
 
     #[test]
@@ -302,7 +302,7 @@ mod audit {
         assert_eq!(report.equations, 1);
         assert_eq!(report.obligations, 9);
         assert_eq!(report.falsification_tests, 9);
-        assert_eq!(report.kani_harnesses, 3);
+        assert_eq!(report.kani_harnesses, 12);
     }
 
     #[test]
