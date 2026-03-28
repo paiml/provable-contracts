@@ -1996,3 +1996,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-116
+  github_issue: null
+  item_type: task
+  title: 'Spec Section 29: Asset Contracts — data invariants for tensors, models, media, docs'
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-03-28T11:34:19Z
+  updated: 2026-03-28T11:36:33.236281897+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
