@@ -228,6 +228,7 @@ equations:
     let binding = BindingRegistry {
         version: "1.0.0".into(),
         target_crate: "test".into(),
+        critical_path: vec![],
         bindings: vec![crate::binding::KernelBinding {
             contract: "test-v1".into(),
             equation: "f".into(),
@@ -260,6 +261,7 @@ equations:
     let binding = BindingRegistry {
         version: "1.0.0".into(),
         target_crate: "test".into(),
+        critical_path: vec![],
         bindings: vec![crate::binding::KernelBinding {
             contract: "other-v1".into(),
             equation: "g".into(),

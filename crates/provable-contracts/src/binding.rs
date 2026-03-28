@@ -21,7 +21,7 @@ pub struct BindingRegistry {
     pub version: String,
     pub target_crate: String,
     /// Developer-declared critical path functions (Section 28).
-    /// CD2 completeness = critical_path entries with bindings / len.
+    /// CD2 completeness = `critical_path` entries with bindings / len.
     #[serde(default)]
     pub critical_path: Vec<String>,
     #[serde(default)]

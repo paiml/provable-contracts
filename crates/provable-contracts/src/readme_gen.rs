@@ -271,6 +271,7 @@ qa_gate:
         let binding = BindingRegistry {
             version: "1.0.0".to_string(),
             target_crate: "test-crate".to_string(),
+            critical_path: vec![],
             bindings: vec![crate::binding::KernelBinding {
                 contract: "test-v1.yaml".to_string(),
                 equation: "f".to_string(),

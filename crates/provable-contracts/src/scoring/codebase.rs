@@ -106,10 +106,11 @@ pub fn score_codebase_full(
             .critical_path
             .iter()
             .filter(|cp| {
-                binding
-                    .bindings
-                    .iter()
-                    .any(|b| b.function.as_deref().is_some_and(|f| f.contains(cp.as_str())))
+                binding.bindings.iter().any(|b| {
+                    b.function
+                        .as_deref()
+                        .is_some_and(|f| f.contains(cp.as_str()))
+                })
             })
             .count();
         #[allow(clippy::cast_precision_loss)]

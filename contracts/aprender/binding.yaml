@@ -1621,3 +1621,17 @@ bindings:
   function: statistics
   status: implemented
   notes: Auto-inferred by pv infer
+critical_path:
+- softmax
+- rmsnorm
+- attention
+- matmul
+- rope
+- swiglu
+- gelu
+- embedding_lookup
+- cross_entropy
+- forward
+- tokenize
+- sample
+- layernorm

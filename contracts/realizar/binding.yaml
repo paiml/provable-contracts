@@ -396,3 +396,11 @@ bindings:
   function: sample
   status: implemented
   notes: Auto-inferred by pv infer
+critical_path:
+- forward
+- flash_attention
+- fused_q4k_dot
+- sample
+- kv_cache
+- quantize
+- dequantize

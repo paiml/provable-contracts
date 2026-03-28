@@ -69,11 +69,12 @@ fn empty_binding_scores_low() {
     let binding = BindingRegistry {
         version: "1.0.0".into(),
         target_crate: "test".into(),
+        critical_path: vec![],
         bindings: Vec::new(),
     };
     let score = score_codebase(&[], &binding);
     assert!(score.contract_coverage.abs() < f64::EPSILON);
-    assert!((score.composite - 0.15).abs() < f64::EPSILON); // only drift=1.0 * 0.15
+    assert!((score.composite - 0.20).abs() < f64::EPSILON); // only drift=1.0 * 0.20
     assert_eq!(score.grade, Grade::F);
 }
 
@@ -148,9 +149,9 @@ fn drift_override_affects_composite() {
 
     assert!((fresh.drift - 1.0).abs() < 1e-9);
     assert!((stale.drift - 0.0).abs() < 1e-9);
-    // Drift weight is 0.15, so composite should differ by 0.15
+    // Drift weight is 0.20, so composite should differ by 0.15
     let diff = fresh.composite - stale.composite;
-    assert!((diff - 0.15).abs() < 0.01, "diff={diff}");
+    assert!((diff - 0.20).abs() < 0.01, "diff={diff}");
 }
 
 #[test]
@@ -214,6 +215,7 @@ kani_harnesses:
     let binding = BindingRegistry {
         version: "1.0.0".into(),
         target_crate: "test".into(),
+        critical_path: vec![],
         bindings: vec![
             crate::binding::KernelBinding {
                 contract: "test-v1.yaml".into(),
