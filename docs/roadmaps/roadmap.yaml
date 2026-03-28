@@ -2044,3 +2044,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-119
+  github_issue: null
+  item_type: task
+  title: 'Fix Section 29: mark runtime integration as PROPOSED, not implemented'
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-03-28T11:55:51Z
+  updated: 2026-03-28T11:57:34.293224657+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
