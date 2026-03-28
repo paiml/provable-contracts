@@ -1952,11 +1952,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Spec Section 28 v4 + implement: critical_path in binding.yaml + CD2'
-  status: inprogress
+  status: completed
   priority: critical
   assigned_to: null
   created: 2026-03-28T10:20:30Z
-  updated: 2026-03-28T10:20:30.526419535+00:00
+  updated: 2026-03-28T10:28:25.390154050+00:00
   spec: null
   acceptance_criteria: []
   phases: []
