@@ -2140,3 +2140,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-125
+  github_issue: null
+  item_type: task
+  title: Dogfood pv on all sovereign stack repos — full codegen + call sites
+  status: inprogress
+  priority: high
+  assigned_to: null
+  created: 2026-03-28T16:47:46Z
+  updated: 2026-03-28T16:47:50.324306818+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null

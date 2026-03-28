@@ -129,8 +129,8 @@ provable-contracts/
 | Parseable kernel contracts | 165 | `pv coverage` (excludes kaizen/, legacy/, pipelines/) |
 | Equations | 516 | `pv coverage contracts/` (recursive, v2.3.0) |
 | Proof obligations | 790 | `pv coverage contracts/` (recursive, v2.3.0) |
-| Falsification tests | 868 | `pv coverage contracts/` (recursive, v2.3.0) |
-| Kani harnesses (YAML-defined) | 975 | `pv coverage contracts/` (recursive, v2.3.0) |
+| Falsification tests | 878 | `pv coverage contracts/` (recursive, v2.3.0) |
+| Kani harnesses (YAML-defined) | 985 | `pv coverage contracts/` (recursive, v2.3.0) |
 | **Real bindings (with module_path)** | **660** | Ghost bindings stripped 2026-03-28 |
 | Binding repos with entries | 26 directories, 26 with real bindings | `ls contracts/*/binding.yaml` |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) | schema/types.rs |
@@ -176,7 +176,7 @@ Level   Method                  Tool            Guarantee
 | Layer | What it catches | Mechanism | Coverage | Misses |
 |-------|----------------|-----------|----------|--------|
 | **L5** | Algorithm incorrect | Lean 4 proof (no sorry) | 3 theorems (softmax) | — |
-| **L4** | Logic bugs, overflows | Kani `#[kani::proof]` BMC | 975 harnesses (YAML-defined) | Inputs > bound |
+| **L4** | Logic bugs, overflows | Kani `#[kani::proof]` BMC | 985 harnesses (YAML-defined) | Inputs > bound |
 | **L3** | Violated invariants | `#[contract]` debug_assert | 18 functions (forjar: 4, pmat: 11, batuta: 3) | Release builds |
 | **L2** | Renamed/deleted fns | Trait `impl` (§23) | 12/26 repos have trait tests | Logic bugs |
 | **L1** | Missing bindings | build.rs AllImplemented | 540 real bindings (~234 verified) | Ghost bindings |
@@ -1204,7 +1204,7 @@ Primary levers to reach 0.90:
 | Zero-warning lint | §5 | `pv lint` → 0 errors, 0 warnings | Achieved |
 | Preconditions on all equations | §3 | 527 equations with preconditions | Implemented |
 | Lean theorem pointers | §14 | 527 equations with lean_theorem | Implemented |
-| 975 Kani harnesses | §2 | All obligations covered | Implemented |
+| 985 Kani harnesses | §2 | All obligations covered | Implemented |
 
 ### Enforcement Tickets
 
@@ -1639,7 +1639,7 @@ The "One Way" was falsified before implementation:
 |---|-------|---------|----------|
 | F1 | `pv codegen` generates enforcement | Yes, generates macro stubs | OK |
 | F2 | Preconditions are meaningful | Most of 516 are `!input.is_empty()` (generic) | **HIGH** |
-| F3 | Repos use the output | **7/26** have active `pv codegen` call sites (12 total) | **IMPROVED** |
+| F3 | Repos use the output | **18/26** have active `pv codegen` call sites (27 total) | **RESOLVED** |
 | F4 | Postconditions work | **0** postconditions in any contract | **CRITICAL** |
 | F5 | Macros bind to real functions | Hardcoded `input` var, not real signatures | **HIGH** |
 
@@ -2401,7 +2401,7 @@ value health          profiler record       throughput gate
 | Component | Status | Evidence |
 |-----------|--------|----------|
 | `pv codegen` macros in repos | **7/7 DONE** | aprender, trueno, entrenar, realizar, forjar, bashrs, depyler |
-| Contract macro call sites | **12 total** | trueno: 3, entrenar: 2, realizar: 2, forjar: 2, aprender: 1, bashrs: 1, depyler: 1 |
+| Contract macro call sites | **27 total across 18 repos** | trueno: 3, entrenar: 2, realizar: 2, forjar: 2, pacha: 2, pepita: 2, ruchy: 2, trueno-rag: 2, aprender: 1, bashrs: 1, depyler: 1, batuta: 1, renacer: 1, alimentar: 1, simular: 1, trueno-viz: 1, trueno-db: 1, trueno-graph: 1 |
 | `contracts/assets/` directory | **NOT IMPLEMENTED** | Directory does not exist |
 | `pv verify-asset` CLI | **NOT IMPLEMENTED** | No such subcommand |
 | `execute_with_contract()` | **NOT IMPLEMENTED** | Proposed design only |
