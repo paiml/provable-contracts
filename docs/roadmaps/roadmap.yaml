@@ -2060,3 +2060,35 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-120
+  github_issue: null
+  item_type: task
+  title: Dogfood pv codegen into trueno, aprender, entrenar, realizar — add contract enforcement
+  status: completed
+  priority: critical
+  assigned_to: null
+  created: 2026-03-28T12:05:09Z
+  updated: 2026-03-28T12:20:02.244596892+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-121
+  github_issue: null
+  item_type: task
+  title: 'New task: PMAT-121'
+  status: inprogress
+  priority: medium
+  assigned_to: null
+  created: 2026-03-28T12:05:09.157384098+00:00
+  updated: 2026-03-28T12:05:09.157384098+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
