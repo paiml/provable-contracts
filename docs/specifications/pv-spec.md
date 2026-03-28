@@ -1902,54 +1902,96 @@ For each keyword, CB-1202 checks: does a `pub fn` containing this
 keyword exist in src/ AND does a matching contract exist? This is
 **critical path coverage** — not a ratio, but a checklist.
 
-### Revised CD2: Critical Path Coverage
+### Revised CD2: Domain-Aware Critical Path Coverage
 
-Instead of a ratio metric, CD2 is a **binary checklist score**:
+**Second falsification (presentar):** ML-only keywords give vacuous
+100% completeness to 11/15 sovereign stack repos that have no ML code.
+A presentation tool doesn't need `softmax` contracts — it needs
+`render`, `layout`, and `export` contracts.
+
+The sovereign stack has **4 domains** (from `batuta stack tree`):
 
 ```
-CD2 = critical_keywords_with_contracts / critical_keywords_in_source
+core:           trueno, trueno-viz, trueno-db, trueno-graph, trueno-rag, trueno-zram
+ml:             aprender
+inference:      realizar, renacer, alimentar, entrenar
+orchestration:  batuta, certeza, presentar, pacha
+distributed:    repartir, pepita
+transpilation:  ruchy, decy, depyler, bashrs
 ```
 
-Where:
-- Denominator = only keywords that appear as pub fns in THIS repo
-- Numerator = keywords that ALSO have a matching contract binding
+Each domain has its own critical path keywords:
 
-A repo with `pub fn softmax`, `pub fn matmul`, `pub fn forward` in
-source and contracts for softmax + matmul gets CD2 = 2/3 = 67%.
-A repo with no ML keywords gets CD2 = 1.0 (vacuously complete).
+| Domain | Keywords | Applies to |
+|--------|----------|------------|
+| **ml** | softmax, matmul, attention, forward, backward, quantize, kernel, gradient, loss, optimizer | aprender, trueno, entrenar, realizar |
+| **ui** | render, layout, draw, animate, theme, export, slide, chart, widget, display | presentar, trueno-viz |
+| **io** | serialize, deserialize, parse, encode, decode, roundtrip, load, save, read, write | forjar, pacha, renacer, bashrs, depyler |
+| **sys** | dispatch, schedule, execute, spawn, connect, handle, route, serve, listen | batuta, alimentar, repartir, pepita |
 
-This avoids the denominator inflation problem — we only count
-functions that match the 16 critical keywords, not all 4,545 pub fns.
+CD2 selects keywords by domain:
 
-### Implementation (Revised)
+```
+CD2 = domain_keywords_with_contracts / domain_keywords_in_source
+```
 
-#### provable-contracts: CD2 via `--crate-dir`
+Domain is determined by:
+1. `domain` field in binding.yaml (explicit, preferred)
+2. `batuta stack tree` category (automatic)
+3. Keyword frequency heuristic (fallback)
+
+### Implementation (v3)
+
+#### provable-contracts: Domain keyword registry
+
+```yaml
+# contracts/domains.yaml (NEW)
+domains:
+  ml:
+    keywords: [softmax, matmul, attention, forward, backward, quantize,
+               kernel, gradient, loss, optimizer, embedding, tokenize]
+  ui:
+    keywords: [render, layout, draw, animate, theme, export, slide,
+               chart, widget, display, format, compile]
+  io:
+    keywords: [serialize, deserialize, parse, encode, decode, roundtrip,
+               load, save, read, write, transform, validate]
+  sys:
+    keywords: [dispatch, schedule, execute, spawn, connect, handle,
+               route, serve, listen, orchestrate, deploy]
+```
+
+#### Per-repo domain declaration
+
+```yaml
+# contracts/presentar/binding.yaml
+version: "1.0.0"
+target_crate: presentar
+domain: ui                    # ← selects ui keyword set for CD2
+bindings: [...]
+```
+
+#### CD2 computation
 
 ```rust
-// Critical ML/GPU keywords (same as pmat CB-1202)
-const CRITICAL_KEYWORDS: &[&str] = &[
-    "forward", "backward", "softmax", "matmul", "attention",
-    "rmsnorm", "layernorm", "tokenize", "quantize", "kernel",
-    "sampling", "kv_cache", "embedding", "optimizer", "loss",
-];
-
-fn compute_critical_path_coverage(crate_dir: &Path, binding: &BindingRegistry) -> f64 {
+fn compute_critical_path_coverage(
+    crate_dir: &Path,
+    binding: &BindingRegistry,
+    domain: &str,           // from binding.yaml or batuta
+) -> f64 {
+    let keywords = domain_keywords(domain);  // load from domains.yaml
     let pub_fns = scan_pub_fns(crate_dir);
-    let keywords_in_source: Vec<_> = CRITICAL_KEYWORDS.iter()
+    let in_source: Vec<_> = keywords.iter()
         .filter(|kw| pub_fns.iter().any(|f| f.contains(*kw)))
         .collect();
-    if keywords_in_source.is_empty() { return 1.0; }
-    let covered = keywords_in_source.iter()
-        .filter(|kw| binding.bindings.iter().any(|b| b.function.contains(*kw)))
+    if in_source.is_empty() { return 1.0; }
+    let covered = in_source.iter()
+        .filter(|kw| binding.bindings.iter()
+            .any(|b| b.function.as_deref().unwrap_or("").contains(*kw)))
         .count();
-    covered as f64 / keywords_in_source.len() as f64
+    covered as f64 / in_source.len() as f64
 }
 ```
-
-#### paiml-mcp-agent-toolkit: Enhance CB-1202
-
-CB-1202 already does this check. The enhancement: report the ratio
-as a structured score that `pv score` can consume, not just pass/fail.
 
 #### Grade Definition (v2.3.0)
 
@@ -1963,16 +2005,18 @@ Grade F: correctness < 50%
 The AND in Grade A is critical. A repo cannot achieve A by being
 perfectly correct on 4 functions while ignoring the other 496.
 
-### Self-Falsification (Revised after upstream testing)
+### Self-Falsification (3 rounds)
 
-| # | Finding | Resolution |
-|---|---------|------------|
-| ~~F1~~ | `pub fn` ratio gives 1-5% for all repos | **KILLED.** Replaced with critical keyword checklist |
-| ~~F2~~ | 50% threshold impossible for real repos | **KILLED.** Critical path coverage uses keyword match |
-| F3 | Requires `--crate-dir` which is optional | Spec mandates it for honest scoring |
-| ~~F4~~ | bashrs/depyler show 266%/316% | **KILLED.** Keywords-only denominator avoids this |
-| F5 | Vacuous truth: repos with 0 keywords get 100% | Acceptable — non-ML repos don't need ML contracts |
-| F6 | "forward" matches non-kernel fns | Mitigated — checked against binding, not just existence |
+| Round | Finding | Resolution |
+|-------|---------|------------|
+| R1 | `pub fn` ratio gives 1-5% for all repos | **KILLED.** Replaced with keyword checklist |
+| R1 | 50% threshold impossible for real repos | **KILLED.** Keyword match, not ratio |
+| R1 | bashrs/depyler show 266%/316% | **KILLED.** Keywords-only denominator |
+| R2 | ML keywords vacuously true for 11/15 repos | **KILLED.** Domain-aware keywords per repo |
+| R2 | presentar gets 100% with 0 ML keywords | **KILLED.** UI keywords (render, layout, export) applied |
+| — | Requires `--crate-dir` which is optional | Spec mandates for honest scoring |
+| — | "forward" matches non-kernel fns | Mitigated — checked against binding |
+| — | Domain auto-detection may misclassify | Explicit `domain:` in binding.yaml takes precedence |
 
 ### CLI Changes
 
