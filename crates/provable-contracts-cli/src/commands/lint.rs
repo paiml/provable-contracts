@@ -143,20 +143,11 @@ fn compute_contract_coverage(contract_dir: &Path) -> CoverageResult {
     let mut total = 0usize;
     let mut standard_plus = 0usize;
 
-    let Ok(entries) = std::fs::read_dir(contract_dir) else {
-        return CoverageResult {
-            standard_plus: 0,
-            total: 0,
-            percentage: 100.0,
-        };
-    };
+    let mut yaml_paths = Vec::new();
+    collect_yaml_files_lint(contract_dir, &mut yaml_paths);
 
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if path.extension().and_then(|e| e.to_str()) != Some("yaml") {
-            continue;
-        }
-        let Ok(contract) = provable_contracts::schema::parse_contract(&path) else {
+    for path in &yaml_paths {
+        let Ok(contract) = provable_contracts::schema::parse_contract(path) else {
             continue;
         };
         if contract.is_registry() {
@@ -452,4 +443,28 @@ fn parse_csv(s: Option<&str>) -> Vec<String> {
             .collect()
     })
     .unwrap_or_default()
+}
+
+/// Recursively collect `.yaml` contract files, skipping non-contract directories.
+fn collect_yaml_files_lint(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            let dirname = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+            if dirname == "kaizen" || dirname == "legacy" || dirname == "pipelines" {
+                continue;
+            }
+            collect_yaml_files_lint(&path, out);
+        } else if path.extension().and_then(|e| e.to_str()) == Some("yaml")
+            && !matches!(
+                path.file_name().and_then(|n| n.to_str()),
+                Some("binding.yaml" | "binding.yml")
+            )
+        {
+            out.push(path);
+        }
+    }
 }

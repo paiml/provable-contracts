@@ -25,34 +25,46 @@ use super::{GateDetail, GateResult};
 pub(crate) fn load_contracts(dir: &Path) -> (Vec<(String, Contract)>, Vec<(String, String)>) {
     let mut contracts = Vec::new();
     let mut parse_errors = Vec::new();
-    let Ok(entries) = std::fs::read_dir(dir) else {
-        return (contracts, parse_errors);
-    };
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if path.extension().and_then(|x| x.to_str()) != Some("yaml") {
-            continue;
-        }
-        if path.is_dir() {
-            continue;
-        }
-        // Skip binding.yaml files — they're not contracts
-        let fname = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
-        if fname == "binding.yaml" || fname == "binding.yml" {
-            continue;
-        }
+    let mut yaml_paths = Vec::new();
+    collect_yaml_files(dir, &mut yaml_paths);
+
+    for path in &yaml_paths {
         let stem = path
             .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("unknown")
             .to_string();
-        match parse_contract(&path) {
+        match parse_contract(path) {
             Ok(c) => contracts.push((stem, c)),
             Err(e) => parse_errors.push((stem, e.to_string())),
         }
     }
     contracts.sort_by(|a, b| a.0.cmp(&b.0));
     (contracts, parse_errors)
+}
+
+/// Recursively collect `.yaml` contract files, skipping non-contract directories.
+fn collect_yaml_files(dir: &Path, out: &mut Vec<std::path::PathBuf>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            let dirname = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+            if dirname == "kaizen" || dirname == "legacy" || dirname == "pipelines" {
+                continue;
+            }
+            collect_yaml_files(&path, out);
+        } else if path.extension().and_then(|e| e.to_str()) == Some("yaml")
+            && !matches!(
+                path.file_name().and_then(|n| n.to_str()),
+                Some("binding.yaml" | "binding.yml")
+            )
+        {
+            out.push(path);
+        }
+    }
 }
 
 /// Load binding registry from an optional path.

@@ -230,3 +230,85 @@ proof_obligations:
   property: 'With 4x unroll: 4 / (4 + 3) = 0.57 (43% overhead)'
   formal: 'With 4x unroll: 4 / (4 + 3) = 0.57 (43% overhead)'
   applies_to: all
+falsification_tests:
+- id: FALSIFY-TGBW-001
+  rule: Arithmetic intensity bounds
+  prediction: AI >= 4.0 for TILE=16, AI >= 8.0 for TILE=32
+  test: Compute AI = TILE/sizeof(f32) for TILE in {16,32}
+  if_fails: Tile formula incorrect or sizeof assumption wrong
+- id: FALSIFY-TGBW-002
+  rule: Shared memory per tile
+  prediction: smem = 2*TILE^2*4 fits SM limit (100KB on sm_89)
+  test: Verify 2*32^2*4 = 8192 < 102400
+  if_fails: Shared memory overflow causes silent data corruption
+- id: FALSIFY-TGBW-003
+  rule: Backward GEMM A correctness
+  prediction: Tiled result matches naive within 1e-4
+  test: M=128, N=2560, K=2560 random matrices, elementwise diff
+  if_fails: Tile boundary handling or accumulation order bug
+- id: FALSIFY-TGBW-004
+  rule: Backward GEMM B correctness
+  prediction: Tiled result matches naive within 1e-4
+  test: M=128, N=2560, K=2560 random matrices, elementwise diff
+  if_fails: Transpose indexing or tile boundary bug
+- id: FALSIFY-TGBW-005
+  rule: FMA instruction usage
+  prediction: Emitted PTX contains fma.rn.f32
+  test: Static PTX analysis for fma.rn.f32 instruction
+  if_fails: Compiler not fusing multiply-add operations
+- id: FALSIFY-TGBW-006
+  rule: Barrier safety
+  prediction: All threads reach bar.sync unconditionally
+  test: analyze_barrier_safety() returns is_safe=true
+  if_fails: Divergent barrier causes deadlock
+- id: FALSIFY-TGBW-007
+  rule: Register pressure
+  prediction: Registers per thread <= 255 (sm_89 limit)
+  test: Check PTX register allocation count
+  if_fails: Register spill to local memory kills performance
+- id: FALSIFY-TGBW-008
+  rule: Performance improvement
+  prediction: Tiled backward faster than naive for training shapes
+  test: Benchmark M=128,N=2560,K=2560 tiled vs naive
+  if_fails: Overhead of tiling exceeds benefit at this shape
+- id: FALSIFY-TGBW-009
+  rule: Non-square correctness
+  prediction: Correct for non-square M!=N!=K matrices
+  test: Test with M=64,N=128,K=256 non-square shape
+  if_fails: Tile remainder handling for non-multiple dimensions
+- id: FALSIFY-TGBW-010
+  rule: Batch backward through LoRA
+  prediction: Full LoRA training step backward passes
+  test: Complete backward pass with LoRA adapters attached
+  if_fails: Gradient accumulation or adapter chain broken
+kani_harnesses:
+- id: KANI-TGBW-001
+  obligation: C-TILE-BWD-001
+  property: Arithmetic intensity bounds hold for all tile sizes
+- id: KANI-TGBW-002
+  obligation: C-TILE-BWD-002
+  property: Shared memory per tile fits SM limits
+- id: KANI-TGBW-003
+  obligation: C-TILE-BWD-003
+  property: Backward GEMM A matches naive within tolerance
+- id: KANI-TGBW-004
+  obligation: C-TILE-BWD-004
+  property: Backward GEMM B matches naive within tolerance
+- id: KANI-TGBW-005
+  obligation: C-TILE-BWD-005
+  property: FMA instructions emitted in tiled kernel
+- id: KANI-TGBW-006
+  obligation: C-TILE-BWD-006
+  property: Barrier safety — unconditional convergence
+- id: KANI-TGBW-007
+  obligation: C-TILE-BWD-007
+  property: Register pressure within SM limit
+- id: KANI-TGBW-008
+  obligation: C-TILE-BWD-008
+  property: Tiled backward faster than naive
+- id: KANI-TGBW-009
+  obligation: C-TILE-BWD-009
+  property: Non-square matrix backward correctness
+- id: KANI-TGBW-010
+  obligation: C-TILE-BWD-010
+  property: Batch backward through LoRA training step

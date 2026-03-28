@@ -110,25 +110,20 @@ pub fn generate_from_contract(name: &str, contract: &Contract) -> GeneratedContr
     }
 }
 
-/// Generate code for all contracts in a directory.
+/// Generate code for all contracts in a directory (recursive).
 pub fn generate_all(contract_dir: &Path) -> Vec<GeneratedContract> {
-    let mut results = Vec::new();
-    let Ok(entries) = std::fs::read_dir(contract_dir) else {
-        return results;
-    };
+    let mut yaml_paths = Vec::new();
+    collect_yaml_files(contract_dir, &mut yaml_paths);
 
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if path.extension().and_then(|e| e.to_str()) != Some("yaml") {
-            continue;
-        }
+    let mut results = Vec::new();
+    for path in &yaml_paths {
         let stem = path
             .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("unknown")
             .to_string();
 
-        if let Ok(contract) = crate::schema::parse_contract(&path) {
+        if let Ok(contract) = crate::schema::parse_contract(path) {
             let generated = generate_from_contract(&stem, &contract);
             if generated.precondition_count > 0
                 || generated.postcondition_count > 0
@@ -141,6 +136,27 @@ pub fn generate_all(contract_dir: &Path) -> Vec<GeneratedContract> {
 
     results.sort_by(|a, b| a.name.cmp(&b.name));
     results
+}
+
+/// Recursively collect `.yaml` contract files, skipping non-contract directories.
+fn collect_yaml_files(dir: &Path, out: &mut Vec<std::path::PathBuf>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            let dirname = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+            if dirname == "kaizen" || dirname == "legacy" || dirname == "pipelines" {
+                continue;
+            }
+            collect_yaml_files(&path, out);
+        } else if path.extension().and_then(|e| e.to_str()) == Some("yaml")
+            && path.file_name().and_then(|n| n.to_str()) != Some("binding.yaml")
+        {
+            out.push(path);
+        }
+    }
 }
 
 /// Write generated Rust code to a file.
