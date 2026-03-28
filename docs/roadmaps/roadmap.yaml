@@ -2128,11 +2128,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Fix pv coverage recursion + spec v2.3.0 (GH #58)'
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-03-28T16:37:07Z
-  updated: 2026-03-28T16:37:10.179906415+00:00
+  updated: 2026-03-28T16:39:19.359824998+00:00
   spec: null
   acceptance_criteria: []
   phases: []
