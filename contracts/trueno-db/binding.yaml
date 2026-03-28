@@ -1,4 +1,18 @@
 version: 1.0.0
 target_crate: trueno-db
-policy: WarnOnGaps
-bindings: []
+critical_path:
+- serialize
+- deserialize
+- query
+- insert
+bindings:
+- contract: configuration-v1.yaml
+  equation: query
+  function: query
+  module_path: trueno_db::src::wasm::query
+  status: implemented
+- contract: configuration-v1.yaml
+  equation: insert
+  function: get_or_insert
+  module_path: trueno_db::src::gpu::jit::get_or_insert
+  status: implemented

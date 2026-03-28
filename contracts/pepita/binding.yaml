@@ -1,4 +1,23 @@
 version: 1.0.0
 target_crate: pepita
-policy: WarnOnGaps
-bindings: []
+critical_path:
+- send
+- receive
+- connect
+- broadcast
+bindings:
+- contract: error-handling-v1.yaml
+  equation: send
+  function: send
+  module_path: pepita::src::virtio::send
+  status: implemented
+- contract: configuration-v1.yaml
+  equation: connect
+  function: connect
+  module_path: pepita::src::executor::connect
+  status: implemented
+- contract: configuration-v1.yaml
+  equation: connect
+  function: connection_count
+  module_path: pepita::src::virtio::connection_count
+  status: implemented

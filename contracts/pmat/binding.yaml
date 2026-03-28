@@ -21,3 +21,8 @@ bindings:
   function: generate_agent_context
   module_path: pmat::services::context
   status: implemented
+critical_path:
+- tdg
+- comply
+- score
+- context

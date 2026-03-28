@@ -115,3 +115,8 @@ bindings:
   module_path: depyler_core::cargo_first
   status: implemented
   notes: Verifies generated Rust passes borrow checker
+critical_path:
+- transpile
+- type_check
+- parse
+- generate

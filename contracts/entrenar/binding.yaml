@@ -330,3 +330,10 @@ bindings:
   function: gelu
   status: implemented
   notes: Auto-inferred by pv infer
+critical_path:
+- forward
+- backward
+- optimizer
+- loss
+- gradient
+- checkpoint

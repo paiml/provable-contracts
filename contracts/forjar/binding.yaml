@@ -96,3 +96,9 @@ bindings:
   signature: 'fn state_query_script(resource: &Resource) -> Result<String, String>'
   status: implemented
   notes: Dispatches to resource-specific state query handlers
+critical_path:
+- build
+- execute
+- hash
+- resolve
+- dag

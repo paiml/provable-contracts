@@ -47,3 +47,8 @@ bindings:
   function: detect_regression
   module_path: apr_model_qa_playbook::regression
   status: implemented
+critical_path:
+- mqs
+- validate
+- score
+- report

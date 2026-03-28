@@ -97,3 +97,8 @@ bindings:
   module_path: rash::emitter::escape
   status: implemented
   notes: Command name escaping to prevent injection in emitted shell
+critical_path:
+- parse
+- lex
+- analyze
+- encode
