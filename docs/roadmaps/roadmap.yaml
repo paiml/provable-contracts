@@ -1836,3 +1836,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-106
+  github_issue: null
+  item_type: task
+  title: 'Spec v2.2.0: honest integration numbers + strip ghost binding inflation'
+  status: completed
+  priority: critical
+  assigned_to: null
+  created: 2026-03-28T08:11:45Z
+  updated: 2026-03-28T08:15:03.028121237+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
