@@ -43,6 +43,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 26 | [Two-Tier Architecture and Compositional Contracts](#26-two-tier-architecture-and-compositional-contracts) | — |
 | 27 | [The One Way](#27-the-one-way) | — |
 | 28 | [Correctness + Completeness](#28-correctness--completeness) | — |
+| 29 | [Asset Contracts](#29-asset-contracts) | — |
 
 ---
 
@@ -2029,3 +2030,186 @@ pmat comply check
   completeness; auto-generated specs are "incomplete or leaky."
 - Coverage Metrics for Formal Verification (Springer, 2003). "Even
   when proven correct, how complete is the specification?"
+
+---
+
+## 29. Asset Contracts
+
+### The Gap
+
+Contracts today verify **functions** — Rust code with preconditions
+and postconditions. But the sovereign stack also produces and consumes
+**data assets**: model weights, tensors, tokenizer vocabularies,
+configuration files, media files, documents. These assets have
+invariants just as real as softmax's, and nobody verifies them.
+
+Examples of unverified asset invariants:
+
+| Asset | Invariant | What breaks if violated |
+|-------|-----------|------------------------|
+| `.apr` model file | Tensor shapes match architecture config | Inference panics on shape mismatch |
+| `.safetensors` | Header is valid JSON, all tensors finite | Silent NaN propagation |
+| `.gguf` | Metadata matches `arch-constraints-v1` | Wrong normalization, wrong activation |
+| Tokenizer `vocab.json` | `vocab_size` == embedding table rows | Index out of bounds at runtime |
+| `.mp4` video | Valid moov atom, decodeable streams | Playback fails |
+| `.svg` diagram | Well-formed XML, valid viewBox | Rendering broken |
+| `.md` documentation | Parses without errors, no broken links | User confusion |
+| `config.json` | All required fields present, valid types | Deserialization panic |
+
+### What Already Exists (Almost)
+
+The contract corpus already has **shape contracts** and **metadata
+bounds** that describe asset invariants — they just aren't verified
+against actual files:
+
+- `qwen2-shapes-v1.yaml` defines `[3584, 3584]` for Q projection
+- `model-metadata-bounds-v1.yaml` defines `hidden_dim ∈ [1, 65536]`
+- `arch-constraints-v1.yaml` defines per-architecture norm/activation
+- `special-tokens-registry-v1.yaml` defines EOS/BOS/PAD token IDs
+
+These are **asset contracts in disguise**. They declare data invariants
+but the verification tool (`pv validate`) only checks the YAML
+structure, not the actual model files.
+
+### Three Types of Asset Contracts
+
+#### Type 1: Schema Contracts (structure)
+
+Verify file format is well-formed without examining content.
+
+```yaml
+# contracts/assets/safetensors-schema-v1.yaml
+asset_type: safetensors
+invariants:
+  - header: valid JSON, size < 100MB
+  - tensors: each has dtype, shape, data_offsets
+  - data_offsets: monotonically increasing, within file size
+  - no overlapping tensor regions
+verification: parse header, validate offsets
+```
+
+#### Type 2: Shape Contracts (dimensions)
+
+Verify tensor dimensions match the declared architecture.
+
+```yaml
+# contracts/assets/qwen2-7b-shapes-v1.yaml
+asset_type: model_weights
+architecture: qwen2
+config:
+  hidden_dim: 3584
+  num_heads: 28
+  num_kv_heads: 4
+  num_layers: 28
+  vocab_size: 152064
+invariants:
+  - embedding.weight: [152064, 3584]
+  - layers.*.self_attn.q_proj.weight: [3584, 3584]
+  - layers.*.self_attn.k_proj.weight: [512, 3584]
+  - layers.*.self_attn.v_proj.weight: [512, 3584]
+  - layers.*.mlp.gate_proj.weight: [18944, 3584]
+  - lm_head.weight: [152064, 3584]
+  - total_params: ~7.6B (within 5% tolerance)
+verification: load safetensors header, check each shape
+```
+
+#### Type 3: Value Contracts (content)
+
+Verify tensor values satisfy numeric invariants.
+
+```yaml
+# contracts/assets/weight-health-v1.yaml
+asset_type: tensor_values
+invariants:
+  - all_finite: no NaN or Inf in any tensor
+  - norm_bounded: ||w||_2 < 1000 for each weight matrix
+  - embedding_normalized: each row of embedding.weight has ||r||_2 > 0
+  - no_dead_neurons: no all-zero rows in linear projections
+verification: scan tensor data, check per-element and per-row
+```
+
+### CLI: `pv verify-asset`
+
+```bash
+# Verify a model file against its shape contract:
+pv verify-asset model.safetensors \
+    --contract contracts/assets/qwen2-7b-shapes-v1.yaml
+
+# Verify all assets in a directory:
+pv verify-asset models/ --contract-dir contracts/assets/
+
+# Quick health check (no contract needed, checks all_finite + format):
+pv verify-asset model.safetensors --health-check
+
+# Output:
+#   model.safetensors (safetensors, 7.6B params)
+#   Schema:  PASS (valid header, 291 tensors)
+#   Shapes:  PASS (all 291 tensors match qwen2-7b config)
+#   Values:  PASS (all finite, no dead neurons)
+```
+
+### Integration with Existing Contracts
+
+Asset contracts extend the existing two-tier model:
+
+```
+Tier 1: Kernel contracts      (algorithm math)
+Tier 2: Per-repo bindings     (code → contract mapping)
+Tier 3: Asset contracts (NEW)  (data → contract mapping)
+```
+
+The binding.yaml gains an `assets` section:
+
+```yaml
+# contracts/aprender/binding.yaml
+critical_path: [softmax, matmul, attention]
+bindings: [...]
+assets:                          # NEW
+  - file_pattern: "models/*.safetensors"
+    contract: assets/weight-health-v1.yaml
+    verification: health-check
+  - file_pattern: "tokenizers/*.json"
+    contract: special-tokens-registry-v1.yaml
+    verification: schema
+```
+
+### Scoring
+
+Asset contract coverage becomes an optional dimension:
+
+```
+CD6: Asset coverage = verified_assets / declared_assets
+```
+
+Only scores when `assets:` section is present in binding.yaml.
+Repos without assets get no penalty (same as critical_path fallback).
+
+### Implementation Path
+
+| Phase | What | Complexity |
+|-------|------|------------|
+| P1 | `pv verify-asset --health-check` | Read safetensors header, check finite. Low. |
+| P2 | Shape contract YAML schema | New `asset_type`, `invariants` fields. Medium. |
+| P3 | `pv verify-asset --contract` | Parse shape contract, verify against file. Medium. |
+| P4 | Value contracts | Scan tensor data for dead neurons, norms. High. |
+| P5 | CD6 in codebase scoring | Wire into `pv score` when `assets:` present. Low. |
+
+### Why This Matters
+
+The inference pipeline is: **load model → run kernels → produce output**.
+We verify the kernels (Section 2-28) but not the model load. A corrupt
+weight file silently produces wrong outputs even with perfect kernels.
+Asset contracts close the last gap in the verification chain.
+
+### References (Section 29)
+
+- Atlas (arXiv:2502.19567, 2025). ML lifecycle provenance and
+  transparency — verifiable records of model artifact authenticity.
+- Data Quality Survey (arXiv:2406.19614, 2024). Data quality
+  dimensions for ML: accuracy, completeness, consistency, timeliness.
+- DQuag (arXiv:2502.10667, 2025). Automated data quality validation
+  in end-to-end GNN frameworks.
+- safetensors specification. HuggingFace.
+  github.com/huggingface/safetensors
+- GGUF specification. ggerganov/ggml.
+  github.com/ggerganov/ggml/blob/master/docs/gguf.md
