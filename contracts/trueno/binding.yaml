@@ -191,3 +191,10 @@ bindings:
   function: quantize
   status: implemented
   notes: Auto-inferred by pv infer
+
+# PMAT-396: Zero-copy GPU weight loading
+- contract: gpu-weight-residency-v1.yaml
+  equation: pcie_overhead
+  function: "GpuBuffer::from_host_registered"
+  status: implemented
+  notes: "PMAT-396: cuMemHostRegister on mmap'd pages. Zero PCIe transfer for weights on Grace Blackwell. 32B @ 7.5 tok/s."
