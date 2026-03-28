@@ -2400,8 +2400,10 @@ value health          profiler record       throughput gate
 
 | Component | Status | Evidence |
 |-----------|--------|----------|
-| `pv codegen` macros in repos | **7/7 DONE** | aprender, trueno, entrenar, realizar, forjar, bashrs, depyler |
+| `pv codegen` macros in repos | **18/18 DONE** | All sovereign stack repos have `generated_contracts.rs` + `#[macro_use]` |
 | Contract macro call sites | **27 total across 18 repos** | trueno: 3, entrenar: 2, realizar: 2, forjar: 2, pacha: 2, pepita: 2, ruchy: 2, trueno-rag: 2, aprender: 1, bashrs: 1, depyler: 1, batuta: 1, renacer: 1, alimentar: 1, simular: 1, trueno-viz: 1, trueno-db: 1, trueno-graph: 1 |
+| Test-verified (0 contract failures) | **17/18** | All repos pass `cargo test --lib` with 0 contract-caused failures. ruchy has pre-existing build issue (missing wasmparser). |
+| Assertion placement rule | **ENFORCED** | Contract assertions placed AFTER early-return guards, not before. Fixes applied to forjar, realizar, trueno-rag (v2.3.0). |
 | `contracts/assets/` directory | **NOT IMPLEMENTED** | Directory does not exist |
 | `pv verify-asset` CLI | **NOT IMPLEMENTED** | No such subcommand |
 | `execute_with_contract()` | **NOT IMPLEMENTED** | Proposed design only |
