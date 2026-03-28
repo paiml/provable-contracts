@@ -115,14 +115,3 @@ bindings:
   module_path: depyler_core::cargo_first
   status: implemented
   notes: Verifies generated Rust passes borrow checker
-- contract: codegen-safety-v1.yaml
-  equation: compile_with_cargo
-  function: compile_with_cargo
-  module_path: depyler_core::cargo_first
-  status: implemented
-  notes: Verifies generated Rust compiles
-- contract: codegen-safety-v1.yaml
-  equation: convert_class_to_struct
-  function: convert_class_to_struct
-  module_path: depyler_core::direct_rules
-  status: implemented

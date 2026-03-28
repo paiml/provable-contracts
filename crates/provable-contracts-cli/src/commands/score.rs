@@ -433,7 +433,13 @@ fn print_probes(score: &ContractScore) {
     }
 }
 
-/// Recursively collect all `.yaml` files (excluding `binding.yaml`) from a directory.
+/// Recursively collect all `.yaml` contract files from a directory.
+///
+/// Skips:
+/// - `binding.yaml` (binding registries, not contracts)
+/// - `kaizen/` directories (work items, not contracts)
+/// - `legacy/` directories (deprecated contracts)
+/// - `pipelines/` directories (pipeline contracts, different schema)
 fn collect_yaml_files(dir: &Path, out: &mut Vec<std::path::PathBuf>) {
     let Ok(entries) = std::fs::read_dir(dir) else {
         return;
@@ -441,9 +447,13 @@ fn collect_yaml_files(dir: &Path, out: &mut Vec<std::path::PathBuf>) {
     for entry in entries.flatten() {
         let path = entry.path();
         if path.is_dir() {
+            let dirname = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+            // Skip non-contract directories
+            if dirname == "kaizen" || dirname == "legacy" || dirname == "pipelines" {
+                continue;
+            }
             collect_yaml_files(&path, out);
         } else if path.extension().and_then(|e| e.to_str()) == Some("yaml") {
-            // Skip binding.yaml files
             if path.file_name().and_then(|n| n.to_str()) != Some("binding.yaml") {
                 out.push(path);
             }

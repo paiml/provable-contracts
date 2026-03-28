@@ -23,7 +23,6 @@ metadata:
   created: "2026-03-04"
   author: "PAIML Engineering"
   description: "Pre-allocation VRAM guard with post-init actual tracking"
-  registry: true
   references:
     - "GPU Sharing Spec v2 §1.2-1.3 — VRAM Guard + Actual Tracking"
     - "cuMemGetInfo — CUDA Driver API"
@@ -139,7 +138,6 @@ qa_gate:
   id: F-VG-001
   name: "VRAM Guard Contract"
   description: "Pre-allocation VRAM check with post-init actual measurement"
-  registry: true
   checks:
     - "c_vram_001_no_alloc_over_budget"
     - "post_init_actual_tracked"
@@ -150,14 +148,10 @@ profiling:
   brick_phases:
     - name: "vram_qry"
       description: "cuMemGetInfo call duration"
-  registry: true
-      contract: "C-GPUPROF-001: zero-overhead when disabled"
     - name: "budget_chk"
       description: "Ledger read + capacity arithmetic"
-  registry: true
     - name: "actual_meas"
       description: "Post-init cuMemGetInfo + ledger update"
-  registry: true
 
 tracing:
   trace_steps:

@@ -1,33 +1,3 @@
 version: 1.0.0
 target_crate: decy
-bindings:
-- contract: core-v1.yaml
-  equation: validate_size
-  function: validate_size
-  module_path: decy
-  status: implemented
-  notes: Auto-detected from src/verification_specs.rs
-- contract: core-v1.yaml
-  equation: validate_index
-  function: validate_index
-  module_path: decy
-  status: implemented
-  notes: Auto-detected from src/verification_specs.rs
-- contract: core-v1.yaml
-  equation: validated_len
-  function: validated_len
-  module_path: decy
-  status: implemented
-  notes: Auto-detected from src/verification_specs.rs
-- contract: core-v1.yaml
-  equation: checked_add
-  function: checked_add
-  module_path: decy
-  status: implemented
-  notes: Auto-detected from src/verification_specs.rs
-- contract: core-v1.yaml
-  equation: check_lock_discipline
-  function: check_lock_discipline
-  module_path: decy
-  status: implemented
-  notes: Auto-detected from crates/decy-analyzer/src/lock_analysis.rs
+bindings: []
