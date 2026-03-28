@@ -1860,80 +1860,119 @@ None check the **code side** — what code lacks contracts?
 
 All four check contract quality. None check code coverage.
 
-### Proposed Changes
+### Falsification of CD2 Ratio Metric (2026-03-28)
 
-#### provable-contracts: CD2 completeness dimension
+The proposed `bound_pub_fns / total_pub_fns` ratio was **falsified**
+against all sovereign stack repos before implementation:
+
+| Repo | pub fns | Bindings | Ratio | Impact |
+|------|---------|----------|-------|--------|
+| aprender | 4,545 | 233 | 5.1% | A → F |
+| trueno | 1,084 | 31 | 2.8% | A → F |
+| entrenar | 3,266 | 50 | 1.5% | A → F |
+| realizar | 3,350 | 58 | 1.7% | A → F |
+| forjar | 1,020 | 13 | 1.2% | A → F |
+
+Even with kernel-pattern filtering (denominator = ML-keyword fns only):
+aprender 29%, trueno 22%, entrenar 13%, realizar 6%. Still far below
+any useful threshold.
+
+**Root cause:** `pub fn` count includes Display/From/Default impls,
+builder patterns, trait methods, and thousands of non-kernel functions.
+A ratio against this denominator is meaningless.
+
+**Meyer's answer:** Meyer did not solve completeness with metrics.
+He solved it with **culture** — in Eiffel, contracts ARE the language
+syntax. There is no separate "contract coverage" metric because
+contracts are written naturally as part of every routine.
+
+### The Right Model: Critical Path Coverage (CB-1202)
+
+`pmat comply check` already has **CB-1202: Contract Coverage** which
+asks the right question: "do you have contracts for the important
+stuff?" It checks 16 critical keywords:
+
+```
+forward, backward, optimizer, checkpoint, loss, gradient,
+sampling, kv_cache, tokenize, quantize, kernel, dispatch,
+softmax, matmul, gemm, batch
+```
+
+For each keyword, CB-1202 checks: does a `pub fn` containing this
+keyword exist in src/ AND does a matching contract exist? This is
+**critical path coverage** — not a ratio, but a checklist.
+
+### Revised CD2: Critical Path Coverage
+
+Instead of a ratio metric, CD2 is a **binary checklist score**:
+
+```
+CD2 = critical_keywords_with_contracts / critical_keywords_in_source
+```
+
+Where:
+- Denominator = only keywords that appear as pub fns in THIS repo
+- Numerator = keywords that ALSO have a matching contract binding
+
+A repo with `pub fn softmax`, `pub fn matmul`, `pub fn forward` in
+source and contracts for softmax + matmul gets CD2 = 2/3 = 67%.
+A repo with no ML keywords gets CD2 = 1.0 (vacuously complete).
+
+This avoids the denominator inflation problem — we only count
+functions that match the 16 critical keywords, not all 4,545 pub fns.
+
+### Implementation (Revised)
+
+#### provable-contracts: CD2 via `--crate-dir`
 
 ```rust
-// In score_codebase_full(), when crate_dir is provided:
-let completeness = if let Some(crate_dir) = crate_dir {
-    let report = reverse_coverage(crate_dir, binding);
-    report.bound_count as f64 / report.total_pub_fns as f64
-} else {
-    binding_completeness  // fallback: current behavior
-};
+// Critical ML/GPU keywords (same as pmat CB-1202)
+const CRITICAL_KEYWORDS: &[&str] = &[
+    "forward", "backward", "softmax", "matmul", "attention",
+    "rmsnorm", "layernorm", "tokenize", "quantize", "kernel",
+    "sampling", "kv_cache", "embedding", "optimizer", "loss",
+];
+
+fn compute_critical_path_coverage(crate_dir: &Path, binding: &BindingRegistry) -> f64 {
+    let pub_fns = scan_pub_fns(crate_dir);
+    let keywords_in_source: Vec<_> = CRITICAL_KEYWORDS.iter()
+        .filter(|kw| pub_fns.iter().any(|f| f.contains(*kw)))
+        .collect();
+    if keywords_in_source.is_empty() { return 1.0; }
+    let covered = keywords_in_source.iter()
+        .filter(|kw| binding.bindings.iter().any(|b| b.function.contains(*kw)))
+        .count();
+    covered as f64 / keywords_in_source.len() as f64
+}
 ```
 
-Codebase score becomes:
+#### paiml-mcp-agent-toolkit: Enhance CB-1202
+
+CB-1202 already does this check. The enhancement: report the ratio
+as a structured score that `pv score` can consume, not just pass/fail.
+
+#### Grade Definition (v2.3.0)
 
 ```
-CD1: Correctness (30%) — declared/resolved [existing]
-CD2: Completeness (20%) — bound_pub_fns / significant_pub_fns [NEW]
-CD3: MeanScore (20%) — average contract quality
-CD4: ProofDepth (15%) — weighted proof levels
-CD5: Drift (15%) — freshness
-```
-
-"Significant pub fns" = pub fns excluding:
-- Trait impls of std traits (Display, From, Default, Debug)
-- Functions in `#[cfg(test)]` modules
-- Functions < 5 lines (trivial getters/setters)
-
-This reuses `reverse_coverage.rs::scan_pub_fns` which already exists.
-
-#### paiml-mcp-agent-toolkit: CB-1211 completeness check
-
-New check in `check_pv_enforcement.rs`:
-
-```
-CB-1211: Contract Completeness
-  Scans source for significant pub fns
-  Cross-references against binding.yaml
-  Reports: "X/Y significant pub fns have contract bindings (Z%)"
-  PASS if >= 50%, WARN if >= 20%, FAIL if < 20%
-```
-
-#### paiml-mcp-agent-toolkit: PV-05 infra-score check
-
-New check in `provable_contracts.rs` scorer:
-
-```
-PV-05 (2pts): Contract completeness >= 50%
-  Runs reverse coverage scan
-  Max PV bonus increases from 10 to 12 points
-```
-
-### Grade Definition (v2.3.0)
-
-```
-Grade A: correctness >= 90% AND completeness >= 50%
-Grade B: correctness >= 80% AND completeness >= 20%
-Grade C: correctness >= 70% OR completeness >= 10%
-Grade F: correctness < 50% OR completeness = 0%
+Grade A: correctness >= 90% AND critical_path_coverage >= 75%
+Grade B: correctness >= 80% AND critical_path_coverage >= 50%
+Grade C: correctness >= 70%
+Grade F: correctness < 50%
 ```
 
 The AND in Grade A is critical. A repo cannot achieve A by being
 perfectly correct on 4 functions while ignoring the other 496.
 
-### Self-Falsification
+### Self-Falsification (Revised after upstream testing)
 
-| # | Concern | Mitigation |
+| # | Finding | Resolution |
 |---|---------|------------|
-| F1 | `pub fn` count includes trivial impls (Display, From) | Filter std trait impls, test fns, <5 line fns |
-| F2 | 50% threshold is arbitrary | Configurable via `--min-completeness` |
+| ~~F1~~ | `pub fn` ratio gives 1-5% for all repos | **KILLED.** Replaced with critical keyword checklist |
+| ~~F2~~ | 50% threshold impossible for real repos | **KILLED.** Critical path coverage uses keyword match |
 | F3 | Requires `--crate-dir` which is optional | Spec mandates it for honest scoring |
-| F4 | Gaming by making functions private | Private fns are inaccessible — not a real vector |
-| F5 | Large repos with many helpers penalized unfairly | Filter to "significant" fns only |
+| ~~F4~~ | bashrs/depyler show 266%/316% | **KILLED.** Keywords-only denominator avoids this |
+| F5 | Vacuous truth: repos with 0 keywords get 100% | Acceptable — non-ML repos don't need ML contracts |
+| F6 | "forward" matches non-kernel fns | Mitigated — checked against binding, not just existence |
 
 ### CLI Changes
 
