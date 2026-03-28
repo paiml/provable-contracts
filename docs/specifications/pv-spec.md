@@ -42,6 +42,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 25 | [Full Enforcement Mandate](#25-full-enforcement-mandate) | — |
 | 26 | [Two-Tier Architecture and Compositional Contracts](#26-two-tier-architecture-and-compositional-contracts) | — |
 | 27 | [The One Way](#27-the-one-way) | — |
+| 28 | [Correctness + Completeness](#28-correctness--completeness) | — |
 
 ---
 
@@ -1744,3 +1745,223 @@ Everything in between is muda.
   Production.* Productivity Press.
 - Liker (2004). *The Toyota Way.* McGraw-Hill. Principle 7:
   Use visual control so no problems are hidden.
+
+---
+
+## 28. Correctness + Completeness
+
+### The Problem
+
+Grade A (v2.2.0) measures **correctness** — "did you keep the promises
+you made?" A repo with 4 bindings that all resolve gets A. A repo with
+400 bindings where 390 resolve gets B. The one with 4 is "better" by
+the metric but covers almost nothing.
+
+Nobody asks: **what functions SHOULD have contracts but don't?**
+
+This is the distinction between:
+- **Correctness**: the contracts you wrote are right
+- **Completeness**: you wrote contracts for everything that needs them
+
+Both are required. One without the other is insufficient.
+
+### Meyer's Insight
+
+Meyer never mandated "every routine must have a contract." DbC is
+prescriptive about HOW to write contracts, not WHEN. But:
+
+> "One cannot expect large-scale reuse without a precise documentation
+> of what every component expects (precondition), what it guarantees
+> in return (postcondition) and what general conditions it maintains
+> (invariant)."
+> — Meyer, *Object-Oriented Software Construction* (1997), Ch. 11
+
+The **class invariant** is Meyer's completeness mechanism — it applies
+to ALL exported features of a class, not just the ones the developer
+chose to annotate. If you have a class invariant, every routine
+implicitly has at least that contract.
+
+Our analog: a repo's `binding.yaml` declares which functions have
+contracts (correctness). The **completeness gap** is the set of
+`pub fn` declarations in source code that have no binding at all.
+
+### Research Support
+
+**VeriEquivBench (arXiv:2510.06296, 2025)** introduces an "equivalence
+score" measuring bidirectional implication between code and spec —
+both soundness (spec implies code) AND completeness (code implies spec).
+
+> "Without [a completeness metric], there is no way to guarantee that
+> verified code truly aligns with its intended behaviour."
+
+**VERINA (arXiv:2505.23135, 2025)** measures "soundness AND
+completeness" of specifications against ground truth, finding the best
+model achieves only 52.3% specification completeness.
+
+**CLEVER (arXiv:2505.13938, 2025)** notes:
+
+> "Automatically generated specifications can be incomplete or leaky."
+
+**Coverage metrics for formal verification (Springer, 2003):**
+
+> "Even when a system is proven correct, there is still a question of
+> how complete the specification is, and whether it really covers all
+> the behaviors of the system."
+
+### The Two Dimensions
+
+```
+┌────────────────────────────┬──────────────────────────────────────┐
+│     CORRECTNESS            │         COMPLETENESS                 │
+│  "contracts are right"     │  "everything has a contract"         │
+├────────────────────────────┼──────────────────────────────────────┤
+│ Does code match contract?  │ Does every significant fn have one?  │
+├────────────────────────────┼──────────────────────────────────────┤
+│ Measured by:               │ Measured by:                         │
+│ - CD1: declared/resolved   │ - CD2: bound_pub_fns / total_pub_fns│
+│ - CB-1203: macros present  │ - CB-1211: pub fn coverage gap (NEW)│
+│ - CB-1208: bindings exist  │ - PV-05: completeness gate (NEW)    │
+│ - PV-01: pv lint passes    │                                     │
+├────────────────────────────┼──────────────────────────────────────┤
+│ Eiffel parallel:           │ Eiffel parallel:                     │
+│ require/ensure on routines │ class invariant on ALL features      │
+├────────────────────────────┼──────────────────────────────────────┤
+│ Tool:                      │ Tool:                                │
+│ pv score --binding         │ pv score --binding --crate-dir (NEW) │
+│ pv verify-bindings         │ pv infer (existing, not in score)    │
+│                            │ reverse_coverage.rs (existing)       │
+└────────────────────────────┴──────────────────────────────────────┘
+```
+
+### How pmat Already Integrates (and the Gap)
+
+pmat has three systems that check provable-contracts:
+
+**TDG (per-file quality):** Computes `provability_factor` from
+contract presence — files with contracts get lower tech-debt scores.
+But TDG does not flag files WITHOUT contracts. The provability factor
+only rewards; it doesn't penalize absence.
+
+**pmat comply (CB-1200..1210):**
+- CB-1200: Contracts validate
+- CB-1203: Contract-bound fns have `#[contract]` macros
+- CB-1208: Bindings resolve in source (ghost detection)
+- CB-1209: Trait enforcement
+- CB-1210: Precondition quality
+
+All five check the **contracts side** — are the contracts correct?
+None check the **code side** — what code lacks contracts?
+
+**pmat infra-score (PV-01..04):**
+- PV-01: `pv lint` passes (3pts)
+- PV-02: `pv score >= 0.5` (3pts)
+- PV-03: Proof level L2+ (2pts)
+- PV-04: contracts/ exists (2pts)
+
+All four check contract quality. None check code coverage.
+
+### Proposed Changes
+
+#### provable-contracts: CD2 completeness dimension
+
+```rust
+// In score_codebase_full(), when crate_dir is provided:
+let completeness = if let Some(crate_dir) = crate_dir {
+    let report = reverse_coverage(crate_dir, binding);
+    report.bound_count as f64 / report.total_pub_fns as f64
+} else {
+    binding_completeness  // fallback: current behavior
+};
+```
+
+Codebase score becomes:
+
+```
+CD1: Correctness (30%) — declared/resolved [existing]
+CD2: Completeness (20%) — bound_pub_fns / significant_pub_fns [NEW]
+CD3: MeanScore (20%) — average contract quality
+CD4: ProofDepth (15%) — weighted proof levels
+CD5: Drift (15%) — freshness
+```
+
+"Significant pub fns" = pub fns excluding:
+- Trait impls of std traits (Display, From, Default, Debug)
+- Functions in `#[cfg(test)]` modules
+- Functions < 5 lines (trivial getters/setters)
+
+This reuses `reverse_coverage.rs::scan_pub_fns` which already exists.
+
+#### paiml-mcp-agent-toolkit: CB-1211 completeness check
+
+New check in `check_pv_enforcement.rs`:
+
+```
+CB-1211: Contract Completeness
+  Scans source for significant pub fns
+  Cross-references against binding.yaml
+  Reports: "X/Y significant pub fns have contract bindings (Z%)"
+  PASS if >= 50%, WARN if >= 20%, FAIL if < 20%
+```
+
+#### paiml-mcp-agent-toolkit: PV-05 infra-score check
+
+New check in `provable_contracts.rs` scorer:
+
+```
+PV-05 (2pts): Contract completeness >= 50%
+  Runs reverse coverage scan
+  Max PV bonus increases from 10 to 12 points
+```
+
+### Grade Definition (v2.3.0)
+
+```
+Grade A: correctness >= 90% AND completeness >= 50%
+Grade B: correctness >= 80% AND completeness >= 20%
+Grade C: correctness >= 70% OR completeness >= 10%
+Grade F: correctness < 50% OR completeness = 0%
+```
+
+The AND in Grade A is critical. A repo cannot achieve A by being
+perfectly correct on 4 functions while ignoring the other 496.
+
+### Self-Falsification
+
+| # | Concern | Mitigation |
+|---|---------|------------|
+| F1 | `pub fn` count includes trivial impls (Display, From) | Filter std trait impls, test fns, <5 line fns |
+| F2 | 50% threshold is arbitrary | Configurable via `--min-completeness` |
+| F3 | Requires `--crate-dir` which is optional | Spec mandates it for honest scoring |
+| F4 | Gaming by making functions private | Private fns are inaccessible — not a real vector |
+| F5 | Large repos with many helpers penalized unfairly | Filter to "significant" fns only |
+
+### CLI Changes
+
+```bash
+# Current (correctness only):
+pv score contracts/ --binding contracts/aprender/binding.yaml
+
+# New (correctness + completeness):
+pv score contracts/ --binding contracts/aprender/binding.yaml \
+    --crate-dir ~/src/aprender
+
+# pmat comply (both dimensions):
+cd ~/src/aprender
+pmat comply check
+# CB-1208: 80/233 bindings verified (correctness)
+# CB-1211: 233/500 significant pub fns bound (47% completeness) ← NEW
+```
+
+### References (Section 28)
+
+- Meyer (1997). *Object-Oriented Software Construction.* Ch. 11:
+  Design by Contract. Class invariants as completeness mechanism.
+- Meyer (1992). "Applying Design by Contract." IEEE Computer 25(10).
+- VERINA (arXiv:2505.23135, 2025). Specification soundness AND
+  completeness benchmark.
+- VeriEquivBench (arXiv:2510.06296, 2025). Bidirectional equivalence
+  score — code implies spec AND spec implies code.
+- CLEVER (arXiv:2505.13938, 2025). Human-curated specs for
+  completeness; auto-generated specs are "incomplete or leaky."
+- Coverage Metrics for Formal Verification (Springer, 2003). "Even
+  when proven correct, how complete is the specification?"
