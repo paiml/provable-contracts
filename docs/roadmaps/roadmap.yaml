@@ -2112,11 +2112,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'New task: PMAT-123'
-  status: inprogress
+  status: completed
   priority: medium
   assigned_to: null
   created: 2026-03-28T12:33:57.050560928+00:00
-  updated: 2026-03-28T12:33:57.050560928+00:00
+  updated: 2026-03-28T16:24:21.619441715+00:00
   spec: null
   acceptance_criteria: []
   phases: []
