@@ -169,32 +169,32 @@ bindings:
   equation: tensor_count
   module_path: trueno
   function: tensor_count
-  status: implemented
-  notes: function not found in source
+  status: pending
+  notes: function not found in trueno core source
 - contract: metrics-classification-v1.yaml
   equation: precision
   module_path: trueno
   function: precision
-  status: implemented
-  notes: function not found in source
+  status: pending
+  notes: function not found in trueno core source
 - contract: metrics-classification-v1.yaml
   equation: recall
   module_path: trueno
   function: recall
-  status: implemented
-  notes: function not found in source
+  status: pending
+  notes: function not found in trueno core source
 - contract: attention-kernel-v1.yaml
   equation: attention
   module_path: trueno
   function: attention
-  status: implemented
-  notes: function not found in source
+  status: pending
+  notes: function not found in trueno core source
 - contract: int8-symmetric-quant-v1.yaml
   equation: quantize
   module_path: trueno
   function: quantize
-  status: implemented
-  notes: function not found in source
+  status: pending
+  notes: function not found in trueno core source
 - contract: roofline-model-v1.yaml
   equation: bandwidth_ceiling
   module_path: trueno::monitor::compute_device
