@@ -104,6 +104,9 @@ pub enum Commands {
         /// Reverse coverage: scan crate dir for unbound pub fns
         #[arg(long)]
         reverse: Option<PathBuf>,
+        /// Enforcement quality: scan crate source for contract call sites and classify E0/E1/E2
+        #[arg(long)]
+        enforcement: Option<PathBuf>,
     },
     /// Generate all artifacts (scaffold, kani, probar) to disk
     Generate {

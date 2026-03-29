@@ -65,7 +65,14 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             binding,
             fuzz,
             reverse,
-        } => commands::coverage::run(&contract_dir, binding.as_deref(), fuzz, reverse.as_deref()),
+            enforcement,
+        } => commands::coverage::run(
+            &contract_dir,
+            binding.as_deref(),
+            fuzz,
+            reverse.as_deref(),
+            enforcement.as_deref(),
+        ),
         Commands::Generate {
             contract,
             output,

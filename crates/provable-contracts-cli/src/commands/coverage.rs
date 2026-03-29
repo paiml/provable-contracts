@@ -10,6 +10,7 @@ pub fn run(
     binding_path: Option<&Path>,
     _show_fuzz: bool,
     reverse_crate: Option<&Path>,
+    enforcement_crate: Option<&Path>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     // Reverse coverage mode
     if let Some(crate_dir) = reverse_crate {
@@ -107,7 +108,182 @@ pub fn run(
     println!();
     println!("Overall obligation coverage: {pct:.1}%");
 
+    // Enforcement quality analysis
+    if let Some(crate_dir) = enforcement_crate {
+        let bp = binding_path.ok_or("--enforcement requires --binding <path>")?;
+        let binding = provable_contracts::binding::parse_binding(bp)?;
+        print_enforcement_report(crate_dir, &binding);
+    }
+
     Ok(())
+}
+
+/// Scan crate source for contract call sites and classify enforcement quality.
+fn print_enforcement_report(
+    crate_dir: &Path,
+    binding: &provable_contracts::binding::BindingRegistry,
+) {
+    let src_dir = crate_dir.join("src");
+    if !src_dir.exists() {
+        eprintln!("warning: {}/src not found", crate_dir.display());
+        return;
+    }
+
+    // Find all contract_pre_* call sites in .rs files
+    let mut call_sites: Vec<CallSite> = Vec::new();
+    scan_call_sites(&src_dir, &mut call_sites);
+
+    // Read generated_contracts.rs to classify macro quality
+    let gen_path = src_dir.join("generated_contracts.rs");
+    let gen_content = std::fs::read_to_string(&gen_path).unwrap_or_default();
+
+    // Classify each call site
+    for site in &mut call_sites {
+        site.level = classify_macro(&site.macro_name, &gen_content);
+    }
+
+    let total_bindings = binding.bindings.len();
+    let total_sites = call_sites.len();
+    let e0_count = call_sites
+        .iter()
+        .filter(|s| s.level == EnforcementLevel::E0)
+        .count();
+    let e1_count = call_sites
+        .iter()
+        .filter(|s| s.level == EnforcementLevel::E1)
+        .count();
+    let e2_count = call_sites
+        .iter()
+        .filter(|s| s.level == EnforcementLevel::E2)
+        .count();
+
+    #[allow(clippy::cast_precision_loss)]
+    let penetration = if total_bindings > 0 {
+        total_sites as f64 / total_bindings as f64
+    } else {
+        0.0
+    };
+
+    #[allow(clippy::cast_precision_loss)]
+    let quality_score = if total_sites > 0 {
+        (e0_count as f64 * 0.1 + e1_count as f64 * 0.5 + e2_count as f64 * 1.0) / total_sites as f64
+    } else {
+        0.0
+    };
+
+    let enforcement_score = penetration * quality_score;
+
+    println!();
+    println!("Enforcement Quality Report");
+    println!("==========================");
+    println!();
+    println!("  Bindings declared:    {total_bindings}");
+    println!("  Call sites found:     {total_sites}");
+    println!(
+        "  Penetration:          {:.1}% ({total_sites}/{total_bindings})",
+        penetration * 100.0
+    );
+    println!();
+    println!("  E0 (generic !is_empty):  {e0_count}");
+    println!("  E1 (domain pre-checks):  {e1_count}");
+    println!("  E2 (pre + post checks):  {e2_count}");
+    println!("  Quality score:           {quality_score:.2} (E0=0.1, E1=0.5, E2=1.0)");
+    println!();
+    println!("  Enforcement score:       {enforcement_score:.4} (penetration × quality)");
+    println!();
+
+    if !call_sites.is_empty() {
+        println!("  Call sites:");
+        for site in &call_sites {
+            let level_str = match site.level {
+                EnforcementLevel::E0 => "E0",
+                EnforcementLevel::E1 => "E1",
+                EnforcementLevel::E2 => "E2",
+            };
+            println!(
+                "    [{level_str}] {}:{} — {}",
+                site.file, site.line, site.macro_name
+            );
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum EnforcementLevel {
+    E0,
+    E1,
+    E2,
+}
+
+struct CallSite {
+    file: String,
+    line: usize,
+    macro_name: String,
+    level: EnforcementLevel,
+}
+
+/// Recursively scan `.rs` files for `contract_pre_*` and `contract_post_*` invocations.
+fn scan_call_sites(dir: &Path, sites: &mut Vec<CallSite>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            scan_call_sites(&path, sites);
+        } else if path.extension().and_then(|e| e.to_str()) == Some("rs")
+            && path.file_name().and_then(|n| n.to_str()) != Some("generated_contracts.rs")
+        {
+            let Ok(content) = std::fs::read_to_string(&path) else {
+                continue;
+            };
+            for (i, line) in content.lines().enumerate() {
+                if let Some(pos) = line.find("contract_pre_") {
+                    let rest = &line[pos..];
+                    let end = rest.find('!').unwrap_or(rest.len());
+                    let macro_name = rest[..end].to_string();
+                    sites.push(CallSite {
+                        file: path.display().to_string(),
+                        line: i + 1,
+                        macro_name,
+                        level: EnforcementLevel::E0,
+                    });
+                }
+            }
+        }
+    }
+}
+
+/// Classify a macro's enforcement level by inspecting its body in `generated_contracts.rs`.
+fn classify_macro(macro_name: &str, gen_content: &str) -> EnforcementLevel {
+    // Find the macro definition
+    let pattern = format!("macro_rules! {macro_name} {{");
+    let Some(start) = gen_content.find(&pattern) else {
+        return EnforcementLevel::E0;
+    };
+    // Extract the macro body (next ~20 lines)
+    let body: String = gen_content[start..]
+        .lines()
+        .take(20)
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    let has_domain_pre = body.contains("is_finite")
+        || body.contains("len() >")
+        || body.contains("len() %")
+        || body.contains("len() ==");
+
+    // Check if there's a corresponding post macro
+    let post_name = macro_name.replace("contract_pre_", "contract_post_");
+    let has_post = gen_content.contains(&format!("macro_rules! {post_name} {{"));
+
+    if has_domain_pre && has_post {
+        EnforcementLevel::E2
+    } else if has_domain_pre {
+        EnforcementLevel::E1
+    } else {
+        EnforcementLevel::E0
+    }
 }
 
 /// Recursively collect `.yaml` contract files, skipping non-contract directories.
