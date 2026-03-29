@@ -2,8 +2,8 @@ metadata:
   version: 1.0.0
   created: '2026-02-21'
   author: PAIML Engineering
-  description: Qwen3-235B-A22B (MoE) end-to-end verification — composing all kernel contracts including MoE routing into a
-    complete model proof
+  description: Qwen3-235B-A22B (MoE) end-to-end verification — composing all kernel
+    contracts including MoE routing into a complete model proof
   references:
   - Qwen3 Technical Report — MoE architecture
   - Vaswani et al. (2017) Attention Is All You Need
@@ -17,7 +17,8 @@ metadata:
   - kv-cache-sizing-v1
 equations:
   model_parameter_count:
-    formula: P = V*d + L*(d_attn + d_router + N_experts*d_expert + d_norm) + d_final + V*d
+    formula: P = V*d + L*(d_attn + d_router + N_experts*d_expert + d_norm) + d_final
+      + V*d
     domain: V=151936, d=4096, L=94, N_experts=128, moe_inter=1536
     invariants:
     - Total ≈ 235.1B for Qwen3-235B-A22B
@@ -29,6 +30,7 @@ equations:
     - 94 identical MoE decoder blocks (decoder_sparse_step=1)
     preconditions:
     - '!config.is_empty()'
+    - num_layers > 0
     lean_theorem: Theorems.Model_Parameter_Count
   active_parameter_count:
     formula: A = V*d + L*(d_attn + d_router + k*d_expert + d_norm) + d_final + V*d
@@ -39,6 +41,7 @@ equations:
     - Active/Total ratio ≈ 9.4% (only 8/128 experts active)
     preconditions:
     - '!config.is_empty()'
+    - num_layers > 0
     lean_theorem: Theorems.Active_Parameter_Count
   flops_per_token:
     formula: F ≈ 2*A (forward pass) for active compute
@@ -62,6 +65,7 @@ equations:
     - M_activations bounded by batch_size * seq_len * d
     preconditions:
     - '!config.is_empty()'
+    - num_layers > 0
     lean_theorem: Theorems.Memory_Breakdown
   throughput_model:
     formula: tok/s = min(bandwidth / bytes_per_token, compute / flops_per_token)
@@ -72,6 +76,7 @@ equations:
     - 'MoE advantage: compute/memory ratio better than dense equivalent'
     preconditions:
     - '!config.is_empty()'
+    - batch_size > 0
     lean_theorem: Theorems.Throughput_Model
   verification_ladder:
     formula: coverage(contract_set) = verified_obligations / total_obligations
@@ -81,6 +86,7 @@ equations:
     - coverage = 1 means all obligations verified
     preconditions:
     - '!config.is_empty()'
+    - num_layers > 0
     lean_theorem: Theorems.Verification_Ladder
   contract_composition:
     formula: model = compose(embedding, L * moe_block, final_norm, lm_head)

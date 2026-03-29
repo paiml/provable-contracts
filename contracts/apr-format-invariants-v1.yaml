@@ -2,14 +2,16 @@ metadata:
   version: 1.0.0
   created: '2026-03-27'
   author: PAIML Engineering
-  description: APR format invariants — serialization roundtrip, schema validation, and report formatting for model QA evidence
+  description: APR format invariants — serialization roundtrip, schema validation,
+    and report formatting for model QA evidence
   references:
   - apr-model-qa-playbook — production model quality assurance pipeline
   - Apache Arrow IPC format specification
 equations:
   serialize_roundtrip:
-    formula: "serialize_model_evidence: ModelEvidence -> Result<Bytes, SerError>\n  Serializes evidence to a deterministic\
-      \ binary format.\n  Inverse: deserialize(serialize(e)) == e for all valid evidence e.\n"
+    formula: "serialize_model_evidence: ModelEvidence -> Result<Bytes, SerError>\n\
+      \  Serializes evidence to a deterministic binary format.\n  Inverse: deserialize(serialize(e))\
+      \ == e for all valid evidence e.\n"
     domain: ModelEvidence with all required fields populated
     codomain: Result<Bytes, SerError>
     invariants:
@@ -17,10 +19,12 @@ equations:
     - Output size proportional to evidence complexity
     preconditions:
     - '!data.is_empty()'
+    - '!input.is_empty()'
     lean_theorem: Theorems.Serialize_Roundtrip
   validate_schema:
-    formula: "validate_evidence_schema: Bytes -> Result<ModelEvidence, ValidationError>\n  Validates binary evidence against\
-      \ expected schema.\n  Rejects unknown fields, missing required fields, type mismatches.\n"
+    formula: "validate_evidence_schema: Bytes -> Result<ModelEvidence, ValidationError>\n\
+      \  Validates binary evidence against expected schema.\n  Rejects unknown fields,\
+      \ missing required fields, type mismatches.\n"
     domain: Bytes (arbitrary byte stream)
     codomain: Result<ModelEvidence, ValidationError>
     invariants:
@@ -28,10 +32,11 @@ equations:
     - Truncated input produces ValidationError, never panics
     preconditions:
     - '!config.is_empty()'
+    - '!input.is_empty()'
     lean_theorem: Theorems.Validate_Schema
   parse_playbook:
-    formula: "parse_qa_playbook: Path -> Result<QaPlaybook, ParseError>\n  Parses YAML playbook defining checks, thresholds,\
-      \ and model configs.\n"
+    formula: "parse_qa_playbook: Path -> Result<QaPlaybook, ParseError>\n  Parses\
+      \ YAML playbook defining checks, thresholds, and model configs.\n"
     domain: Path to a YAML file
     codomain: Result<QaPlaybook, ParseError>
     invariants:
@@ -39,9 +44,11 @@ equations:
     - Missing required fields produce descriptive ParseError
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Parse_Playbook
   format_report:
-    formula: "format_mqs_report: MqsResult -> String\n  Renders human-readable MQS report with dimension breakdown.\n"
+    formula: "format_mqs_report: MqsResult -> String\n  Renders human-readable MQS\
+      \ report with dimension breakdown.\n"
     domain: MqsResult with valid scores
     codomain: String (non-empty)
     invariants:
@@ -49,10 +56,12 @@ equations:
     - Report contains overall grade
     preconditions:
     - '!config.is_empty()'
+    - '!input.is_empty()'
     lean_theorem: Theorems.Format_Report
   detect_regression:
-    formula: "detect_regression: (MqsResult, MqsResult) -> Vec<Regression>\n  Compares current vs baseline MQS results.\n\
-      \  Regression = dimension score decreased beyond tolerance.\n"
+    formula: "detect_regression: (MqsResult, MqsResult) -> Vec<Regression>\n  Compares\
+      \ current vs baseline MQS results.\n  Regression = dimension score decreased\
+      \ beyond tolerance.\n"
     domain: Two valid MqsResult values (current, baseline)
     codomain: Vec<Regression> (may be empty)
     invariants:
@@ -60,6 +69,7 @@ equations:
     - Regression detected when any dimension drops > tolerance
     preconditions:
     - '!config.is_empty()'
+    - '!path.is_empty()'
     lean_theorem: Theorems.Detect_Regression
 proof_obligations:
 - type: equivalence
@@ -110,7 +120,8 @@ kani_harnesses:
 qa_gate:
   id: F-AFIV-001
   name: apr-format-invariants-v1 Contract
-  description: Quality gate for APR format invariants — serialization roundtrip, schema vali
+  description: Quality gate for APR format invariants — serialization roundtrip, schema
+    vali
   checks:
   - validation
   - falsification

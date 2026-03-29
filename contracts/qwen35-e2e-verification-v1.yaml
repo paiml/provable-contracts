@@ -2,7 +2,8 @@ metadata:
   version: 1.0.0
   created: '2026-02-18'
   author: PAIML Engineering
-  description: Qwen3.5 end-to-end verification — composing all kernel contracts into a complete model proof
+  description: Qwen3.5 end-to-end verification — composing all kernel contracts into
+    a complete model proof
   references:
   - Qwen3.5 Technical Report — full model architecture
   - Vaswani et al. (2017) Attention Is All You Need
@@ -27,6 +28,7 @@ equations:
     - Per-layer cost linear in d^2
     preconditions:
     - '!config.is_empty()'
+    - num_layers > 0
     lean_theorem: Theorems.Model_Parameter_Count
   flops_per_token:
     formula: F ≈ 2*P (forward pass) for dense compute
@@ -48,6 +50,7 @@ equations:
     - M_activations bounded by batch_size * seq_len * d
     preconditions:
     - '!config.is_empty()'
+    - num_layers > 0
     lean_theorem: Theorems.Memory_Breakdown
   throughput_model:
     formula: tok/s = min(bandwidth / bytes_per_token, compute / flops_per_token)
@@ -58,6 +61,7 @@ equations:
     - GDN layers reduce attention bottleneck
     preconditions:
     - '!config.is_empty()'
+    - batch_size > 0
     lean_theorem: Theorems.Throughput_Model
   verification_ladder:
     formula: coverage(contract_set) = verified_obligations / total_obligations
@@ -68,6 +72,7 @@ equations:
     - 'Each layer adds: attention/GDN + FFN + 2*RMSNorm obligations'
     preconditions:
     - '!config.is_empty()'
+    - num_layers > 0
     lean_theorem: Theorems.Verification_Ladder
   contract_composition:
     formula: model_contract = compose(embedding, L × block, final_norm, unembed)

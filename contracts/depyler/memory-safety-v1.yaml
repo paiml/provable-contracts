@@ -2,10 +2,13 @@ metadata:
   version: 1.0.0
   created: '2026-03-25'
   author: PAIML Engineering
-  description: Memory safety — generated Rust code free of undefined behavior, dangling references, and buffer overflows
+  description: Memory safety — generated Rust code free of undefined behavior, dangling
+    references, and buffer overflows
   references:
-  - 'arXiv:2104.12986 — RustBelt: Securing the Foundations of the Rust Programming Language'
-  - 'Jung et al. (2017) RustBelt: Securing the Foundations of the Rust Programming Language, POPL'
+  - 'arXiv:2104.12986 — RustBelt: Securing the Foundations of the Rust Programming
+    Language'
+  - 'Jung et al. (2017) RustBelt: Securing the Foundations of the Rust Programming
+    Language, POPL'
   - 'arXiv:2103.15420 — Oxide: The Essence of Rust'
   - 'Weiss et al. (2019) Oxide: The Essence of Rust'
   - The Rustonomicon — Unsafe Rust reference
@@ -14,7 +17,8 @@ metadata:
   - type-preservation-v1
 equations:
   ownership_invariant:
-    formula: 'forall v in GeneratedVars: owned(v) xor borrowed(v, ''a) at any program point'
+    formula: 'forall v in GeneratedVars: owned(v) xor borrowed(v, ''a) at any program
+      point'
     domain: 'v: variable bindings in generated Rust code'
     invariants:
     - Every value has exactly one owner at any point
@@ -23,10 +27,11 @@ equations:
     - Multiple immutable borrows are allowed simultaneously
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Ownership_Invariant
   escape_analysis:
-    formula: 'forall v in Params(f): escape(v) => owned(v); not escape(v) and mutated(v) => mut_borrow(v); not escape(v) and
-      not mutated(v) => borrow(v)'
+    formula: 'forall v in Params(f): escape(v) => owned(v); not escape(v) and mutated(v)
+      => mut_borrow(v); not escape(v) and not mutated(v) => borrow(v)'
     domain: 'f: transpiled Rust function, v: function parameters'
     invariants:
     - Parameters that escape (returned or stored) are taken by value
@@ -35,6 +40,7 @@ equations:
     - Copy types bypass borrowing analysis (passed by value)
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Escape_Analysis
   lifetime_safety:
     formula: 'forall ref r with lifetime ''a: lifetime(referent(r)) >= ''a'
@@ -46,6 +52,7 @@ equations:
     - Iterators do not outlive their source collection
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Lifetime_Safety
   bounds_safety:
     formula: 'forall access c[i]: 0 <= i < len(c) or access is bounds-checked'
@@ -57,9 +64,11 @@ equations:
     - Array access is statically bounded where possible
     preconditions:
     - '!config.is_empty()'
+    - num_layers > 0
     lean_theorem: Theorems.Bounds_Safety
   use_after_move:
-    formula: 'forall v moved at point p: no use of v at any point q > p (unless v is reassigned between p and q)'
+    formula: 'forall v moved at point p: no use of v at any point q > p (unless v
+      is reassigned between p and q)'
     domain: 'v: non-Copy variables in generated Rust code'
     invariants:
     - Strategic clone inserted when value used after move
@@ -68,9 +77,11 @@ equations:
     - Reassignment after move resets liveness
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Use_After_Move
   drop_safety:
-    formula: 'forall resource r acquired in scope S: Drop(r) called exactly once when S exits'
+    formula: 'forall resource r acquired in scope S: Drop(r) called exactly once when
+      S exits'
     domain: 'r: values implementing Drop (files, locks, connections)'
     invariants:
     - Python with-statement maps to Rust scope-based RAII
@@ -79,6 +90,7 @@ equations:
     - 'No double-free: each value dropped exactly once'
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Drop_Safety
 proof_obligations:
 - type: precondition
@@ -91,7 +103,8 @@ proof_obligations:
   applies_to: all
 - type: invariant
   property: No use-after-move in generated code
-  formal: 'forall v: moved_at(v, p) => not used_at(v, q) for q > p without intervening reassignment'
+  formal: 'forall v: moved_at(v, p) => not used_at(v, q) for q > p without intervening
+    reassignment'
   applies_to: all
 - type: invariant
   property: No dangling references
@@ -115,7 +128,8 @@ proof_obligations:
   applies_to: all
 - type: invariant
   property: Escape analysis correctness
-  formal: escape(v) => BorrowingPattern::Owned; mutated(v) => MutableBorrow; read_only(v) => Borrowed
+  formal: escape(v) => BorrowingPattern::Owned; mutated(v) => MutableBorrow; read_only(v)
+    => Borrowed
   applies_to: all
 - type: invariant
   property: Copy type optimization
@@ -141,13 +155,17 @@ kernel_structure:
 falsification_tests:
 - id: FALSIFY-MS-001
   rule: No use-after-move
-  prediction: Variables used after being passed to consuming functions get .clone() or &
-  test: 'proptest: generate functions with multiple uses of same variable, verify compilation'
+  prediction: Variables used after being passed to consuming functions get .clone()
+    or &
+  test: 'proptest: generate functions with multiple uses of same variable, verify
+    compilation'
   if_fails: EscapeAnalysis::analyze_function misses a consumption point
 - id: FALSIFY-MS-002
   rule: Borrowing pattern correctness
-  prediction: Read-only params get &, mutated params get &mut, escaping params are owned
-  test: 'proptest: generate functions with varied parameter usage patterns, verify signatures'
+  prediction: Read-only params get &, mutated params get &mut, escaping params are
+    owned
+  test: 'proptest: generate functions with varied parameter usage patterns, verify
+    signatures'
   if_fails: BorrowingContext::get_pattern returns wrong BorrowingPattern variant
 - id: FALSIFY-MS-003
   rule: No dangling references
@@ -156,7 +174,8 @@ falsification_tests:
   if_fails: LifetimeInference fails to propagate lifetime from input to output
 - id: FALSIFY-MS-004
   rule: Bounds-checked access
-  prediction: List indexing transpiles to .get() or bounds-checked access, not raw []
+  prediction: List indexing transpiles to .get() or bounds-checked access, not raw
+    []
   test: 'proptest: generate functions with list[i] access, verify .get() in output'
   if_fails: Codegen emits unchecked [] indexing for Vec
 - id: FALSIFY-MS-005
@@ -172,7 +191,8 @@ falsification_tests:
 - id: FALSIFY-MS-007
   rule: Strategic clone minimality
   prediction: clone() only inserted when variable genuinely used after move
-  test: 'proptest: count clone() calls in output, verify each corresponds to a real use-after-move'
+  test: 'proptest: count clone() calls in output, verify each corresponds to a real
+    use-after-move'
   if_fails: Conservative analysis inserts unnecessary clones
 - id: FALSIFY-MS-008
   rule: With-to-Drop mapping
@@ -182,12 +202,14 @@ falsification_tests:
 - id: FALSIFY-MS-009
   rule: Mutable borrow exclusivity
   prediction: No simultaneous &mut and & to same variable in generated code
-  test: 'proptest: generate functions with mixed read/write access, verify borrow checker passes'
+  test: 'proptest: generate functions with mixed read/write access, verify borrow
+    checker passes'
   if_fails: Borrowing analysis allows aliased mutable reference
 - id: FALSIFY-MS-010
   rule: Iterator lifetime safety
   prediction: Iterators created from collections do not outlive their source
-  test: 'Unit test: transpile for-loops with complex iterators, verify no dangling iterator'
+  test: 'Unit test: transpile for-loops with complex iterators, verify no dangling
+    iterator'
   if_fails: Iterator codegen creates reference that outlives source collection
 kani_harnesses:
 - id: KANI-MS-001
@@ -290,4 +312,5 @@ qa_gate:
   - mutable_exclusivity
   - iterator_lifetime
   pass_criteria: All 10 falsification tests pass, all 5 Kani harnesses verify
-  falsification: Skip escape analysis to emit raw moves, causing use-after-move in generated code
+  falsification: Skip escape analysis to emit raw moves, causing use-after-move in
+    generated code

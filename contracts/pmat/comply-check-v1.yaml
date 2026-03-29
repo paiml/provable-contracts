@@ -2,15 +2,18 @@ metadata:
   version: 1.0.0
   created: '2026-03-27'
   author: PAIML Engineering
-  description: Compliance check — run all quality gates (TDG, lint, deny, tests) and aggregate pass/fail
+  description: Compliance check — run all quality gates (TDG, lint, deny, tests) and
+    aggregate pass/fail
   references:
   - pmat comply check — quality gate aggregation
   - PMAT DbC v5.0 — Popperian falsification protocol
 equations:
   run_checks:
-    formula: "run_all_checks: ProjectPath -> Result<ComplianceReport, CheckError>\n  ComplianceReport {\n    gates: Vec<GateResult>,\n\
-      \    overall_pass: bool,\n    score: f64,\n  }\n  Where GateResult = { name: String, status: Pass | Fail | Skip, evidence:\
-      \ String }\n  Gates executed: [format, check, clippy, test, coverage, deny, lint, satd]\n"
+    formula: "run_all_checks: ProjectPath -> Result<ComplianceReport, CheckError>\n\
+      \  ComplianceReport {\n    gates: Vec<GateResult>,\n    overall_pass: bool,\n\
+      \    score: f64,\n  }\n  Where GateResult = { name: String, status: Pass | Fail\
+      \ | Skip, evidence: String }\n  Gates executed: [format, check, clippy, test,\
+      \ coverage, deny, lint, satd]\n"
     domain: ProjectPath pointing to a valid Cargo workspace
     codomain: Result<ComplianceReport, CheckError>
     invariants:
@@ -19,6 +22,7 @@ equations:
     - Failed gate captures evidence string for diagnostics
     preconditions:
     - '!config.is_empty()'
+    - '!path.is_empty()'
     lean_theorem: Theorems.Run_Checks
   aggregate_score:
     formula: "score: Vec<GateResult> -> f64\n  score = passed_gates / total_non_skipped_gates\n"
@@ -29,6 +33,7 @@ equations:
     - Score is 0.0 iff all gates fail
     preconditions:
     - '!config.is_empty()'
+    - checks.len() > 0
     lean_theorem: Theorems.Aggregate_Score
 proof_obligations:
 - type: postcondition
@@ -78,7 +83,8 @@ kani_harnesses:
 qa_gate:
   id: F-CCV-001
   name: comply-check-v1 Contract
-  description: Quality gate for Compliance check — run all quality gates (TDG, lint, deny, t
+  description: Quality gate for Compliance check — run all quality gates (TDG, lint,
+    deny, t
   checks:
   - validation
   - falsification

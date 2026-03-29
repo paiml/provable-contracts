@@ -11,6 +11,7 @@ equations:
     - No panics on valid input
     preconditions:
     - '!config.is_empty()'
+    - '!path.is_empty()'
     lean_theorem: Theorems.Configuration
 proof_obligations:
 - type: invariant

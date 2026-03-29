@@ -16,6 +16,7 @@ equations:
     - 'Deterministic: H(s) = H(s) for all s'
     preconditions:
     - '!config.is_empty()'
+    - '!input.is_empty()'
     lean_theorem: Theorems.Hash_String
   hash_file:
     formula: H(path) = 'blake3:' || hex(BLAKE3(read_all(path)))
@@ -27,9 +28,11 @@ equations:
     - Returns Err for non-existent paths
     preconditions:
     - '!config.is_empty()'
+    - '!input.is_empty()'
     lean_theorem: Theorems.Hash_File
   composite_hash:
-    formula: H(c₁, ..., cₙ) = 'blake3:' || hex(BLAKE3(c₁ || NUL || c₂ || NUL || ... || cₙ || NUL))
+    formula: H(c₁, ..., cₙ) = 'blake3:' || hex(BLAKE3(c₁ || NUL || c₂ || NUL || ...
+      || cₙ || NUL))
     domain: components ∈ [&str]
     codomain: String matching /^blake3:[0-9a-f]{64}$/
     invariants:
@@ -38,6 +41,7 @@ equations:
     - 'Deterministic: same inputs → same hash'
     preconditions:
     - '!config.is_empty()'
+    - '!input.is_empty()'
     lean_theorem: Theorems.Composite_Hash
 proof_obligations:
 - type: invariant

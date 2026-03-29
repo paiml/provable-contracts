@@ -13,20 +13,24 @@ metadata:
   - backend-dispatch-v1.yaml
 equations:
   pcie_overhead:
-    formula: "Per-inference PCIe transfer cost:\n  transfer_time = model_bytes / pcie_bandwidth\n  Qwen2.5-1.5B Q4K: 1.1 GB\
-      \ / 32 GB/s (PCIe 4.0 x16) ≈ 34ms\n\nPer-token overhead (28 layers, 7 matmuls/layer):\n  matmul_transfers = 196 × weight_slab_bytes\
-      \ / pcie_bandwidth\n\nWith persistent VRAM residency:\n  transfer_time = 0 (weights already in VRAM)\n  Only activations\
-      \ + KV cache cross PCIe (negligible for batch=1)\n"
+    formula: "Per-inference PCIe transfer cost:\n  transfer_time = model_bytes / pcie_bandwidth\n\
+      \  Qwen2.5-1.5B Q4K: 1.1 GB / 32 GB/s (PCIe 4.0 x16) ≈ 34ms\n\nPer-token overhead\
+      \ (28 layers, 7 matmuls/layer):\n  matmul_transfers = 196 × weight_slab_bytes\
+      \ / pcie_bandwidth\n\nWith persistent VRAM residency:\n  transfer_time = 0 (weights\
+      \ already in VRAM)\n  Only activations + KV cache cross PCIe (negligible for\
+      \ batch=1)\n"
     domain: PCIe 4.0 x16, model_bytes > 0
     invariants:
     - Persistent residency eliminates per-inference transfer
     - VRAM usage = model_bytes (constant after startup)
     preconditions:
     - '!config.is_empty()'
+    - model_bytes > 0
     lean_theorem: Theorems.Pcie_Overhead
   throughput_target:
-    formula: "GPU memory bandwidth ceiling (RTX 4090):\n  bw_ceiling = 1008 GB/s / 1.1 GB ≈ 916 tok/s (theoretical)\n  llama.cpp\
-      \ measured: 225 tok/s (24.5% roofline utilization)\n  apr measured: 108 tok/s (11.8% roofline utilization)\n\nTarget:\
+    formula: "GPU memory bandwidth ceiling (RTX 4090):\n  bw_ceiling = 1008 GB/s /\
+      \ 1.1 GB ≈ 916 tok/s (theoretical)\n  llama.cpp measured: 225 tok/s (24.5% roofline\
+      \ utilization)\n  apr measured: 108 tok/s (11.8% roofline utilization)\n\nTarget:\
       \ apr GPU ≥ 180 tok/s (80% of llama.cpp, 19.6% roofline)\n"
     domain: RTX 4090, Qwen2.5-1.5B Q4K
     invariants:
@@ -34,6 +38,7 @@ equations:
     - Weight residency eliminates PCIe bottleneck
     preconditions:
     - '!config.is_empty()'
+    - batch_size > 0
     lean_theorem: Theorems.Throughput_Target
 proof_obligations:
 - type: invariant
@@ -54,11 +59,13 @@ proof_obligations:
   tolerance: 0.0001
   applies_to: all
 - type: invariant
-  property: 'PMAT-394: Grace Blackwell unified memory — cuMemAllocManaged eager, not lazy'
-  formal: cuMemAllocManaged on CUDA 13.0/GB10 allocates physical pages immediately (Xid 31 on OOM)
+  property: 'PMAT-394: Grace Blackwell unified memory — cuMemAllocManaged eager, not
+    lazy'
+  formal: cuMemAllocManaged on CUDA 13.0/GB10 allocates physical pages immediately
+    (Xid 31 on OOM)
   applies_to: cc >= 120
-  finding: 32B OOM (150 GB VM). cuMemAllocManaged NOT suitable for large models on current driver. Use mmap+cuMemHostRegister
-    or driver update.
+  finding: 32B OOM (150 GB VM). cuMemAllocManaged NOT suitable for large models on
+    current driver. Use mmap+cuMemHostRegister or driver update.
 falsification_tests:
 - id: FALSIFY-GWR-001
   rule: Weight residency

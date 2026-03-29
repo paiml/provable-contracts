@@ -11,6 +11,7 @@ equations:
     - No panics on valid input
     preconditions:
     - '!config.is_empty()'
+    - '!input.is_empty()'
     lean_theorem: Theorems.Error_Handling
 proof_obligations:
 - type: invariant
@@ -29,7 +30,8 @@ kani_harnesses:
 qa_gate:
   id: F-EHV-001
   name: error-handling-v1 Contract
-  description: Quality gate for Generic error-handling contract — common Rust API pattern
+  description: Quality gate for Generic error-handling contract — common Rust API
+    pattern
   checks:
   - validation
   - falsification

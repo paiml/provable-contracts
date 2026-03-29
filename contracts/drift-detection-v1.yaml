@@ -2,7 +2,8 @@ metadata:
   version: 1.0.0
   created: '2026-02-19'
   author: PAIML Engineering
-  description: Data drift detection -- univariate and performance drift with threshold-based classification
+  description: Data drift detection -- univariate and performance drift with threshold-based
+    classification
   references:
   - Gama et al. (2004) Learning with Drift Detection, SBIA
   - Webb et al. (2016) Characterizing Concept Drift, DMKD
@@ -17,6 +18,7 @@ equations:
     - Larger shift produces larger score
     preconditions:
     - '!config.is_empty()'
+    - window_size > 0
     lean_theorem: Theorems.Univariate_Drift
   performance_drift:
     formula: perf_drift = |metric_ref - metric_cur| / metric_ref
@@ -27,9 +29,11 @@ equations:
     - perf_drift = 0 when metric_ref = metric_cur
     preconditions:
     - '!config.is_empty()'
+    - window_size > 0
     lean_theorem: Theorems.Performance_Drift
   classify_drift:
-    formula: status = NoDrift if score < warn_threshold, Warning if score < drift_threshold, Drift otherwise
+    formula: status = NoDrift if score < warn_threshold, Warning if score < drift_threshold,
+      Drift otherwise
     domain: score >= 0, 0 < warn_threshold < drift_threshold
     codomain: status in {NoDrift, Warning, Drift}
     invariants:
@@ -38,6 +42,7 @@ equations:
     - score = 0 always yields NoDrift
     preconditions:
     - '!config.is_empty()'
+    - '!input.is_empty()'
     lean_theorem: Theorems.Classify_Drift
   min_samples_guard:
     formula: detect(data) = NoDrift if |data| < min_samples
@@ -57,7 +62,8 @@ proof_obligations:
   applies_to: all
 - type: invariant
   property: DriftStatus transitions correct
-  formal: NoDrift if score < warn, Warning if warn <= score < drift, Drift if score >= drift
+  formal: NoDrift if score < warn, Warning if warn <= score < drift, Drift if score
+    >= drift
   applies_to: all
 - type: invariant
   property: min_samples respected
@@ -71,12 +77,14 @@ falsification_tests:
 - id: FALSIFY-DRIFT-001
   rule: Drift score non-negative
   prediction: drift_score >= 0 for all inputs
-  test: 'proptest: random reference and current distributions, compute drift score, check >= 0'
+  test: 'proptest: random reference and current distributions, compute drift score,
+    check >= 0'
   if_fails: Sign error in drift score computation
 - id: FALSIFY-DRIFT-002
   rule: DriftStatus ordering
   prediction: Higher scores produce equal or higher severity status
-  test: 'proptest: generate scores spanning all thresholds, verify monotone status assignment'
+  test: 'proptest: generate scores spanning all thresholds, verify monotone status
+    assignment'
   if_fails: Threshold comparison logic inverted or off-by-one
 - id: FALSIFY-DRIFT-003
   rule: min_samples guard
@@ -86,7 +94,8 @@ falsification_tests:
 - id: FALSIFY-DRIFT-004
   rule: Identical distribution no drift
   prediction: Same distribution as reference yields NoDrift
-  test: 'proptest: use reference data as current data, verify drift_score = 0 and NoDrift'
+  test: 'proptest: use reference data as current data, verify drift_score = 0 and
+    NoDrift'
   if_fails: Floating-point rounding in mean/std computation
 enforcement:
   score_nonneg:

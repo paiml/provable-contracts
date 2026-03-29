@@ -2,15 +2,18 @@ metadata:
   version: 1.0.0
   created: '2026-02-18'
   author: PAIML Engineering
-  description: Model config algebra — 5-level proof hierarchy for transformer config constraints
+  description: Model config algebra — 5-level proof hierarchy for transformer config
+    constraints
   references:
   - Vaswani et al. (2017) Attention Is All You Need — head_dim = hidden_dim / num_heads
-  - 'Ainslie et al. (2023) GQA: Training Generalized Multi-Query — num_heads % num_kv_heads == 0'
+  - 'Ainslie et al. (2023) GQA: Training Generalized Multi-Query — num_heads % num_kv_heads
+    == 0'
   - Su et al. (2021) RoFormer — RoPE requires even head_dim
   - Shazeer (2020) GLU Variants Improve Transformer — FFN expansion
 equations:
   divisibility:
-    formula: hidden_dim % num_heads == 0 ∧ num_heads % num_kv_heads == 0 ∧ head_dim % 2 == 0
+    formula: hidden_dim % num_heads == 0 ∧ num_heads % num_kv_heads == 0 ∧ head_dim
+      % 2 == 0
     domain: hidden_dim, num_heads, num_kv_heads, head_dim ∈ ℤ⁺
     invariants:
     - head_dim = hidden_dim / num_heads (exact integer division)
@@ -18,6 +21,7 @@ equations:
     - RoPE pairing requires head_dim divisible by 2
     preconditions:
     - '!config.is_empty()'
+    - hidden_size > 0
     lean_theorem: Theorems.Divisibility
   bounds:
     formula: head_dim >= hidden_dim / num_heads ∧ d_ff > hidden_dim
@@ -27,6 +31,7 @@ equations:
     - FFN intermediate dimension strictly larger than hidden
     preconditions:
     - '!config.is_empty()'
+    - num_layers > 0
     lean_theorem: Theorems.Bounds
   ordering:
     formula: d_ff > hidden_dim ∧ num_kv_heads <= num_heads ∧ max_position > 0
@@ -36,6 +41,7 @@ equations:
     - KV heads cannot exceed query heads
     preconditions:
     - '!config.is_empty()'
+    - hidden_size > 0
     lean_theorem: Theorems.Ordering
   non_degeneracy:
     formula: hidden_dim > 0 ∧ num_layers > 0 ∧ num_heads > 0 ∧ vocab_size > 0
@@ -44,15 +50,18 @@ equations:
     - All structural parameters are strictly positive
     preconditions:
     - '!config.is_empty()'
+    - num_layers > 0
     lean_theorem: Theorems.Non_Degeneracy
   cross_constraint:
-    formula: rope_theta > 0 ∧ rope_theta.is_finite() ∧ rms_norm_eps > 0 ∧ rms_norm_eps < 0.1
+    formula: rope_theta > 0 ∧ rope_theta.is_finite() ∧ rms_norm_eps > 0 ∧ rms_norm_eps
+      < 0.1
     domain: rope_theta ∈ ℝ⁺, rms_norm_eps ∈ (0, 0.1)
     invariants:
     - RoPE base frequency finite and positive
     - Normalization epsilon small but nonzero
     preconditions:
     - '!config.is_empty()'
+    - hidden_size > 0
     lean_theorem: Theorems.Cross_Constraint
 proof_obligations:
 - type: invariant

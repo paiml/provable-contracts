@@ -7,8 +7,10 @@ metadata:
   - Dolstra (2006) The Purely Functional Software Deployment Model (Nix thesis)
 equations:
   expand_recipe:
-    formula: expand(id, recipe, machine, inputs, ext_deps) = namespaced resources with resolved templates
-    domain: recipe_id ∈ String, recipe_file ∈ RecipeFile, machine ∈ MachineTarget, inputs ∈ HashMap, ext_deps ∈ [String]
+    formula: expand(id, recipe, machine, inputs, ext_deps) = namespaced resources
+      with resolved templates
+    domain: recipe_id ∈ String, recipe_file ∈ RecipeFile, machine ∈ MachineTarget,
+      inputs ∈ HashMap, ext_deps ∈ [String]
     codomain: Result<IndexMap<String, Resource>, String>
     invariants:
     - 'Deterministic: same inputs → same expanded resources'
@@ -17,6 +19,7 @@ equations:
     - Machine target propagated to all inner resources
     preconditions:
     - '!config.is_empty()'
+    - '!recipe_name.is_empty()'
     lean_theorem: Theorems.Expand_Recipe
   validate_inputs:
     formula: validate(recipe, provided) = type-checked resolved inputs or Err
@@ -28,10 +31,12 @@ equations:
     - 'Type validation: int respects min/max, path starts with /, enum in choices'
     preconditions:
     - '!config.is_empty()'
+    - '!input.is_empty()'
     lean_theorem: Theorems.Validate_Inputs
   validate_input_type:
     formula: validate_type(name, type, value, decl) = Ok(string_val) | Err(msg)
-    domain: name ∈ String, type ∈ {string, int, bool, path, enum}, value ∈ Value, decl ∈ RecipeInput
+    domain: name ∈ String, type ∈ {string, int, bool, path, enum}, value ∈ Value,
+      decl ∈ RecipeInput
     codomain: Result<String, String>
     invariants:
     - int with value < min → Err
@@ -40,6 +45,7 @@ equations:
     - enum value not in non-empty choices → Err
     preconditions:
     - '!config.is_empty()'
+    - '!input.is_empty()'
     lean_theorem: Theorems.Validate_Input_Type
 proof_obligations:
 - type: invariant
@@ -48,7 +54,8 @@ proof_obligations:
   applies_to: all
 - type: bound
   property: Integer bounds enforced
-  formal: '∀ n, decl: decl.min ≤ n ≤ decl.max ⟹ Ok(_); n < decl.min ∨ n > decl.max ⟹ Err(_)'
+  formal: '∀ n, decl: decl.min ≤ n ≤ decl.max ⟹ Ok(_); n < decl.min ∨ n > decl.max
+    ⟹ Err(_)'
   applies_to: all
 - type: invariant
   property: Path validation

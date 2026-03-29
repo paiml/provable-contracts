@@ -7,7 +7,8 @@ metadata:
   - Forjar spec §6.3 Shell Generation Pipeline
 equations:
   check_script:
-    formula: check_script(r) = dispatch(r.type) where dispatch covers {Package, File, Service, Mount}
+    formula: check_script(r) = dispatch(r.type) where dispatch covers {Package, File,
+      Service, Mount}
     domain: r ∈ Resource where r.type ∈ {Package, File, Service, Mount}
     codomain: Result<String, String>
     invariants:
@@ -16,9 +17,11 @@ equations:
     - Output is non-empty shell script
     preconditions:
     - '!config.is_empty()'
+    - '!script.is_empty()'
     lean_theorem: Theorems.Check_Script
   apply_script:
-    formula: apply_script(r) = dispatch(r.type) where dispatch covers {Package, File, Service, Mount}
+    formula: apply_script(r) = dispatch(r.type) where dispatch covers {Package, File,
+      Service, Mount}
     domain: r ∈ Resource where r.type ∈ {Package, File, Service, Mount}
     codomain: Result<String, String>
     invariants:
@@ -27,9 +30,11 @@ equations:
     - Output is non-empty shell script
     preconditions:
     - '!config.is_empty()'
+    - '!script.is_empty()'
     lean_theorem: Theorems.Apply_Script
   state_query_script:
-    formula: state_query_script(r) = dispatch(r.type) where dispatch covers {Package, File, Service, Mount}
+    formula: state_query_script(r) = dispatch(r.type) where dispatch covers {Package,
+      File, Service, Mount}
     domain: r ∈ Resource where r.type ∈ {Package, File, Service, Mount}
     codomain: Result<String, String>
     invariants:
@@ -37,6 +42,7 @@ equations:
     - Returns Err for non-Phase-1 types
     preconditions:
     - '!config.is_empty()'
+    - '!script.is_empty()'
     lean_theorem: Theorems.State_Query_Script
 proof_obligations:
 - type: completeness
@@ -45,7 +51,8 @@ proof_obligations:
   applies_to: all
 - type: symmetry
   property: Dispatch is symmetric across three functions
-  formal: '∀ t: check_script(r{type=t}).is_ok() ⟺ apply_script(r{type=t}).is_ok() ⟺ state_query_script(r{type=t}).is_ok()'
+  formal: '∀ t: check_script(r{type=t}).is_ok() ⟺ apply_script(r{type=t}).is_ok()
+    ⟺ state_query_script(r{type=t}).is_ok()'
   applies_to: all
 enforcement:
   completeness:
@@ -59,7 +66,8 @@ enforcement:
 falsification_tests:
 - id: FALSIFY-CD-001
   rule: Completeness
-  prediction: check_script, apply_script, state_query_script return Ok for Package, File, Service, Mount
+  prediction: check_script, apply_script, state_query_script return Ok for Package,
+    File, Service, Mount
   test: iterate over all Phase 1 types, verify Ok
   if_fails: Missing match arm in dispatch
 - id: FALSIFY-CD-002

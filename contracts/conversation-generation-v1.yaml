@@ -1,6 +1,7 @@
 metadata:
   version: 1.0.0
-  description: Synthetic conversation generation for shell safety chat model training (SSC v11 S6)
+  description: Synthetic conversation generation for shell safety chat model training
+    (SSC v11 S6)
   references:
   - 'SSC v11 Section 6: Synthetic Conversation Generation'
   - 'SSC v11 Section 6.5: Honesty Requirements'
@@ -8,7 +9,8 @@ metadata:
   - codebert-tokenizer-validation-v1
 equations:
   conversation_types:
-    formula: type(entry) = D if safe(entry) else C if !deterministic(entry) else B if SEC(entry) && even(seed) else A
+    formula: type(entry) = D if safe(entry) else C if !deterministic(entry) else B
+      if SEC(entry) && even(seed) else A
     domain: entry in CorpusEntry, seed in u64
     codomain: '{ClassifyExplain, Fix, Debug, ConfirmSafe}'
     invariants:
@@ -17,6 +19,7 @@ equations:
     - Security findings alternate between Type A and Type B
     preconditions:
     - '!config.is_empty()'
+    - num_turns > 0
     lean_theorem: Theorems.Conversation_Types
   quality_gate:
     formula: pass = type_d_pct >= 30% AND empty_responses == 0 AND variant_balanced
@@ -28,6 +31,7 @@ equations:
     - No single prompt variant exceeds 20% of total
     preconditions:
     - '!config.is_empty()'
+    - threshold > 0.0
     lean_theorem: Theorems.Quality_Gate
   chatml_format:
     formula: turns = [system_prompt, user_prompt, assistant_response]
@@ -44,7 +48,8 @@ equations:
 proof_obligations:
 - type: invariant
   property: ChatML structure
-  formal: conversation.turns.len() == 3 AND turns[0].role == 'system' AND turns[1].role == 'user' AND turns[2].role == 'assistant'
+  formal: conversation.turns.len() == 3 AND turns[0].role == 'system' AND turns[1].role
+    == 'user' AND turns[2].role == 'assistant'
   applies_to: all
 - type: invariant
   property: Type D minimum

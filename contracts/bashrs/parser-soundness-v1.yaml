@@ -2,20 +2,22 @@ metadata:
   version: 1.0.0
   created: '2026-03-25'
   author: PAIML Engineering
-  description: Shell parser soundness — the recursive-descent bash parser must accept all valid bash syntax and reject all
-    invalid input with structured errors
+  description: Shell parser soundness — the recursive-descent bash parser must accept
+    all valid bash syntax and reject all invalid input with structured errors
   references:
   - IEEE Std 1003.1-2017 Shell Command Language (POSIX.1-2017 Section 2)
   - GNU Bash Reference Manual, Bash-5.2 — Shell Grammar
   - Greenberg et al. (2021) POSIX Shell Surprising Semantics. USENIX ATC
 equations:
   lex:
-    formula: "lex: source_text -> Result<Vec<Token>, LexerError>\n  Tokenizes raw bash source into a stream of typed tokens:\n\
-      \    Keywords: if, then, elif, else, fi, for, while, until, do, done, case, esac, in,\n              function, return,\
-      \ export, local, coproc, select\n    Literals: Identifier(String), String(String), Number(i64)\n    Operators: =, ==,\
-      \ !=, <, <=, >, >=, >>, &&, ||, !, |, ;, &, $\n    Brackets: (, ), {, }, [, ], [[, ]]\n    Special: Variable($VAR),\
-      \ ArithmeticExpansion($((expr))),\n             CommandSubstitution($(cmd)), Heredoc, HereString(<<<), Comment, Newline,\
-      \ Eof\n"
+    formula: "lex: source_text -> Result<Vec<Token>, LexerError>\n  Tokenizes raw\
+      \ bash source into a stream of typed tokens:\n    Keywords: if, then, elif,\
+      \ else, fi, for, while, until, do, done, case, esac, in,\n              function,\
+      \ return, export, local, coproc, select\n    Literals: Identifier(String), String(String),\
+      \ Number(i64)\n    Operators: =, ==, !=, <, <=, >, >=, >>, &&, ||, !, |, ;,\
+      \ &, $\n    Brackets: (, ), {, }, [, ], [[, ]]\n    Special: Variable($VAR),\
+      \ ArithmeticExpansion($((expr))),\n             CommandSubstitution($(cmd)),\
+      \ Heredoc, HereString(<<<), Comment, Newline, Eof\n"
     domain: source_text in UTF-8 string (arbitrary shell script source)
     codomain: Result<Vec<Token>, LexerError> where Token is the bashrs token enum
     invariants:
@@ -25,12 +27,15 @@ equations:
     - String tokens preserve original content including escape sequences
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Lex
   parse:
-    formula: "parse: Vec<Token> -> Result<BashAst, ParseError>\n  Recursive-descent parser producing a typed AST:\n    BashAst\
-      \ { statements: Vec<BashStmt>, metadata: AstMetadata }\n  Where BashStmt = Assignment | Command | Function | If | While\
-      \ | Until |\n                   For | ForCStyle | Return | Case | Pipeline | Subshell |\n                   BraceGroup\
-      \ | Comment | Trap | ...\n  Each statement carries a Span { start_line, start_col, end_line, end_col }.\n"
+    formula: "parse: Vec<Token> -> Result<BashAst, ParseError>\n  Recursive-descent\
+      \ parser producing a typed AST:\n    BashAst { statements: Vec<BashStmt>, metadata:\
+      \ AstMetadata }\n  Where BashStmt = Assignment | Command | Function | If | While\
+      \ | Until |\n                   For | ForCStyle | Return | Case | Pipeline |\
+      \ Subshell |\n                   BraceGroup | Comment | Trap | ...\n  Each statement\
+      \ carries a Span { start_line, start_col, end_line, end_col }.\n"
     domain: token_stream in Vec<Token> (output of lex)
     codomain: Result<BashAst, ParseError> with structured error variants
     invariants:
@@ -40,11 +45,14 @@ equations:
     - Parser consumes all tokens up to Eof (no unconsumed trailing tokens)
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Parse
   semantic_analyze:
-    formula: "analyze: BashAst -> Result<AnalysisResult, SemanticError>\n  Performs semantic analysis on parsed AST:\n   \
-      \ - Variable scope resolution (ScopeInfo with parent chain)\n    - Use-before-assignment detection\n    - Function redefinition\
-      \ detection\n    - Command effect tracking (EffectTracker)\n    - Basic type inference: String | Integer | Array | Unknown\n"
+    formula: "analyze: BashAst -> Result<AnalysisResult, SemanticError>\n  Performs\
+      \ semantic analysis on parsed AST:\n    - Variable scope resolution (ScopeInfo\
+      \ with parent chain)\n    - Use-before-assignment detection\n    - Function\
+      \ redefinition detection\n    - Command effect tracking (EffectTracker)\n  \
+      \  - Basic type inference: String | Integer | Array | Unknown\n"
     domain: ast in BashAst (output of parse)
     codomain: Result<AnalysisResult, SemanticError> with scope and effect metadata
     invariants:
@@ -53,6 +61,7 @@ equations:
     - 'Analysis is deterministic: same AST always yields same result'
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Semantic_Analyze
 proof_obligations:
 - type: soundness
@@ -69,7 +78,8 @@ proof_obligations:
   applies_to: all
 - type: invariant
   property: Span fidelity
-  formal: 'For all stmt in parse(lex(s)).statements: stmt.span.start_line >= 1 and stmt.span corresponds to source location'
+  formal: 'For all stmt in parse(lex(s)).statements: stmt.span.start_line >= 1 and
+    stmt.span corresponds to source location'
   applies_to: all
 - type: invariant
   property: Deterministic parsing
@@ -77,16 +87,19 @@ proof_obligations:
   applies_to: all
 - type: bound
   property: Lexer termination
-  formal: '|lex(s)| <= C * |s| for some constant C (token count bounded by source length)'
+  formal: '|lex(s)| <= C * |s| for some constant C (token count bounded by source
+    length)'
   applies_to: all
 kernel_structure:
   phases:
   - name: lexing
     description: Tokenize raw source text into typed token stream
-    invariant: Produces finite token stream terminated by Eof; no silent character drops
+    invariant: Produces finite token stream terminated by Eof; no silent character
+      drops
   - name: parsing
     description: Recursive-descent parse of token stream into BashAst
-    invariant: Consumes all tokens; every Ok result is a well-formed AST; every Err has location
+    invariant: Consumes all tokens; every Ok result is a well-formed AST; every Err
+      has location
   - name: semantic_analysis
     description: Scope resolution, type inference, effect tracking on parsed AST
     invariant: All variable references resolve; function names unique in scope
@@ -94,34 +107,46 @@ falsification_tests:
 - id: FALSIFY-PSR-001
   rule: POSIX sh acceptance
   prediction: All valid POSIX sh constructs parse successfully
-  test: 'Corpus test: parse the POSIX sh test suite (if/then/fi, for/do/done, case/esac, pipelines, redirects, heredocs, arithmetic
-    expansion, command substitution)'
-  if_fails: Parser missing production rule for a POSIX construct (e.g., missing heredoc or arithmetic expansion support)
+  test: 'Corpus test: parse the POSIX sh test suite (if/then/fi, for/do/done, case/esac,
+    pipelines, redirects, heredocs, arithmetic expansion, command substitution)'
+  if_fails: Parser missing production rule for a POSIX construct (e.g., missing heredoc
+    or arithmetic expansion support)
 - id: FALSIFY-PSR-002
   rule: Bash extension acceptance
-  prediction: 'Bash-specific constructs parse: [[ ]], coproc, select, C-style for, process substitution, here-strings'
+  prediction: 'Bash-specific constructs parse: [[ ]], coproc, select, C-style for,
+    process substitution, here-strings'
   test: 'Corpus test: parse scripts using each bash extension; assert Ok for all'
-  if_fails: Lexer does not recognize bash-only tokens (e.g., [[ or <<<) or parser lacks bash-specific production
+  if_fails: Lexer does not recognize bash-only tokens (e.g., [[ or <<<) or parser
+    lacks bash-specific production
 - id: FALSIFY-PSR-003
   rule: Rejection of malformed input
-  prediction: Unmatched delimiters (if without fi, unclosed quotes, dangling pipes) produce ParseError, never panic
-  test: 'proptest: mutate valid scripts by removing random closing delimiters; assert Err variant returned and no panic'
-  if_fails: Parser has unguarded unwrap() or index access that panics on malformed token stream
+  prediction: Unmatched delimiters (if without fi, unclosed quotes, dangling pipes)
+    produce ParseError, never panic
+  test: 'proptest: mutate valid scripts by removing random closing delimiters; assert
+    Err variant returned and no panic'
+  if_fails: Parser has unguarded unwrap() or index access that panics on malformed
+    token stream
 - id: FALSIFY-PSR-004
   rule: Deterministic parsing
-  prediction: parse(lex(s)) produces identical BashAst on repeated calls for any input s
-  test: 'proptest: generate random bash scripts via generators; parse each 10 times; assert all results equal'
-  if_fails: HashMap iteration order or non-deterministic tie-breaking leaking into AST structure
+  prediction: parse(lex(s)) produces identical BashAst on repeated calls for any input
+    s
+  test: 'proptest: generate random bash scripts via generators; parse each 10 times;
+    assert all results equal'
+  if_fails: HashMap iteration order or non-deterministic tie-breaking leaking into
+    AST structure
 - id: FALSIFY-PSR-005
   rule: Span accuracy
   prediction: Every AST node span maps back to the correct source region
-  test: For each statement in parsed AST, extract source[span.start..span.end] and verify it matches the construct
-  if_fails: Off-by-one in span tracking during recursive descent (e.g., span starts at keyword but misses closing delimiter)
+  test: For each statement in parsed AST, extract source[span.start..span.end] and
+    verify it matches the construct
+  if_fails: Off-by-one in span tracking during recursive descent (e.g., span starts
+    at keyword but misses closing delimiter)
 - id: FALSIFY-PSR-006
   rule: Lexer error recovery
-  prediction: LexerError always includes line and column; never returns generic error without position
-  test: Feed malformed inputs (unterminated strings, invalid escape sequences, NUL bytes); assert all LexerErrors have line
-    >= 1 and col >= 0
+  prediction: LexerError always includes line and column; never returns generic error
+    without position
+  test: Feed malformed inputs (unterminated strings, invalid escape sequences, NUL
+    bytes); assert all LexerErrors have line >= 1 and col >= 0
   if_fails: Some error path returns LexerError variant without positional information
 kani_harnesses:
 - id: KANI-PSR-001
@@ -133,7 +158,8 @@ kani_harnesses:
   harness: verify_lexer_terminates
 - id: KANI-PSR-002
   obligation: ParseError never panics
-  property: parse() returns Err (not panic) for all invalid token sequences of bounded length
+  property: parse() returns Err (not panic) for all invalid token sequences of bounded
+    length
   bound: 16
   strategy: bounded_int
   solver: cadical
@@ -178,7 +204,8 @@ kani_harnesses:
 qa_gate:
   id: F-PSR-001
   name: Parser Soundness Contract
-  description: Bash/POSIX parser accepts valid input, rejects invalid input with structured errors, never panics
+  description: Bash/POSIX parser accepts valid input, rejects invalid input with structured
+    errors, never panics
   checks:
   - posix_acceptance
   - bash_extension_acceptance

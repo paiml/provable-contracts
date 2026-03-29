@@ -2,7 +2,8 @@ metadata:
   version: 1.0.0
   created: '2026-03-25'
   author: PAIML Engineering
-  description: Type preservation — Python type semantics faithfully mapped to Rust types
+  description: Type preservation — Python type semantics faithfully mapped to Rust
+    types
   references:
   - Milner (1978) A Theory of Type Polymorphism in Programming
   - Pierce (2002) Types and Programming Languages, MIT Press
@@ -11,18 +12,23 @@ metadata:
   depends_on: []
 equations:
   type_map:
-    formula: T_rust = TypeMap(T_python) where TypeMap is a total function on supported types
-    domain: T_python in {int, float, str, bool, None, List[T], Dict[K,V], Tuple[T...], Set[T], Optional[T], Union[T...]}
-    codomain: T_rust in {i64, f64, String, bool, (), Vec<T>, HashMap<K,V>, (T...), HashSet<T>, Option<T>, enum{T...}}
+    formula: T_rust = TypeMap(T_python) where TypeMap is a total function on supported
+      types
+    domain: T_python in {int, float, str, bool, None, List[T], Dict[K,V], Tuple[T...],
+      Set[T], Optional[T], Union[T...]}
+    codomain: T_rust in {i64, f64, String, bool, (), Vec<T>, HashMap<K,V>, (T...),
+      HashSet<T>, Option<T>, enum{T...}}
     invariants:
     - 'TypeMap is injective on base types: T_py != U_py => TypeMap(T_py) != TypeMap(U_py)'
     - 'TypeMap preserves container nesting: TypeMap(List[T]) = Vec<TypeMap(T)>'
     - 'TypeMap preserves optionality: TypeMap(Optional[T]) = Option<TypeMap(T)>'
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Type_Map
   numeric_semantics:
-    formula: eval_rust(TypeMap(e)) = coerce(eval_python(e)) for numeric expressions e
+    formula: eval_rust(TypeMap(e)) = coerce(eval_python(e)) for numeric expressions
+      e
     domain: e in {int literals, float literals, arithmetic ops (+,-,*,/,//,%,**)}
     codomain: i64 | f64
     invariants:
@@ -32,9 +38,11 @@ equations:
     - Python % (modulo) -> Rust rem_euclid for negative operands
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Numeric_Semantics
   container_preservation:
-    formula: 'forall c in Container[T]: len(transpile(c)) = len(c) and forall i: elem_type(transpile(c)[i]) = TypeMap(elem_type(c[i]))'
+    formula: 'forall c in Container[T]: len(transpile(c)) = len(c) and forall i: elem_type(transpile(c)[i])
+      = TypeMap(elem_type(c[i]))'
     domain: List[T], Dict[K,V], Set[T], Tuple[T1,...,Tn]
     invariants:
     - 'List[T] -> Vec<T_rust>: order preserved, indexing semantics preserved'
@@ -43,9 +51,11 @@ equations:
     - 'Tuple[T1,...,Tn] -> (T1_rust,...,Tn_rust): positional types preserved'
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Container_Preservation
   type_inference:
-    formula: 'Gamma |- e : T_inferred => TypeMap(T_inferred) is the Rust annotation for e'
+    formula: 'Gamma |- e : T_inferred => TypeMap(T_inferred) is the Rust annotation
+      for e'
     domain: Hindley-Milner type inference context Gamma, expression e
     invariants:
     - Constraint-based inference produces principal types
@@ -53,6 +63,7 @@ equations:
     - Type annotations in Python source are respected as ground truth
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Type_Inference
   copy_semantics:
     formula: 'is_copy(T_python) <=> T_rust : Copy'
@@ -64,6 +75,7 @@ equations:
     - Tuple of all-Copy maps to tuple of Copy which is Copy
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Copy_Semantics
 proof_obligations:
 - type: precondition
@@ -80,7 +92,8 @@ proof_obligations:
   applies_to: all
 - type: invariant
   property: Numeric precision bounds
-  formal: '|eval_rust(e) - eval_python(e)| < epsilon for float ops; exact for int ops within i64 range'
+  formal: '|eval_rust(e) - eval_python(e)| < epsilon for float ops; exact for int
+    ops within i64 range'
   tolerance: 1.0e-15
   applies_to: all
 - type: invariant
@@ -93,7 +106,8 @@ proof_obligations:
   applies_to: all
 - type: invariant
   property: Union type preservation
-  formal: TypeMap(Union[T1,...,Tn]) = enum { V1(TypeMap(T1)), ..., Vn(TypeMap(Tn)) }
+  formal: TypeMap(Union[T1,...,Tn]) = enum { V1(TypeMap(T1)), ..., Vn(TypeMap(Tn))
+    }
   applies_to: all
 kernel_structure:
   phases:
@@ -118,12 +132,14 @@ falsification_tests:
 - id: FALSIFY-TP-002
   rule: float maps to f64
   prediction: Python float annotation produces Rust f64 type
-  test: 'proptest: generate random float-typed functions, verify Rust output uses f64'
+  test: 'proptest: generate random float-typed functions, verify Rust output uses
+    f64'
   if_fails: TypeMapper float mapping incorrect
 - id: FALSIFY-TP-003
   rule: Container nesting preserved
   prediction: List[Dict[str, int]] maps to Vec<HashMap<String, i64>>
-  test: 'proptest: generate nested container types up to depth 3, verify structural match'
+  test: 'proptest: generate nested container types up to depth 3, verify structural
+    match'
   if_fails: Recursive TypeMap application broken for nested containers
 - id: FALSIFY-TP-004
   rule: Optional preservation
@@ -138,13 +154,16 @@ falsification_tests:
 - id: FALSIFY-TP-006
   rule: Type inference completeness
   prediction: All variables in well-typed Python have resolved types after inference
-  test: 'proptest: generate well-typed Python functions, verify no Type::Unknown in output'
+  test: 'proptest: generate well-typed Python functions, verify no Type::Unknown in
+    output'
   if_fails: Hindley-Milner solver incomplete or constraint collector missing cases
 - id: FALSIFY-TP-007
   rule: Floor division semantics
   prediction: Python // operator maps to Rust integer division with floor semantics
-  test: 'proptest: random (a, b) pairs including negatives, verify transpiled // matches Python'
-  if_fails: FloorDiv mapped to Rust / which truncates toward zero, not toward negative infinity
+  test: 'proptest: random (a, b) pairs including negatives, verify transpiled // matches
+    Python'
+  if_fails: FloorDiv mapped to Rust / which truncates toward zero, not toward negative
+    infinity
 - id: FALSIFY-TP-008
   rule: Modulo semantics for negatives
   prediction: Python % with negative operands matches Python semantics (sign of divisor)

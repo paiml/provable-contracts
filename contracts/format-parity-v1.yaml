@@ -2,7 +2,8 @@ metadata:
   version: 1.0.0
   created: '2026-02-18'
   author: PAIML Engineering
-  description: Format parity — cross-format tensor equivalence (GGUF, SafeTensors, APR)
+  description: Format parity — cross-format tensor equivalence (GGUF, SafeTensors,
+    APR)
   references:
   - APR-SPEC.md — APR format specification
   - GGUF spec — GGML unified format
@@ -27,6 +28,7 @@ equations:
     - No data is lost or duplicated
     preconditions:
     - '!config.is_empty()'
+    - expected_count > 0
     lean_theorem: Theorems.Element_Count
   identity_1d:
     formula: '1D tensors: apr_shape == gguf_shape (no transpose)'
@@ -36,6 +38,7 @@ equations:
     - Only 2D+ tensors require transpose
     preconditions:
     - '!config.is_empty()'
+    - '!input.is_empty()'
     lean_theorem: Theorems.Identity_1D
   name_bijection:
     formula: tensor_template defines 1:1 mapping between format names
@@ -45,6 +48,7 @@ equations:
     - Mapping is invertible
     preconditions:
     - '!config.is_empty()'
+    - names.len() > 0
     lean_theorem: Theorems.Name_Bijection
 proof_obligations:
 - type: invariant

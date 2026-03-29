@@ -2,9 +2,11 @@ metadata:
   version: 1.0.0
   created: '2026-03-03'
   author: PAIML Engineering
-  description: SafeTensors CPU path must dispatch to quantized kernels after runtime Q4K conversion
+  description: SafeTensors CPU path must dispatch to quantized kernels after runtime
+    Q4K conversion
   references:
-  - 'qwen-coder-deploy bench-results-v2: SafeTensors CPU 6.0 vs GGUF CPU 9.5 tok/s (36% gap)'
+  - 'qwen-coder-deploy bench-results-v2: SafeTensors CPU 6.0 vs GGUF CPU 9.5 tok/s
+    (36% gap)'
   - realizar matmul_fused.rs — dispatch logic for quantized vs float paths
   - realizar float16_matmul — F32 fallback path (suspected regression)
   depends_on:
@@ -12,16 +14,19 @@ metadata:
   - format-parity-v1.yaml
 equations:
   format_parity:
-    formula: "After SafeTensors → Q4K runtime conversion:\n  tensor_type(converted) == Q4_K\n  matmul_dispatch(converted,\
-      \ acts) → fused_q4k_parallel_matvec\n\nIf dispatch falls through to float path:\n  float16_matmul operates on F32 weights\
-      \ (4× more memory traffic)\n  throughput_loss = sizeof(f32) / sizeof(q4k_effective) ≈ 4-8×\n\nMeasured gap: 6.0 / 9.5\
-      \ = 0.63 (37% slower)\nExpected if F32 fallback: 9.5 / 4 ≈ 2.4 (consistent with partial fallback)\n"
+    formula: "After SafeTensors → Q4K runtime conversion:\n  tensor_type(converted)\
+      \ == Q4_K\n  matmul_dispatch(converted, acts) → fused_q4k_parallel_matvec\n\n\
+      If dispatch falls through to float path:\n  float16_matmul operates on F32 weights\
+      \ (4× more memory traffic)\n  throughput_loss = sizeof(f32) / sizeof(q4k_effective)\
+      \ ≈ 4-8×\n\nMeasured gap: 6.0 / 9.5 = 0.63 (37% slower)\nExpected if F32 fallback:\
+      \ 9.5 / 4 ≈ 2.4 (consistent with partial fallback)\n"
     domain: SafeTensors → Q4K conversion, CPU inference
     invariants:
     - All matmuls after conversion use Q4K kernel, not F32
     - SafeTensors CPU throughput within 10% of GGUF CPU
     preconditions:
     - '!data.is_empty()'
+    - '!input.is_empty()'
     lean_theorem: Theorems.Format_Parity
 proof_obligations:
 - type: equivalence

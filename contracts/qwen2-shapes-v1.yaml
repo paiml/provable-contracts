@@ -16,6 +16,7 @@ equations:
     - Q projection is square for this config
     preconditions:
     - '!config.is_empty()'
+    - num_heads > 0
     lean_theorem: Theorems.Q_Projection_Shape
   kv_projection_shape:
     formula: '[n_kv * d_k, hidden] = [4*128, 3584] = [512, 3584]'
@@ -24,16 +25,19 @@ equations:
     - 'GQA ratio: n_h / n_kv = 7'
     preconditions:
     - '!config.is_empty()'
+    - num_heads > 0
     lean_theorem: Theorems.Kv_Projection_Shape
   swiglu_ratio:
     formula: intermediate / hidden = 18944 / 3584 = 37/7 ≈ 5.286
     domain: Qwen2.5-7B config
     invariants:
-    - 'Expansion ratio is 37/7 (non-integer, divisible check: 18944 mod 3584 = 0 is false)'
+    - 'Expansion ratio is 37/7 (non-integer, divisible check: 18944 mod 3584 = 0 is
+      false)'
     - gate_proj and up_proj both have shape [18944, 3584]
     - down_proj has shape [3584, 18944]
     preconditions:
     - '!config.is_empty()'
+    - intermediate_size > 0
     lean_theorem: Theorems.Swiglu_Ratio
   o_projection_transpose:
     formula: shape(o_proj) == transpose(shape(q_proj)) = [hidden, n_h * d_k]
@@ -64,6 +68,7 @@ equations:
     - d_k = 128 (standard head dimension)
     preconditions:
     - '!config.is_empty()'
+    - head_dim > 0
     lean_theorem: Theorems.Head_Dim_Consistency
 proof_obligations:
 - type: invariant

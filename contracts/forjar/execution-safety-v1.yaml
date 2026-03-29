@@ -17,6 +17,7 @@ equations:
     - Parent directories are created if absent
     preconditions:
     - '!config.is_empty()'
+    - '!path.is_empty()'
     lean_theorem: Theorems.Atomic_Write
   jidoka_stop:
     formula: on_failure(policy, error) = if policy = StopOnFirst then halt else continue
@@ -28,6 +29,7 @@ equations:
     - Failed resource is recorded in lock regardless of policy
     preconditions:
     - '!config.is_empty()'
+    - max_retries > 0
     lean_theorem: Theorems.Jidoka_Stop
 proof_obligations:
 - type: invariant
@@ -36,7 +38,8 @@ proof_obligations:
   applies_to: all
 - type: invariant
   property: Jidoka dispatches correctly
-  formal: record_failure(StopOnFirst, ...) = true ∧ record_failure(Continue, ...) = false
+  formal: record_failure(StopOnFirst, ...) = true ∧ record_failure(Continue, ...)
+    = false
   applies_to: all
 enforcement:
   atomic_write:

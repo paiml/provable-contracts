@@ -10,10 +10,11 @@ metadata:
   - 'aprender/contracts/model-families/*.yaml: Source data'
 equations:
   arch_constraint_lookup:
-    formula: constraints(arch) = { norm_type, activation, pos_enc, mlp_type, weight_layout, has_bias, tied_emb, has_qk_norm,
-      eps }
-    domain: arch ∈ { llama, mistral, phi3, qwen2, qwen3, deepseek2, gemma, gemma2, gpt2, bloom, stablelm, falcon, falcon_7b,
-      falcon_40b, yi, internlm2, command-r, mamba, smollm, olmo, granite, starcoder }
+    formula: constraints(arch) = { norm_type, activation, pos_enc, mlp_type, weight_layout,
+      has_bias, tied_emb, has_qk_norm, eps }
+    domain: arch ∈ { llama, mistral, phi3, qwen2, qwen3, deepseek2, gemma, gemma2,
+      gpt2, bloom, stablelm, falcon, falcon_7b, falcon_40b, yi, internlm2, command-r,
+      mamba, smollm, olmo, granite, starcoder }
     codomain: ArchConstraints struct
     invariants:
     - Every GGUF general.architecture value maps to exactly one constraint set
@@ -21,6 +22,7 @@ equations:
     - DeepSeek eps = 1e-6 (not default 1e-5)
     preconditions:
     - '!config.is_empty()'
+    - '!arch_name.is_empty()'
     lean_theorem: Theorems.Arch_Constraint_Lookup
 enums:
   NormType:
@@ -382,7 +384,8 @@ falsification_tests:
 qa_gate:
   id: F-ACV-001
   name: arch-constraints-v1 Contract
-  description: Quality gate for Per-architecture inference constraints — source of truth
+  description: Quality gate for Per-architecture inference constraints — source of
+    truth
   checks:
   - validation
   - falsification
@@ -397,7 +400,8 @@ proof_obligations:
   applies_to: all
 kani_harnesses:
 - id: KANI-ARCH_C-001
-  obligation: Every GGUF general.architecture value maps to exactly one constraint set
+  obligation: Every GGUF general.architecture value maps to exactly one constraint
+    set
   property: Every GGUF general.architecture value maps to exactly one constraint set
   bound: 8
   strategy: exhaustive

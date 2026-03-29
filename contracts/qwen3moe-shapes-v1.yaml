@@ -2,7 +2,8 @@ metadata:
   version: 1.0.0
   created: '2026-02-21'
   author: PAIML Engineering
-  description: Qwen3-235B-A22B (MoE) concrete shape instantiation, MoE routing, and RoPE frequency scaling
+  description: Qwen3-235B-A22B (MoE) concrete shape instantiation, MoE routing, and
+    RoPE frequency scaling
   references:
   - Qwen3 Technical Report — MoE architecture with top-8 routing
   - Su et al. (2021) RoFormer — Rotary Position Embedding
@@ -18,6 +19,7 @@ equations:
     - Q output dim = 8192
     preconditions:
     - '!config.is_empty()'
+    - num_heads > 0
     lean_theorem: Theorems.Q_Projection_Shape
   kv_projection_shape:
     formula: '[n_kv * d_k, hidden] = [4*128, 4096] = [512, 4096]'
@@ -27,9 +29,11 @@ equations:
     - Aggressive GQA with 16:1 head ratio
     preconditions:
     - '!config.is_empty()'
+    - num_heads > 0
     lean_theorem: Theorems.Kv_Projection_Shape
   moe_expert_shape:
-    formula: 'expert_i: gate[moe_inter, hidden] * up[moe_inter, hidden] -> down[hidden, moe_inter]'
+    formula: 'expert_i: gate[moe_inter, hidden] * up[moe_inter, hidden] -> down[hidden,
+      moe_inter]'
     domain: 128 experts, each with moe_intermediate_size=1536
     invariants:
     - Each expert has 3 * hidden * moe_inter = 3 * 4096 * 1536 params
@@ -37,6 +41,7 @@ equations:
     - Active expert params per token = 8 * 3 * 4096 * 1536
     preconditions:
     - '!config.is_empty()'
+    - num_heads > 0
     lean_theorem: Theorems.Moe_Expert_Shape
   moe_router_shape:
     formula: 'router: [num_experts, hidden] = [128, 4096]'
@@ -56,6 +61,7 @@ equations:
     - 'Effective expansion with 8 active: 8 * 1536 / 4096 = 3.0'
     preconditions:
     - '!config.is_empty()'
+    - intermediate_size > 0
     lean_theorem: Theorems.Swiglu_Ratio
   o_projection_transpose:
     formula: shape(o_proj) = [hidden, n_h * d_k] = [4096, 8192]

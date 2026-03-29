@@ -25,16 +25,18 @@ file_extensions:
 adapter_checkpoint:
 - id: F-CKPT-001
   name: Adapter completeness
-  description: "An .adapter.apr file MUST contain ALL trainable parameters:\n  - Every lora_a and lora_b tensor for every\
-    \ LoRA adapter\n  - classifier.weight and classifier.bias (or equivalent task head)\n  - Adapter config in metadata (rank,\
-    \ alpha, target_modules)\ncount(lora tensors) == 2 * num_layers * num_target_modules\n"
+  description: "An .adapter.apr file MUST contain ALL trainable parameters:\n  - Every\
+    \ lora_a and lora_b tensor for every LoRA adapter\n  - classifier.weight and classifier.bias\
+    \ (or equivalent task head)\n  - Adapter config in metadata (rank, alpha, target_modules)\n\
+    count(lora tensors) == 2 * num_layers * num_target_modules\n"
   severity: P0
   critical: true
   applies_to: .adapter.apr
 - id: F-CKPT-002
   name: Schema version present
-  description: "Every .adapter.apr and .ckpt.apr MUST contain:\n  __checkpoint__.schema_version: <integer>\n  __checkpoint__.type:\
-    \ \"adapter\" | \"training\"\nReaders MUST reject files where schema_version > SUPPORTED_VERSION.\n"
+  description: "Every .adapter.apr and .ckpt.apr MUST contain:\n  __checkpoint__.schema_version:\
+    \ <integer>\n  __checkpoint__.type: \"adapter\" | \"training\"\nReaders MUST reject\
+    \ files where schema_version > SUPPORTED_VERSION.\n"
   severity: P0
   critical: true
   applies_to:
@@ -53,9 +55,10 @@ adapter_checkpoint:
 training_checkpoint:
 - id: F-CKPT-004
   name: Training state completeness
-  description: "A .ckpt.apr file MUST contain sufficient state to resume training:\n  - All model tensors (F-CKPT-001)\n \
-    \ - Optimizer moment tensors for every trainable parameter:\n    __training__.optim.{name}.exp_avg    (first moment)\n\
-    \    __training__.optim.{name}.exp_avg_sq (second moment)\n  - Epoch, step, scheduler state in metadata\ncount(optim tensors)\
+  description: "A .ckpt.apr file MUST contain sufficient state to resume training:\n\
+    \  - All model tensors (F-CKPT-001)\n  - Optimizer moment tensors for every trainable\
+    \ parameter:\n    __training__.optim.{name}.exp_avg    (first moment)\n    __training__.optim.{name}.exp_avg_sq\
+    \ (second moment)\n  - Epoch, step, scheduler state in metadata\ncount(optim tensors)\
     \ == 2 * count(model trainable tensors)\n"
   severity: P0
   critical: true
@@ -77,7 +80,8 @@ training_checkpoint:
   applies_to: .ckpt.apr
 - id: F-CKPT-006
   name: Data hash verification on resume
-  description: 'When resuming from .ckpt.apr, the trainer MUST compute SHA-256 of the
+  description: 'When resuming from .ckpt.apr, the trainer MUST compute SHA-256 of
+    the
 
     training data file and compare to __training__.data.data_hash.
 
@@ -92,10 +96,12 @@ training_checkpoint:
 write_integrity:
 - id: F-CKPT-007
   name: No NaN/Inf in saved tensors
-  description: "Before writing ANY tensor (model or optimizer), the writer MUST scan\nfor NaN and Inf values. If ANY are found:\n\
-    \  - Adapter checkpoints (.adapter.apr): HARD ERROR, refuse to write.\n  - Training checkpoints (.ckpt.apr): HARD ERROR,\
-    \ refuse to write.\nThis catches gradient explosions, numerical instability, and memory\ncorruption BEFORE they are persisted\
-    \ to disk.\nApplies to BOTH APR and SafeTensors writes.\n"
+  description: "Before writing ANY tensor (model or optimizer), the writer MUST scan\n\
+    for NaN and Inf values. If ANY are found:\n  - Adapter checkpoints (.adapter.apr):\
+    \ HARD ERROR, refuse to write.\n  - Training checkpoints (.ckpt.apr): HARD ERROR,\
+    \ refuse to write.\nThis catches gradient explosions, numerical instability, and\
+    \ memory\ncorruption BEFORE they are persisted to disk.\nApplies to BOTH APR and\
+    \ SafeTensors writes.\n"
   severity: P0
   critical: true
   applies_to:
@@ -103,11 +109,12 @@ write_integrity:
   - .ckpt.apr
 - id: F-CKPT-008
   name: Tensor shape matches architecture config
-  description: "Before writing, verify every tensor's shape against the model config:\n  - classifier.weight: [num_classes,\
-    \ hidden_size]\n  - classifier.bias: [num_classes]\n  - lora.N.*.lora_a: [rank, d_in]\n  - lora.N.*.lora_b: [d_out, rank]\n\
-    \  - __training__.optim.{name}.exp_avg: same shape as {name}\n  - __training__.optim.{name}.exp_avg_sq: same shape as\
-    \ {name}\nShape mismatch is a HARD ERROR. This prevents saving a checkpoint\nwhose tensors don't match the architecture\
-    \ that produced them.\n"
+  description: "Before writing, verify every tensor's shape against the model config:\n\
+    \  - classifier.weight: [num_classes, hidden_size]\n  - classifier.bias: [num_classes]\n\
+    \  - lora.N.*.lora_a: [rank, d_in]\n  - lora.N.*.lora_b: [d_out, rank]\n  - __training__.optim.{name}.exp_avg:\
+    \ same shape as {name}\n  - __training__.optim.{name}.exp_avg_sq: same shape as\
+    \ {name}\nShape mismatch is a HARD ERROR. This prevents saving a checkpoint\n\
+    whose tensors don't match the architecture that produced them.\n"
   severity: P0
   critical: true
   applies_to:
@@ -115,9 +122,11 @@ write_integrity:
   - .ckpt.apr
 - id: F-CKPT-009
   name: Atomic write (crash-safe)
-  description: "Checkpoint writes MUST be atomic: write to a temp file, then rename.\nIf the process crashes mid-write, the\
-    \ previous checkpoint is intact.\n  1. Write to {path}.tmp\n  2. fsync the file\n  3. rename {path}.tmp → {path}\nA partially-written\
-    \ .apr file MUST NEVER replace a valid one.\nSafeTensors writes follow the same pattern.\n"
+  description: "Checkpoint writes MUST be atomic: write to a temp file, then rename.\n\
+    If the process crashes mid-write, the previous checkpoint is intact.\n  1. Write\
+    \ to {path}.tmp\n  2. fsync the file\n  3. rename {path}.tmp → {path}\nA partially-written\
+    \ .apr file MUST NEVER replace a valid one.\nSafeTensors writes follow the same\
+    \ pattern.\n"
   severity: P0
   critical: true
 - id: F-CKPT-010
@@ -136,18 +145,21 @@ write_integrity:
 read_integrity:
 - id: F-CKPT-011
   name: CRC32 verification on APR load
-  description: "AprReader MUST verify BOTH header CRC32 and footer CRC32 on every\nopen(). If either checksum fails, return\
-    \ an error:\n  \"APR file corrupted: CRC32 mismatch (header|footer)\"\nThis detects bit flips, truncation, and tampering.\n\
+  description: "AprReader MUST verify BOTH header CRC32 and footer CRC32 on every\n\
+    open(). If either checksum fails, return an error:\n  \"APR file corrupted: CRC32\
+    \ mismatch (header|footer)\"\nThis detects bit flips, truncation, and tampering.\n\
     This is APR's advantage over SafeTensors (which has NO checksums).\n"
   severity: P0
   critical: true
   applies_to: .apr
 - id: F-CKPT-012
   name: SafeTensors header validation
-  description: "When loading SafeTensors, the reader MUST validate:\n  1. Header length (first 8 bytes) does not exceed file\
-    \ size\n  2. Header JSON parses successfully\n  3. Every tensor's data_offsets [start, end) falls within file bounds\n\
-    \  4. No tensor data_offsets overlap\n  5. Every tensor's byte count matches dtype * product(shape)\nFailure on ANY check\
-    \ is a hard error. This compensates for SafeTensors\nhaving no checksum — we validate structural integrity instead.\n"
+  description: "When loading SafeTensors, the reader MUST validate:\n  1. Header length\
+    \ (first 8 bytes) does not exceed file size\n  2. Header JSON parses successfully\n\
+    \  3. Every tensor's data_offsets [start, end) falls within file bounds\n  4.\
+    \ No tensor data_offsets overlap\n  5. Every tensor's byte count matches dtype\
+    \ * product(shape)\nFailure on ANY check is a hard error. This compensates for\
+    \ SafeTensors\nhaving no checksum — we validate structural integrity instead.\n"
   severity: P0
   critical: true
   applies_to: safetensors
@@ -172,10 +184,11 @@ read_integrity:
   critical: true
 - id: F-CKPT-014
   name: Shape validation against loaded config
-  description: "After loading a checkpoint, the reader MUST verify that every tensor's\nshape matches the architecture config\
-    \ stored in the same file's metadata.\nExample: if metadata says hidden_size=896 and num_classes=2, then\nclassifier.weight\
-    \ MUST have shape [2, 896].\nMismatch is a hard error:\n  \"Tensor classifier.weight shape [2, 512] does not match config\
-    \ (hidden_size=896)\"\n"
+  description: "After loading a checkpoint, the reader MUST verify that every tensor's\n\
+    shape matches the architecture config stored in the same file's metadata.\nExample:\
+    \ if metadata says hidden_size=896 and num_classes=2, then\nclassifier.weight\
+    \ MUST have shape [2, 896].\nMismatch is a hard error:\n  \"Tensor classifier.weight\
+    \ shape [2, 512] does not match config (hidden_size=896)\"\n"
   severity: P0
   critical: true
 format_invariants:
@@ -201,8 +214,9 @@ format_invariants:
   critical: false
 - id: F-CKPT-017
   name: Provenance hash integrity
-  description: "base_model_hash uses the canonical hash algorithm:\n  1. Sort tensor names lexicographically\n  2. For each:\
-    \ name_utf8 || 0x00 || dtype_byte || shape_le_u64s || data_bytes\n  3. SHA-256 the concatenated stream\nThis hash is format-independent\
+  description: "base_model_hash uses the canonical hash algorithm:\n  1. Sort tensor\
+    \ names lexicographically\n  2. For each: name_utf8 || 0x00 || dtype_byte || shape_le_u64s\
+    \ || data_bytes\n  3. SHA-256 the concatenated stream\nThis hash is format-independent\
     \ (same for SafeTensors, GGUF, APR).\n"
   severity: P2
   critical: false
@@ -221,58 +235,73 @@ falsification_tests:
 - id: FALSIFY-CKPT-001
   rule: F-CKPT-001 Adapter completeness
   prediction: Adapter checkpoint contains all LoRA + classifier tensors
-  test: "#[test]\nfn test_falsify_ckpt_001_adapter_completeness() {\n    // Train for 1 epoch, save adapter checkpoint\n \
-    \   let trainer = setup_test_trainer(num_classes=2, lora_rank=4);\n    trainer.train_one_epoch();\n    let adapter_path\
-    \ = tmp_dir.join(\"test.adapter.apr\");\n    trainer.save_adapter_checkpoint(&adapter_path);\n\n    // Verify all tensors\
-    \ present\n    let reader = AprReader::open(&adapter_path).unwrap();\n    let names: Vec<&str> = reader.tensors.iter().map(|t|\
-    \ t.name.as_str()).collect();\n\n    // Must have classifier\n    assert!(names.contains(&\"classifier.weight\"));\n \
-    \   assert!(names.contains(&\"classifier.bias\"));\n\n    // Must have all LoRA adapters (2 per layer * num_layers)\n\
-    \    let lora_count = names.iter().filter(|n| n.starts_with(\"lora.\")).count();\n    let expected = 2 * num_layers *\
-    \ 2; // 2 tensors (a,b) * layers * targets (q,v)\n    assert_eq!(lora_count, expected);\n\n    // Must NOT have training\
-    \ tensors\n    assert!(names.iter().all(|n| !n.starts_with(\"__training__\")));\n}\n"
+  test: "#[test]\nfn test_falsify_ckpt_001_adapter_completeness() {\n    // Train\
+    \ for 1 epoch, save adapter checkpoint\n    let trainer = setup_test_trainer(num_classes=2,\
+    \ lora_rank=4);\n    trainer.train_one_epoch();\n    let adapter_path = tmp_dir.join(\"\
+    test.adapter.apr\");\n    trainer.save_adapter_checkpoint(&adapter_path);\n\n\
+    \    // Verify all tensors present\n    let reader = AprReader::open(&adapter_path).unwrap();\n\
+    \    let names: Vec<&str> = reader.tensors.iter().map(|t| t.name.as_str()).collect();\n\
+    \n    // Must have classifier\n    assert!(names.contains(&\"classifier.weight\"\
+    ));\n    assert!(names.contains(&\"classifier.bias\"));\n\n    // Must have all\
+    \ LoRA adapters (2 per layer * num_layers)\n    let lora_count = names.iter().filter(|n|\
+    \ n.starts_with(\"lora.\")).count();\n    let expected = 2 * num_layers * 2; //\
+    \ 2 tensors (a,b) * layers * targets (q,v)\n    assert_eq!(lora_count, expected);\n\
+    \n    // Must NOT have training tensors\n    assert!(names.iter().all(|n| !n.starts_with(\"\
+    __training__\")));\n}\n"
   if_fails: save_apr_checkpoint missing LoRA weights or leaking training state
 - id: FALSIFY-CKPT-002
   rule: F-CKPT-004 Training state completeness
   prediction: Training checkpoint has optimizer moments for every param
-  test: "#[test]\nfn test_falsify_ckpt_002_training_completeness() {\n    let trainer = setup_test_trainer(num_classes=2,\
-    \ lora_rank=4);\n    trainer.train_one_epoch();\n    let ckpt_path = tmp_dir.join(\"test.ckpt.apr\");\n    trainer.save_training_checkpoint(&ckpt_path);\n\
-    \n    let reader = AprReader::open(&ckpt_path).unwrap();\n    let names: Vec<&str> = reader.tensors.iter().map(|t| t.name.as_str()).collect();\n\
-    \n    // Count model vs optimizer tensors\n    let model_tensors: Vec<_> = names.iter()\n        .filter(|n| !n.starts_with(\"\
-    __training__\"))\n        .collect();\n    let optim_tensors: Vec<_> = names.iter()\n        .filter(|n| n.starts_with(\"\
-    __training__.optim.\"))\n        .collect();\n\n    // Optimizer: 2 tensors (exp_avg, exp_avg_sq) per model tensor\n \
-    \   assert_eq!(optim_tensors.len(), 2 * model_tensors.len());\n}\n"
+  test: "#[test]\nfn test_falsify_ckpt_002_training_completeness() {\n    let trainer\
+    \ = setup_test_trainer(num_classes=2, lora_rank=4);\n    trainer.train_one_epoch();\n\
+    \    let ckpt_path = tmp_dir.join(\"test.ckpt.apr\");\n    trainer.save_training_checkpoint(&ckpt_path);\n\
+    \n    let reader = AprReader::open(&ckpt_path).unwrap();\n    let names: Vec<&str>\
+    \ = reader.tensors.iter().map(|t| t.name.as_str()).collect();\n\n    // Count\
+    \ model vs optimizer tensors\n    let model_tensors: Vec<_> = names.iter()\n \
+    \       .filter(|n| !n.starts_with(\"__training__\"))\n        .collect();\n \
+    \   let optim_tensors: Vec<_> = names.iter()\n        .filter(|n| n.starts_with(\"\
+    __training__.optim.\"))\n        .collect();\n\n    // Optimizer: 2 tensors (exp_avg,\
+    \ exp_avg_sq) per model tensor\n    assert_eq!(optim_tensors.len(), 2 * model_tensors.len());\n\
+    }\n"
   if_fails: Training checkpoint missing optimizer state for some parameters
 - id: FALSIFY-CKPT-003
   rule: F-CKPT-005 Resume equivalence
   prediction: Resumed training matches continuous training
-  test: "#[test]\nfn test_falsify_ckpt_003_resume_equivalence() {\n    // Train continuously for 3 epochs\n    let trainer_a\
-    \ = setup_test_trainer(seed=42);\n    trainer_a.train(epochs=3);\n    let continuous_loss = trainer_a.last_val_loss();\n\
-    \n    // Train 1 epoch, checkpoint, resume for 2 more\n    let trainer_b = setup_test_trainer(seed=42);\n    trainer_b.train(epochs=1);\n\
-    \    trainer_b.save_training_checkpoint(&ckpt_path);\n\n    let trainer_c = ClassifyTrainer::from_checkpoint(&ckpt_path);\n\
-    \    trainer_c.train(epochs=2); // resumes from epoch 1\n    let resumed_loss = trainer_c.last_val_loss();\n\n    // Must\
-    \ be within tolerance\n    assert!((continuous_loss - resumed_loss).abs() < 0.05,\n        \"Continuous: {continuous_loss},\
-    \ Resumed: {resumed_loss}\");\n}\n"
+  test: "#[test]\nfn test_falsify_ckpt_003_resume_equivalence() {\n    // Train continuously\
+    \ for 3 epochs\n    let trainer_a = setup_test_trainer(seed=42);\n    trainer_a.train(epochs=3);\n\
+    \    let continuous_loss = trainer_a.last_val_loss();\n\n    // Train 1 epoch,\
+    \ checkpoint, resume for 2 more\n    let trainer_b = setup_test_trainer(seed=42);\n\
+    \    trainer_b.train(epochs=1);\n    trainer_b.save_training_checkpoint(&ckpt_path);\n\
+    \n    let trainer_c = ClassifyTrainer::from_checkpoint(&ckpt_path);\n    trainer_c.train(epochs=2);\
+    \ // resumes from epoch 1\n    let resumed_loss = trainer_c.last_val_loss();\n\
+    \n    // Must be within tolerance\n    assert!((continuous_loss - resumed_loss).abs()\
+    \ < 0.05,\n        \"Continuous: {continuous_loss}, Resumed: {resumed_loss}\"\
+    );\n}\n"
   if_fails: Resume not restoring optimizer/scheduler state correctly
 - id: FALSIFY-CKPT-004
   rule: F-CKPT-015 Canonical ordering
   prediction: save(load(file)) == file (bit-identical)
-  test: "#[test]\nfn test_falsify_ckpt_004_canonical_ordering() {\n    let trainer = setup_test_trainer();\n    trainer.train_one_epoch();\n\
-    \    let path_a = tmp_dir.join(\"a.adapter.apr\");\n    trainer.save_adapter_checkpoint(&path_a);\n\n    // Round-trip:\
-    \ load then save\n    let reader = AprReader::open(&path_a).unwrap();\n    let path_b = tmp_dir.join(\"b.adapter.apr\"\
-    );\n    // ... reconstruct writer from reader, write to path_b\n\n    let bytes_a = std::fs::read(&path_a).unwrap();\n\
-    \    let bytes_b = std::fs::read(&path_b).unwrap();\n    assert_eq!(bytes_a, bytes_b, \"Round-trip not bit-identical\"\
-    );\n}\n"
+  test: "#[test]\nfn test_falsify_ckpt_004_canonical_ordering() {\n    let trainer\
+    \ = setup_test_trainer();\n    trainer.train_one_epoch();\n    let path_a = tmp_dir.join(\"\
+    a.adapter.apr\");\n    trainer.save_adapter_checkpoint(&path_a);\n\n    // Round-trip:\
+    \ load then save\n    let reader = AprReader::open(&path_a).unwrap();\n    let\
+    \ path_b = tmp_dir.join(\"b.adapter.apr\");\n    // ... reconstruct writer from\
+    \ reader, write to path_b\n\n    let bytes_a = std::fs::read(&path_a).unwrap();\n\
+    \    let bytes_b = std::fs::read(&path_b).unwrap();\n    assert_eq!(bytes_a, bytes_b,\
+    \ \"Round-trip not bit-identical\");\n}\n"
   if_fails: AprV2Writer not sorting tensors by name
 - id: FALSIFY-CKPT-005
   rule: F-CKPT-016 Backward compatibility
   prediction: Inference reader loads .ckpt.apr without error
-  test: "#[test]\nfn test_falsify_ckpt_005_backward_compat() {\n    let trainer = setup_test_trainer();\n    trainer.train_one_epoch();\n\
-    \    let ckpt_path = tmp_dir.join(\"test.ckpt.apr\");\n    trainer.save_training_checkpoint(&ckpt_path);\n\n    // Inference\
-    \ reader must load without error\n    let reader = AprReader::open(&ckpt_path).unwrap();\n\n    // Must be able to read\
-    \ model tensors\n    let weight = reader.read_tensor_f32(\"classifier.weight\").unwrap();\n    assert!(!weight.is_empty());\n\
-    \n    // Training tensors exist but should be skippable\n    let has_training = reader.tensors.iter()\n        .any(|t|\
-    \ t.name.starts_with(\"__training__\"));\n    assert!(has_training, \"Test setup: ckpt should have training tensors\"\
-    );\n}\n"
+  test: "#[test]\nfn test_falsify_ckpt_005_backward_compat() {\n    let trainer =\
+    \ setup_test_trainer();\n    trainer.train_one_epoch();\n    let ckpt_path = tmp_dir.join(\"\
+    test.ckpt.apr\");\n    trainer.save_training_checkpoint(&ckpt_path);\n\n    //\
+    \ Inference reader must load without error\n    let reader = AprReader::open(&ckpt_path).unwrap();\n\
+    \n    // Must be able to read model tensors\n    let weight = reader.read_tensor_f32(\"\
+    classifier.weight\").unwrap();\n    assert!(!weight.is_empty());\n\n    // Training\
+    \ tensors exist but should be skippable\n    let has_training = reader.tensors.iter()\n\
+    \        .any(|t| t.name.starts_with(\"__training__\"));\n    assert!(has_training,\
+    \ \"Test setup: ckpt should have training tensors\");\n}\n"
   if_fails: AprReader crashes on __training__.* tensors
 toyota_way_principles:
   jidoka: 'Training halts on checkpoint write failure (no silent data loss).
@@ -291,7 +320,8 @@ toyota_way_principles:
     confuse with model weights.
 
     '
-  genchi_genbutsu: 'Falsification tests use real training (forward + backward passes) on
+  genchi_genbutsu: 'Falsification tests use real training (forward + backward passes)
+    on
 
     separable synthetic data, not mocks.
 
@@ -315,4 +345,5 @@ equations:
     formula: f(x) = x
     preconditions:
     - '!data.is_empty()'
+    - '!input.is_empty()'
     lean_theorem: Theorems.Identity

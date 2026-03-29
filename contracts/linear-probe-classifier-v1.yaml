@@ -4,7 +4,8 @@ metadata:
   author: PAIML Engineering
   description: Linear probe classifier -- frozen encoder + trained linear head
   references:
-  - Alain & Bengio (2016) Understanding intermediate layers using linear classifier probes
+  - Alain & Bengio (2016) Understanding intermediate layers using linear classifier
+    probes
   depends_on:
   - encoder-forward-v1
   - cross-entropy-kernel-v1
@@ -19,6 +20,7 @@ equations:
     - probs sum to 1.0
     preconditions:
     - '!config.is_empty()'
+    - num_classes > 0
     lean_theorem: Theorems.Linear_Probe
 proof_obligations:
 - type: invariant
@@ -91,7 +93,8 @@ kani_harnesses:
 qa_gate:
   id: F-LPCV-001
   name: linear-probe-classifier-v1 Contract
-  description: Quality gate for Linear probe classifier -- frozen encoder + trained linear h
+  description: Quality gate for Linear probe classifier -- frozen encoder + trained
+    linear h
   checks:
   - validation
   - falsification

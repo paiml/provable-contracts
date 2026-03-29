@@ -16,6 +16,7 @@ equations:
     - Q projection is square for this config
     preconditions:
     - '!config.is_empty()'
+    - num_heads > 0
     lean_theorem: Theorems.Q_Projection_Shape
   kv_projection_shape:
     formula: '[n_kv * d_k, hidden] = [8*128, 4096] = [1024, 4096]'
@@ -24,6 +25,7 @@ equations:
     - 'GQA ratio: n_h / n_kv = 4'
     preconditions:
     - '!config.is_empty()'
+    - num_heads > 0
     lean_theorem: Theorems.Kv_Projection_Shape
   swiglu_ratio:
     formula: intermediate / hidden = 12288 / 4096 = 3.0
@@ -34,6 +36,7 @@ equations:
     - down_proj has shape [4096, 12288]
     preconditions:
     - '!config.is_empty()'
+    - intermediate_size > 0
     lean_theorem: Theorems.Swiglu_Ratio
   o_projection_transpose:
     formula: shape(o_proj) == transpose(shape(q_proj)) = [hidden, n_h * d_k]
@@ -64,6 +67,7 @@ equations:
     - d_k = 128 matches explicit head_dim field
     preconditions:
     - '!config.is_empty()'
+    - head_dim > 0
     lean_theorem: Theorems.Head_Dim_Consistency
 proof_obligations:
 - type: invariant

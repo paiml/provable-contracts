@@ -16,6 +16,7 @@ equations:
     - model_bytes monotonically increases with total_params
     preconditions:
     - '!config.is_empty()'
+    - num_params > 0
     lean_theorem: Theorems.Model_Bytes
   bandwidth_ceiling:
     formula: bw_ceiling = effective_bandwidth_GB_s / (model_bytes / 1e9)
@@ -26,6 +27,7 @@ equations:
     - Larger model → lower ceiling
     preconditions:
     - '!config.is_empty()'
+    - bandwidth_gbps > 0.0
     lean_theorem: Theorems.Bandwidth_Ceiling
   compute_ceiling:
     formula: compute_ceiling = effective_GFLOPS / ops_per_token
@@ -35,6 +37,7 @@ equations:
     - Higher GFLOPS → higher ceiling
     preconditions:
     - '!config.is_empty()'
+    - flops > 0.0
     lean_theorem: Theorems.Compute_Ceiling
   throughput_bound:
     formula: throughput <= min(bw_ceiling, compute_ceiling)
@@ -44,6 +47,7 @@ equations:
     - Memory-bound iff bw_ceiling < compute_ceiling
     preconditions:
     - '!config.is_empty()'
+    - batch_size > 0
     lean_theorem: Theorems.Throughput_Bound
 proof_obligations:
 - type: bound

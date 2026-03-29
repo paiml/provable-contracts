@@ -2,7 +2,8 @@ metadata:
   version: 1.0.0
   created: '2026-03-25'
   author: PAIML Engineering
-  description: Semantic equivalence — transpiled Rust produces identical observable behavior to Python source
+  description: Semantic equivalence — transpiled Rust produces identical observable
+    behavior to Python source
   references:
   - arXiv:2401.00679 — Equivalence Checking of Quantum Circuits via Intermediate Representation
   - arXiv:2312.00849 — Verified Lifting of Stencil Computations
@@ -13,7 +14,8 @@ metadata:
   - type-preservation-v1
 equations:
   observational_equivalence:
-    formula: 'forall f in TranspilableFunctions, forall x in ValidInputs(f): depyler(f)(x) == f(x)'
+    formula: 'forall f in TranspilableFunctions, forall x in ValidInputs(f): depyler(f)(x)
+      == f(x)'
     domain: 'f: Python function with supported syntax; x: inputs satisfying preconditions'
     codomain: Observable outputs (return values, stdout, side effects on mutable args)
     invariants:
@@ -22,10 +24,12 @@ equations:
     - Exception/panic behavior is equivalent for invalid inputs
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Observational_Equivalence
   statement_equivalence:
     formula: sem_rust(transpile(s), sigma_r) = TypeMap_state(sem_python(s, sigma_p))
-    domain: 's in HirStmt, sigma_p: Python state, sigma_r: Rust state where sigma_r = TypeMap_state(sigma_p)'
+    domain: 's in HirStmt, sigma_p: Python state, sigma_r: Rust state where sigma_r
+      = TypeMap_state(sigma_p)'
     invariants:
     - Assignment preserves variable binding semantics
     - If/else branches evaluate identically given same condition truth value
@@ -34,6 +38,7 @@ equations:
     - Return produces same value in both languages
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Statement_Equivalence
   expression_equivalence:
     formula: eval_rust(transpile(e), sigma_r) = TypeMap_val(eval_python(e, sigma_p))
@@ -43,12 +48,15 @@ equations:
     - 'Comparison operators: ==, !=, <, >, <=, >= produce equivalent booleans'
     - 'Boolean operators: and, or, not produce equivalent results'
     - 'String operations: concatenation, slicing, methods produce equivalent strings'
-    - 'Collection operations: indexing, slicing, append, insert produce equivalent state'
+    - 'Collection operations: indexing, slicing, append, insert produce equivalent
+      state'
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Expression_Equivalence
   control_flow_equivalence:
-    formula: trace_rust(transpile(P)) ~ trace_python(P) (bisimulation on observable events)
+    formula: trace_rust(transpile(P)) ~ trace_python(P) (bisimulation on observable
+      events)
     domain: 'P: Python program with supported control flow'
     invariants:
     - 'If/elif/else chains: same branch taken for same condition evaluation'
@@ -59,6 +67,7 @@ equations:
     - 'With statements: resource acquisition and release semantics preserved'
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Control_Flow_Equivalence
   comprehension_equivalence:
     formula: transpile([e for x in iter if cond]) = iter.filter(cond).map(e).collect::<Vec<_>>()
@@ -70,6 +79,7 @@ equations:
     - Nested comprehensions flatten correctly
     preconditions:
     - '!config.is_empty()'
+    - '!source.is_empty()'
     lean_theorem: Theorems.Comprehension_Equivalence
 proof_obligations:
 - type: precondition
@@ -103,7 +113,8 @@ proof_obligations:
   applies_to: all
 - type: invariant
   property: Loop iteration count
-  formal: 'iterations_rust(transpile(while cond: body)) == iterations_python(while cond: body)'
+  formal: 'iterations_rust(transpile(while cond: body)) == iterations_python(while
+    cond: body)'
   applies_to: all
 - type: invariant
   property: Collection indexing equivalence
@@ -144,7 +155,8 @@ falsification_tests:
 - id: FALSIFY-SE-003
   rule: String method equivalence
   prediction: transpile(s.upper()) produces same string as Python s.upper()
-  test: 'proptest: random Unicode strings, compare .upper() / .lower() / .strip() results'
+  test: 'proptest: random Unicode strings, compare .upper() / .lower() / .strip()
+    results'
   if_fails: Rust String method mapping incomplete or Unicode handling differs
 - id: FALSIFY-SE-004
   rule: List comprehension equivalence

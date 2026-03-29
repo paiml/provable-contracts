@@ -2,7 +2,8 @@ metadata:
   version: 1.0.0
   created: '2026-02-18'
   author: PAIML Engineering
-  description: Qwen3.5 hybrid forward pass — attention/GDN layer interleaving with numerical stability
+  description: Qwen3.5 hybrid forward pass — attention/GDN layer interleaving with
+    numerical stability
   references:
   - Qwen3.5 Technical Report — hybrid architecture layer schedule
   - Yang et al. (2024) Gated Delta Networks
@@ -35,6 +36,7 @@ equations:
     - Residual connection preserves gradient flow
     preconditions:
     - '!config.is_empty()'
+    - hidden_size > 0
     lean_theorem: Theorems.Gdn_Sublayer
   ffn_sublayer:
     formula: y = x + swiglu(rmsnorm(x))
@@ -45,6 +47,7 @@ equations:
     - Down projection restores d_model dimension
     preconditions:
     - '!config.is_empty()'
+    - hidden_size > 0
     lean_theorem: Theorems.Ffn_Sublayer
   hybrid_block:
     formula: block_l(x) = ffn_sublayer(attn_or_gdn_sublayer_l(x))
@@ -55,6 +58,7 @@ equations:
     - Output shape equals input shape
     preconditions:
     - '!config.is_empty()'
+    - num_layers > 0
     lean_theorem: Theorems.Hybrid_Block
   activation_magnitude:
     formula: '||h_l||_inf <= M * ||h_0||_inf for some bound M'

@@ -7,9 +7,10 @@ metadata:
   - realizar/src/gguf/config.rs ValidatedModelConfig::validate()
 equations:
   config_bounds_check:
-    formula: validate(cfg) = all(field_min <= cfg.field <= field_max for field in required_fields)
-    domain: 'cfg: ModelConfig with hidden_dim, num_layers, num_heads, num_kv_heads, vocab_size, intermediate_dim, context_length,
-      rope_theta, eps'
+    formula: validate(cfg) = all(field_min <= cfg.field <= field_max for field in
+      required_fields)
+    domain: 'cfg: ModelConfig with hidden_dim, num_layers, num_heads, num_kv_heads,
+      vocab_size, intermediate_dim, context_length, rope_theta, eps'
     codomain: Result<ValidatedModelConfig, ConfigError>
     invariants:
     - hidden_dim ∈ [1, 65536] and divisible by num_heads
@@ -18,6 +19,7 @@ equations:
     - rope_theta ∈ [1.0, 1e8] when configured
     preconditions:
     - '!config.is_empty()'
+    - num_layers > 0
     lean_theorem: Theorems.Config_Bounds_Check
 fields:
   hidden_dim:

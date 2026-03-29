@@ -2,7 +2,8 @@ metadata:
   version: 1.0.0
   created: '2026-02-19'
   author: PAIML Engineering
-  description: Per-architecture tensor weight requirements — source of truth for required/optional roles
+  description: Per-architecture tensor weight requirements — source of truth for required/optional
+    roles
   references:
   - UCBD Spec v1.0.0 Section 7.3 — Architecture Requirements (GH-279)
   - realizar/src/arch_requirements.rs — Rust implementation (generated from this contract)
@@ -14,7 +15,8 @@ metadata:
   - Jiang et al. (2023) Mistral 7B
   - Abdin et al. (2024) Phi-3 Technical Report
   - 'Gemma Team (2024) Gemma: Open Models Based on Gemini Research'
-  - Radford et al. (2023) Robust Speech Recognition via Large-Scale Weak Supervision (Whisper)
+  - Radford et al. (2023) Robust Speech Recognition via Large-Scale Weak Supervision
+    (Whisper)
 weight_roles:
   attn_norm:
     description: Pre-attention layer normalization gamma
@@ -74,7 +76,8 @@ weight_roles:
     category: ffn_projection
 role_sets:
   base:
-    description: Required by ALL transformer architectures (2 norms + 4 attn proj + 3 ffn proj)
+    description: Required by ALL transformer architectures (2 norms + 4 attn proj
+      + 3 ffn proj)
     count: 9
     roles:
     - attn_norm
@@ -297,10 +300,11 @@ architectures:
     positional_encoding: absolute
     mlp_type: gelu_mlp
     default_eps: 1.0e-05
-    description: 'Whisper is an encoder-decoder architecture. Its per-layer weight roles follow the standard bias pattern
-      (has_bias=true). The encoder-decoder split (encoder_attn, decoder_attn, cross_attn) is handled at the model-family level
-      (contracts/aprender/model-families/whisper.yaml), not at this contract level. This contract governs the per-layer weight
-      role completeness check.
+    description: 'Whisper is an encoder-decoder architecture. Its per-layer weight
+      roles follow the standard bias pattern (has_bias=true). The encoder-decoder
+      split (encoder_attn, decoder_attn, cross_attn) is handled at the model-family
+      level (contracts/aprender/model-families/whisper.yaml), not at this contract
+      level. This contract governs the per-layer weight role completeness check.
 
       '
     required_weights:
@@ -321,8 +325,9 @@ architectures:
     optional: []
 equations:
   weight_completeness:
-    formula: 'required(arch) = base_roles ∪ (qk_norm_roles if has_qk_norm) ∪ (bias_roles if has_bias); complete(model, arch)
-      = ∀ role ∈ required(arch): role.ptr ≠ 0 ∧ role.len > 0
+    formula: 'required(arch) = base_roles ∪ (qk_norm_roles if has_qk_norm) ∪ (bias_roles
+      if has_bias); complete(model, arch) = ∀ role ∈ required(arch): role.ptr ≠ 0
+      ∧ role.len > 0
 
       '
     domain: arch ∈ {llama, qwen2, qwen3, phi, mistral, gemma, whisper, ...}
@@ -334,10 +339,11 @@ equations:
     - complete(model, arch) = false => model MUST NOT run (Jidoka stop)
     preconditions:
     - '!config.is_empty()'
+    - expected_layers > 0
     lean_theorem: Theorems.Weight_Completeness
   role_mapping:
-    formula: 'map(role) = field_name in IndexedLayerWeights; ∀ role ∈ required(arch): map(role).ptr ≠ 0 ∧ map(role).len >
-      0
+    formula: 'map(role) = field_name in IndexedLayerWeights; ∀ role ∈ required(arch):
+      map(role).ptr ≠ 0 ∧ map(role).len > 0
 
       '
     domain: role ∈ WeightRole enum, arch ∈ supported architectures
@@ -348,9 +354,11 @@ equations:
     - field_name matches IndexedLayerWeights struct field exactly
     preconditions:
     - '!config.is_empty()'
+    - '!role.is_empty()'
     lean_theorem: Theorems.Role_Mapping
   constraint_matrix_exhaustiveness:
-    formula: "∀ (qk: bool, bias: bool): ∃! cell ∈ constraint_matrix such that\n  cell.has_qk_norm = qk ∧ cell.has_bias = bias\n"
+    formula: "∀ (qk: bool, bias: bool): ∃! cell ∈ constraint_matrix such that\n  cell.has_qk_norm\
+      \ = qk ∧ cell.has_bias = bias\n"
     domain: (has_qk_norm, has_bias) ∈ {true, false}^2
     codomain: Exactly one constraint cell
     invariants:
@@ -359,6 +367,7 @@ equations:
     - Adding a new boolean axis requires 2^(n+1) cells
     preconditions:
     - '!config.is_empty()'
+    - constraints.len() > 0
     lean_theorem: Theorems.Constraint_Matrix_Exhaustiveness
 proof_obligations:
 - type: invariant
@@ -371,7 +380,8 @@ proof_obligations:
   applies_to: all
 - type: invariant
   property: Role count correctness
-  formal: '|base| = 9 ∧ |base ∪ qk| = 11 ∧ |base ∪ bias| = 12 ∧ |base ∪ qk ∪ bias| = 14'
+  formal: '|base| = 9 ∧ |base ∪ qk| = 11 ∧ |base ∪ bias| = 12 ∧ |base ∪ qk ∪ bias|
+    = 14'
   applies_to: all
 - type: completeness
   property: Weight completeness implies correct forward pass
@@ -392,24 +402,27 @@ proof_obligations:
 falsification_tests:
 - id: FALSIFY-ARCH-001
   rule: YAML-Rust parity
-  prediction: 'For every architecture in this YAML, the set of required roles matches the output of required_roles(ArchConstraints::from_architecture(name))
-    in realizar/src/arch_requirements.rs exactly.
+  prediction: 'For every architecture in this YAML, the set of required roles matches
+    the output of required_roles(ArchConstraints::from_architecture(name)) in realizar/src/arch_requirements.rs
+    exactly.
 
     '
-  test: 'Deterministic: iterate all architectures, compare YAML required set against Rust required_roles() output. Sets must
-    be identical.
+  test: 'Deterministic: iterate all architectures, compare YAML required set against
+    Rust required_roles() output. Sets must be identical.
 
     '
-  if_fails: 'YAML and Rust implementation have diverged. One was updated without the other. Fix BOTH — this YAML is source
-    of truth.
+  if_fails: 'YAML and Rust implementation have diverged. One was updated without the
+    other. Fix BOTH — this YAML is source of truth.
 
     '
 - id: FALSIFY-ARCH-002
   rule: Base roles always present
-  prediction: 'For every architecture (including unknown/default), required_roles() contains all 9 base roles.
+  prediction: 'For every architecture (including unknown/default), required_roles()
+    contains all 9 base roles.
 
     '
-  test: 'Proptest with random architecture name strings. Every result must be a superset of base_roles.
+  test: 'Proptest with random architecture name strings. Every result must be a superset
+    of base_roles.
 
     '
   if_fails: 'An architecture override accidentally removed a base role.
@@ -417,12 +430,13 @@ falsification_tests:
     '
 - id: FALSIFY-ARCH-003
   rule: Constraint matrix exhaustiveness
-  prediction: 'The four (has_qk_norm, has_bias) combinations {(F,F), (T,F), (F,T), (T,T)} each produce a distinct, non-empty
-    role set.
+  prediction: 'The four (has_qk_norm, has_bias) combinations {(F,F), (T,F), (F,T),
+    (T,T)} each produce a distinct, non-empty role set.
 
     '
-  test: 'Deterministic: construct ArchConstraints for each of the 4 boolean pairs, verify required_roles returns distinct
-    sets with correct cardinalities (9, 11, 12, 14 respectively).
+  test: 'Deterministic: construct ArchConstraints for each of the 4 boolean pairs,
+    verify required_roles returns distinct sets with correct cardinalities (9, 11,
+    12, 14 respectively).
 
     '
   if_fails: 'Match arms in required_roles() overlap or a cell is missing.
@@ -430,7 +444,8 @@ falsification_tests:
     '
 - id: FALSIFY-ARCH-004
   rule: Role count invariants
-  prediction: '|base| = 9, |base + qk_norm| = 11, |base + bias| = 12, |base + qk_norm + bias| = 14.
+  prediction: '|base| = 9, |base + qk_norm| = 11, |base + bias| = 12, |base + qk_norm
+    + bias| = 14.
 
     '
   test: 'Deterministic: count roles for each of the four constraint cells.
@@ -441,18 +456,21 @@ falsification_tests:
     '
 - id: FALSIFY-ARCH-005
   rule: Qwen3 requires QK norm, not bias
-  prediction: 'required_roles(qwen3) contains attn_q_norm and attn_k_norm, but NOT attn_q_bias, attn_k_bias, attn_v_bias.
+  prediction: 'required_roles(qwen3) contains attn_q_norm and attn_k_norm, but NOT
+    attn_q_bias, attn_k_bias, attn_v_bias.
 
     '
   test: 'Deterministic: construct Qwen3 constraints, check role membership.
 
     '
-  if_fails: 'Qwen3 constraint flags are wrong — this was the root cause of GH-279 (GPU garbage from missing QK norm weights).
+  if_fails: 'Qwen3 constraint flags are wrong — this was the root cause of GH-279
+    (GPU garbage from missing QK norm weights).
 
     '
 - id: FALSIFY-ARCH-006
   rule: Qwen2 requires bias, not QK norm
-  prediction: 'required_roles(qwen2) contains attn_q_bias, attn_k_bias, attn_v_bias, but NOT attn_q_norm, attn_k_norm.
+  prediction: 'required_roles(qwen2) contains attn_q_bias, attn_k_bias, attn_v_bias,
+    but NOT attn_q_norm, attn_k_norm.
 
     '
   test: 'Deterministic: construct Qwen2 constraints, check role membership.
@@ -463,8 +481,8 @@ falsification_tests:
     '
 - id: FALSIFY-ARCH-007
   rule: LLaMA/Mistral require base only
-  prediction: 'required_roles(llama) and required_roles(mistral) each contain exactly 9 roles (base only). No bias, no QK
-    norm.
+  prediction: 'required_roles(llama) and required_roles(mistral) each contain exactly
+    9 roles (base only). No bias, no QK norm.
 
     '
   test: 'Deterministic: verify role count = 9 and absence of extension roles.
@@ -475,24 +493,26 @@ falsification_tests:
     '
 - id: FALSIFY-ARCH-008
   rule: Incomplete model rejected before forward pass
-  prediction: 'A model missing any single required role for its architecture triggers an error BEFORE any matrix multiplication
-    or attention computation.
+  prediction: 'A model missing any single required role for its architecture triggers
+    an error BEFORE any matrix multiplication or attention computation.
 
     '
-  test: 'For each architecture, for each required role, construct a model with that role zeroed out. Verify the completeness
-    check returns Err.
+  test: 'For each architecture, for each required role, construct a model with that
+    role zeroed out. Verify the completeness check returns Err.
 
     '
-  if_fails: 'The completeness gate has a gap — a missing weight silently becomes zero, producing garbage output (the exact
-    GH-279 failure mode).
+  if_fails: 'The completeness gate has a gap — a missing weight silently becomes zero,
+    producing garbage output (the exact GH-279 failure mode).
 
     '
 - id: FALSIFY-ARCH-009
   rule: Optional roles do not trigger rejection
-  prediction: 'A model that has all required roles but is missing optional roles passes the completeness check without error.
+  prediction: 'A model that has all required roles but is missing optional roles passes
+    the completeness check without error.
 
     '
-  test: 'Construct minimal models with only required roles. Verify completeness check returns Ok.
+  test: 'Construct minimal models with only required roles. Verify completeness check
+    returns Ok.
 
     '
   if_fails: 'Optional roles incorrectly classified as required.
@@ -500,8 +520,9 @@ falsification_tests:
     '
 - id: FALSIFY-ARCH-010
   rule: Unknown architecture falls back to base
-  prediction: 'An unrecognized architecture string (e.g., "future_arch_2027") produces ArchConstraints with has_qk_norm=false,
-    has_bias=false, and required_roles returns exactly the 9 base roles.
+  prediction: 'An unrecognized architecture string (e.g., "future_arch_2027") produces
+    ArchConstraints with has_qk_norm=false, has_bias=false, and required_roles returns
+    exactly the 9 base roles.
 
     '
   test: 'Proptest with random non-matching strings. All must produce base roles.
@@ -512,11 +533,13 @@ falsification_tests:
     '
 - id: FALSIFY-ARCH-011
   rule: Alias equivalence
-  prediction: 'Architecture aliases produce identical ArchConstraints and identical required role sets. E.g., "llama" == "llama3",
-    "qwen2" == "qwen2.5" == "qwen", "phi" == "phi3", "gemma" == "gemma2".
+  prediction: 'Architecture aliases produce identical ArchConstraints and identical
+    required role sets. E.g., "llama" == "llama3", "qwen2" == "qwen2.5" == "qwen",
+    "phi" == "phi3", "gemma" == "gemma2".
 
     '
-  test: 'Deterministic: for each architecture and each alias, verify from_architecture(name) == from_architecture(alias).
+  test: 'Deterministic: for each architecture and each alias, verify from_architecture(name)
+    == from_architecture(alias).
 
     '
   if_fails: 'An alias was added to from_architecture() but maps to different constraints.
@@ -524,10 +547,12 @@ falsification_tests:
     '
 - id: FALSIFY-ARCH-012
   rule: Monotonicity — features only add roles
-  prediction: 'For any architecture A and any superset of its boolean features, required_roles(superset) ⊇ required_roles(A).
+  prediction: 'For any architecture A and any superset of its boolean features, required_roles(superset)
+    ⊇ required_roles(A).
 
     '
-  test: 'For each architecture, enable additional feature flags one at a time. Verify the resulting role set is a strict superset.
+  test: 'For each architecture, enable additional feature flags one at a time. Verify
+    the resulting role set is a strict superset.
 
     '
   if_fails: 'A feature flag accidentally removes roles instead of adding them.
@@ -589,11 +614,13 @@ kani_harnesses:
   strategy: exhaustive
 enforcement:
   yaml_rust_parity:
-    description: YAML contract and Rust implementation must define identical role sets
+    description: YAML contract and Rust implementation must define identical role
+      sets
     check: contract_tests::FALSIFY-ARCH-001
     severity: CRITICAL
   weight_completeness:
-    description: All required roles must be present (non-zero ptr and len) before forward pass
+    description: All required roles must be present (non-zero ptr and len) before
+      forward pass
     check: contract_tests::FALSIFY-ARCH-008
     severity: CRITICAL
   base_roles_universal:
@@ -621,4 +648,5 @@ qa_gate:
   - alias_consistency
   - monotonicity
   pass_criteria: All 12 falsification tests pass + 3 Kani harnesses verify
-  falsification: Remove attn_q_norm from Qwen3 required set to reproduce GH-279 garbage output
+  falsification: Remove attn_q_norm from Qwen3 required set to reproduce GH-279 garbage
+    output

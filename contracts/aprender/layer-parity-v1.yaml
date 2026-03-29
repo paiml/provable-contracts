@@ -87,7 +87,8 @@ parity_tool:
     Prints first divergence point with values.
 
     '
-  output_format: 'Layer 0: attn_norm   CPU=[0.123, -0.456, ...] GPU=[0.123, -0.456, ...]  OK (max_diff=2.3e-5)
+  output_format: 'Layer 0: attn_norm   CPU=[0.123, -0.456, ...] GPU=[0.123, -0.456,
+    ...]  OK (max_diff=2.3e-5)
 
     Layer 0: q_proj      CPU=[1.234, ...]         GPU=[1.234, ...]          OK (max_diff=1.1e-4)
 
@@ -112,7 +113,8 @@ parity_tool:
 parity_gate:
   location: realizar/src/gguf/cuda/mod.rs::parity_gate()
   called_by: OwnedQuantizedModelCuda::with_max_seq_len()
-  input_bos: BOS from config.bos_token_id (architecture-aware, e.g., qwen2=151643, llama=128000, mistral=1)
+  input_bos: BOS from config.bos_token_id (architecture-aware, e.g., qwen2=151643,
+    llama=128000, mistral=1)
   metric: cosine_similarity(cpu_logits, gpu_logits)
   threshold: 0.99
   on_failure: CudaInitError — model falls back to CPU automatically
@@ -177,6 +179,7 @@ equations:
     formula: f(x) = x
     preconditions:
     - '!config.is_empty()'
+    - '!input.is_empty()'
     lean_theorem: Theorems.Identity
 qa_gate:
   id: F-LPV-001
