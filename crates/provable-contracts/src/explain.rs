@@ -255,6 +255,7 @@ pub fn explain_contract_markdown(
                         crate::binding::ImplStatus::Implemented => "implemented",
                         crate::binding::ImplStatus::Partial => "partial",
                         crate::binding::ImplStatus::NotImplemented => "not_implemented",
+                        crate::binding::ImplStatus::Pending => "pending",
                     });
                 let _ = writeln!(out, "| {eq_name} | {status} |");
             }

@@ -174,6 +174,19 @@ pub fn audit_binding(
                                 location: Some(format!("bindings.{eq_name}")),
                             });
                         }
+                        ImplStatus::Pending => {
+                            not_implemented += 1;
+                            violations.push(Violation {
+                                severity: Severity::Warning,
+                                rule: "BIND-004".to_string(),
+                                message: format!(
+                                    "Equation '{eq_name}' in \
+                                     {contract_file} is pending \
+                                     implementation"
+                                ),
+                                location: Some(format!("bindings.{eq_name}")),
+                            });
+                        }
                     }
                 }
                 None => {

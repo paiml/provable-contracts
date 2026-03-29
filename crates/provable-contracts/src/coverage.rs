@@ -157,6 +157,7 @@ fn count_binding_coverage(
             Some(ImplStatus::Implemented) => implemented += 1,
             Some(ImplStatus::Partial) => partial += 1,
             Some(ImplStatus::NotImplemented) | None => missing += 1,
+            Some(ImplStatus::Pending) => {} // Pending: excluded from denominator
         }
     }
 

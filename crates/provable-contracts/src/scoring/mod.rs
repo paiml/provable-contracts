@@ -421,6 +421,7 @@ fn compute_binding_coverage(
             ImplStatus::Implemented => "implemented",
             ImplStatus::Partial => "partial",
             ImplStatus::NotImplemented => "not_implemented",
+            ImplStatus::Pending => "pending",
         };
         let is_implemented = b.status == ImplStatus::Implemented;
         let fn_name = b
@@ -441,7 +442,7 @@ fn compute_binding_coverage(
         .map(|b| match b.status {
             ImplStatus::Implemented => 1.0,
             ImplStatus::Partial => 0.5,
-            ImplStatus::NotImplemented => 0.0,
+            ImplStatus::NotImplemented | ImplStatus::Pending => 0.0,
         })
         .sum();
 

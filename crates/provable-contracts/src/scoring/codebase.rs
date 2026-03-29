@@ -87,7 +87,7 @@ pub fn score_codebase_full(
         .map(|b| match b.status {
             ImplStatus::Implemented => 1.0,
             ImplStatus::Partial => 0.5,
-            ImplStatus::NotImplemented => 0.0,
+            ImplStatus::NotImplemented | ImplStatus::Pending => 0.0,
         })
         .sum();
     let binding_completeness = if total_bindings == 0 {

@@ -156,6 +156,15 @@ pub fn verify_bindings(binding_yaml_path: &str, policy: BindingPolicy) -> Verify
                     }
                 }
             }
+            ImplStatus::Pending => {
+                result.not_implemented_count += 1;
+                println!(
+                    "cargo:warning=CONTRACT: pending binding {}.{} ({})",
+                    binding.contract,
+                    binding.equation,
+                    binding.module_path.as_deref().unwrap_or("?"),
+                );
+            }
         }
     }
 

@@ -61,6 +61,8 @@ pub enum ImplStatus {
     Partial,
     /// Not yet implemented.
     NotImplemented,
+    /// Planned but not started — skipped by enforcement checks.
+    Pending,
 }
 
 /// Display implementation status as a `snake_case` string
@@ -70,6 +72,7 @@ impl std::fmt::Display for ImplStatus {
             Self::Implemented => "implemented",
             Self::Partial => "partial",
             Self::NotImplemented => "not_implemented",
+            Self::Pending => "pending",
         };
         write!(f, "{s}")
     }
@@ -188,6 +191,7 @@ bindings:
         assert_eq!(ImplStatus::Implemented.to_string(), "implemented");
         assert_eq!(ImplStatus::Partial.to_string(), "partial");
         assert_eq!(ImplStatus::NotImplemented.to_string(), "not_implemented");
+        assert_eq!(ImplStatus::Pending.to_string(), "pending");
     }
 
     #[test]
