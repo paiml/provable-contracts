@@ -2176,11 +2176,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Prove and score all 18 sovereign stack repos — full test + pv score audit
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-03-29T07:04:46Z
-  updated: 2026-03-29T07:04:50.758747728+00:00
+  updated: 2026-03-29T07:11:16.742106241+00:00
   spec: null
   acceptance_criteria: []
   phases: []
