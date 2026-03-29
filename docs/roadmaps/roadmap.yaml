@@ -2220,3 +2220,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-130
+  github_issue: null
+  item_type: task
+  title: Fix codegen to emit real YAML preconditions + dogfood on all repos
+  status: inprogress
+  priority: critical
+  assigned_to: null
+  created: 2026-03-29T07:34:39Z
+  updated: 2026-03-29T07:34:44.044971701+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null

@@ -47,46 +47,17 @@ pub fn generate_from_contract(name: &str, contract: &Contract) -> GeneratedContr
 
     for (eq_name, equation) in &contract.equations {
         let macro_name = eq_name.replace('-', "_").to_lowercase();
-
-        // Preconditions as a macro — caller passes the input expression
-        if !equation.preconditions.is_empty() {
-            rust.push_str(&format!("/// Preconditions for equation `{eq_name}`.\n"));
-            rust.push_str(&format!(
-                "/// Call at function entry: `contract_pre_{macro_name}!(input_expr)`\n"
-            ));
-            rust.push_str(&format!("macro_rules! contract_pre_{macro_name} {{\n"));
-            rust.push_str("    ($input:expr) => {{\n");
-            rust.push_str("        let _contract_input = &$input;\n");
-            rust.push_str("        debug_assert!(!_contract_input.is_empty(), \n");
-            rust.push_str(&format!(
-                "            \"Contract {eq_name}: precondition violated — input must not be empty\");\n"
-            ));
-            pre_count += equation.preconditions.len();
-            rust.push_str("    }};\n");
-            rust.push_str("}\n\n");
-        }
-
-        // Postconditions as a macro — caller passes the result expression
-        if !equation.postconditions.is_empty() {
-            rust.push_str(&format!("/// Postconditions for equation `{eq_name}`.\n"));
-            rust.push_str(&format!(
-                "/// Call before return: `contract_post_{macro_name}!(result_expr)`\n"
-            ));
-            rust.push_str(&format!("macro_rules! contract_post_{macro_name} {{\n"));
-            rust.push_str("    ($result:expr) => {{\n");
-            rust.push_str("        let _contract_result = &$result;\n");
-            for post in &equation.postconditions {
-                // Replace 'result' with '_contract_result' in the assertion
-                let fixed = post.replace("result", "_contract_result");
-                let escaped = post.replace('"', "\\\"");
-                rust.push_str(&format!(
-                    "        debug_assert!({fixed}, \"Contract {eq_name}: postcondition violated — {escaped}\");\n"
-                ));
-                post_count += 1;
-            }
-            rust.push_str("    }};\n");
-            rust.push_str("}\n\n");
-        }
+        pre_count +=
+            emit_precondition_macro(&mut rust, eq_name, &macro_name, &equation.preconditions);
+        post_count +=
+            emit_postcondition_macro(&mut rust, eq_name, &macro_name, &equation.postconditions);
+        emit_combined_macro(
+            &mut rust,
+            eq_name,
+            &macro_name,
+            &equation.preconditions,
+            &equation.postconditions,
+        );
 
         // Lean theorem linkage
         if let Some(ref theorem) = equation.lean_theorem {
@@ -108,6 +79,177 @@ pub fn generate_from_contract(name: &str, contract: &Contract) -> GeneratedContr
         postcondition_count: post_count,
         lean_theorem_count: lean_count,
     }
+}
+
+/// Emit a precondition macro for an equation. Returns number of assertions emitted.
+fn emit_precondition_macro(
+    rust: &mut String,
+    eq_name: &str,
+    macro_name: &str,
+    pres: &[String],
+) -> usize {
+    if pres.is_empty() {
+        return 0;
+    }
+    let uses_domain = pres.iter().any(|p| {
+        p.contains("==")
+            || p.contains("eps")
+            || p.contains("weight")
+            || p.contains("freqs")
+            || p.contains("scale")
+            || p.contains('.') && !p.contains("is_empty")
+    });
+    let mut count = 0;
+    rust.push_str(&format!("/// Preconditions for equation `{eq_name}`.\n"));
+    if uses_domain {
+        let pv = detect_primary_var(pres);
+        rust.push_str(&format!(
+            "/// Domain-specific. Call: `contract_pre_{macro_name}!(slice_expr)`\n"
+        ));
+        rust.push_str(&format!("macro_rules! contract_pre_{macro_name} {{\n"));
+        rust.push_str("    ($input:expr) => {{\n");
+        rust.push_str(&format!("        let {pv} = &$input;\n"));
+        for pre in pres {
+            if has_unbound_vars(pre, &pv) {
+                continue;
+            }
+            let esc = pre.replace('"', "\\\"");
+            rust.push_str(&format!("        debug_assert!({pre},\n            \"Contract {eq_name}: precondition violated — {esc}\");\n"));
+            count += 1;
+        }
+        rust.push_str("    }};\n}\n\n");
+    } else {
+        rust.push_str(&format!(
+            "/// Call at function entry: `contract_pre_{macro_name}!(input_expr)`\n"
+        ));
+        rust.push_str(&format!("macro_rules! contract_pre_{macro_name} {{\n"));
+        rust.push_str("    ($input:expr) => {{\n        let _contract_input = &$input;\n");
+        for pre in pres {
+            let esc = pre.replace('"', "\\\"");
+            let assertion = pre
+                .replace("input", "_contract_input")
+                .replace("x.", "_contract_input.")
+                .replace("x)", "_contract_input)");
+            rust.push_str(&format!("        debug_assert!({assertion},\n            \"Contract {eq_name}: precondition violated — {esc}\");\n"));
+            count += 1;
+        }
+        rust.push_str("    }};\n}\n\n");
+    }
+    count
+}
+
+/// Emit a postcondition macro for an equation. Returns number of assertions emitted.
+fn emit_postcondition_macro(
+    rust: &mut String,
+    eq_name: &str,
+    macro_name: &str,
+    posts: &[String],
+) -> usize {
+    if posts.is_empty() {
+        return 0;
+    }
+    let mut count = 0;
+    rust.push_str(&format!("/// Postconditions for equation `{eq_name}`.\n"));
+    rust.push_str(&format!(
+        "/// Call before return: `contract_post_{macro_name}!(result_expr)`\n"
+    ));
+    rust.push_str(&format!("macro_rules! contract_post_{macro_name} {{\n"));
+    rust.push_str("    ($result:expr) => {{\n        let _contract_result = &$result;\n");
+    for post in posts {
+        let fixed = post.replace("result", "_contract_result");
+        let esc = post.replace('"', "\\\"");
+        rust.push_str(&format!("        debug_assert!({fixed}, \"Contract {eq_name}: postcondition violated — {esc}\");\n"));
+        count += 1;
+    }
+    rust.push_str("    }};\n}\n\n");
+    count
+}
+
+/// Emit a combined pre+post wrapper macro.
+fn emit_combined_macro(
+    rust: &mut String,
+    eq_name: &str,
+    macro_name: &str,
+    pres: &[String],
+    posts: &[String],
+) {
+    if pres.is_empty() || posts.is_empty() {
+        return;
+    }
+    rust.push_str(&format!(
+        "/// Combined pre+post contract for equation `{eq_name}`.\n"
+    ));
+    rust.push_str(&format!("macro_rules! contract_{macro_name} {{\n"));
+    rust.push_str("    ($input:expr, $body:expr) => {{\n");
+    rust.push_str(&format!("        contract_pre_{macro_name}!($input);\n"));
+    rust.push_str("        let _contract_result = $body;\n");
+    rust.push_str(&format!(
+        "        contract_post_{macro_name}!(_contract_result);\n"
+    ));
+    rust.push_str("        _contract_result\n");
+    rust.push_str("    }};\n}\n\n");
+}
+
+/// Detect the primary variable name used in preconditions.
+/// Scans for the first `<var>.` pattern (e.g., `x.len()` → `x`).
+fn detect_primary_var(preconditions: &[String]) -> String {
+    for pre in preconditions {
+        // Match patterns like "x.len()", "logits.iter()", "a.len()"
+        if let Some(dot_pos) = pre.find('.') {
+            let candidate = &pre[..dot_pos];
+            // Must be a simple identifier (no spaces, operators)
+            if !candidate.is_empty()
+                && candidate.chars().all(|c| c.is_alphanumeric() || c == '_')
+                && candidate != "result"
+            {
+                return candidate.to_string();
+            }
+        }
+    }
+    "x".to_string() // default fallback
+}
+
+/// Check if a precondition expression references variables beyond the primary
+/// and standard library methods. Returns true if it has unbound names.
+fn has_unbound_vars(expr: &str, primary_var: &str) -> bool {
+    // Extract all identifiers that appear before `.` (method call targets)
+    // or standalone (bare variables like m, k, n)
+    let safe_names = [
+        primary_var,
+        "true",
+        "false",
+        "f32",
+        "f64",
+        "usize",
+        "i32",
+        "i64",
+    ];
+    // Tokenize crudely: split on operators and delimiters
+    for token in expr.split(|c: char| "().&|!<>=+- */%,;{}[]".contains(c)) {
+        let token = token.trim();
+        if token.is_empty() || token.chars().next().is_some_and(|c| c.is_ascii_digit()) {
+            continue; // skip empty, numeric literals
+        }
+        // Skip known safe identifiers and closures
+        if safe_names.contains(&token)
+            || token == "v"
+            || token == "id"
+            || token.starts_with("is_")
+            || token == "iter"
+            || token == "all"
+            || token == "any"
+            || token == "len"
+            || token == "abs"
+            || token == "sum"
+        {
+            continue;
+        }
+        // This token is an unbound variable
+        if token.chars().all(|c| c.is_alphanumeric() || c == '_') && token.len() <= 20 {
+            return true;
+        }
+    }
+    false
 }
 
 /// Generate code for all contracts in a directory (recursive).
