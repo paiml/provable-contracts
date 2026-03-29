@@ -2463,26 +2463,36 @@ Every call site was then falsified:
 | Call sites / bindings | 27 / 612 = **4.4%** | 95.6% of bindings have zero enforcement |
 | Bugs catchable | **0** | An `is_empty` check catches no numerical, shape, or logic bugs |
 
-**Root cause (five-whys):**
+**Root cause (five-whys), corrected after falsification:**
 
-1. Every precondition is `!input.is_empty()` because YAML contracts
-   were batch-generated (PMAT-082) with that placeholder.
-2. The placeholder was never replaced because `pv codegen` passes the
-   YAML string verbatim to `debug_assert!` — no domain logic.
-3. Postconditions exist in YAML as math notation but codegen ignores
-   them — it only reads the `preconditions` field.
-4. Codegen generates one macro per equation, not per binding — so it
-   has no access to real function parameter names or return types.
-5. The system optimized for **contract metadata** (scoring, coverage
-   reports, binding registries) rather than **contract enforcement**
-   (catching actual bugs at runtime).
+1. Every generated macro asserts `!input.is_empty()` regardless of
+   what the YAML says.
+2. `codegen.rs` line 60 hardcodes `!_contract_input.is_empty()` —
+   it never reads the `equation.preconditions` vector content.
+3. This was a scaffolding shortcut: the precondition loop counts
+   items (`pre_count += equation.preconditions.len()`) but never
+   emits the actual expressions.
+4. **The YAML already has real preconditions** for core kernels
+   (e.g., `x.iter().all(|v| v.is_finite())` in softmax). The data
+   is there — the codegen just ignores it.
+5. Postcondition codegen (lines 70-88) DOES emit YAML content — so
+   the pattern exists, it was just never applied to preconditions.
+
+**The fix is ~10 lines in `codegen.rs`**: loop over
+`equation.preconditions` and emit each as a `debug_assert!`, the
+same way postconditions already work on lines 78-84.
 
 ### Three-Layer Fix
 
-#### Layer 1: Domain-Specific Preconditions in YAML
+#### Layer 1: Fix Codegen to Emit Actual YAML Preconditions
 
-Replace every `!input.is_empty()` placeholder with real Rust expressions
-derived from the equation's `domain`, `codomain`, and `invariants`.
+The YAML already contains domain-specific preconditions for core kernels.
+The codegen bug (line 60) hardcodes `!is_empty()` instead of emitting them.
+Fix: loop over `equation.preconditions` and emit each expression, matching
+the existing postcondition pattern (lines 78-84).
+
+Remaining YAML work: audit the ~156 non-core contracts and replace any
+remaining `!input.is_empty()` placeholders with real expressions.
 
 **Core kernel examples (9 contracts, highest impact):**
 
