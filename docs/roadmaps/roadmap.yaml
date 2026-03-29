@@ -2192,11 +2192,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Upgrade all 16 Grade B repos to Grade A (≥0.90)
-  status: inprogress
+  status: completed
   priority: critical
   assigned_to: null
   created: 2026-03-29T07:12:46Z
-  updated: 2026-03-29T07:12:51.530048547+00:00
+  updated: 2026-03-29T07:17:31.695553103+00:00
   spec: null
   acceptance_criteria: []
   phases: []
