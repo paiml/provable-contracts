@@ -24,7 +24,8 @@ equations:
     - raw = sum of all 6 dimension scores
     - Each dimension score in [0, 175]
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Mqs_Composite
   mqs_deterministic:
     formula: "deterministic: ModelEvidence -> bool\n  For all e: mqs(e).raw == mqs(e).raw (same evidence, same score)\n"
@@ -34,7 +35,8 @@ equations:
     - No randomness in scoring pipeline
     - Floating point operations are deterministic (same platform)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Mqs_Deterministic
   mqs_grade:
     formula: "grade: normalized -> Grade\n  A+ if normalized >= 97\n  A  if normalized >= 93\n  A- if normalized >= 90\n \
@@ -44,7 +46,8 @@ equations:
     invariants:
     - Grade monotonically non-decreasing with normalized score
     preconditions:
-    - '!input.is_empty()'
+    - grad_output.len() > 0
+    - grad_output.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Mqs_Grade
   mqs_pass_rate:
     formula: "mqs_pass_rate: Vec<MqsResult> -> f64\n  pass_rate = models_passing_all_gates / total_models_evaluated\n  Where\
@@ -55,7 +58,8 @@ equations:
     - pass_rate = 1.0 iff all models pass
     - pass_rate = 0.0 iff no models pass
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Mqs_Pass_Rate
 proof_obligations:
 - type: bound

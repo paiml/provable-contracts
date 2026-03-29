@@ -18,7 +18,7 @@ equations:
     - Gate execution order is deterministic
     - Failed gate captures evidence string for diagnostics
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Run_Checks
   aggregate_score:
     formula: "score: Vec<GateResult> -> f64\n  score = passed_gates / total_non_skipped_gates\n"
@@ -28,7 +28,7 @@ equations:
     - Score is 1.0 iff all gates pass
     - Score is 0.0 iff all gates fail
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Aggregate_Score
 proof_obligations:
 - type: postcondition

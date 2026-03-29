@@ -156,5 +156,6 @@ equations:
   identity:
     formula: f(x) = x
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Identity

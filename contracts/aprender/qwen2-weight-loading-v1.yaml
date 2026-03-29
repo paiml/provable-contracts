@@ -220,7 +220,7 @@ equations:
     invariants:
     - Q projection is square for this config
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Q_Projection
   kv_projection:
     formula: '[n_kv * d_k, hidden] = [2*64, 896] = [128, 896]'
@@ -228,7 +228,7 @@ equations:
     invariants:
     - 'GQA ratio: n_h / n_kv = 7'
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Kv_Projection
   swiglu_expansion:
     formula: intermediate / hidden = 4864 / 896 = 5.43
@@ -237,7 +237,7 @@ equations:
     - 'gate_proj and up_proj: [4864, 896]'
     - 'down_proj: [896, 4864]'
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Swiglu_Expansion
   total_parameters:
     formula: ~494M parameters
@@ -247,7 +247,7 @@ equations:
       per_layer_ffn: (4864*896 * 2 + 896*4864) * 24 = ~313.0M
       norms: (896 * 2 * 24 + 896) = ~0.04M
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Total_Parameters
 toyota_way_principles:
   jidoka: '"Automation with a human touch" — weight loading halts on first shape mismatch

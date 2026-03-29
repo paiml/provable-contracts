@@ -22,7 +22,7 @@ equations:
     - Mutable borrows are exclusive (no aliasing)
     - Multiple immutable borrows are allowed simultaneously
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Ownership_Invariant
   escape_analysis:
     formula: 'forall v in Params(f): escape(v) => owned(v); not escape(v) and mutated(v) => mut_borrow(v); not escape(v) and
@@ -34,7 +34,7 @@ equations:
     - Parameters that are only read use & (immutable borrow)
     - Copy types bypass borrowing analysis (passed by value)
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Escape_Analysis
   lifetime_safety:
     formula: 'forall ref r with lifetime ''a: lifetime(referent(r)) >= ''a'
@@ -45,7 +45,7 @@ equations:
     - String slices (&str) lifetime bounded by owning String
     - Iterators do not outlive their source collection
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Lifetime_Safety
   bounds_safety:
     formula: 'forall access c[i]: 0 <= i < len(c) or access is bounds-checked'
@@ -56,7 +56,7 @@ equations:
     - Slice operations produce valid sub-slices or panic safely
     - Array access is statically bounded where possible
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Bounds_Safety
   use_after_move:
     formula: 'forall v moved at point p: no use of v at any point q > p (unless v is reassigned between p and q)'
@@ -67,7 +67,7 @@ equations:
     - Move analysis tracks all variable consumption points
     - Reassignment after move resets liveness
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Use_After_Move
   drop_safety:
     formula: 'forall resource r acquired in scope S: Drop(r) called exactly once when S exits'
@@ -78,7 +78,7 @@ equations:
     - Drop called even on early return or panic (unwind safety)
     - 'No double-free: each value dropped exactly once'
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Drop_Safety
 proof_obligations:
 - type: precondition

@@ -16,7 +16,7 @@ equations:
     - External deps only injected into first resource
     - Machine target propagated to all inner resources
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Expand_Recipe
   validate_inputs:
     formula: validate(recipe, provided) = type-checked resolved inputs or Err
@@ -27,7 +27,7 @@ equations:
     - Default values used when input not provided
     - 'Type validation: int respects min/max, path starts with /, enum in choices'
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Validate_Inputs
   validate_input_type:
     formula: validate_type(name, type, value, decl) = Ok(string_val) | Err(msg)
@@ -39,7 +39,7 @@ equations:
     - path not starting with / → Err
     - enum value not in non-empty choices → Err
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Validate_Input_Type
 proof_obligations:
 - type: invariant

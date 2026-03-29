@@ -16,6 +16,7 @@ equations:
     - 'Minimum: 14 launches for L=1'
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Per_Token_Launches
   per_layer_decomposition:
     formula: 12 = 2(norm) + 5(matmul) + 1(rope) + 1(attn) + 1(swiglu) + 2(residual)
@@ -24,7 +25,8 @@ equations:
     - Decomposition sums to 12
     - Each component count >= 1
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Per_Layer_Decomposition
   bsum_budget:
     formula: waste = L * P * ceil(D/256) * C
@@ -34,7 +36,8 @@ equations:
     - Waste proportional to layer count
     - Waste proportional to hidden dim (via ceil)
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.Bsum_Budget
 proof_obligations:
 - type: invariant

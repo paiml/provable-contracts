@@ -16,7 +16,8 @@ equations:
     - 'Monotonic: higher ratio => same or better grade'
     - Boundaries are exhaustive and non-overlapping
     preconditions:
-    - '!input.is_empty()'
+    - grad_output.len() > 0
+    - grad_output.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Ollama_Parity
   llamacpp_parity:
     formula: ratio = apr_tps / llamacpp_tps; grade = classify(ratio)
@@ -26,7 +27,8 @@ equations:
     - Same grade boundaries as ollama_parity
     - Measured at c=1 (single request) and c=4 (concurrent)
     preconditions:
-    - '!input.is_empty()'
+    - grad_output.len() > 0
+    - grad_output.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Llamacpp_Parity
   vllm_parity:
     formula: ratio = apr_tps / vllm_tps; grade = classify(ratio)
@@ -37,7 +39,8 @@ equations:
     - vLLM is the ceiling for continuous batching (c>=4)
     - Compare at c=4+ where vLLM's PagedAttention advantage matters
     preconditions:
-    - '!input.is_empty()'
+    - grad_output.len() > 0
+    - grad_output.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Vllm_Parity
   efficiency_grade:
     formula: eff = actual_tps / roofline_ceiling; grade = classify(eff)
@@ -47,7 +50,8 @@ equations:
     - 'Grade boundaries: F(<10%), D[10%,20%), C[20%,40%), B[40%,50%), A(>=50%)'
     - 'Monotonic: higher efficiency => same or better grade'
     preconditions:
-    - '!input.is_empty()'
+    - grad_output.len() > 0
+    - grad_output.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Efficiency_Grade
   concrete_instance:
     formula: 'Qwen3-8B Q4K: bw_ceiling = 33GB/s / 4.19GB ≈ 7.9 tok/s'
@@ -55,7 +59,8 @@ equations:
     invariants:
     - Concrete value within 10% of theoretical
     preconditions:
-    - '!input.is_empty()'
+    - grad_output.len() > 0
+    - grad_output.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Concrete_Instance
 proof_obligations:
 - type: invariant

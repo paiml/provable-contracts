@@ -22,7 +22,7 @@ equations:
     - All intermediate activations finite
     - Final hidden states used for KV cache initialization
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Prefill_Phase
   decode_step:
     formula: h_t = layer_L(... layer_1(embed(token_t), kv_cache_{t-1}))
@@ -33,6 +33,7 @@ equations:
     - All intermediate activations finite
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Decode_Step
   residual_stream:
     formula: h_{l+1} = h_l + sublayer(norm(h_l))
@@ -41,7 +42,7 @@ equations:
     - 'Residual preserves dimension: shape(h_{l+1}) = shape(h_l)'
     - Skip connection is additive (no scaling)
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Residual_Stream
   layer_composition:
     formula: forward(x) = rmsnorm(attn(x) + x) → rmsnorm(ffn(.) + .)
@@ -51,7 +52,8 @@ equations:
     - Pre-norm applied before each sub-layer
     - Residual added after each sub-layer
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Layer_Composition
   hybrid_layer_schedule:
     formula: layer_type(l) = attention if l in A else linear_attention
@@ -61,7 +63,7 @@ equations:
     - No layer is both attention and linear
     - At least one attention layer (layer 0 is typically attention)
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Hybrid_Layer_Schedule
   kv_cache_growth:
     formula: cache_size(t) = sum_{l in A} 2 * n_kv * d_k * t * bytes_per_element
@@ -71,7 +73,8 @@ equations:
     - Zero for linear attention layers
     - Monotonically increasing
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Kv_Cache_Growth
 proof_obligations:
 - type: invariant

@@ -30,7 +30,8 @@ equations:
     invariants:
     - '|q_dot - f32_dot| ≤ quantization_error_bound'
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.Quantized_Dot
 proof_obligations:
 - type: invariant

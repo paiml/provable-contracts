@@ -18,7 +18,8 @@ equations:
     - sigmoid output strictly in (0,1)
     - Decay controls information retention
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Decay
   read:
     formula: r_t = state^T @ k_t
@@ -27,7 +28,8 @@ equations:
     invariants:
     - Read is linear projection from state
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Read
   delta:
     formula: δ_t = β_t × (v_t - r_t)
@@ -36,7 +38,8 @@ equations:
     invariants:
     - Delta rule corrects toward target v_t
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Delta
   write:
     formula: state_{t+1} = α_t × state_t + k_t ⊗ δ_t
@@ -46,7 +49,8 @@ equations:
     - State shape preserved across timesteps
     - Outer product k_t ⊗ δ_t has shape [k_dim, v_dim]
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Write
   output:
     formula: o_t = state_t^T @ q_t × z_t
@@ -55,7 +59,8 @@ equations:
     invariants:
     - Output gated by z_t element-wise
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Output
 proof_obligations:
 - type: bound

@@ -15,7 +15,8 @@ equations:
     - Forecast is a finite linear combination of past observations
     - Deterministic given fixed parameters and history
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Ar_Forecast
   differencing:
     formula: Delta^d y_t = sum_{k=0}^{d} C(d,k) * (-1)^k * y_{t-k}
@@ -26,7 +27,8 @@ equations:
     - d=0 is identity (no differencing)
     - Output length = T - d
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Differencing
   ma_filter:
     formula: epsilon_weighted = sum_{j=1}^{q} theta_j * epsilon_{t-j}
@@ -36,7 +38,8 @@ equations:
     - MA component is a finite weighted sum of past residuals
     - Deterministic given fixed parameters and residuals
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Ma_Filter
   forecast_finite:
     formula: y_hat_{T+h} in R for h = 1, ..., n_periods
@@ -46,7 +49,8 @@ equations:
     - Forecast length exactly equals n_periods
     - All forecast values are finite (no NaN, no Inf)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Forecast_Finite
 proof_obligations:
 - type: invariant

@@ -24,7 +24,7 @@ equations:
     - P(accept) = 1 when q(x) >= p(x) — draft underestimates always accepted
     - P(accept) = q(x)/p(x) when q(x) < p(x) — proportional rejection
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
     lean_theorem: Theorems.Acceptance_Probability
   token_acceptance:
     formula: "Token acceptance via uniform sampling:\n  Draw u ~ Uniform(0, 1)\n  Accept token x if u < P(accept) = min(1,\
@@ -38,6 +38,7 @@ equations:
     - Rejection sampling preserves correctness — accepted tokens follow q(x)
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Token_Acceptance
   output_equivalence:
     formula: "Output distribution equivalence:\n  P_speculative(x_1, ..., x_n) = P_autoregressive(x_1, ..., x_n)\nFor each\
@@ -51,7 +52,7 @@ equations:
     - Property holds for any draft model quality (even random draft)
     - Expected speedup increases with draft-target agreement but correctness is unconditional
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
     lean_theorem: Theorems.Output_Equivalence
 proof_obligations:
 - type: equivalence

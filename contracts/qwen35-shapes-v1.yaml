@@ -15,7 +15,7 @@ equations:
     invariants:
     - Q projection is square for this config
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Q_Projection_Shape
   kv_projection_shape:
     formula: '[n_kv * d_k, hidden] = [4*256, 4096] = [1024, 4096]'
@@ -23,7 +23,7 @@ equations:
     invariants:
     - 'GQA ratio: n_h / n_kv = 4'
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Kv_Projection_Shape
   swiglu_ratio:
     formula: intermediate / hidden = 12288 / 4096 = 3.0
@@ -31,7 +31,7 @@ equations:
     invariants:
     - Expansion ratio is exactly 3.0
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Swiglu_Ratio
   o_projection_transpose:
     formula: shape(o_proj) == transpose(shape(q_proj)) = [hidden, n_h * d_k]
@@ -39,7 +39,8 @@ equations:
     invariants:
     - O projection reverses Q projection dimensions
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.O_Projection_Transpose
   rope_frequency:
     formula: freq_i = base^(-2i/d_k) for i in [0, d_k/2)
@@ -49,7 +50,8 @@ equations:
     - freq_0 = 1.0
     - Strictly decreasing
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Rope_Frequency
 proof_obligations:
 - type: invariant

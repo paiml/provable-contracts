@@ -16,7 +16,7 @@ equations:
     - Returns index of maximum logit
     - 'Deterministic: same input => same output'
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
     lean_theorem: Theorems.Greedy
   top_k:
     formula: top_k(probs, K) = {p_i if rank(p_i) <= K else 0, renormalized}
@@ -25,7 +25,7 @@ equations:
     - At most K tokens have non-zero probability
     - Retained tokens have highest probabilities
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
     lean_theorem: Theorems.Top_K
   top_p:
     formula: top_p(probs, p) = minimal set S where sum(S) >= p
@@ -34,7 +34,7 @@ equations:
     - Cumulative probability of retained tokens >= p
     - 'Set is minimal: removing any token drops below p'
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
     lean_theorem: Theorems.Top_P
   temperature:
     formula: softmax(logits / T)
@@ -44,7 +44,7 @@ equations:
     - T→0 converges to argmax (one-hot)
     - T→∞ converges to uniform distribution
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
     lean_theorem: Theorems.Temperature
 proof_obligations:
 - type: equivalence

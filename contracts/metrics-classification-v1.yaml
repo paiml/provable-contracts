@@ -16,7 +16,8 @@ equations:
     - accuracy = 1.0 iff ŷᵢ = yᵢ for all i
     - accuracy = 0.0 iff ŷᵢ ≠ yᵢ for all i
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Accuracy
   precision:
     formula: precision_c = TP_c / (TP_c + FP_c)
@@ -27,7 +28,8 @@ equations:
     - precision = 1.0 when FP = 0 and TP > 0
     - micro_precision = accuracy (for multi-class single-label)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Precision
   recall:
     formula: recall_c = TP_c / (TP_c + FN_c)
@@ -38,7 +40,8 @@ equations:
     - recall = 1.0 when FN = 0 and TP > 0
     - micro_recall = accuracy (for multi-class single-label)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Recall
   f1_score:
     formula: F1 = 2 · precision · recall / (precision + recall)
@@ -50,7 +53,8 @@ equations:
     - F1 = precision = recall when precision = recall
     - F1 = 0 when precision = 0 or recall = 0
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.F1_Score
   confusion_matrix:
     formula: 'CM[i,j] = |{k : yₖ = i ∧ ŷₖ = j}|'
@@ -61,7 +65,8 @@ equations:
     - CM[i,j] ≥ 0 (non-negative counts)
     - Σⱼ CM[i,j] = support(class i)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Confusion_Matrix
 proof_obligations:
 - type: bound

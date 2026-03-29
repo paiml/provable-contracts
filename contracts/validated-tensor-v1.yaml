@@ -15,7 +15,8 @@ equations:
     - density > 0.055 for valid embeddings (reject >= 94.5% zeros)
     - Fully dense matrix has density = 1.0
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Density_Gate
   nan_inf_rejection:
     formula: count(isnan(E)) == 0 AND count(isinf(E)) == 0
@@ -24,7 +25,8 @@ equations:
     - No NaN values present
     - No Inf values present
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Nan_Inf_Rejection
   l2_norm_nondegeneracy:
     formula: 'forall i: ||E[i,:]||_2 > 0'
@@ -32,7 +34,8 @@ equations:
     invariants:
     - No all-zero rows (every token has a non-trivial embedding)
     preconditions:
-    - '!input.is_empty()'
+    - input.iter().all(|v| v.is_finite())
+    - input.len() > 0
     lean_theorem: Theorems.L2_Norm_Nondegeneracy
 type_invariants:
 - name: no_nan

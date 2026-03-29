@@ -15,7 +15,7 @@ equations:
     invariants:
     - Q projection is square for this config
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Q_Projection_Shape
   kv_projection_shape:
     formula: '[n_kv * d_k, hidden] = [4*128, 3584] = [512, 3584]'
@@ -23,7 +23,7 @@ equations:
     invariants:
     - 'GQA ratio: n_h / n_kv = 7'
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Kv_Projection_Shape
   swiglu_ratio:
     formula: intermediate / hidden = 18944 / 3584 = 37/7 ≈ 5.286
@@ -33,7 +33,7 @@ equations:
     - gate_proj and up_proj both have shape [18944, 3584]
     - down_proj has shape [3584, 18944]
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Swiglu_Ratio
   o_projection_transpose:
     formula: shape(o_proj) == transpose(shape(q_proj)) = [hidden, n_h * d_k]
@@ -42,7 +42,8 @@ equations:
     - O projection reverses Q projection dimensions
     - 'For Qwen2.5-7B: [3584, 3584] (square, self-transpose)'
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.O_Projection_Transpose
   rope_frequency:
     formula: freq_i = base^(-2i/d_k) for i in [0, d_k/2)
@@ -52,7 +53,8 @@ equations:
     - freq_0 = 1.0
     - Strictly decreasing
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Rope_Frequency
   head_dim_consistency:
     formula: d_k = hidden_size / num_attention_heads = 3584 / 28 = 128
@@ -61,7 +63,7 @@ equations:
     - hidden_size is evenly divisible by num_attention_heads
     - d_k = 128 (standard head dimension)
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Head_Dim_Consistency
 proof_obligations:
 - type: invariant

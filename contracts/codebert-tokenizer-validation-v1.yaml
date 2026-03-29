@@ -22,6 +22,7 @@ equations:
     - Tokenization is deterministic
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Tokenizer_Adequacy
 tokenizer_config:
   model_family: RoBERTa

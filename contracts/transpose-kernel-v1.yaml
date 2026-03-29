@@ -17,7 +17,8 @@ equations:
     - trace(A) = trace(transpose(A)) for square A
     - det(A) = det(transpose(A))
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Transpose
 proof_obligations:
 - type: invariant

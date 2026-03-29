@@ -18,7 +18,8 @@ equations:
       \  - 256 f32 FMA operations\n  - Total: ~768 f32 ops per super-block\n"
     domain: Q4_K super-blocks (144 bytes, 256 values each)
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Current_Path
   target_path:
     formula: "Target (Q8_K activations, integer-only inner loop):\n  Phase 1: quantize_row_q8_k(acts) → q8_acts  (once per\
@@ -27,7 +28,8 @@ equations:
       \ pair add, 1 cycle)\n  - 1× horizontal sum + scale application\n  - Total: ~12 integer ops per super-block\n"
     domain: Q4_K × Q8_K integer arithmetic
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Target_Path
   speedup_bound:
     formula: "Theoretical speedup from activation quantization:\n  bandwidth_reduction = sizeof(f32) / sizeof(int8) = 4×\n\
@@ -38,7 +40,8 @@ equations:
     - Q8_K quantization error < 0.1% relative to f32
     - Throughput improvement monotonic with activation vector length
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Speedup_Bound
 proof_obligations:
 - type: equivalence

@@ -24,6 +24,7 @@ equations:
     - 'Concatenation of token strings is preserved: concat(tokens'') == concat(tokens)'
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Merge_Rule
   encode:
     formula: "BPE encode: text -> token_ids\n  1. Convert text to initial byte/character sequence: chars = list(text)\n  2.\
@@ -38,6 +39,7 @@ equations:
     - Greedy left-to-right merge with priority ordering yields unique result
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Encode
   decode:
     formula: "BPE decode: token_ids -> text\n  1. Map each token ID to its string: tokens = [vocab_inverse[id] for id in token_ids]\n\
@@ -50,6 +52,7 @@ equations:
     - Concatenation order matches token ID order
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Decode
 proof_obligations:
 - type: roundtrip

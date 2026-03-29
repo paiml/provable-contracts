@@ -16,7 +16,8 @@ equations:
     - Score is 1 - 1/k when uniform distribution over k classes
     - Score is always in [0, 1] for valid probability vectors
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Uncertainty_Score
   margin_score:
     formula: m(p) = 1 - (p_(1) - p_(2))
@@ -27,7 +28,8 @@ equations:
     - Score is 1 when top two classes have equal probability (zero margin)
     - Score is always in [0, 1] for valid probability vectors
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Margin_Score
   entropy_score:
     formula: H(p) = -sum_i(p_i * ln(p_i))
@@ -38,7 +40,8 @@ equations:
     - Entropy is maximized at ln(k) for uniform distribution
     - Entropy is always non-negative
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Entropy_Score
   qbc_score:
     formula: H_vote(x) = -sum_c(V(c)/C * ln(V(c)/C))
@@ -49,7 +52,8 @@ equations:
     - Vote entropy is maximized when votes are uniformly split
     - Vote entropy is always non-negative
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Qbc_Score
 proof_obligations:
 - type: bound

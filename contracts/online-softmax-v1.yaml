@@ -20,14 +20,16 @@ equations:
     - m_i = max(x_1, ..., x_i)
     - d_i = Σ_{j=1}^{i} exp(x_j - m_i)
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Online_Normalizer
   standard_softmax:
     formula: σ(x)_i = exp(x_i - max(x)) / Σ_j exp(x_j - max(x))
     domain: x ∈ ℝ^n
     codomain: (0,1)^n
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Standard_Softmax
 proof_obligations:
 - type: loop_invariant

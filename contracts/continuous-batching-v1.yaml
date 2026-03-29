@@ -21,6 +21,7 @@ equations:
     - Running requests prioritized over waiting
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Token_Budget
   request_state:
     formula: num_new_tokens(r) = total_tokens(r) - num_computed_tokens(r)
@@ -30,7 +31,7 @@ equations:
     - 'Prefill request: num_new_tokens = min(remaining_prompt, budget)'
     - num_computed_tokens monotonically increases per request
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Request_State
   chunked_prefill:
     formula: chunk_size(r) = min(prompt_len(r) - computed(r), max_chunk, remaining_budget)
@@ -40,7 +41,7 @@ equations:
     - 'Total chunks cover entire prompt: sum(chunks) = prompt_len'
     - Chunked prefill produces same KV cache as full prefill
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Chunked_Prefill
   throughput_scaling:
     formula: aggregate_tok_s(c) >= c * single_tok_s * efficiency(c)
@@ -50,7 +51,7 @@ equations:
     - efficiency(c) > 0 for c <= max_batch_size
     - 'Monotonic degradation: efficiency(c+1) <= efficiency(c)'
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Throughput_Scaling
   decode_degradation:
     formula: per_req_decode(c) / per_req_decode(1) >= min_ratio
@@ -61,6 +62,7 @@ equations:
     - 'Bounded degradation: GEMV reads weights once for M requests'
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Decode_Degradation
   scheduling_fairness:
     formula: max_wait_time(r) <= max_wait_bound for all active requests r
@@ -70,7 +72,7 @@ equations:
     - Running requests always scheduled before waiting
     - Preemption only when KV cache pressure exceeds threshold
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Scheduling_Fairness
   correctness_under_batching:
     formula: '|output_batched(r, c) - output_single(r, 1)| < epsilon'
@@ -80,7 +82,7 @@ equations:
     - No garbage or empty outputs
     - Token count matches (same max_tokens)
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Correctness_Under_Batching
 proof_obligations:
 - type: bound

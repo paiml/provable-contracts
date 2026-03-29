@@ -16,7 +16,8 @@ equations:
     - len(layer_types) == num_hidden_layers
     - Pure function of layer index
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Hybrid_Dispatch
   linear_associativity:
     formula: (V @ K^T) @ Q == V @ (K^T @ Q)
@@ -24,7 +25,8 @@ equations:
     invariants:
     - Matrix multiplication is associative
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Linear_Associativity
   linear_no_softmax:
     formula: linear_attn(Q, K, V) != softmax(Q @ K^T) @ V
@@ -32,7 +34,8 @@ equations:
     invariants:
     - Linear attention does NOT use softmax
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Linear_No_Softmax
   linear_shapes:
     formula: K_dim = n_k * d_k, V_dim = n_v * d_v
@@ -41,7 +44,8 @@ equations:
     - K and V head counts can differ
     - Output still matches hidden_dim after O projection
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Linear_Shapes
   head_grouping:
     formula: n_v % n_k == 0
@@ -49,7 +53,8 @@ equations:
     invariants:
     - V heads are integer multiple of K heads
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Head_Grouping
   conv1d_causal:
     formula: len(causal_conv1d(x, kernel_size=k)) == len(x)
@@ -58,7 +63,8 @@ equations:
     - Output length equals input length (causal padding)
     - Output at position t depends only on x[t-k+1..t]
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Conv1D_Causal
 proof_obligations:
 - type: invariant

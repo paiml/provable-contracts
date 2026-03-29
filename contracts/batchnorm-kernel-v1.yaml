@@ -15,7 +15,8 @@ equations:
     - sigma_B^2 = (1/N) * sum_n (x_{n,c} - mu_B)^2 per channel c
     - Output has zero mean and unit variance per channel (before affine)
     preconditions:
-    - '!input.is_empty()'
+    - input.iter().all(|v| v.is_finite())
+    - input.len() > 0
     lean_theorem: Theorems.Batchnorm_Train
   running_stats:
     formula: mu_run = (1-m)*mu_run + m*mu_B, sigma_run = (1-m)*sigma_run + m*sigma_B
@@ -25,7 +26,8 @@ equations:
     - Running stats are exponential moving averages
     - sigma_run >= 0 (non-negative variance)
     preconditions:
-    - '!input.is_empty()'
+    - input.iter().all(|v| v.is_finite())
+    - input.len() > 0
     lean_theorem: Theorems.Running_Stats
   batchnorm_eval:
     formula: BN_eval(x)_i = gamma_i * (x_i - mu_run) / sqrt(sigma_run^2 + eps) + beta_i
@@ -35,7 +37,8 @@ equations:
     - Uses running stats, not batch stats
     - Deterministic (same output for same input)
     preconditions:
-    - '!input.is_empty()'
+    - input.iter().all(|v| v.is_finite())
+    - input.len() > 0
     lean_theorem: Theorems.Batchnorm_Eval
 proof_obligations:
 - type: invariant

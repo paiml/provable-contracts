@@ -16,7 +16,7 @@ equations:
     - Target file exists after successful save
     - Parent directories are created if absent
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Atomic_Write
   jidoka_stop:
     formula: on_failure(policy, error) = if policy = StopOnFirst then halt else continue
@@ -27,7 +27,7 @@ equations:
     - ContinueIndependent policy returns false on failure
     - Failed resource is recorded in lock regardless of policy
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Jidoka_Stop
 proof_obligations:
 - type: invariant

@@ -154,7 +154,8 @@ equations:
     - AdamW moments (m, v) identical across workers
     reference: R1 §3.1, R5 §4.2
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Gradient_Allreduce
   sharding:
     formula: "Given B samples and N workers:\n  shard_size = B ÷ N\n  shard_i = samples[i×shard_size .. (i+1)×shard_size]\
@@ -162,14 +163,16 @@ equations:
     domain: B >= N, N >= 1
     reference: R5 §4.1
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Sharding
   weighted_loss:
     formula: "Given per-worker results {(loss_i, n_i)} where n_i = |shard_i|:\n  loss_total = Σᵢ (loss_i × n_i) / Σᵢ n_i\n\
       NOT the same as mean(loss_i) when shards have unequal size.\n"
     domain: loss_i ∈ R, n_i ∈ Z+
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.Weighted_Loss
   swiglu_ffn:
     formula: "Given x ∈ R^{seq × hidden}:\n  gate = x @ W_gate\n  up   = x @ W_up\n  ffn  = (swish(gate) ⊙ up) @ W_down\n\
@@ -177,7 +180,8 @@ equations:
     domain: W_gate, W_up ∈ R^{hidden × intermediate}, W_down ∈ R^{intermediate × hidden}
     note: Computed as 5 batched GPU operations in single execute() call
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Swiglu_Ffn
   lora_gradient_size:
     formula: 'Trainable params = layers × 2 matrices × (hidden × rank) + head
@@ -189,7 +193,8 @@ equations:
       '
     reference: R3 (LoRA), R2 (QLoRA)
     preconditions:
-    - '!input.is_empty()'
+    - grad_output.len() > 0
+    - grad_output.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Lora_Gradient_Size
 falsification_tests:
 - id: FALSIFY-DP-001

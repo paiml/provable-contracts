@@ -18,7 +18,8 @@ equations:
     - If any dimension is 0, composite is 0
     - If all dimensions equal v, composite equals v
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Geometric_Mean
   grade_from_score:
     formula: "grade: CompositeScore -> ProjectGrade\n  A if composite >= 90\n  B if composite >= 80\n  C if composite >= 70\n\
@@ -28,7 +29,8 @@ equations:
     invariants:
     - Grade is monotonically non-decreasing with composite score
     preconditions:
-    - '!input.is_empty()'
+    - grad_output.len() > 0
+    - grad_output.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Grade_From_Score
 proof_obligations:
 - type: bound

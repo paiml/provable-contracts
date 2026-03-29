@@ -16,7 +16,8 @@ equations:
     - nu > 0 ensures each tree contributes in gradient direction
     - F_m is deterministic given training data and hyperparameters
     preconditions:
-    - '!input.is_empty()'
+    - grad_output.len() > 0
+    - grad_output.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Gradient_Boost
   negative_gradient:
     formula: r_{im} = -(dL/dF)|_{F=F_{m-1}(x_i)}
@@ -27,7 +28,8 @@ equations:
     - 'For log-loss: r_{im} = y_i - sigma(F_{m-1}(x_i))'
     - Pseudo-residuals are finite for bounded F and bounded data
     preconditions:
-    - '!input.is_empty()'
+    - grad_output.len() > 0
+    - grad_output.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Negative_Gradient
   predict:
     formula: y_hat = sigma(F_M(x)) thresholded at 0.5 for classification
@@ -38,7 +40,8 @@ equations:
     - Predictions are deterministic
     - Ensemble output F_M(x) is finite
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Predict
   training_loss:
     formula: L_m = (1/n) * sum L(y_i, F_m(x_i))
@@ -48,7 +51,8 @@ equations:
     - Training loss is non-negative
     - L_m <= L_{m-1} (loss non-increasing with more boosting rounds)
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.Training_Loss
 proof_obligations:
 - type: invariant

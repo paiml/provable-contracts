@@ -16,7 +16,8 @@ equations:
     - No additional learnable parameters beyond W_embed
     - All output elements are finite when inputs are finite
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Tied_Lm_Head
 proof_obligations:
 - type: bound

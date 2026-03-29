@@ -16,7 +16,8 @@ equations:
     - BCE = 0 iff ŷᵢ = yᵢ for all i (perfect prediction)
     - BCE → ∞ as ŷ → 0 for y=1, or ŷ → 1 for y=0
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.Bce
   nll:
     formula: NLL = -(1/n) Σ log(p_{yᵢ}) where p = softmax(logits)
@@ -27,7 +28,8 @@ equations:
     - NLL = 0 iff predicted probability of true class = 1
     - NLL ≥ -log(1/C) for uniform predictions
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.Nll
   huber:
     formula: L_δ(a) = ½a² if |a| ≤ δ, else δ(|a| - ½δ)
@@ -40,7 +42,8 @@ equations:
     - L_δ → ½a² as δ → ∞ (approaches MSE)
     - L_δ → δ|a| as δ → 0 (approaches MAE)
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.Huber
   smooth_l1:
     formula: SL1(a) = ½a²/β if |a| < β, else |a| - ½β
@@ -51,7 +54,8 @@ equations:
     - SL1 = 0 iff a = 0
     - SL1 is C¹ smooth
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.Smooth_L1
   l1_loss:
     formula: L1 = (1/n) Σ|yᵢ - ŷᵢ|
@@ -63,7 +67,8 @@ equations:
     - L1(y, ŷ) = L1(ŷ, y) (symmetry)
     - L1 = MAE (identical function)
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.L1_Loss
   mse_loss:
     formula: MSE = (1/n) Σ(yᵢ - ŷᵢ)²
@@ -74,7 +79,8 @@ equations:
     - MSE = 0 iff ŷ = y
     - 'gradient: ∂MSE/∂ŷ = 2(ŷ-y)/n'
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.Mse_Loss
 proof_obligations:
 - type: bound

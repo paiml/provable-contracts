@@ -18,7 +18,7 @@ equations:
     - Score is monotonically increasing with coverage and documentation
     - Zero coverage and zero documentation yields minimum score
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Calculate_Tdg
   letter_grade:
     formula: "grade: TdgScore -> LetterGrade\n  A+ if score >= 97, A if score >= 93, A- if score >= 90\n  B+ if score >= 87,\
@@ -30,7 +30,8 @@ equations:
     - Grade mapping is monotonically non-decreasing with score
     - Every valid score maps to exactly one grade
     preconditions:
-    - '!input.is_empty()'
+    - grad_output.len() > 0
+    - grad_output.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Letter_Grade
 proof_obligations:
 - type: bound

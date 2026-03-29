@@ -23,7 +23,8 @@ equations:
     - Hyperparameters at 7B generalize except lr and batch_size
     - 4B model is closer to 7B than 33B — use 2e-4
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Learning_Rate_Scaling
   effective_batch_size:
     formula: eff_batch = batch_size * accumulation_steps = 16
@@ -34,7 +35,8 @@ equations:
     - 'Unsloth guide: batch=2, grad_accum=8 for memory efficiency'
     - 'RTX 4090: batch=4, grad_accum=4 balances throughput and memory'
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Effective_Batch_Size
   lora_alpha_ratio:
     formula: alpha = 2 * rank
@@ -45,7 +47,8 @@ equations:
     - LoRA effective scaling is alpha/rank — ratio=2 trains faster than ratio=1
     - Deviating from 2x ratio degrades performance (Lightning AI ablation)
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Lora_Alpha_Ratio
   seq_len_from_data:
     formula: max_seq_len = next_pow2(percentile(token_lengths, 99))
@@ -57,7 +60,8 @@ equations:
     - Power-of-2 aligns with GPU warp/tile boundaries
     - 'SSC v3 data: p99=253 tokens => max_seq_len=256'
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Seq_Len_From_Data
   warmup_fraction:
     formula: warmup_steps = floor(warmup_frac * total_steps), warmup_frac in [0.03, 0.10]
@@ -68,7 +72,8 @@ equations:
     - Prevents early gradient explosion from random classifier head
     - Linear ramp from 0 to target lr
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Warmup_Fraction
   gradient_clip_bound:
     formula: '||g||_2 <= max_norm where max_norm = 1.0'
@@ -79,7 +84,8 @@ equations:
     - SSC v2.2 saw gradient norms up to 115.1 — clipping essential
     - Prevents catastrophic weight updates from outlier batches
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Gradient_Clip_Bound
   epoch_count_imbalanced:
     formula: epochs >= ceil(min_class_updates / (minority_count / eff_batch))
@@ -90,7 +96,8 @@ equations:
     - 'SSC v3: 926 minority samples / 16 eff_batch = 58 updates/epoch'
     - 1 epoch = 58 updates (insufficient), 2 epochs = 116 (marginal), 3 = 174 (adequate)
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Epoch_Count_Imbalanced
 proof_obligations:
 - type: bound

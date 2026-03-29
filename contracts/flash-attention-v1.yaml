@@ -18,7 +18,8 @@ equations:
     - Memory usage O(N) not O(N²)
     - 'Online softmax: running max and sum across tiles'
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Flash_Attention
 proof_obligations:
 - type: equivalence

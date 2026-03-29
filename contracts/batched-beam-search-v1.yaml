@@ -22,7 +22,7 @@ equations:
     - Each output[b] is an independent linear projection
     - N kernel launches required
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
     lean_theorem: Theorems.Sequential_Beam_Projection
   batched_beam_projection:
     formula: "Batched beam projection (single matmul):\n  X = stack(input[0], ..., input[N-1])    ∈ ℝ^{N × d_in}\n  Y = X\
@@ -35,7 +35,7 @@ equations:
     - Single kernel launch amortizes overhead
     - GEMM utilization scales with N (better for N ≥ 4)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
     lean_theorem: Theorems.Batched_Beam_Projection
   beam_selection:
     formula: "Beam selection via top-K from flattened logit matrix:\n  logits = Y_vocab ∈ ℝ^{N × V}     (batched vocab projection)\n\
@@ -49,7 +49,7 @@ equations:
     - Parent beam index correctly maps back via integer division
     - Token ID correctly maps back via modular arithmetic
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
     lean_theorem: Theorems.Beam_Selection
   termination:
     formula: "Beam search terminates at step t when:\n  (a) all K active beams have emitted EOS token, OR\n  (b) t = max_len\n\
@@ -62,7 +62,7 @@ equations:
     - Step counter t is monotonically increasing
     - At least one beam is returned (fallback guarantees this)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
     lean_theorem: Theorems.Termination
 proof_obligations:
 - type: equivalence

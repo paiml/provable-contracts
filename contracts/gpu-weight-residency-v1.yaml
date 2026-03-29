@@ -22,7 +22,7 @@ equations:
     - Persistent residency eliminates per-inference transfer
     - VRAM usage = model_bytes (constant after startup)
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Pcie_Overhead
   throughput_target:
     formula: "GPU memory bandwidth ceiling (RTX 4090):\n  bw_ceiling = 1008 GB/s / 1.1 GB ≈ 916 tok/s (theoretical)\n  llama.cpp\
@@ -33,7 +33,7 @@ equations:
     - Throughput bounded by min(bw_ceiling, compute_ceiling)
     - Weight residency eliminates PCIe bottleneck
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Throughput_Target
 proof_obligations:
 - type: invariant

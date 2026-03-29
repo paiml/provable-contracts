@@ -76,7 +76,7 @@ equations:
   identity:
     formula: f(x) = x
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Identity
 qa_gate:
   id: F-PCV-001

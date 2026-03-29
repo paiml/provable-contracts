@@ -16,7 +16,7 @@ equations:
     - drift_score = 0 when mu_ref = mu_cur (no drift)
     - Larger shift produces larger score
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Univariate_Drift
   performance_drift:
     formula: perf_drift = |metric_ref - metric_cur| / metric_ref
@@ -26,7 +26,7 @@ equations:
     - perf_drift >= 0
     - perf_drift = 0 when metric_ref = metric_cur
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Performance_Drift
   classify_drift:
     formula: status = NoDrift if score < warn_threshold, Warning if score < drift_threshold, Drift otherwise
@@ -37,7 +37,7 @@ equations:
     - Thresholds partition [0, infinity) into exactly 3 regions
     - score = 0 always yields NoDrift
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Classify_Drift
   min_samples_guard:
     formula: detect(data) = NoDrift if |data| < min_samples
@@ -47,7 +47,8 @@ equations:
     - Insufficient data never triggers drift alarm
     - min_samples is a strict lower bound
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Min_Samples_Guard
 proof_obligations:
 - type: bound

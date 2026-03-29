@@ -19,7 +19,8 @@ equations:
     - Strictly decreasing in i
     - All frequencies positive
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Base_Frequency
   ntk_scaled_base:
     formula: theta' = theta * (alpha * L_new / L_orig)^(d / (d - 2))
@@ -29,7 +30,8 @@ equations:
     - theta' = theta when L_new = L_orig
     - All derived frequencies remain positive
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Ntk_Scaled_Base
   linear_interpolation:
     formula: freq'_i = freq_i / scale where scale = L_new / L_orig
@@ -38,7 +40,8 @@ equations:
     - freq'_i < freq_i when scale > 1
     - 'Frequency ratios preserved: freq''_i / freq''_j = freq_i / freq_j'
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Linear_Interpolation
   yarn_ramp:
     formula: s(r) = (r - lo) / (hi - lo) clamped to [0, 1]
@@ -48,7 +51,8 @@ equations:
     - s(r) = 1 for r >= hi
     - Monotonically non-decreasing
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Yarn_Ramp
   yarn_mixed_frequency:
     formula: freq'_i = (1 - s_i) * freq_i / scale + s_i * freq_i
@@ -58,7 +62,8 @@ equations:
     - High frequencies (large i) stay unchanged
     - All freq'_i > 0
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Yarn_Mixed_Frequency
   rotation_matrix:
     formula: R(pos, i) = [[cos(pos*freq_i), -sin(pos*freq_i)], [sin(pos*freq_i), cos(pos*freq_i)]]
@@ -68,7 +73,8 @@ equations:
     - det(R) = 1 (proper rotation)
     - R(0, i) = I (identity at position 0)
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Rotation_Matrix
 proof_obligations:
 - type: invariant

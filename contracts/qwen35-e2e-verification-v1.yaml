@@ -26,7 +26,7 @@ equations:
     - Embedding dominates for large V
     - Per-layer cost linear in d^2
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Model_Parameter_Count
   flops_per_token:
     formula: F ≈ 2*P (forward pass) for dense compute
@@ -37,6 +37,7 @@ equations:
     - GDN FLOP component is O(d^2) per token (no quadratic)
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Flops_Per_Token
   memory_breakdown:
     formula: M = M_weights + M_kv + M_activations
@@ -46,7 +47,7 @@ equations:
     - M_kv grows linearly with sequence length
     - M_activations bounded by batch_size * seq_len * d
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Memory_Breakdown
   throughput_model:
     formula: tok/s = min(bandwidth / bytes_per_token, compute / flops_per_token)
@@ -56,7 +57,7 @@ equations:
     - Compute-bound for large batch or long prefill
     - GDN layers reduce attention bottleneck
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Throughput_Model
   verification_ladder:
     formula: coverage(contract_set) = verified_obligations / total_obligations
@@ -66,7 +67,7 @@ equations:
     - coverage = 1 means all obligations verified
     - 'Each layer adds: attention/GDN + FFN + 2*RMSNorm obligations'
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Verification_Ladder
   contract_composition:
     formula: model_contract = compose(embedding, L × block, final_norm, unembed)
@@ -76,7 +77,8 @@ equations:
     - Composition preserves shape invariants
     - Residual stream provides compositional proof structure
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Contract_Composition
 proof_obligations:
 - type: invariant

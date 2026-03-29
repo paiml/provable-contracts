@@ -161,4 +161,5 @@ equations:
     formula: f(x) = x
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Identity

@@ -16,7 +16,8 @@ equations:
     domain: x ∈ ℝ^{d_model}
     codomain: q, k, v ∈ ℝ^{d_model}
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Separate_Qkv
   fused_qkv:
     formula: "Fused (1 matvec with concatenated weights):\n  W_qkv = [W_q; W_k; W_v]   ∈ ℝ^{3·d_model × d_model}\n  b_qkv\
@@ -28,7 +29,8 @@ equations:
     - W_qkv rows [0..d) = W_q rows, [d..2d) = W_k rows, [2d..3d) = W_v rows
     - Contiguous memory layout for prefetch-friendly sequential access
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Fused_Qkv
   shared_q8_qkv:
     formula: "Shared Q8_1 activation quantization (PMAT-054A):\n  normed = RMSNorm(x)                                    \
@@ -44,7 +46,8 @@ equations:
     - Saves 2 Q8Quantize kernel launches per layer (56 per token at 28 layers)
     - Q8_1 buffer reused across all 3 GEMV — no redundant allocations
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Shared_Q8_Qkv
 proof_obligations:
 - type: equivalence

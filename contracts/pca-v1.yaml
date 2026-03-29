@@ -16,7 +16,8 @@ equations:
     - 'Components are orthogonal: Z^T Z is diagonal'
     - First component captures maximum variance
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Pca_Transform
   explained_variance:
     formula: explained_ratio_j = λ_j / Σ λ_i
@@ -28,7 +29,8 @@ equations:
     - Ratios are non-increasing (λ sorted descending)
     - All eigenvalues ≥ 0 (covariance matrix is PSD)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Explained_Variance
   reconstruction:
     formula: X̂ = Z W_k^T + μ (approximate reconstruction)
@@ -38,7 +40,8 @@ equations:
     - '||X - X̂|| decreases as k increases'
     - k = d ⟹ X̂ = X (perfect reconstruction)
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Reconstruction
 proof_obligations:
 - type: invariant

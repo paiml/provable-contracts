@@ -24,7 +24,8 @@ equations:
     - Work-stealing overhead < 1% of matmul compute time
     - No thread contention on false-sharing boundaries
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Rayon_Overhead
   l1_tiling:
     formula: "L1 cache tiling for quantized matmul:\n  L1_size ≈ 32-48 KB (per core)\n  Q4K super-block: 144 bytes (256 values)\n\
@@ -36,7 +37,8 @@ equations:
     - L1 tile footprint ≤ L1_size
     - Working set per thread fits in L1
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.L1_Tiling
 proof_obligations:
 - type: bound

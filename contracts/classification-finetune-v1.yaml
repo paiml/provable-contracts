@@ -22,7 +22,8 @@ equations:
     - num_classes >= 2 (binary classification minimum)
     - No NaN or Inf values in data
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Logit_Shape
   label_bounds:
     formula: label_index < num_classes
@@ -31,7 +32,8 @@ equations:
     invariants:
     - index < num_classes (strict upper bound)
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Label_Bounds
   classifier_weight_shape:
     formula: weights.len() == hidden_size * num_classes
@@ -43,7 +45,8 @@ equations:
     - num_classes >= 2
     - No NaN or Inf values in data
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Classifier_Weight_Shape
   softmax_sum:
     formula: '|sum(softmax(logits)) - 1.0| < epsilon'
@@ -53,7 +56,8 @@ equations:
     - Each probability in [0, 1]
     - Sum within 1e-5 of 1.0
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Softmax_Sum
 proof_obligations:
 - type: invariant

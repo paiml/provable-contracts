@@ -20,7 +20,8 @@ equations:
     - GpuProfile.sm_target is set from context.compute_capability() at executor init
     - No runtime PTX generation path calls emit_ptx() (hardcoded sm_70)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Target_Parity
   no_hardcoded_targets:
     formula: count(emit_ptx() calls in executor/) == 0
@@ -30,7 +31,8 @@ equations:
     - generate_ptx() reads sm_target from CudaKernels struct, never hardcodes
     - Raw PTX string literals may use sm_70 only for basic instructions (no SM-specific features)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.No_Hardcoded_Targets
   jit_compilation_success:
     formula: cuModuleLoadDataEx(ptx, target=device_sm) returns CUDA_SUCCESS
@@ -40,7 +42,8 @@ equations:
     - Error 222 (CUDA_ERROR_INVALID_PTX) must never occur at runtime
     - PTX JIT failure corrupts CUDA context — all subsequent requests fail silently
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Jit_Compilation_Success
 proof_obligations:
 - type: invariant

@@ -30,7 +30,8 @@ equations:
     - sigma^2 >= 0 (non-negative variance)
     - sigma^2 = 0 iff x is constant
     preconditions:
-    - '!input.is_empty()'
+    - input.iter().all(|v| v.is_finite())
+    - input.len() > 0
     lean_theorem: Theorems.Statistics
 proof_obligations:
 - type: invariant

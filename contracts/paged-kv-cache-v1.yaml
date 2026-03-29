@@ -19,7 +19,8 @@ equations:
     - 'Within-block contiguity: pos and pos+1 in same block map to adjacent slots'
     - 'Block boundary: pos = k*B maps to start of block_table[req][k]'
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Slot_Mapping
   block_allocation:
     formula: num_blocks(req) = ceil(seq_len(req) / B)
@@ -29,7 +30,8 @@ equations:
     - 'Tight: num_blocks * B - seq_len < B (at most B-1 waste)'
     - Total allocated <= pool_size
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Block_Allocation
   block_table_invariant:
     formula: block_table[req] = [b_0, b_1, ..., b_{n-1}] where each b_i is a unique block ID
@@ -39,7 +41,8 @@ equations:
     - No block shared between requests (unless prefix caching enabled)
     - All block IDs in [0, pool_size)
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Block_Table_Invariant
   paged_contiguous_equivalence:
     formula: '|attention_paged(Q, KV_paged, block_table) - attention_contiguous(Q, KV_contiguous)| < epsilon'
@@ -48,7 +51,7 @@ equations:
     - Paged attention produces identical output to contiguous
     - Epsilon bounded by floating-point accumulation (1e-5 for FP32, 1e-3 for FP16)
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Paged_Contiguous_Equivalence
   fragmentation_free:
     formula: utilization = sum(seq_len(req)) / (sum(num_blocks(req)) * B)
@@ -59,7 +62,8 @@ equations:
     - 'No internal fragmentation: freed blocks immediately reusable'
     - Pool utilization = allocated_blocks / pool_size
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Fragmentation_Free
   graph_compatibility:
     formula: block_table is a fixed-shape tensor [max_reqs, max_blocks_per_req]
@@ -69,7 +73,7 @@ equations:
     - Only values (block IDs) change, not tensor dimensions
     - Pad unused entries with INVALID_BLOCK_ID (-1)
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Graph_Compatibility
 proof_obligations:
 - type: invariant

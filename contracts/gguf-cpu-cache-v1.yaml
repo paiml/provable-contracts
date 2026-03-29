@@ -14,7 +14,7 @@ equations:
       \  n=20 tokens → 10.5x (matches measured 11x gap)\n"
     domain: n ∈ ℕ, L ∈ ℕ, M > 0
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Autoregressive_Generation
 proof_obligations:
 - type: equivalence

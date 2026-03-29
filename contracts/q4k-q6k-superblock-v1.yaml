@@ -15,7 +15,8 @@ equations:
     - 144 bytes encodes exactly 256 elements
     - 'Effective bits per weight: 144*8/256 = 4.5'
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.Q4K_Superblock
   q6k_superblock:
     formula: sizeof(Q6K_superblock) = 128(ql) + 64(qh) + 16(scales) + 2(d) = 210 bytes
@@ -24,7 +25,8 @@ equations:
     - 210 bytes encodes exactly 256 elements
     - 'Effective bits per weight: 210*8/256 = 6.5625'
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.Q6K_Superblock
   total_bytes:
     formula: total_bytes(rows, cols) = rows * ceil(cols / 256) * block_size
@@ -33,7 +35,8 @@ equations:
     - total_bytes proportional to rows
     - total_bytes monotonically increases with cols
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.Total_Bytes
   dequantization:
     formula: x_i = d * s_j * q_i - dmin * m_j
@@ -42,7 +45,8 @@ equations:
     - Output is finite for valid superblock
     - has_dmin=false => offset term = 0
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.Dequantization
   bsum:
     formula: bsum_j = sum(q_i for i in block_j)
@@ -50,7 +54,8 @@ equations:
     invariants:
     - bsum depends only on input x, not on weight W
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.Bsum
 proof_obligations:
 - type: invariant

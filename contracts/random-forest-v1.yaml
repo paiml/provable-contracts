@@ -16,7 +16,8 @@ equations:
     - Each element of D_b drawn from D (no out-of-distribution samples)
     - With fixed seed, bootstrap is deterministic
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Bootstrap_Sample
   majority_vote:
     formula: y_hat = argmax_c sum_{b=1}^{B} I(h_b(x) = c)
@@ -27,7 +28,8 @@ equations:
     - Each tree contributes exactly one vote
     - Ties broken deterministically
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Majority_Vote
   predict:
     formula: y_hat_i = majority_vote(h_1(x_i), ..., h_B(x_i)) for classification
@@ -38,7 +40,8 @@ equations:
     - Number of predictions equals number of input samples
     - Deterministic with same seed
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Predict
   ensemble_size:
     formula: B = n_estimators (user-specified number of trees)
@@ -48,7 +51,8 @@ equations:
     - Number of fitted trees equals n_estimators
     - Each tree fitted on an independent bootstrap sample
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Ensemble_Size
 proof_obligations:
 - type: invariant

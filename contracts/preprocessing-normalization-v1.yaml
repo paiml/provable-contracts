@@ -16,7 +16,8 @@ equations:
     - std(Z_j) ≈ 1 for each feature j (when σ_j > 0)
     - 'Inverse transform recovers original: x = z * σ + μ'
     preconditions:
-    - '!input.is_empty()'
+    - input.iter().all(|v| v.is_finite())
+    - input.len() > 0
     lean_theorem: Theorems.Standard_Scaler
   minmax_scaler:
     formula: x_scaled = (x - x_min) / (x_max - x_min) * (max - min) + min
@@ -28,7 +29,8 @@ equations:
     - Inverse transform recovers original
     - 'Monotone: x_i ≤ x_j ⟹ scaled(x_i) ≤ scaled(x_j)'
     preconditions:
-    - '!input.is_empty()'
+    - input.iter().all(|v| v.is_finite())
+    - input.len() > 0
     lean_theorem: Theorems.Minmax_Scaler
   robust_scaler:
     formula: z = (x - median) / IQR where IQR = Q3 - Q1
@@ -39,7 +41,8 @@ equations:
     - IQR(Z_j) ≈ 1 for each feature j (when IQR > 0)
     - Robust to outliers (only uses quartiles)
     preconditions:
-    - '!input.is_empty()'
+    - input.iter().all(|v| v.is_finite())
+    - input.len() > 0
     lean_theorem: Theorems.Robust_Scaler
 proof_obligations:
 - type: invariant

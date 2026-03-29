@@ -21,7 +21,8 @@ equations:
     - 'RTX 4090: compute/bandwidth ridge point at ~100 FLOP/byte (fp32)'
     - TILE=32 achieves 8.0 FLOP/byte — 2.5x over naive minimum
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Tiled_Gemm_Arithmetic_Intensity
   shared_memory_per_tile:
     formula: smem = 2 * TILE^2 * sizeof(f32)
@@ -32,7 +33,8 @@ equations:
     - 'TILE=32: 8KB << 100KB, allows 12 concurrent blocks per SM'
     - 'Two tiles loaded per iteration: A_tile[TILE,TILE] and B_tile[TILE,TILE]'
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Shared_Memory_Per_Tile
   backward_a_gemm:
     formula: grad_A[M,K] = grad_C[M,N] @ B^T[N,K]
@@ -43,7 +45,8 @@ equations:
     - 'Tiled: load B_tile as transposed tile from global memory'
     - FLOPs = 2 * M * K * N (same as forward)
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Backward_A_Gemm
   backward_b_gemm:
     formula: grad_B[K,N] = A^T[K,M] @ grad_C[M,N]
@@ -54,7 +57,8 @@ equations:
     - 'Tiled: load A_tile as transposed tile from global memory'
     - FLOPs = 2 * K * N * M (same as forward)
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Backward_B_Gemm
   unrolled_instruction_ratio:
     formula: IPC_ratio = (FMA_count) / (FMA_count + branch + cmp + inc) = 4 / (4 + 3) = 0.57
@@ -65,7 +69,8 @@ equations:
     - 'With 4x unroll: 4 / (4 + 3) = 0.57 (43% overhead)'
     - WAPR-PERF-009 measured 12:1 -> ~3:1 instruction ratio
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Unrolled_Instruction_Ratio
 contracts:
   C-TILE-BWD-001:

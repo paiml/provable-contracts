@@ -16,7 +16,8 @@ equations:
     - K output dim = n_kv * d_k
     - V output dim = n_kv * d_k
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Qkv_Projection
   gqa_grouping:
     formula: group_size = n_h / n_kv (integer)
@@ -25,7 +26,8 @@ equations:
     - n_h / n_kv is exact integer
     - attention output dim = n_h * d_k
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Gqa_Grouping
   swiglu_shape:
     formula: gate[d_ff, h] × up[d_ff, h] → SiLU(gate·x) * (up·x) → down[h, d_ff] → [h]
@@ -35,7 +37,8 @@ equations:
     - Down projects d_ff → h
     - Output shape = input shape = [h]
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Swiglu_Shape
   residual:
     formula: y = x + sublayer(x)
@@ -43,7 +46,8 @@ equations:
     invariants:
     - Residual connection preserves shape
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Residual
   lm_head:
     formula: '[h] @ [V, h]^T → [V]'
@@ -51,7 +55,8 @@ equations:
     invariants:
     - Output dimension = vocab_size
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Lm_Head
 proof_obligations:
 - type: invariant

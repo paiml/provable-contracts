@@ -15,7 +15,8 @@ equations:
     - 'Output shape: [d_model]'
     - 'Deterministic: same token_id always gives same vector'
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Embedding_Lookup
   unembedding_projection:
     formula: logits = h @ W_u^T where W_u ∈ R^{V × d_model}
@@ -24,7 +25,8 @@ equations:
     - 'Output shape: [seq_len, V]'
     - Logits are real-valued (can be any finite float)
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Unembedding_Projection
   tied_weights:
     formula: W_u = W_e (weight tying)
@@ -33,7 +35,8 @@ equations:
     - 'Single matrix shared: no independent parameters'
     - 'Parameter count: V * d_model (not 2 * V * d_model)'
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Tied_Weights
   vocabulary_bounds:
     formula: 0 <= token_id < V
@@ -44,6 +47,7 @@ equations:
     - No IDs >= V
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Vocabulary_Bounds
   embedding_norm:
     formula: '||embed(t)||_2 for t ∈ [0, V)'
@@ -52,7 +56,8 @@ equations:
     - All norms finite and positive
     - No zero embeddings (non-degenerate)
     preconditions:
-    - '!input.is_empty()'
+    - input.iter().all(|v| v.is_finite())
+    - input.len() > 0
     lean_theorem: Theorems.Embedding_Norm
   logit_temperature:
     formula: logits_T = logits / T for temperature T > 0
@@ -62,7 +67,8 @@ equations:
     - T → 0 concentrates on argmax
     - T → ∞ approaches uniform
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Logit_Temperature
 proof_obligations:
 - type: invariant

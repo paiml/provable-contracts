@@ -21,6 +21,7 @@ equations:
     - No NaN or Inf in output for finite input
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Encoder_Layer
   cls_pooling:
     formula: embedding = encoder_output[0] (first token)
@@ -30,6 +31,7 @@ equations:
     - Output is exactly the first row of encoder output
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Cls_Pooling
 proof_obligations:
 - type: invariant

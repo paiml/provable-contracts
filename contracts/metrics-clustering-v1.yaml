@@ -17,7 +17,7 @@ equations:
     - s(i) > 0 means point i is well-clustered
     - s(i) < 0 means point i is mis-clustered
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Silhouette_Score
   inertia:
     formula: J = Σᵢ ||xᵢ - μ_{cᵢ}||²
@@ -28,7 +28,7 @@ equations:
     - J = 0 iff all points equal their centroids
     - J is non-increasing under k-means iteration
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Inertia
   silhouette_coefficient:
     formula: s(i) = (b(i) - a(i)) / max(a(i), b(i)) where a(i) = mean intra-cluster dist, b(i) = min mean inter-cluster dist
@@ -39,7 +39,7 @@ equations:
     - s(i) = 0 when a(i) = b(i)
     - s(i) → 1 when a(i) → 0 and b(i) > 0
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Silhouette_Coefficient
 proof_obligations:
 - type: bound

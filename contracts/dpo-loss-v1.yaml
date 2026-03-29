@@ -25,7 +25,8 @@ equations:
     - L_DPO = log(2) when pi_theta == pi_ref (sigmoid(0) = 0.5)
     - L_DPO -> 0 as pi_theta assigns higher probability to y_w vs y_l relative to pi_ref
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.Dpo_Loss
   log_ratio:
     formula: "Log-probability ratio between policy and reference:\n  r(x, y) = log(pi_theta(y | x)) - log(pi_ref(y | x))\n\
@@ -38,7 +39,8 @@ equations:
     - r is finite when both policies assign non-zero probability to all tokens in y
     - 'sum decomposition: sequence-level ratio = sum of token-level log-ratios'
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.Log_Ratio
   implicit_reward:
     formula: "DPO implicit reward function:\n  r*(x, y) = beta * log(pi_theta(y | x) / pi_ref(y | x)) + beta * log Z(x)\n\
@@ -52,7 +54,8 @@ equations:
     - Higher implicit reward for preferred responses at convergence
     - 'Recovers RLHF objective: maximizes E[r*(x,y)] - beta * KL(pi_theta || pi_ref)'
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.Implicit_Reward
 proof_obligations:
 - type: bound

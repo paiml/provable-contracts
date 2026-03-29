@@ -15,7 +15,8 @@ equations:
     - y[i] = sum_j(x[i][j] * W[k][j]) + b[k] for each output element
     - f(alpha * x) + b = alpha * (x @ W^T) + b (scaling with bias)
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Linear_Forward
   linear_no_bias:
     formula: y = x @ W^T
@@ -25,7 +26,8 @@ equations:
     - f(alpha * x) = alpha * f(x) (homogeneity / linearity)
     - f(0) = 0 (zero preservation without bias)
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Linear_No_Bias
 proof_obligations:
 - type: bound

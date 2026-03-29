@@ -15,7 +15,8 @@ equations:
     - A_bar is stable when eigenvalues of A have negative real parts
     - Discretization reduces to Euler method as Delta -> 0
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Ssm_Discretize
   ssm_scan:
     formula: h_t = A_bar * h_{t-1} + B_bar * x_t, y_t = C * h_t
@@ -25,7 +26,8 @@ equations:
     - 'Linear recurrence: output is linear in input for fixed parameters'
     - 'Causal: y_t depends only on x_1..x_t'
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Ssm_Scan
   selective_gate:
     formula: Delta_t = softplus(Linear(x_t)), B_t = Linear(x_t), C_t = Linear(x_t)
@@ -35,7 +37,8 @@ equations:
     - Delta_t > 0 (softplus ensures positivity)
     - 'Input-dependent selectivity: different inputs get different dynamics'
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Selective_Gate
 proof_obligations:
 - type: invariant

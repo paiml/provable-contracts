@@ -18,7 +18,8 @@ equations:
     - Attention weights are dense (no structural zeros)
     - Equivalent to causal attention when n=1
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Bidirectional_Attention
 proof_obligations:
 - type: equivalence

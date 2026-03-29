@@ -17,7 +17,7 @@ equations:
     - GQA group size = num_heads / num_kv_heads (exact integer division)
     - RoPE pairing requires head_dim divisible by 2
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Divisibility
   bounds:
     formula: head_dim >= hidden_dim / num_heads ∧ d_ff > hidden_dim
@@ -26,7 +26,7 @@ equations:
     - Head dimension at least hidden/num_heads
     - FFN intermediate dimension strictly larger than hidden
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Bounds
   ordering:
     formula: d_ff > hidden_dim ∧ num_kv_heads <= num_heads ∧ max_position > 0
@@ -35,7 +35,7 @@ equations:
     - FFN expansion ratio > 1
     - KV heads cannot exceed query heads
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Ordering
   non_degeneracy:
     formula: hidden_dim > 0 ∧ num_layers > 0 ∧ num_heads > 0 ∧ vocab_size > 0
@@ -43,7 +43,7 @@ equations:
     invariants:
     - All structural parameters are strictly positive
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Non_Degeneracy
   cross_constraint:
     formula: rope_theta > 0 ∧ rope_theta.is_finite() ∧ rms_norm_eps > 0 ∧ rms_norm_eps < 0.1
@@ -52,7 +52,7 @@ equations:
     - RoPE base frequency finite and positive
     - Normalization epsilon small but nonzero
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Cross_Constraint
 proof_obligations:
 - type: invariant

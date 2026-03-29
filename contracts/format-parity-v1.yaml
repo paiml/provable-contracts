@@ -16,7 +16,8 @@ equations:
     - Transpose is its own inverse
     - GGUF→APR→GGUF roundtrip preserves shape
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Transpose_Involution
   element_count:
     formula: product(gguf_shape) == product(apr_shape)
@@ -25,7 +26,7 @@ equations:
     - Total element count preserved across format conversion
     - No data is lost or duplicated
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Element_Count
   identity_1d:
     formula: '1D tensors: apr_shape == gguf_shape (no transpose)'
@@ -34,7 +35,7 @@ equations:
     - Bias vectors and 1D tensors are identity-mapped
     - Only 2D+ tensors require transpose
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Identity_1D
   name_bijection:
     formula: tensor_template defines 1:1 mapping between format names
@@ -43,7 +44,7 @@ equations:
     - Every GGUF tensor has exactly one APR counterpart
     - Mapping is invertible
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Name_Bijection
 proof_obligations:
 - type: invariant

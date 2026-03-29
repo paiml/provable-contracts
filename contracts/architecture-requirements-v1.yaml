@@ -333,7 +333,7 @@ equations:
     - complete(model, arch) = true => model produces correct output
     - complete(model, arch) = false => model MUST NOT run (Jidoka stop)
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Weight_Completeness
   role_mapping:
     formula: 'map(role) = field_name in IndexedLayerWeights; ∀ role ∈ required(arch): map(role).ptr ≠ 0 ∧ map(role).len >
@@ -347,7 +347,7 @@ equations:
     - map is total on WeightRole (every role has a field name)
     - field_name matches IndexedLayerWeights struct field exactly
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Role_Mapping
   constraint_matrix_exhaustiveness:
     formula: "∀ (qk: bool, bias: bool): ∃! cell ∈ constraint_matrix such that\n  cell.has_qk_norm = qk ∧ cell.has_bias = bias\n"
@@ -358,7 +358,7 @@ equations:
     - No two cells share the same (has_qk_norm, has_bias) pair
     - Adding a new boolean axis requires 2^(n+1) cells
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Constraint_Matrix_Exhaustiveness
 proof_obligations:
 - type: invariant

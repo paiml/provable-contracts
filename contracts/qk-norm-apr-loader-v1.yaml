@@ -88,7 +88,8 @@ equations:
     - Non-QK-norm architectures return None
     - QK-norm architectures return Some(w) where len(w) = head_dim
     preconditions:
-    - '!input.is_empty()'
+    - input.iter().all(|v| v.is_finite())
+    - input.len() > 0
     lean_theorem: Theorems.Qk_Norm_Load
 kani_harnesses:
 - id: qk-norm-apr-loader-v1-kani-001

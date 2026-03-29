@@ -16,7 +16,8 @@ equations:
     - 'Normal equations: X^T(y - Xβ) = 0'
     - R² ∈ (-∞, 1] on training data
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Ols_Fit
   ols_predict:
     formula: ŷ = Xβ + b
@@ -26,7 +27,8 @@ equations:
     - 'Prediction is linear: predict(αx₁ + x₂) = α·predict(x₁) + predict(x₂) - (α-1)b'
     - Prediction is deterministic
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Ols_Predict
   logistic_predict_proba:
     formula: P(y=1|x) = σ(x^T w + b) = 1/(1+exp(-(x^T w + b)))
@@ -37,7 +39,8 @@ equations:
     - Monotone in x^T w (for fixed w)
     - P(y=1) + P(y=0) = 1
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Logistic_Predict_Proba
   r_squared_training:
     formula: R² = 1 - SS_res/SS_tot
@@ -48,7 +51,8 @@ equations:
     - R² = 1 iff ŷ = y exactly
     - OLS training R² ≥ 0 (for model with intercept)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.R_Squared_Training
 proof_obligations:
 - type: bound

@@ -17,7 +17,8 @@ equations:
     invariants:
     - 'Additive: W_base + delta == W_fine (roundtrip)'
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Task_Vector
   eckart_young:
     formula: '||delta - delta_r||_F <= sigma_{r+1}'
@@ -27,7 +28,8 @@ equations:
     - Error bounded by (r+1)-th singular value
     - Rank-r approximation is optimal in Frobenius norm
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Eckart_Young
   lora_shape:
     formula: A ∈ ℝ^{m×r}, B ∈ ℝ^{r×n}, A @ B ∈ ℝ^{m×n}
@@ -36,7 +38,8 @@ equations:
     - A @ B has same shape as original weight
     - 'Storage: r*(m+n) << m*n for small r'
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Lora_Shape
   dare_unbiased:
     formula: E[DARE(delta, p)] = delta
@@ -46,7 +49,8 @@ equations:
     - After drop with probability p, rescale by 1/(1-p)
     - Unbiased estimator of delta
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Dare_Unbiased
   shape_preservation:
     formula: shape(merged[t]) == shape(base[t]) for all tensors t
@@ -54,7 +58,8 @@ equations:
     invariants:
     - Merge never changes tensor shapes
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Shape_Preservation
 proof_obligations:
 - type: invariant

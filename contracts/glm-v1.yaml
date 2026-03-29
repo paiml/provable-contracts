@@ -16,7 +16,8 @@ equations:
     - exp(eta) > 0 for all eta (mean always positive)
     - g(g^{-1}(eta)) = eta (inverse round-trip)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Poisson_Link
   gamma_link:
     formula: g(mu) = 1/mu, g^{-1}(eta) = 1/eta
@@ -27,7 +28,8 @@ equations:
     - Predicted mean always positive
     - g(g^{-1}(eta)) = eta for eta > 0
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Gamma_Link
   binomial_link:
     formula: g(p) = ln(p/(1-p)), g^{-1}(eta) = 1/(1+exp(-eta))
@@ -38,7 +40,8 @@ equations:
     - Predicted probability always in (0, 1)
     - g(g^{-1}(eta)) = eta (inverse round-trip)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Binomial_Link
   irls_fit:
     formula: beta^{(k+1)} = (X^T W^{(k)} X)^{-1} X^T W^{(k)} z^{(k)}
@@ -48,7 +51,8 @@ equations:
     - 'Deviance decreases monotonically: D(beta^{(k+1)}) <= D(beta^{(k)})'
     - Converges when ||beta^{(k+1)} - beta^{(k)}|| < tol
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Irls_Fit
 proof_obligations:
 - type: invariant

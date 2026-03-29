@@ -19,7 +19,8 @@ equations:
     - Scaling by 1/√d_k prevents variance growth
     - Symmetric in Q[i] and K[j] up to scaling
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Scaled_Dot_Product
   variance_preservation:
     formula: Var(score_ij) ≈ 1 when Q,K ~ N(0,1)
@@ -29,7 +30,8 @@ equations:
     - 'With scaling: Var(score)_ij ≈ 1'
     - Scaling prevents softmax saturation
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Variance_Preservation
   softmax_saturation:
     formula: entropy(softmax(scores)) → 0 as max(scores) → ∞
@@ -39,7 +41,8 @@ equations:
     - Scaling keeps scores moderate → meaningful attention distribution
     - QK-norm further stabilizes by bounding ||Q||, ||K||
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Softmax_Saturation
   score_bound_with_qknorm:
     formula: '|score_ij| <= √d_k (after QK-norm)'
@@ -49,7 +52,8 @@ equations:
     - 'After 1/√d_k scaling: |score_ij| <= 1/√d_k * d_k = √d_k'
     - Practical bound much tighter due to unit norms
     preconditions:
-    - '!input.is_empty()'
+    - input.iter().all(|v| v.is_finite())
+    - input.len() > 0
     lean_theorem: Theorems.Score_Bound_With_Qknorm
   attention_entropy:
     formula: H(attn_i) = -Σ_j attn_ij * log(attn_ij)
@@ -59,7 +63,8 @@ equations:
     - H = 0 iff attention is one-hot
     - H <= log(m) (uniform attention)
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Attention_Entropy
   numerical_stability:
     formula: softmax(x - max(x)) = softmax(x)
@@ -69,7 +74,8 @@ equations:
     - Result mathematically identical
     - All intermediate values <= 0 after subtraction
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Numerical_Stability
 proof_obligations:
 - type: invariant

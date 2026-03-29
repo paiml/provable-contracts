@@ -34,7 +34,8 @@ equations:
     - exp(log_softmax(x)) = softmax(x)
     - log_sum_exp trick preserves numerical stability
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Log_Softmax
 proof_obligations:
 - type: invariant

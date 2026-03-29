@@ -125,7 +125,8 @@ equations:
     invariants:
     - EMA_{t} < EMA_{t-5} for healthy training (5-epoch window)
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.Ema_Loss
   warmup_lr:
     formula: "lr_t = lr_base * (t / warmup_steps) for t < warmup_steps\nlr_t = lr_min + 0.5 * (lr_base - lr_min) * (1 + cos(pi\
@@ -136,7 +137,8 @@ equations:
     - lr_{warmup} = lr_base (peak)
     - lr_T = lr_min (end)
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Warmup_Lr
   val_split:
     formula: 'N_val = floor(N * val_split)
@@ -150,7 +152,8 @@ equations:
     - N_val >= 1
     - train_set ∩ val_set = {}
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Val_Split
 falsification_tests:
 - id: FALSIFY-LOOP-001

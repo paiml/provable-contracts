@@ -18,7 +18,7 @@ equations:
     - Only W and b are updated during training
     - probs sum to 1.0
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Linear_Probe
 proof_obligations:
 - type: invariant

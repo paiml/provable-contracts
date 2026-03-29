@@ -15,7 +15,8 @@ equations:
     - Each point assigned to nearest centroid
     - Every cluster index in [0, K-1]
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Assignment
   update:
     formula: mu_j = (1/|S_j|) * sum_{i in S_j} x_i
@@ -25,7 +26,8 @@ equations:
     - New centroid is mean of assigned points
     - Empty cluster centroid unchanged
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Update
   objective:
     formula: J = sum_{i=1}^{N} ||x_i - mu_{c_i}||^2
@@ -35,7 +37,8 @@ equations:
     - J >= 0 (non-negative)
     - J is non-increasing across iterations (monotone convergence)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Objective
 proof_obligations:
 - type: invariant

@@ -28,7 +28,7 @@ equations:
     - 'Per-layer router: 4096 * 128 = 524K'
     - 94 identical MoE decoder blocks (decoder_sparse_step=1)
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Model_Parameter_Count
   active_parameter_count:
     formula: A = V*d + L*(d_attn + d_router + k*d_expert + d_norm) + d_final + V*d
@@ -38,7 +38,7 @@ equations:
     - 'Per-layer active MoE: 8 * 3 * 4096 * 1536 ≈ 151.0M'
     - Active/Total ratio ≈ 9.4% (only 8/128 experts active)
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Active_Parameter_Count
   flops_per_token:
     formula: F ≈ 2*A (forward pass) for active compute
@@ -50,6 +50,7 @@ equations:
     - MoE router adds O(d * N_experts) per token
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Flops_Per_Token
   memory_breakdown:
     formula: M = M_weights(total) + M_kv + M_activations
@@ -60,7 +61,7 @@ equations:
     - M_kv per layer = 2 * n_kv * d_k * seq_len * dtype_bytes
     - M_activations bounded by batch_size * seq_len * d
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Memory_Breakdown
   throughput_model:
     formula: tok/s = min(bandwidth / bytes_per_token, compute / flops_per_token)
@@ -70,7 +71,7 @@ equations:
     - Bandwidth cost ∝ total params, compute cost ∝ active params
     - 'MoE advantage: compute/memory ratio better than dense equivalent'
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Throughput_Model
   verification_ladder:
     formula: coverage(contract_set) = verified_obligations / total_obligations
@@ -79,7 +80,7 @@ equations:
     - coverage in [0, 1]
     - coverage = 1 means all obligations verified
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Verification_Ladder
   contract_composition:
     formula: model = compose(embedding, L * moe_block, final_norm, lm_head)
@@ -91,7 +92,8 @@ equations:
     - 94 identical MoE decoder blocks
     - 'Each block: attention + MoE FFN (router + experts)'
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Contract_Composition
 proof_obligations:
 - type: invariant

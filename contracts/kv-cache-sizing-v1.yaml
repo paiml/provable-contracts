@@ -17,6 +17,7 @@ equations:
     - Proportional to n_kv * d_k
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Per_Token_Per_Layer
   total_kv_memory:
     formula: kv_total = L * S * 2 * n_kv * d_k * bytes_per_element
@@ -25,7 +26,7 @@ equations:
     - Linear in sequence length
     - Linear in layer count
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Total_Kv_Memory
   hybrid_accounting:
     formula: kv_layers = count(layer_type == 'attention')
@@ -34,7 +35,7 @@ equations:
     - Only attention layers contribute to KV cache
     - kv_layers <= total_layers
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Hybrid_Accounting
   bias_absence:
     formula: has_bias=false => count(bias_tensors) == 0
@@ -42,7 +43,7 @@ equations:
     invariants:
     - No bias in projection when config says no bias
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Bias_Absence
   zero_input_identity:
     formula: W @ zeros = zeros when no bias
@@ -50,7 +51,7 @@ equations:
     invariants:
     - Matmul with zero input produces zero output
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Zero_Input_Identity
 proof_obligations:
 - type: invariant

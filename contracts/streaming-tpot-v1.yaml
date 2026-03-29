@@ -22,7 +22,8 @@ equations:
     - TPOT ≥ 0 for all tokens
     - latency ≈ TTFT + (n-1) × mean_TPOT
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Tpot_Definition
 proof_obligations:
 - type: invariant

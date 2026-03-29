@@ -16,7 +16,8 @@ equations:
     - beta_k >= 0 (Fletcher-Reeves always non-negative)
     - Reduces to steepest descent when beta_k = 0
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Cg_Minimize
   line_search:
     formula: alpha_k = argmin_{alpha > 0} f(x_k + alpha * d_k), subject to Wolfe conditions
@@ -27,7 +28,8 @@ equations:
     - 'Curvature condition: g(x_k + alpha*d_k)^T*d_k >= c2*g_k^T*d_k'
     - alpha_k > 0 (positive step size)
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Line_Search
   convergence:
     formula: '||g_k|| -> 0 as k -> infinity (for smooth convex f)'
@@ -38,7 +40,8 @@ equations:
     - 'Iterates remain finite: ||x_k|| < infinity'
     - Gradient norm decreases on average
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Convergence
 proof_obligations:
 - type: invariant

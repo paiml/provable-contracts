@@ -21,7 +21,7 @@ equations:
     - Side effects on mutable arguments are identical
     - Exception/panic behavior is equivalent for invalid inputs
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Observational_Equivalence
   statement_equivalence:
     formula: sem_rust(transpile(s), sigma_r) = TypeMap_state(sem_python(s, sigma_p))
@@ -33,7 +33,7 @@ equations:
     - For loops iterate over same elements in same order
     - Return produces same value in both languages
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Statement_Equivalence
   expression_equivalence:
     formula: eval_rust(transpile(e), sigma_r) = TypeMap_val(eval_python(e, sigma_p))
@@ -45,7 +45,7 @@ equations:
     - 'String operations: concatenation, slicing, methods produce equivalent strings'
     - 'Collection operations: indexing, slicing, append, insert produce equivalent state'
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Expression_Equivalence
   control_flow_equivalence:
     formula: trace_rust(transpile(P)) ~ trace_python(P) (bisimulation on observable events)
@@ -58,7 +58,7 @@ equations:
     - 'Break/continue: identical loop control in transpiled code'
     - 'With statements: resource acquisition and release semantics preserved'
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Control_Flow_Equivalence
   comprehension_equivalence:
     formula: transpile([e for x in iter if cond]) = iter.filter(cond).map(e).collect::<Vec<_>>()
@@ -69,7 +69,7 @@ equations:
     - Element expression evaluated identically for each iteration
     - Nested comprehensions flatten correctly
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Comprehension_Equivalence
 proof_obligations:
 - type: precondition

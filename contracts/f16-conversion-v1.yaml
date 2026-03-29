@@ -16,7 +16,8 @@ equations:
     - 'Exponent bias shift: e_f32 = e_f16 + 112 (bias 127 - bias 15)'
     - 'Mantissa zero-padded: lower 13 bits of f32 mantissa are 0'
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.F16_To_F32_Bias
   roundtrip:
     formula: f32_to_f16(f16_to_f32(h)) == h
@@ -26,7 +27,8 @@ equations:
     - Exact roundtrip for all normal f16 values
     - Subnormals may lose precision (not covered)
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.Roundtrip
 proof_obligations:
 - type: equivalence

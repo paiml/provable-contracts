@@ -21,7 +21,8 @@ equations:
     - GQA(kv_heads=num_heads) = standard MHA
     - num_heads must be divisible by num_kv_heads
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Gqa
 proof_obligations:
 - type: subcontract

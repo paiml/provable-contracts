@@ -18,7 +18,7 @@ equations:
     - C_D = 1 for nodes connected to all others
     - Σ C_D(v) = 2|E| / (n-1) (sum relates to edge count)
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Degree
   betweenness:
     formula: C_B(v) = Σ_{s≠v≠t} σ_{st}(v) / σ_{st}
@@ -29,7 +29,7 @@ equations:
     - C_B(v) = 0 if v is pendant (degree 1) in a tree
     - Normalized C_B ∈ [0, 1]
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Betweenness
   closeness:
     formula: C_C(v) = (n-1) / Σ_{u≠v} d(v, u)
@@ -40,7 +40,7 @@ equations:
     - C_C = 1 for center of star graph
     - Higher C_C = closer to all other nodes
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Closeness
   eigenvector:
     formula: x_v = (1/λ) Σ_{u∈N(v)} x_u, λ = largest eigenvalue
@@ -51,7 +51,7 @@ equations:
     - '||x||₂ = 1 (unit norm)'
     - Ax = λx (eigenvector equation)
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Eigenvector
   katz:
     formula: x_v = α Σ_{u∈N(v)} x_u + β
@@ -62,7 +62,7 @@ equations:
     - Converges when α < 1/λ_max
     - Reduces to eigenvector centrality as β → 0
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Katz
   harmonic:
     formula: C_H(v) = (1/(n-1)) Σ_{u≠v} 1/d(v,u)
@@ -74,7 +74,7 @@ equations:
     - C_H handles disconnected graphs (1/∞ = 0)
     - C_H ≥ C_C for connected graphs (AM-HM inequality)
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Harmonic
 proof_obligations:
 - type: bound

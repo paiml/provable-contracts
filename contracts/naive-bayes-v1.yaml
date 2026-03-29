@@ -16,7 +16,8 @@ equations:
     - Σ_k P(C_k) = 1 (valid probability distribution)
     - P(C_k) > 0 for all observed classes
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Class_Prior
   gaussian_likelihood:
     formula: P(x_j | C_k) = (1/√(2πσ²_jk)) exp(-(x_j - μ_jk)²/(2σ²_jk))
@@ -26,7 +27,8 @@ equations:
     - Likelihood > 0 (Gaussian PDF is strictly positive)
     - Log-likelihood is finite for finite inputs and σ > 0
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Gaussian_Likelihood
   log_posterior:
     formula: log P(C_k | x) ∝ log P(C_k) + Σ_j log P(x_j | C_k)
@@ -37,7 +39,8 @@ equations:
     - Posterior probabilities sum to 1 after normalization
     - Prediction is deterministic for same input
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Log_Posterior
 proof_obligations:
 - type: invariant

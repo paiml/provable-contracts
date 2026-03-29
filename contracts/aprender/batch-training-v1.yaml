@@ -79,7 +79,8 @@ equations:
     - Equivalent to single batch of B samples (within FP tolerance)
     - Division by K normalizes gradient magnitude
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Gradient_Accumulation
   gradient_clipping:
     formula: "if ||g|| > clip_norm:\n    g = g * (clip_norm / ||g||)\nwhere ||g|| = sqrt(sum(g_i^2)) is L2 norm\n"
@@ -88,7 +89,8 @@ equations:
     - 'Post-clipping: ||g|| <= clip_norm'
     - 'Direction preserved: g_clipped / ||g_clipped|| == g / ||g||'
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Gradient_Clipping
   batch_loss:
     formula: 'L_batch = (1/B) * sum_{i=1}^{B} L(f(x_i), y_i)
@@ -101,7 +103,8 @@ equations:
     - L_batch is finite for all valid inputs
     - L_batch >= 0 (cross-entropy is non-negative)
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.Batch_Loss
 falsification_tests:
 - id: FALSIFY-BATCH-001

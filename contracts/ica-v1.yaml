@@ -16,7 +16,8 @@ equations:
     - 'W is orthogonal: W W^T ≈ I'
     - Components are maximally non-Gaussian
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Fastica
   unmixing:
     formula: S = X W^T where W is the unmixing matrix
@@ -26,7 +27,8 @@ equations:
     - Unmixing is linear
     - Output shape = (n_samples, n_components)
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Unmixing
   mixing:
     formula: X̂ = S A where A = W^{-1} (mixing matrix)
@@ -36,7 +38,8 @@ equations:
     - 'Approximate reconstruction: X̂ ≈ X when k = d'
     - A W ≈ I (mixing · unmixing = identity)
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Mixing
 proof_obligations:
 - type: invariant

@@ -15,7 +15,8 @@ equations:
     - Strict ordering for any non-zero parameter count
     - 'Ratios approximately: 1 : 1.5 : 2 : 4 : 8'
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.Size_Ordering
   bytes_per_param:
     formula: Q4K≈0.5625, Q6K≈0.8125, Q8_0≈1.0625, F16=2.0, F32=4.0 bytes/param
@@ -25,7 +26,8 @@ equations:
     - 'Q6K: 26 bytes per 32-element block'
     - 'Q8_0: 34 bytes per 32-element block'
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.Bytes_Per_Param
   alpha_scaling:
     formula: lora_output = (alpha / rank) * (A @ B @ x)
@@ -34,7 +36,8 @@ equations:
     - Scale factor = alpha / rank
     - 'Standard: alpha=16, rank=64 => scale=0.25'
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.Alpha_Scaling
   dropout_expectation:
     formula: E[mask_i] = 1 - p
@@ -43,7 +46,8 @@ equations:
     - Mean of mask converges to 1-p
     - 'Inference: p=0 (no dropout)'
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Dropout_Expectation
 proof_obligations:
 - type: monotonicity

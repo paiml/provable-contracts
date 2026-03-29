@@ -16,7 +16,8 @@ equations:
     - 'Convolution is linear: conv(a*x + b*z) = a*conv(x) + b*conv(z)'
     - Identity kernel [0,...,0,1,0,...,0] preserves input (when pad matches)
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Conv1D
 proof_obligations:
 - type: invariant

@@ -16,7 +16,8 @@ equations:
     - R² = 1.0 iff ŷᵢ = yᵢ for all i (perfect fit)
     - R² = 0.0 iff ŷᵢ = ȳ for all i (predict mean)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.R_Squared
   mse:
     formula: MSE = (1/n) Σ(yᵢ - ŷᵢ)²
@@ -27,7 +28,8 @@ equations:
     - MSE = 0 iff ŷᵢ = yᵢ for all i
     - MSE(y, ŷ) = MSE(ŷ, y) (symmetry)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Mse
   mae:
     formula: MAE = (1/n) Σ|yᵢ - ŷᵢ|
@@ -38,7 +40,8 @@ equations:
     - MAE = 0 iff ŷᵢ = yᵢ for all i
     - MAE ≤ RMSE (Jensen's inequality)
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.Mae
   rmse:
     formula: RMSE = √MSE = √((1/n) Σ(yᵢ - ŷᵢ)²)
@@ -49,7 +52,8 @@ equations:
     - RMSE ≥ MAE (Jensen's inequality)
     - RMSE = 0 iff MSE = 0
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Rmse
 proof_obligations:
 - type: bound

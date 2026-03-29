@@ -17,7 +17,8 @@ equations:
     - Acceptance probability decreases as temperature decreases
     - Acceptance probability is always positive (never exactly 0)
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Sa_Acceptance
   ga_crossover:
     formula: child = 0.5 * [(1 + beta) * parent_1 + (1 - beta) * parent_2]
@@ -28,7 +29,8 @@ equations:
     - beta = 1 produces midpoint of parents
     - Children are clamped to search space bounds
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Ga_Crossover
   pso_velocity:
     formula: v_{t+1} = w * v_t + c1 * r1 * (p_best - x_t) + c2 * r2 * (g_best - x_t)
@@ -39,7 +41,8 @@ equations:
     - Inertia weight w dampens previous velocity
     - Cognitive (c1) and social (c2) terms attract toward best positions
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Pso_Velocity
   best_monotone:
     formula: f(x*_{t+1}) <= f(x*_t) for minimization
@@ -50,7 +53,8 @@ equations:
     - Applies to SA, GA, and PSO independently
     - Holds regardless of algorithm parameters
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Best_Monotone
 proof_obligations:
 - type: invariant

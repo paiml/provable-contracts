@@ -25,6 +25,7 @@ equations:
     - 'Indentation is consistent: 4 spaces per nesting level'
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Emit_Purified
   emit_posix:
     formula: "emit_posix: ShellIR -> Result<String, Error>\n  Generates POSIX shell from the intermediate representation:\n\
@@ -40,6 +41,7 @@ equations:
     - 'Logical constant folding is sound: try_fold_logical(LogicalAnd(true, x)) == x'
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Emit_Posix
   roundtrip:
     formula: "Roundtrip property for the purifier pipeline:\n  parse(emit_purified(parse(source))) ~= parse(source)\nWhere\
@@ -55,6 +57,7 @@ equations:
     - Bashisms are purified to POSIX equivalents (semantic-preserving transformation)
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Roundtrip
 proof_obligations:
 - type: roundtrip

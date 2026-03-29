@@ -657,7 +657,8 @@ equations:
   identity:
     formula: f(x) = x
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Identity
 qa_gate:
   id: F-TLV-001

@@ -16,7 +16,8 @@ equations:
     - y_i = x_i / (1 - p) when mask_i = 1 (surviving units scaled)
     - Output shape equals input shape
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Dropout_Train
   dropout_eval:
     formula: y = x
@@ -26,7 +27,8 @@ equations:
     - y_i = x_i for all i (identity in eval mode)
     - No randomness applied during evaluation
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Dropout_Eval
 proof_obligations:
 - type: invariant

@@ -13,7 +13,8 @@ equations:
     invariants:
     - 'Threshold is monotonic: GPU-eligible implies all larger tensors GPU-eligible'
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Gpu_Threshold
   simd_only_threshold:
     formula: dispatch(n) = SIMD_only if n < 1_000 else SIMD+threading
@@ -21,7 +22,8 @@ equations:
     invariants:
     - Small tensors avoid threading overhead
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Simd_Only_Threshold
   garbage_oracle:
     formula: is_garbage(text) = repetition_ratio > 0.3 OR unique_chars < 10
@@ -30,7 +32,8 @@ equations:
     - Highly repetitive text is garbage
     - Very low character diversity is garbage
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Garbage_Oracle
   qk_norm_score_bound:
     formula: '|pre_softmax_score| <= sqrt(head_dim)'
@@ -39,7 +42,8 @@ equations:
     - Bounded by sqrt of head dimension
     - Prevents attention score explosion
     preconditions:
-    - '!input.is_empty()'
+    - input.iter().all(|v| v.is_finite())
+    - input.len() > 0
     lean_theorem: Theorems.Qk_Norm_Score_Bound
 proof_obligations:
 - type: monotonicity

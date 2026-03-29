@@ -16,7 +16,8 @@ equations:
     - C is symmetric positive definite
     - Samples distributed as N(m, sigma^2 * C)
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Sample
   mean_update:
     formula: m_{t+1} = sum_{i=1}^{mu} w_i * x_{i:lambda}
@@ -26,7 +27,8 @@ equations:
     - New mean is weighted average of best mu individuals
     - Weights sum to 1 (convex combination)
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Mean_Update
   covariance_update:
     formula: C_{t+1} = (1-c1-cmu)*C_t + c1*p_c*p_c^T + cmu*sum(w_i*(x_i-m)*(x_i-m)^T/sigma^2)
@@ -36,7 +38,8 @@ equations:
     - C remains symmetric positive definite
     - Update is convex combination preserving positive definiteness
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Covariance_Update
 proof_obligations:
 - type: bound

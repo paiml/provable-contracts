@@ -755,7 +755,8 @@ equations:
     - Bare name (without 'model.' prefix) tried as last resort
     - Error message lists all attempted names for diagnostics
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Name_Resolution
   architecture_normalization:
     formula: 'normalize(raw) = architecture_map[raw] ?? "llama" (default)
@@ -768,7 +769,8 @@ equations:
     - Case-sensitive matching on HF class names
     - Lowercase matching on GGUF arch strings
     preconditions:
-    - '!input.is_empty()'
+    - input.iter().all(|v| v.is_finite())
+    - input.len() > 0
     lean_theorem: Theorems.Architecture_Normalization
 falsification_tests:
 - id: FALSIFY-TNAME-001

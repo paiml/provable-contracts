@@ -15,7 +15,7 @@ equations:
     - sum(r) = 1 (probability distribution)
     - r is left eigenvector of Google matrix G = d*M + (1-d)/N * 1*1^T
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Pagerank
   power_iteration:
     formula: r_{t+1} = G * r_t, converges when ||r_{t+1} - r_t|| < eps
@@ -26,7 +26,7 @@ equations:
     - '||r_{t+1} - r*|| <= d * ||r_t - r*|| (linear convergence)'
     - Convergence rate bounded by damping factor d
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Power_Iteration
 proof_obligations:
 - type: invariant

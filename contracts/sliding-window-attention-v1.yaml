@@ -19,7 +19,8 @@ equations:
     - 'Diagonal always attended: mask(i,i) = 1'
     - At most W attended positions per query
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Window_Mask
   causal_window_mask:
     formula: mask(i,j) = 1 if j <= i and i - j < W else 0
@@ -29,7 +30,8 @@ equations:
     - 'Causal masking: mask(i,j) = 0 for j > i (no future positions visible)'
     - At most min(i+1, W) attended positions for query i
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Causal_Window_Mask
   effective_context:
     formula: ctx(i) = min(i + 1, W)
@@ -39,7 +41,8 @@ equations:
     - ctx(i) = W for i >= W - 1
     - Monotonically non-decreasing
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Effective_Context
   attention_sparsity:
     formula: sparsity = 1 - (sum(mask) / seq_len^2)
@@ -48,7 +51,8 @@ equations:
     - sparsity ≈ 1 - W/seq_len for large seq_len
     - sparsity = 0 when W >= seq_len (dense attention)
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Attention_Sparsity
   multi_layer_receptive_field:
     formula: receptive(L) = 1 + L * (W - 1)
@@ -58,7 +62,8 @@ equations:
     - Monotonically increasing in L
     - Full context reached when receptive(L) >= seq_len
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Multi_Layer_Receptive_Field
 proof_obligations:
 - type: invariant

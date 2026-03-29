@@ -19,7 +19,7 @@ equations:
     - file_count matches number of unique files in functions list
     - All TDG scores are in [0.0, 100.0]
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Generate_Context
   index_persistence:
     formula: "save_index: AgentContext -> Result<PathBuf, IoError>\n  Serializes context to SQLite:\n    functions table:\
@@ -31,7 +31,7 @@ equations:
     - 'Roundtrip: load(save(ctx)) == ctx for all function entries'
     - Index file size proportional to function count
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Index_Persistence
 proof_obligations:
 - type: postcondition

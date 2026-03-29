@@ -16,7 +16,8 @@ equations:
     - H(X) = 0 iff X is deterministic (one p_i = 1)
     - H(X) = log2(|alphabet|) iff X is uniform
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Entropy
   uniform_entropy:
     formula: H_uniform(k) = log2(k)
@@ -25,7 +26,8 @@ equations:
     invariants:
     - Strictly monotonically increasing in k
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Uniform_Entropy
 proof_obligations:
 - type: bound

@@ -16,7 +16,7 @@ equations:
     - Non-deterministic unsafe entries always produce Type C
     - Security findings alternate between Type A and Type B
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Conversation_Types
   quality_gate:
     formula: pass = type_d_pct >= 30% AND empty_responses == 0 AND variant_balanced
@@ -27,7 +27,7 @@ equations:
     - No conversation has empty/trivial response content
     - No single prompt variant exceeds 20% of total
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Quality_Gate
   chatml_format:
     formula: turns = [system_prompt, user_prompt, assistant_response]
@@ -39,6 +39,7 @@ equations:
     - Third turn is assistant with analysis or confirmation
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Chatml_Format
 proof_obligations:
 - type: invariant

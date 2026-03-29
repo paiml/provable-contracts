@@ -17,7 +17,8 @@ equations:
     - scale[r] > 0 for all rows r where W[r,:] is not identically zero
     - scale[r] = 0 if and only if W[r,:] = 0
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.Per_Row_Scale
   quantize:
     formula: W_q[r,i] = clamp(round(W[r,i] / scale[r]), -127, 127)
@@ -27,7 +28,8 @@ equations:
     - -127 <= W_q[r,i] <= 127 for all r,i
     - W_q[r,i] = 0 for all i when scale[r] = 0 (zero-row preservation)
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.Quantize
   dequant_dot:
     formula: "Dequantized matrix-vector product:\n  output[r] = (Sigma dequant(W_q[r,i]) * x[i]) + bias[r]\n  where dequant(w)\
@@ -40,7 +42,8 @@ equations:
     - 'Factored form is algebraically exact: scale[r] * Sigma(W_q[r,i] * x[i]) = Sigma(W_q[r,i] * scale[r] * x[i])'
     - output[r] = bias[r] when W[r,:] = 0 (zero-row passthrough)
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Dequant_Dot
 proof_obligations:
 - type: equivalence

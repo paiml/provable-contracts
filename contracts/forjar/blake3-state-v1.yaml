@@ -15,7 +15,7 @@ equations:
     - Output length = 71 (7 prefix + 64 hex)
     - 'Deterministic: H(s) = H(s) for all s'
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Hash_String
   hash_file:
     formula: H(path) = 'blake3:' || hex(BLAKE3(read_all(path)))
@@ -26,7 +26,7 @@ equations:
     - 'Deterministic: same file contents → same hash'
     - Returns Err for non-existent paths
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Hash_File
   composite_hash:
     formula: H(c₁, ..., cₙ) = 'blake3:' || hex(BLAKE3(c₁ || NUL || c₂ || NUL || ... || cₙ || NUL))
@@ -37,7 +37,7 @@ equations:
     - 'Order-sensitive: H(a, b) ≠ H(b, a) in general'
     - 'Deterministic: same inputs → same hash'
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Composite_Hash
 proof_obligations:
 - type: invariant

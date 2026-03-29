@@ -16,7 +16,7 @@ equations:
     - Output feature dimension equals weight matrix output dimension
     - Self-loops ensure every node receives its own features
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Gcn_Aggregate
   message_passing:
     formula: h_i^{l+1} = U(h_i^{l}, aggregate_{j in N(i)} M(h_i, h_j))
@@ -27,7 +27,7 @@ equations:
     - Each node is updated based only on its neighborhood (locality)
     - Permutation equivariant with respect to node ordering
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Message_Passing
   global_mean_pool:
     formula: r = (1/|V|) * sum_{i in V} h_i
@@ -38,7 +38,7 @@ equations:
     - Output is finite when all node features are finite
     - 'Output is bounded: min(h) <= r_j <= max(h) for each dimension j'
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Global_Mean_Pool
   global_max_pool:
     formula: r_j = max_{i in V} h_{ij} for each feature dimension j
@@ -49,7 +49,7 @@ equations:
     - Output is bounded by maximum node feature value per dimension
     - r_j >= h_{ij} for all i (max is an upper bound)
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Global_Max_Pool
 proof_obligations:
 - type: invariant

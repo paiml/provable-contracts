@@ -27,7 +27,7 @@ equations:
     - find -exec sh -c with {} inside quoted string always produces SEC003
     - Safe patterns (eval with literal, quoted variables, {} as separate arg) produce no diagnostic
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Classify_Injection
   classify_secrets:
     formula: "classify_secrets: source_line -> Vec<Diagnostic>\n  Detects hardcoded secrets and credential leakage:\n    SEC005:\
@@ -40,7 +40,7 @@ equations:
     - Variable assignment with secret-pattern name and literal value always produces SEC005
     - Variable assignment referencing environment variable (${VAR:-}) does not produce SEC005
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Classify_Secrets
   classify_filesystem:
     formula: "classify_filesystem: source_line -> Vec<Diagnostic>\n  Detects unsafe filesystem operations:\n    SEC004: wget/curl\
@@ -56,7 +56,7 @@ equations:
     - sudo rm -rf $VAR (unquoted) always produces SEC007
     - sudo rm -rf "${VAR}" (quoted, validated) does not produce SEC007
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Classify_Filesystem
   lint_shell:
     formula: "lint_shell: source_text -> LintResult\n  Top-level entry point that runs all SEC rules plus SC (ShellCheck-compatible)\
@@ -70,7 +70,7 @@ equations:
     - Empty input produces empty diagnostic list (no spurious warnings)
     - Comment-only lines never produce security diagnostics
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Lint_Shell
 proof_obligations:
 - type: soundness

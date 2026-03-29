@@ -17,7 +17,8 @@ equations:
     - GELU is monotonically increasing for x > 0
     - GELU(-x) + GELU(x) ~ 0 near origin (odd-function symmetry)
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Gelu
   gelu_tanh_approx:
     formula: GELU_approx(x) = 0.5 * x * (1 + tanh(sqrt(2/pi) * (x + 0.044715 * x^3)))
@@ -27,7 +28,8 @@ equations:
     - '|GELU(x) - GELU_approx(x)| < 0.005 for all x'
     - GELU_approx(0) = 0 (zero preservation)
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Gelu_Tanh_Approx
 proof_obligations:
 - type: bound

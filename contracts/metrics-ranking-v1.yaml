@@ -15,7 +15,7 @@ equations:
     - 'hit@k is binary: exactly 0 or 1'
     - hit@k is monotone non-decreasing in k (hit@k <= hit@(k+1))
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
     lean_theorem: Theorems.Hit_At_K
   reciprocal_rank:
     formula: RR = 1 / rank_of_first_relevant_item, or 0 if none relevant
@@ -26,7 +26,7 @@ equations:
     - RR = 1 iff first item is relevant
     - RR = 0 iff no relevant item in list
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
     lean_theorem: Theorems.Reciprocal_Rank
   mrr:
     formula: MRR = (1/|Q|) * sum_{q=1}^{|Q|} RR_q
@@ -36,7 +36,7 @@ equations:
     - MRR in [0, 1] (average of values in [0,1])
     - MRR = 1 iff all queries have first item relevant
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
     lean_theorem: Theorems.Mrr
   ndcg_at_k:
     formula: NDCG@k = DCG@k / IDCG@k, where DCG@k = sum_{i=1}^{k} rel_i / log2(i+1)
@@ -47,7 +47,7 @@ equations:
     - NDCG@k = 1 for perfect ranking (items sorted by relevance)
     - NDCG@k = 0 when all items have zero relevance
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
     lean_theorem: Theorems.Ndcg_At_K
 proof_obligations:
 - type: bound

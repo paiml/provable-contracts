@@ -15,7 +15,7 @@ equations:
     - Returns Err for non-Phase-1 types
     - Output is non-empty shell script
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Check_Script
   apply_script:
     formula: apply_script(r) = dispatch(r.type) where dispatch covers {Package, File, Service, Mount}
@@ -26,7 +26,7 @@ equations:
     - Returns Err for non-Phase-1 types
     - Output is non-empty shell script
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Apply_Script
   state_query_script:
     formula: state_query_script(r) = dispatch(r.type) where dispatch covers {Package, File, Service, Mount}
@@ -36,7 +36,7 @@ equations:
     - Returns Ok for all Phase 1 types
     - Returns Err for non-Phase-1 types
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.State_Query_Script
 proof_obligations:
 - type: completeness

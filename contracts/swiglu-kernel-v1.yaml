@@ -34,7 +34,8 @@ equations:
     - SiLU(x) > -0.279 for all x (global minimum)
     - SiLU is monotonic for x > 0
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Silu
 proof_obligations:
 - type: invariant

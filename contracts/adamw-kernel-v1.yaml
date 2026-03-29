@@ -15,7 +15,8 @@ equations:
     - m_t is exponential moving average of gradients
     - '|m_t| bounded by max(|g_1|, ..., |g_t|) when beta1 < 1'
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Adam_Moments
   adam_variance:
     formula: v_t = beta2 * v_{t-1} + (1 - beta2) * g_t^2
@@ -25,7 +26,8 @@ equations:
     - v_t >= 0 (non-negative second moment)
     - v_t is exponential moving average of squared gradients
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Adam_Variance
   bias_correction:
     formula: m_hat_t = m_t / (1 - beta1^t), v_hat_t = v_t / (1 - beta2^t)
@@ -35,7 +37,8 @@ equations:
     - Correction factor > 1 for all t >= 1
     - Correction approaches 1 as t -> inf
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Bias_Correction
   weight_update:
     formula: theta_t = theta_{t-1} - lr * (m_hat_t / (sqrt(v_hat_t) + eps) + lambda * theta_{t-1})
@@ -45,7 +48,8 @@ equations:
     - Weight decay applied AFTER Adam update (decoupled)
     - Update finite when inputs finite and eps > 0
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Weight_Update
 proof_obligations:
 - type: precondition

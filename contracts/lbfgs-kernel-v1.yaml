@@ -15,7 +15,8 @@ equations:
     - 'Direction is descent direction: g_k^T * direction < 0'
     - 'Secant condition: y_i^T * s_i > 0 for all stored pairs'
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Two_Loop_Recursion
   secant_condition:
     formula: H_{k+1} * y_k = s_k (secant equation)
@@ -25,7 +26,8 @@ equations:
     - y_k^T * s_k > 0 (curvature condition)
     - Ensures positive definiteness of approximate Hessian
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Secant_Condition
   line_search:
     formula: alpha = argmin_a f(x_k + a * d_k) subject to Wolfe conditions
@@ -35,7 +37,8 @@ equations:
     - 'Sufficient decrease: f(x + alpha*d) <= f(x) + c1*alpha*g^T*d'
     - 'Curvature condition: |g(x+alpha*d)^T*d| <= c2*|g^T*d|'
     preconditions:
-    - '!input.is_empty()'
+    - learning_rate > 0.0
+    - params.len() > 0
     lean_theorem: Theorems.Line_Search
 proof_obligations:
 - type: invariant

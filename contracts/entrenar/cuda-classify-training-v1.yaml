@@ -174,7 +174,7 @@ equations:
     - Same layer computations (different hardware)
     - Bounded numerical divergence
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Gpu_Forward
   weight_roundtrip:
     formula: 'download(upload(W)) == W
@@ -187,7 +187,7 @@ equations:
     - f32 precision preserved exactly
     - No quantization or compression
     preconditions:
-    - '!input.is_empty()'
+    - '!data.is_empty()'
     lean_theorem: Theorems.Weight_Roundtrip
   device_dispatch:
     formula: "device = if compiled_with_cuda && gpu_available && vram >= 6GB\n         then Cuda{0}\n         else Cpu\n"
@@ -196,7 +196,7 @@ equations:
     - Deterministic function of environment
     - No side effects
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Device_Dispatch
 proof_obligations:
 - type: equivalence

@@ -24,7 +24,7 @@ equations:
     - Lexer errors carry line and column position for diagnostics
     - String tokens preserve original content including escape sequences
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Lex
   parse:
     formula: "parse: Vec<Token> -> Result<BashAst, ParseError>\n  Recursive-descent parser producing a typed AST:\n    BashAst\
@@ -39,7 +39,7 @@ equations:
     - Malformed input produces Err(ParseError) with line/column info, never panics
     - Parser consumes all tokens up to Eof (no unconsumed trailing tokens)
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Parse
   semantic_analyze:
     formula: "analyze: BashAst -> Result<AnalysisResult, SemanticError>\n  Performs semantic analysis on parsed AST:\n   \
@@ -52,7 +52,7 @@ equations:
     - Function names are unique within scope (redefinition is an error)
     - 'Analysis is deterministic: same AST always yields same result'
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Semantic_Analyze
 proof_obligations:
 - type: soundness

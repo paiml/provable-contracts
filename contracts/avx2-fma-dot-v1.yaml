@@ -18,7 +18,8 @@ equations:
     - dot(α·a, b) = α·dot(a, b) (linearity)
     - dot(a, a) ≥ 0 (non-negativity of self-dot)
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Dot_Product
   fma_accumulation:
     formula: acc_k = fma(a_k, b_k, acc_{k-1}) where fma(x,y,z) = RN(x·y+z)
@@ -29,7 +30,8 @@ equations:
     - 4 independent accumulators hide pipeline latency
     - '|fma_dot - scalar_dot| ≤ n · ε_mach (different rounding, bounded error)'
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Fma_Accumulation
 proof_obligations:
 - type: equivalence

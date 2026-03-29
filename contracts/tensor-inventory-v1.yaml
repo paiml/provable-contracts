@@ -15,7 +15,8 @@ equations:
     - total > 0 for any valid config
     - Linear in L (layer count)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Tensor_Count
   architecture_delta:
     formula: delta = L * (per_layer_B - per_layer_A)
@@ -25,7 +26,8 @@ equations:
     - delta = 0 when architectures identical
     - delta proportional to L
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Architecture_Delta
   parameter_decomposition:
     formula: total_params = embed_params + sum(layer_params) + head_params
@@ -35,7 +37,8 @@ equations:
     - Sum of parts equals whole
     - Each component non-negative
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Parameter_Decomposition
   tied_embeddings:
     formula: tied=true => tensor_count -= 1, but params unchanged (shared storage)
@@ -43,7 +46,8 @@ equations:
     invariants:
     - Tied reduces tensor count by exactly 1
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Tied_Embeddings
   quantization_bytes:
     formula: bytes = params * block_bytes / elements_per_block
@@ -53,7 +57,8 @@ equations:
     - bytes proportional to params
     - bytes decreases with more aggressive quantization
     preconditions:
-    - '!input.is_empty()'
+    - scale > 0.0
+    - input.len() > 0
     lean_theorem: Theorems.Quantization_Bytes
 proof_obligations:
 - type: invariant

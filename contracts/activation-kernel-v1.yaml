@@ -17,7 +17,8 @@ equations:
     - GELU(x) → 0 as x → -∞
     - GELU(0) = 0
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Gelu
   silu:
     formula: SiLU(x) = x · σ(x) = x / (1 + exp(-x))
@@ -28,7 +29,8 @@ equations:
     - SiLU(x) → 0 as x → -∞
     - SiLU(0) = 0
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Silu
   relu:
     formula: ReLU(x) = max(0, x)
@@ -39,7 +41,8 @@ equations:
     - ReLU(x) = x for x > 0
     - ReLU(x) = 0 for x ≤ 0
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Relu
 proof_obligations:
 - type: invariant

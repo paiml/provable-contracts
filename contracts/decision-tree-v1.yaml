@@ -16,7 +16,8 @@ equations:
     - G = 0 iff all elements have the same class (pure node)
     - 'G is maximal when all classes equally represented: G = 1 - 1/K'
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Gini_Impurity
   gini_split:
     formula: G_split = (|S_L|/|S|)G(S_L) + (|S_R|/|S|)G(S_R)
@@ -27,7 +28,8 @@ equations:
     - G_split ∈ [0, 1)
     - G_split = 0 iff both children are pure
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Gini_Split
   mse_split:
     formula: MSE(S) = (1/|S|) Σ(y_i - ȳ)² where ȳ = mean(S)
@@ -38,7 +40,8 @@ equations:
     - MSE = 0 iff all targets identical
     - MSE = Var(S) (variance of the target set)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Mse_Split
   prediction:
     formula: 'Classifier: majority_class(leaf), Regressor: mean(leaf_targets)'
@@ -48,7 +51,8 @@ equations:
     - Prediction is deterministic for same input
     - Prediction depends only on features used in splits along root-to-leaf path
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Prediction
 proof_obligations:
 - type: bound

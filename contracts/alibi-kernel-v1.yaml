@@ -16,7 +16,8 @@ equations:
     - bias decreases linearly with distance |i - j|
     - future positions (j > i) receive -inf bias in causal mode
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Alibi_Bias
   alibi_slopes:
     formula: m_h = 2^(-8h/H)
@@ -27,7 +28,8 @@ equations:
     - m_0 > m_1 > ... > m_{H-1} (slopes decrease with head index)
     - m_0 = 2^(-8/H) (first head slope)
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Alibi_Slopes
 proof_obligations:
 - type: bound

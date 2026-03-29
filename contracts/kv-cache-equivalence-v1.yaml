@@ -15,7 +15,7 @@ equations:
     invariants:
     - Cached forward equals full forward for last token
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Prefill_Incremental
   page_shape:
     formula: page_elements = block_size * n_kv * d_k
@@ -23,7 +23,7 @@ equations:
     invariants:
     - Page elements product of config values
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Page_Shape
   batched_serial_equivalence:
     formula: '|batched_prefill(tokens) - serial_prefill(tokens)| < epsilon'
@@ -31,7 +31,7 @@ equations:
     invariants:
     - Batched and serial prefill produce same result
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Batched_Serial_Equivalence
   fused_kernel:
     formula: '|fused_q4k_matvec(W, x) - matmul(dequant(W), x)| < epsilon'
@@ -40,7 +40,7 @@ equations:
     - Fused equals decomposed within tolerance
     - 'Epsilon depends on quantization (Q4K: 1e-3, F16: 1e-5)'
     preconditions:
-    - '!input.is_empty()'
+    - capacity > 0
     lean_theorem: Theorems.Fused_Kernel
 proof_obligations:
 - type: frame

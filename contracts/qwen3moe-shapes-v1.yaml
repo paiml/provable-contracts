@@ -17,7 +17,7 @@ equations:
     - Q projection is expanding (8192 > 4096) due to n_h*d_k > hidden
     - Q output dim = 8192
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Q_Projection_Shape
   kv_projection_shape:
     formula: '[n_kv * d_k, hidden] = [4*128, 4096] = [512, 4096]'
@@ -26,7 +26,7 @@ equations:
     - 'GQA ratio: n_h / n_kv = 64 / 4 = 16'
     - Aggressive GQA with 16:1 head ratio
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Kv_Projection_Shape
   moe_expert_shape:
     formula: 'expert_i: gate[moe_inter, hidden] * up[moe_inter, hidden] -> down[hidden, moe_inter]'
@@ -36,7 +36,7 @@ equations:
     - Total expert params per layer = 128 * 3 * 4096 * 1536
     - Active expert params per token = 8 * 3 * 4096 * 1536
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Moe_Expert_Shape
   moe_router_shape:
     formula: 'router: [num_experts, hidden] = [128, 4096]'
@@ -45,7 +45,8 @@ equations:
     - Router selects top-8 of 128 experts per token
     - norm_topk_prob normalizes selected expert weights
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.Moe_Router_Shape
   swiglu_ratio:
     formula: moe_intermediate / hidden = 1536 / 4096 = 0.375
@@ -54,7 +55,7 @@ equations:
     - 'Per-expert expansion ratio 0.375 (sub-unity: compact experts)'
     - 'Effective expansion with 8 active: 8 * 1536 / 4096 = 3.0'
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Swiglu_Ratio
   o_projection_transpose:
     formula: shape(o_proj) = [hidden, n_h * d_k] = [4096, 8192]
@@ -63,7 +64,8 @@ equations:
     - 'O projection is contracting: [4096, 8192]'
     - shape(o_proj) == transpose(shape(q_proj))
     preconditions:
-    - '!input.is_empty()'
+    - a.len() > 0
+    - b.len() > 0
     lean_theorem: Theorems.O_Projection_Transpose
   rope_frequency:
     formula: freq_i = base^(-2i/d_k) for i in [0, d_k/2)
@@ -73,7 +75,8 @@ equations:
     - freq_0 = 1.0
     - Strictly decreasing
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Rope_Frequency
 proof_obligations:
 - type: invariant

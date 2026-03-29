@@ -17,7 +17,8 @@ equations:
     - ECE = 0 for perfectly calibrated predictions
     - ECE monotone in calibration deviation
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Expected_Calibration_Error
   maximum_calibration_error:
     formula: MCE = max_b |acc(B_b) - conf(B_b)|
@@ -28,7 +29,8 @@ equations:
     - MCE ≥ ECE (max ≥ weighted average)
     - MCE = 0 for perfectly calibrated predictions
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Maximum_Calibration_Error
   platt_scaling:
     formula: σ(Af + B) where A,B = argmin -Σ[t_i log(σ(Af_i+B)) + (1-t_i)log(1-σ(Af_i+B))]
@@ -38,7 +40,8 @@ equations:
     - Output probabilities ∈ (0, 1)
     - 'Monotone: f_i > f_j and A > 0 ⟹ σ(Af_i+B) > σ(Af_j+B)'
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Platt_Scaling
   isotonic_regression:
     formula: ĝ = argmin_{g monotone} Σ(g(f_i) - y_i)²
@@ -49,7 +52,8 @@ equations:
     - Output ∈ [0, 1]
     - Isotonic fit minimizes sum of squared residuals among monotone functions
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Isotonic_Regression
   reliability_diagram:
     formula: 'For each bin b: (mean_confidence(B_b), mean_accuracy(B_b))'
@@ -60,7 +64,8 @@ equations:
     - Bin accuracy ∈ [0, 1]
     - 'Perfect calibration: all bins lie on the diagonal (confidence ≈ accuracy)'
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Reliability_Diagram
 proof_obligations:
 - type: bound

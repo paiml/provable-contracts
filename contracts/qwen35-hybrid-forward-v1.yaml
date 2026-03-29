@@ -23,7 +23,8 @@ equations:
     - QK-norm applied before attention score computation
     - Residual connection preserves gradient flow
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Attention_Sublayer
   gdn_sublayer:
     formula: y = x + gdn(conv1d(rmsnorm(x)))
@@ -33,7 +34,7 @@ equations:
     - Causal conv1d before GDN recurrence
     - Residual connection preserves gradient flow
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Gdn_Sublayer
   ffn_sublayer:
     formula: y = x + swiglu(rmsnorm(x))
@@ -43,7 +44,7 @@ equations:
     - SwiGLU uses gate/up projections
     - Down projection restores d_model dimension
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Ffn_Sublayer
   hybrid_block:
     formula: block_l(x) = ffn_sublayer(attn_or_gdn_sublayer_l(x))
@@ -53,7 +54,7 @@ equations:
     - FFN sublayer is identical regardless of attention type
     - Output shape equals input shape
     preconditions:
-    - '!input.is_empty()'
+    - '!config.is_empty()'
     lean_theorem: Theorems.Hybrid_Block
   activation_magnitude:
     formula: '||h_l||_inf <= M * ||h_0||_inf for some bound M'
@@ -63,7 +64,8 @@ equations:
     - Magnitude non-zero (no vanishing)
     - RMSNorm prevents unbounded growth per layer
     preconditions:
-    - '!input.is_empty()'
+    - x.iter().all(|v| v.is_finite())
+    - x.len() > 0
     lean_theorem: Theorems.Activation_Magnitude
   gradient_flow:
     formula: ∂L/∂h_0 = Σ_l (∂L/∂h_l * ∂h_l/∂h_0) with skip connections
@@ -73,7 +75,8 @@ equations:
     - Each sublayer adds gradient contribution
     - QK-norm stabilizes attention gradient
     preconditions:
-    - '!input.is_empty()'
+    - grad_output.len() > 0
+    - grad_output.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Gradient_Flow
 proof_obligations:
 - type: invariant

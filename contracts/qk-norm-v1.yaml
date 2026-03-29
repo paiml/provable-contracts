@@ -19,7 +19,8 @@ equations:
     - '|output_i| <= |weight_i| * sqrt(d_k) / sqrt(ε) (bounded amplitude)'
     - RMSNorm(0) = 0 (zero-stability)
     preconditions:
-    - '!input.is_empty()'
+    - input.iter().all(|v| v.is_finite())
+    - input.len() > 0
     lean_theorem: Theorems.Qk_Rmsnorm
 proof_obligations:
 - type: invariant

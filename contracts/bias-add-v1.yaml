@@ -16,7 +16,8 @@ equations:
     - 'Additivity: bias_add(bias_add(x, b1), b2) = bias_add(x, b1 + b2)'
     - 'Broadcast: same bias vector applied to every batch element'
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Bias_Add
 proof_obligations:
 - type: invariant

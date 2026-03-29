@@ -17,7 +17,7 @@ equations:
     - 'Deterministic: alphabetical tie-breaking for zero-indegree nodes'
     - '|output| = |V| when no cycle'
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Topological_Sort
   kahn_sort:
     formula: BFS with priority queue (alphabetical) for zero-indegree nodes
@@ -27,7 +27,7 @@ equations:
     - Output contains only nodes from input
     - Tie-breaking is alphabetical (deterministic)
     preconditions:
-    - '!input.is_empty()'
+    - n > 0
     lean_theorem: Theorems.Kahn_Sort
 proof_obligations:
 - type: ordering

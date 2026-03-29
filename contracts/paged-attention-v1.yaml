@@ -25,7 +25,8 @@ equations:
     - free_blocks + allocated_blocks = total_blocks (conservation)
     - Block table grows incrementally as sequence length increases
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Block_Allocation
   block_table_lookup:
     formula: "Translate logical position to physical memory address:\n  Given sequence seq_id and token position pos:\n  \
@@ -39,7 +40,8 @@ equations:
     - physical_slot < total_blocks * B (within allocated memory)
     - Lookup is O(1) — single table index + arithmetic
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Block_Table_Lookup
   copy_on_write:
     formula: "Fork sequence with copy-on-write (CoW) block sharing:\n  fork(parent_seq, child_seq):\n    child.block_table\
@@ -54,7 +56,8 @@ equations:
     - 'After CoW write: modified block is exclusive to writer (ref_count == 1)'
     - Unmodified blocks remain shared (memory efficient)
     preconditions:
-    - '!input.is_empty()'
+    - q.len() > 0
+    - k.len() == v.len()
     lean_theorem: Theorems.Copy_On_Write
 proof_obligations:
 - type: invariant

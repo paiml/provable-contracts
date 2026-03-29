@@ -15,7 +15,8 @@ equations:
     - Posterior is in the same family as the prior (conjugacy)
     - Posterior parameters are deterministic given prior and data
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Conjugate_Update
   posterior_valid:
     formula: alpha' = alpha + n_successes, beta' = beta + n_failures (Beta-Binomial)
@@ -26,7 +27,8 @@ equations:
     - beta' > beta (posterior concentration increases with failures)
     - alpha' > 0 and beta' > 0 always (positive parameters preserved)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Posterior_Valid
   blr_predict:
     formula: y_hat = X * mu_post
@@ -37,7 +39,8 @@ equations:
     - Prediction length equals number of input samples
     - Deterministic given same posterior and input
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Blr_Predict
   posterior_predictive:
     formula: p(y_new|X_new, data) = integral p(y_new|X_new, w) * p(w|data) dw
@@ -47,7 +50,8 @@ equations:
     - Predictive variance >= 0
     - Predictive mean equals BLR point prediction
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Posterior_Predictive
 proof_obligations:
 - type: invariant

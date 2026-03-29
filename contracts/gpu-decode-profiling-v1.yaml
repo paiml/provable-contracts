@@ -25,6 +25,7 @@ equations:
     - coverage > 1.0 is impossible (bricks are subsets of wall time)
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Wall_Coverage
   sync_verification:
     formula: is_immediate = (measured_brick_us / expected_brick_us) > 0.5
@@ -35,6 +36,7 @@ equations:
     - LmHead (n=151936) must be >10x RmsNorm in Immediate mode
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Sync_Verification
   token_accounting:
     formula: decoded_tokens = iterations * tokens_per_iteration
@@ -46,6 +48,7 @@ equations:
     - calls_per_decoded_token(RmsNorm) = 2 * num_layers + 1
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Token_Accounting
   brick_ordering:
     formula: rank(bricks, by=per_call_avg) must respect kernel complexity
@@ -56,6 +59,7 @@ equations:
     - AttentionScore per-call avg > Residual per-call avg (flash attn > vector add)
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Brick_Ordering
   graph_disable:
     formula: valid_profiling => NOT has_decode_graph
@@ -66,6 +70,7 @@ equations:
     - Profiling with graphs enabled measures 1/N of actual decode time
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Graph_Disable
   report_fidelity:
     formula: 'for each brick b: JSON.actual_us(b) == profiler.avg_us(b)'
@@ -79,6 +84,7 @@ equations:
     - 'No BrickScore field may be a compile-time constant (score: 100, grade: ''R'', gap: 1.0)'
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Report_Fidelity
   report_completeness:
     formula: len(JSON.brick_scores) == len(profiler.all_brick_stats())
@@ -90,6 +96,7 @@ equations:
     - FalsificationSummary.passed + failed == total_points
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Report_Completeness
   report_denominator:
     formula: decoded_tokens = LmHead.count (exactly 1 LmHead per decoded token)
@@ -100,6 +107,7 @@ equations:
     - Dividing total_ns by profiler.total_tokens produces values 100-300x too small
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Report_Denominator
   report_metadata:
     formula: metadata fields must be measured or zero — never hardcoded nonzero
@@ -112,6 +120,7 @@ equations:
     - 'No hardcoded magic numbers: 137, 173.9, 98.1, 95.2, 976.0'
     preconditions:
     - '!input.is_empty()'
+    - vocab_size > 0
     lean_theorem: Theorems.Report_Metadata
 proof_obligations:
 - type: invariant

@@ -15,7 +15,8 @@ equations:
     - L ≥ 0 (non-negative by construction)
     - L = 0 when y_i(w·x_i + b) ≥ 1 (correct with margin)
     preconditions:
-    - '!input.is_empty()'
+    - predicted.len() == target.len()
+    - predicted.len() > 0
     lean_theorem: Theorems.Hinge_Loss
   decision_function:
     formula: f(x) = w·x + b
@@ -25,7 +26,8 @@ equations:
     - sign(f(x)) determines classification
     - Deterministic for same input
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Decision_Function
   svm_predict:
     formula: ŷ = sign(w·x + b), mapped to {0, 1}
@@ -35,7 +37,8 @@ equations:
     - Prediction ∈ {0, 1} (binary only)
     - Prediction is deterministic
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Svm_Predict
   margin:
     formula: margin = 2 / ||w||
@@ -45,7 +48,8 @@ equations:
     - margin > 0 for fitted model
     - Larger margin → better generalization (SRM principle)
     preconditions:
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Margin
 proof_obligations:
 - type: bound

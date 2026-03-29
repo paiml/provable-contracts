@@ -16,7 +16,8 @@ equations:
     - t < max_position for all valid positions
     - output[t] is finite for finite inputs
     preconditions:
-    - '!input.is_empty()'
+    - indices.iter().all(|&i| i < vocab_size)
+    - indices.len() > 0
     lean_theorem: Theorems.Absolute_Position_Add
 proof_obligations:
 - type: invariant
