@@ -12,13 +12,14 @@ metadata:
   - realizar src/cuda/executor/layers/cublas_prefill/attention.rs — warmup_fp8_cache()
 equations:
   fp8_architecture_guard:
-    formula: fp8_enabled = (cc >= 89) && (cc < 100)
+    formula: fp8_enabled = (cc >= 89)
     domain: cc = CUDA compute capability (integer)
     codomain: fp8_enabled in {true, false}
     invariants:
     - cc < 89 implies fp8_enabled = false (pre-Ada)
-    - cc >= 89 && cc < 100 implies fp8_enabled = true (Ada/Hopper)
-    - cc >= 100 implies fp8_enabled = false (Blackwell+, incompatible FP8 E4M3)
+    - cc >= 89 implies fp8_enabled = true (Ada/Hopper/Blackwell)
+    - 'PMAT-410: FP8 GEMM works on sm_121 via lazy cache (no warmup needed)'
+    - 'warmup_fp8_cache STILL guarded by cc < 100 (warmup crashes on Blackwell)'
     notes: 'Blackwell sm_121 has cc=121 which passes cc >= 89 but FP8 E4M3 cuBLASLt kernels are Ada/Hopper-specific.
       PMAT-409: warmup_fp8_cache also has internal cc range check — even FP8_PREFILL=1 override
       does not produce cached plans on sm_121. Combined with PMAT-400 skip_fp16_unified, prefill
