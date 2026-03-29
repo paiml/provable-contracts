@@ -79,8 +79,8 @@ equations:
   identity:
     formula: f(x) = x
     preconditions:
-    - '!data.is_empty()'
-    - '!input.is_empty()'
+    - rank > 0
+    - alpha > 0.0
     lean_theorem: Theorems.Identity
 qa_gate:
   id: F-LGFV-001

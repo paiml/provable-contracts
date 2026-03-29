@@ -127,8 +127,8 @@ equations:
   identity:
     formula: f(x) = x
     preconditions:
-    - '!config.is_empty()'
-    - '!input.is_empty()'
+    - num_weights > 0
+    - device_id >= 0
     lean_theorem: Theorems.Identity
 qa_gate:
   id: F-WRWV-001

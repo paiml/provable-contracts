@@ -26,7 +26,7 @@ equations:
     - SafeTensors CPU throughput within 10% of GGUF CPU
     preconditions:
     - '!data.is_empty()'
-    - '!input.is_empty()'
+    - data.len() > 0
     lean_theorem: Theorems.Format_Parity
 proof_obligations:
 - type: equivalence

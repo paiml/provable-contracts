@@ -345,5 +345,5 @@ equations:
     formula: f(x) = x
     preconditions:
     - '!data.is_empty()'
-    - '!input.is_empty()'
+    - data.len() > 0
     lean_theorem: Theorems.Identity

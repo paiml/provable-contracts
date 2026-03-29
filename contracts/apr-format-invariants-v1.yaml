@@ -19,7 +19,7 @@ equations:
     - Output size proportional to evidence complexity
     preconditions:
     - '!data.is_empty()'
-    - '!input.is_empty()'
+    - data.len() > 0
     lean_theorem: Theorems.Serialize_Roundtrip
   validate_schema:
     formula: "validate_evidence_schema: Bytes -> Result<ModelEvidence, ValidationError>\n\
@@ -31,7 +31,7 @@ equations:
     - Valid evidence always passes validation
     - Truncated input produces ValidationError, never panics
     preconditions:
-    - '!config.is_empty()'
+    - '!schema.is_empty()'
     - '!input.is_empty()'
     lean_theorem: Theorems.Validate_Schema
   parse_playbook:
@@ -55,8 +55,8 @@ equations:
     - Report contains all 6 dimension scores
     - Report contains overall grade
     preconditions:
-    - '!config.is_empty()'
-    - '!input.is_empty()'
+    - '!report.is_empty()'
+    - entries.len() > 0
     lean_theorem: Theorems.Format_Report
   detect_regression:
     formula: "detect_regression: (MqsResult, MqsResult) -> Vec<Regression>\n  Compares\

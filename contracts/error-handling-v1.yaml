@@ -10,8 +10,8 @@ equations:
     - Type safety preserved
     - No panics on valid input
     preconditions:
-    - '!config.is_empty()'
-    - '!input.is_empty()'
+    - '!error_msg.is_empty()'
+    - severity > 0
     lean_theorem: Theorems.Error_Handling
 proof_obligations:
 - type: invariant

@@ -178,8 +178,8 @@ equations:
   identity:
     formula: f(x) = x
     preconditions:
-    - '!config.is_empty()'
-    - '!input.is_empty()'
+    - num_layers > 0
+    - tolerance > 0.0
     lean_theorem: Theorems.Identity
 qa_gate:
   id: F-LPV-001

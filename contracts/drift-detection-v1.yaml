@@ -41,8 +41,8 @@ equations:
     - Thresholds partition [0, infinity) into exactly 3 regions
     - score = 0 always yields NoDrift
     preconditions:
-    - '!config.is_empty()'
-    - '!input.is_empty()'
+    - window_size > 0
+    - threshold > 0.0
     lean_theorem: Theorems.Classify_Drift
   min_samples_guard:
     formula: detect(data) = NoDrift if |data| < min_samples

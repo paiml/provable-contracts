@@ -33,8 +33,8 @@ equations:
     - Safe patterns (eval with literal, quoted variables, {} as separate arg) produce
       no diagnostic
     preconditions:
-    - '!config.is_empty()'
-    - '!input.is_empty()'
+    - '!source.is_empty()'
+    - source.len() <= 1_000_000
     lean_theorem: Theorems.Classify_Injection
   classify_secrets:
     formula: "classify_secrets: source_line -> Vec<Diagnostic>\n  Detects hardcoded\
@@ -50,8 +50,8 @@ equations:
     - Variable assignment referencing environment variable (${VAR:-}) does not produce
       SEC005
     preconditions:
-    - '!config.is_empty()'
-    - '!input.is_empty()'
+    - '!source.is_empty()'
+    - source.len() <= 1_000_000
     lean_theorem: Theorems.Classify_Secrets
   classify_filesystem:
     formula: "classify_filesystem: source_line -> Vec<Diagnostic>\n  Detects unsafe\
@@ -69,8 +69,8 @@ equations:
     - sudo rm -rf $VAR (unquoted) always produces SEC007
     - sudo rm -rf "${VAR}" (quoted, validated) does not produce SEC007
     preconditions:
-    - '!config.is_empty()'
-    - '!input.is_empty()'
+    - '!source.is_empty()'
+    - source.len() <= 1_000_000
     lean_theorem: Theorems.Classify_Filesystem
   lint_shell:
     formula: "lint_shell: source_text -> LintResult\n  Top-level entry point that\

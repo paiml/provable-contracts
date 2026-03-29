@@ -250,6 +250,6 @@ equations:
   identity:
     formula: f(x) = x
     preconditions:
-    - '!data.is_empty()'
-    - '!input.is_empty()'
+    - input.len() > 0
+    - scale > 0.0
     lean_theorem: Theorems.Identity

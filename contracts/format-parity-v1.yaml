@@ -37,8 +37,8 @@ equations:
     - Bias vectors and 1D tensors are identity-mapped
     - Only 2D+ tensors require transpose
     preconditions:
-    - '!config.is_empty()'
-    - '!input.is_empty()'
+    - input.len() > 0
+    - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Identity_1D
   name_bijection:
     formula: tensor_template defines 1:1 mapping between format names

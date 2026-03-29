@@ -10,8 +10,8 @@ equations:
     - Type safety preserved
     - No panics on valid input
     preconditions:
-    - '!config.is_empty()'
-    - '!input.is_empty()'
+    - '!format_str.is_empty()'
+    - width > 0
     lean_theorem: Theorems.Display_Format
 proof_obligations:
 - type: invariant
