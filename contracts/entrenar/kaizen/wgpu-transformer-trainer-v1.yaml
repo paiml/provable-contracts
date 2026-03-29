@@ -1,5 +1,5 @@
 contract: wgpu-transformer-trainer-v1
-version: 2.0.0
+version: 3.0.0
 status: implemented
 kaizen: 203
 description: >
@@ -84,6 +84,20 @@ invariants:
   - test_checkpoint_round_trip — PASS
   severity: critical
 
+- id: C-WGPU-TRAIN-007
+  description: Backward through all FFN layers updates LoRA Q/V adapters
+  preconditions:
+  - grad_hidden from lm_head backward is finite
+  - Forward activations cached per layer (hidden_input, gate, up, silu)
+  - FFN weight cache populated
+  postconditions:
+  - LoRA Q and V adapter weights modified (AdamW applied)
+  - grad_hidden propagated through all layers to layer 0
+  - All gradients finite
+  verified_by:
+  - test_backward_through_layers_gradient_flow — PASS on AMD W5700X
+  severity: critical
+
 - id: C-WGPU-CACHE-001
   description: FFN weight dequant cache eliminates redundant NF4 ops
   preconditions:
@@ -140,6 +154,10 @@ affected_files:
   - 'dequant_gate/up/down: GPU NF4→fp32 dispatch'
   - 'LoraAdapter::new: Kaiming-uniform A, zero B'
   - 'LoraCheckpoint: serializable checkpoint format'
+- path: src/train/transformer_trainer/wgpu_backward.rs
+  functions:
+  - 'backward_through_layers: 36-layer FFN backward + LoRA Q/V AdamW'
+  - 'LayerActivations: per-layer forward cache for backward'
 - path: src/train/transformer_trainer/wgpu_runner.rs
   functions:
   - 'run_wgpu_training: tokenize→embed→36-layer train loop→checkpoint'
