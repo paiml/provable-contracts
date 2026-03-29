@@ -2272,11 +2272,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Implement pv coverage --enforcement: penetration × quality × detection'
-  status: inprogress
+  status: completed
   priority: critical
   assigned_to: null
   created: 2026-03-29T09:19:13Z
-  updated: 2026-03-29T09:19:13.837033872+00:00
+  updated: 2026-03-29T09:24:55.581996768+00:00
   spec: null
   acceptance_criteria: []
   phases: []
