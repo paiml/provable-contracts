@@ -26,8 +26,9 @@ bindings:
   equation: attention
   module_path: aprender::nn::transformer
   function: scaled_dot_product_attention
-  signature: 'fn scaled_dot_product_attention(query: &Tensor, key: &Tensor, value: &Tensor, attn_mask: Option<&Tensor>, dropout_p:
-    f32, training: bool) -> (Tensor, Tensor)'
+  signature: 'fn scaled_dot_product_attention(query: &Tensor, key: &Tensor, value:
+    &Tensor, attn_mask: Option<&Tensor>, dropout_p: f32, training: bool) -> (Tensor,
+    Tensor)'
   status: implemented
   notes: Module-private in aprender; full public impl in realizar::gpu::scheduler::ops::gqa_multihead_attention
 - contract: activation-kernel-v1.yaml
@@ -61,21 +62,21 @@ bindings:
   module_path: realizar::quantize::fused_k
   function: fused_q4k_dot
   signature: 'fn fused_q4k_dot(q4k_data: &[u8], activations: &[f32]) -> Result<f32>'
-  status: implemented
+  status: pending
   notes: function not found in source
 - contract: flash-attention-v1.yaml
   equation: flash_attention
   module_path: realizar::gguf::inference::attention_part_02
   function: flash_attention_tiled
   signature: 'fn flash_attention_tiled(q: &[f32], k: &[f32], v: &[f32], ...) -> Vec<f32>'
-  status: implemented
+  status: pending
   notes: function not found in source
 - contract: swiglu-kernel-v1.yaml
   equation: swiglu
   module_path: aprender::models::qwen2
   function: swiglu_fused
   signature: 'fn swiglu_fused(gate: &Tensor, up: &Tensor) -> Tensor'
-  status: implemented
+  status: pending
   notes: function not found in source
 - contract: swiglu-kernel-v1.yaml
   equation: silu
@@ -88,9 +89,11 @@ bindings:
   equation: gqa
   module_path: aprender::nn::transformer
   function: MultiHeadAttention::forward
-  signature: 'fn forward(&self, query: &Tensor, key: &Tensor, value: &Tensor, mask: Option<&Tensor>) -> Tensor'
+  signature: 'fn forward(&self, query: &Tensor, key: &Tensor, value: &Tensor, mask:
+    Option<&Tensor>) -> Tensor'
   status: implemented
-  notes: Embedded in aprender MHA; standalone pub impl in realizar::gpu::scheduler::ops::gqa_multihead_attention with SIMD
+  notes: Embedded in aprender MHA; standalone pub impl in realizar::gpu::scheduler::ops::gqa_multihead_attention
+    with SIMD
 - contract: layernorm-kernel-v1.yaml
   equation: layernorm
   module_path: aprender::nn::LayerNorm
@@ -110,7 +113,7 @@ bindings:
   module_path: provable_contracts::kernels::silu_standalone
   function: silu_standalone_scalar
   signature: 'fn silu_standalone_scalar(input: &[f32], output: &mut [f32])'
-  status: implemented
+  status: pending
   notes: function not found in source
 - contract: silu-kernel-v1.yaml
   equation: sigmoid
@@ -131,7 +134,7 @@ bindings:
   module_path: provable_contracts::kernels::cross_entropy
   function: log_softmax_scalar
   signature: 'fn log_softmax_scalar(logits: &[f32], output: &mut [f32])'
-  status: implemented
+  status: pending
   notes: function not found in source
 - contract: adamw-kernel-v1.yaml
   equation: adam_moments
@@ -214,14 +217,16 @@ bindings:
   equation: pagerank
   module_path: aprender::graph::pagerank
   function: pagerank
-  signature: 'fn pagerank(adj: &Tensor, damping: f64, max_iter: usize, tol: f64) -> Tensor'
+  signature: 'fn pagerank(adj: &Tensor, damping: f64, max_iter: usize, tol: f64) ->
+    Tensor'
   status: implemented
   notes: Power iteration PageRank
 - contract: pagerank-kernel-v1.yaml
   equation: power_iteration
   module_path: aprender::graph::pagerank
   function: pagerank
-  signature: 'fn pagerank(adj: &Tensor, damping: f64, max_iter: usize, tol: f64) -> Tensor'
+  signature: 'fn pagerank(adj: &Tensor, damping: f64, max_iter: usize, tol: f64) ->
+    Tensor'
   status: implemented
   notes: Iteration loop inside pagerank()
 - contract: lbfgs-kernel-v1.yaml
@@ -291,7 +296,8 @@ bindings:
   equation: write
   module_path: realizar::gpu::scheduler::linear_attn
   function: gated_delta_net_write
-  signature: 'fn gated_delta_net_write(state: &mut [f32], k: &[f32], delta: &[f32], decay: &[f32])'
+  signature: 'fn gated_delta_net_write(state: &mut [f32], k: &[f32], delta: &[f32],
+    decay: &[f32])'
   status: implemented
   notes: function not found in source
 - contract: gated-delta-net-v1.yaml
@@ -319,7 +325,8 @@ bindings:
   equation: fused_kernel
   module_path: realizar::cuda::executor::kv_cache_part_02_part_03
   function: flash_attention_cached
-  signature: 'fn flash_attention_cached(q: &CudaSlice, k_cache: &CudaSlice, v_cache: &CudaSlice, ...) -> Result<()>'
+  signature: 'fn flash_attention_cached(q: &CudaSlice, k_cache: &CudaSlice, v_cache:
+    &CudaSlice, ...) -> Result<()>'
   status: implemented
   notes: function not found in source
 - contract: rope-extrapolation-v1.yaml
@@ -389,17 +396,20 @@ bindings:
   equation: gdn_sublayer
   module_path: realizar::gpu::scheduler::linear_attn
   function: gated_delta_net_forward
-  signature: 'fn gated_delta_net_forward(input: &[f32], weights: &GdnWeights, state: &mut GdnState) -> Vec<f32>'
+  signature: 'fn gated_delta_net_forward(input: &[f32], weights: &GdnWeights, state:
+    &mut GdnState) -> Vec<f32>'
   status: implemented
   notes: function not found in source
 - contract: attention-scaling-v1.yaml
   equation: scaled_dot_product
   module_path: aprender::nn::transformer
   function: scaled_dot_product_attention
-  signature: 'fn scaled_dot_product_attention(query: &Tensor, key: &Tensor, value: &Tensor, attn_mask: Option<&Tensor>, dropout_p:
-    f32, training: bool) -> (Tensor, Tensor)'
+  signature: 'fn scaled_dot_product_attention(query: &Tensor, key: &Tensor, value:
+    &Tensor, attn_mask: Option<&Tensor>, dropout_p: f32, training: bool) -> (Tensor,
+    Tensor)'
   status: implemented
-  notes: 1/sqrt(d_k) scaling applied in both aprender SDPA and realizar GQA attention kernels
+  notes: 1/sqrt(d_k) scaling applied in both aprender SDPA and realizar GQA attention
+    kernels
 - contract: attention-scaling-v1.yaml
   equation: numerical_stability
   module_path: aprender::nn::functional::softmax
@@ -411,8 +421,8 @@ bindings:
   equation: attention
   module_path: realizar::apr::helpers
   function: simple_attention
-  signature: 'fn simple_attention(q: &[f32], k: &[f32], v: &[f32], seq_len: usize, num_heads: usize, num_kv_heads: usize,
-    head_dim: usize) -> Vec<f32>'
+  signature: 'fn simple_attention(q: &[f32], k: &[f32], v: &[f32], seq_len: usize,
+    num_heads: usize, num_kv_heads: usize, head_dim: usize) -> Vec<f32>'
   status: implemented
   notes: function not found in source
 - contract: flash-attention-v1.yaml
@@ -420,7 +430,7 @@ bindings:
   module_path: realizar::gguf::inference::attention_part_02
   function: flash_attention_tiled
   signature: 'fn flash_attention_tiled(q: &[f32], k: &[f32], v: &[f32], ...) -> Vec<f32>'
-  status: implemented
+  status: pending
   notes: function not found in source
 - contract: gated-delta-net-v1.yaml
   equation: decay
@@ -447,7 +457,8 @@ bindings:
   equation: write
   module_path: realizar::gpu::scheduler::linear_attn
   function: gated_delta_net_write
-  signature: 'fn gated_delta_net_write(state: &mut [f32], k: &[f32], delta: &[f32], decay: &[f32])'
+  signature: 'fn gated_delta_net_write(state: &mut [f32], k: &[f32], delta: &[f32],
+    decay: &[f32])'
   status: implemented
   notes: function not found in source
 - contract: gated-delta-net-v1.yaml
@@ -461,8 +472,8 @@ bindings:
   equation: gqa
   module_path: realizar::apr::helpers
   function: simple_attention
-  signature: 'fn simple_attention(q: &[f32], k: &[f32], v: &[f32], seq_len: usize, num_heads: usize, num_kv_heads: usize,
-    head_dim: usize) -> Vec<f32>'
+  signature: 'fn simple_attention(q: &[f32], k: &[f32], v: &[f32], seq_len: usize,
+    num_heads: usize, num_kv_heads: usize, head_dim: usize) -> Vec<f32>'
   status: implemented
   notes: function not found in source
 - contract: silu-kernel-v1.yaml
@@ -470,7 +481,7 @@ bindings:
   module_path: provable_contracts::kernels::silu_standalone
   function: silu_standalone_scalar
   signature: 'fn silu_standalone_scalar(input: &[f32], output: &mut [f32])'
-  status: implemented
+  status: pending
   notes: function not found in source
 - contract: silu-kernel-v1.yaml
   equation: sigmoid
@@ -485,7 +496,8 @@ bindings:
   function: swiglu_scalar
   signature: 'fn swiglu_scalar(gate: &[f32], value: &[f32], output: &mut [f32])'
   status: implemented
-  notes: Scalar/AVX2/PTX; also fused in realizar::quantize::activation_part_02 and CUDA
+  notes: Scalar/AVX2/PTX; also fused in realizar::quantize::activation_part_02 and
+    CUDA
 - contract: swiglu-kernel-v1.yaml
   equation: silu
   module_path: provable_contracts::kernels::activation
@@ -525,7 +537,8 @@ bindings:
   equation: gdn_sublayer
   module_path: realizar::gpu::scheduler::linear_attn
   function: gated_delta_net_forward
-  signature: 'fn gated_delta_net_forward(input: &[f32], weights: &GdnWeights, state: &mut GdnState) -> Vec<f32>'
+  signature: 'fn gated_delta_net_forward(input: &[f32], weights: &GdnWeights, state:
+    &mut GdnState) -> Vec<f32>'
   status: implemented
   notes: function not found in source
 - contract: inference-pipeline-v1.yaml
@@ -553,8 +566,8 @@ bindings:
   equation: gguf_loader_validation
   module_path: realizar::cuda::executor::weights
   function: CudaExecutor::build_indexed_weights
-  signature: 'fn build_indexed_weights(&mut self, num_layers: usize, layer_prefix_fn: F, arch: &ArchConstraints) -> Result<(),
-    GpuError>'
+  signature: 'fn build_indexed_weights(&mut self, num_layers: usize, layer_prefix_fn:
+    F, arch: &ArchConstraints) -> Result<(), GpuError>'
   status: implemented
   notes: function not found in source
 - contract: architecture-requirements-v1.yaml
@@ -575,10 +588,11 @@ bindings:
   equation: import_completeness_gate
   module_path: aprender::format::layout_contract
   function: enforce_architecture_completeness
-  signature: 'fn enforce_architecture_completeness(tensor_names: &[&str], architecture: &str, num_layers: usize) -> Result<(),
-    ContractError>'
+  signature: 'fn enforce_architecture_completeness(tensor_names: &[&str], architecture:
+    &str, num_layers: usize) -> Result<(), ContractError>'
   status: implemented
-  notes: Import/export boundary check — rejects incomplete models before writing APR file
+  notes: Import/export boundary check — rejects incomplete models before writing APR
+    file
 - contract: activation-kernel-v1.yaml
   equation: relu
   module_path: provable_contracts::kernels::activation
@@ -605,7 +619,7 @@ bindings:
   module_path: provable_contracts::kernels::silu_standalone
   function: silu_standalone_scalar
   signature: 'fn silu_standalone_scalar(input: &[f32], output: &mut [f32])'
-  status: implemented
+  status: pending
   notes: function not found in source
 - contract: silu-kernel-v1.yaml
   equation: sigmoid
@@ -625,22 +639,24 @@ bindings:
   equation: rmsnorm
   module_path: provable_contracts::kernels::rmsnorm
   function: rmsnorm_scalar
-  signature: 'fn rmsnorm_scalar(input: &[f32], gamma: &[f32], eps: f32, output: &mut [f32])'
+  signature: 'fn rmsnorm_scalar(input: &[f32], gamma: &[f32], eps: f32, output: &mut
+    [f32])'
   status: implemented
   notes: function not found in source
 - contract: layernorm-kernel-v1.yaml
   equation: layernorm
   module_path: provable_contracts::kernels::layernorm
   function: layernorm_scalar
-  signature: 'fn layernorm_scalar(input: &[f32], gamma: &[f32], beta: &[f32], eps: f32, output: &mut [f32])'
+  signature: 'fn layernorm_scalar(input: &[f32], gamma: &[f32], beta: &[f32], eps:
+    f32, output: &mut [f32])'
   status: implemented
   notes: function not found in source
 - contract: batchnorm-kernel-v1.yaml
   equation: batchnorm_train
   module_path: provable_contracts::kernels::batchnorm
   function: batchnorm_scalar
-  signature: 'fn batchnorm_scalar(input: &[f32], n: usize, c: usize, gamma: &[f32], beta: &[f32], eps: f32, output: &mut [f32],
-    mean: &mut [f32], var: &mut [f32])'
+  signature: 'fn batchnorm_scalar(input: &[f32], n: usize, c: usize, gamma: &[f32],
+    beta: &[f32], eps: f32, output: &mut [f32], mean: &mut [f32], var: &mut [f32])'
   status: implemented
   notes: function not found in source
 - contract: swiglu-kernel-v1.yaml
@@ -654,105 +670,114 @@ bindings:
   equation: cross_entropy
   module_path: provable_contracts::kernels::cross_entropy
   function: cross_entropy_scalar
-  signature: 'fn cross_entropy_scalar(targets: &[f32], logits: &[f32], num_classes: usize) -> f32'
+  signature: 'fn cross_entropy_scalar(targets: &[f32], logits: &[f32], num_classes:
+    usize) -> f32'
   status: implemented
   notes: function not found in source
 - contract: rope-kernel-v1.yaml
   equation: rope
   module_path: provable_contracts::kernels::rope
   function: rope_scalar
-  signature: 'fn rope_scalar(x: &[f32], position: usize, dim: usize, base: f32, output: &mut [f32])'
+  signature: 'fn rope_scalar(x: &[f32], position: usize, dim: usize, base: f32, output:
+    &mut [f32])'
   status: implemented
   notes: function not found in source
 - contract: matmul-kernel-v1.yaml
   equation: matmul
   module_path: provable_contracts::kernels::matmul
   function: matmul_scalar
-  signature: 'fn matmul_scalar(a: &[f32], b: &[f32], m: usize, p: usize, n: usize, c: &mut [f32])'
+  signature: 'fn matmul_scalar(a: &[f32], b: &[f32], m: usize, p: usize, n: usize,
+    c: &mut [f32])'
   status: implemented
   notes: function not found in source
 - contract: attention-kernel-v1.yaml
   equation: attention
   module_path: provable_contracts::kernels::attention
   function: attention_scalar
-  signature: 'fn attention_scalar(q: &[f32], k: &[f32], v: &[f32], n: usize, m: usize, d_k: usize, d_v: usize, output: &mut
-    [f32])'
+  signature: 'fn attention_scalar(q: &[f32], k: &[f32], v: &[f32], n: usize, m: usize,
+    d_k: usize, d_v: usize, output: &mut [f32])'
   status: implemented
   notes: function not found in source
 - contract: gqa-kernel-v1.yaml
   equation: gqa
   module_path: provable_contracts::kernels::gqa
   function: gqa_scalar
-  signature: 'fn gqa_scalar(q: &[f32], k: &[f32], v: &[f32], n: usize, d_k: usize, d_v: usize, num_heads: usize, num_kv_heads:
-    usize, output: &mut [f32])'
+  signature: 'fn gqa_scalar(q: &[f32], k: &[f32], v: &[f32], n: usize, d_k: usize,
+    d_v: usize, num_heads: usize, num_kv_heads: usize, output: &mut [f32])'
   status: implemented
   notes: function not found in source
 - contract: flash-attention-v1.yaml
   equation: flash_attention
   module_path: provable_contracts::kernels::flash_attention
   function: flash_attention_scalar
-  signature: 'fn flash_attention_scalar(q: &[f32], k: &[f32], v: &[f32], n: usize, d: usize, tile_size: usize, output: &mut
-    [f32])'
+  signature: 'fn flash_attention_scalar(q: &[f32], k: &[f32], v: &[f32], n: usize,
+    d: usize, tile_size: usize, output: &mut [f32])'
   status: implemented
   notes: function not found in source
 - contract: adamw-kernel-v1.yaml
   equation: weight_update
   module_path: provable_contracts::kernels::adamw
   function: adamw_step_scalar
-  signature: 'fn adamw_step_scalar(params: &mut [f32], grads: &[f32], m: &mut [f32], v: &mut [f32], lr: f32, beta1: f32, beta2:
-    f32, eps: f32, wd: f32, t: u32)'
+  signature: 'fn adamw_step_scalar(params: &mut [f32], grads: &[f32], m: &mut [f32],
+    v: &mut [f32], lr: f32, beta1: f32, beta2: f32, eps: f32, wd: f32, t: u32)'
   status: implemented
   notes: function not found in source
 - contract: conv1d-kernel-v1.yaml
   equation: conv1d
   module_path: provable_contracts::kernels::conv1d
   function: conv1d_scalar
-  signature: 'fn conv1d_scalar(input: &[f32], weight: &[f32], bias: Option<&[f32]>, c_in: usize, c_out: usize, l: usize, k:
-    usize, stride: usize, pad: usize, output: &mut [f32])'
+  signature: 'fn conv1d_scalar(input: &[f32], weight: &[f32], bias: Option<&[f32]>,
+    c_in: usize, c_out: usize, l: usize, k: usize, stride: usize, pad: usize, output:
+    &mut [f32])'
   status: implemented
   notes: function not found in source
 - contract: ssm-kernel-v1.yaml
   equation: ssm_scan
   module_path: provable_contracts::kernels::ssm
   function: ssm_scan_scalar
-  signature: 'fn ssm_scan_scalar(a_bar: &[f32], b_bar: &[f32], c: &[f32], x: &[f32], n: usize, l: usize, output: &mut [f32])'
+  signature: 'fn ssm_scan_scalar(a_bar: &[f32], b_bar: &[f32], c: &[f32], x: &[f32],
+    n: usize, l: usize, output: &mut [f32])'
   status: implemented
   notes: function not found in source
 - contract: kmeans-kernel-v1.yaml
   equation: assignment
   module_path: provable_contracts::kernels::kmeans
   function: kmeans_assign_scalar
-  signature: 'fn kmeans_assign_scalar(points: &[f32], centroids: &[f32], n: usize, k: usize, d: usize, assignments: &mut [u32])'
+  signature: 'fn kmeans_assign_scalar(points: &[f32], centroids: &[f32], n: usize,
+    k: usize, d: usize, assignments: &mut [u32])'
   status: implemented
   notes: function not found in source
 - contract: pagerank-kernel-v1.yaml
   equation: pagerank
   module_path: provable_contracts::kernels::pagerank
   function: pagerank_iterate_scalar
-  signature: 'fn pagerank_iterate_scalar(transition: &[f32], rank: &[f32], n: usize, damping: f32, output: &mut [f32])'
+  signature: 'fn pagerank_iterate_scalar(transition: &[f32], rank: &[f32], n: usize,
+    damping: f32, output: &mut [f32])'
   status: implemented
   notes: function not found in source
 - contract: lbfgs-kernel-v1.yaml
   equation: two_loop_recursion
   module_path: provable_contracts::kernels::lbfgs
   function: lbfgs_direction_scalar
-  signature: 'fn lbfgs_direction_scalar(gradient: &[f32], s_history: &[Vec<f32>], y_history: &[Vec<f32>], direction: &mut
-    [f32])'
+  signature: 'fn lbfgs_direction_scalar(gradient: &[f32], s_history: &[Vec<f32>],
+    y_history: &[Vec<f32>], direction: &mut [f32])'
   status: implemented
   notes: function not found in source
 - contract: cma-es-kernel-v1.yaml
   equation: sample
   module_path: provable_contracts::kernels::cma_es
   function: cma_sample_scalar
-  signature: 'fn cma_sample_scalar(mean: &[f32], sigma: f32, cholesky_l: &[f32], d: usize, z: &[f32], output: &mut [f32])'
+  signature: 'fn cma_sample_scalar(mean: &[f32], sigma: f32, cholesky_l: &[f32], d:
+    usize, z: &[f32], output: &mut [f32])'
   status: implemented
   notes: function not found in source
 - contract: gated-delta-net-v1.yaml
   equation: write
   module_path: provable_contracts::kernels::gated_delta_net
   function: gdn_recurrence_scalar
-  signature: 'fn gdn_recurrence_scalar(state: &mut [f32], k: &[f32], v: &[f32], q: &[f32], z: &[f32], alpha: f32, beta: f32,
-    k_dim: usize, v_dim: usize, output: &mut [f32])'
+  signature: 'fn gdn_recurrence_scalar(state: &mut [f32], k: &[f32], v: &[f32], q:
+    &[f32], z: &[f32], alpha: f32, beta: f32, k_dim: usize, v_dim: usize, output:
+    &mut [f32])'
   status: implemented
   notes: function not found in source
 - contract: metrics-regression-v1.yaml
@@ -794,7 +819,8 @@ bindings:
   equation: precision
   module_path: aprender::metrics::classification
   function: precision
-  signature: 'fn precision(y_pred: &[usize], y_true: &[usize], average: Average) -> f32'
+  signature: 'fn precision(y_pred: &[usize], y_true: &[usize], average: Average) ->
+    f32'
   status: implemented
   notes: TP / (TP + FP), supports Macro/Micro/Weighted
 - contract: metrics-classification-v1.yaml
@@ -808,7 +834,8 @@ bindings:
   equation: f1_score
   module_path: aprender::metrics::classification
   function: f1_score
-  signature: 'fn f1_score(y_pred: &[usize], y_true: &[usize], average: Average) -> f32'
+  signature: 'fn f1_score(y_pred: &[usize], y_true: &[usize], average: Average) ->
+    f32'
   status: implemented
   notes: Harmonic mean of precision and recall
 - contract: metrics-classification-v1.yaml
@@ -829,7 +856,8 @@ bindings:
   equation: inertia
   module_path: aprender::metrics
   function: inertia
-  signature: 'fn inertia(data: &Matrix<f32>, centroids: &Matrix<f32>, labels: &[usize]) -> f32'
+  signature: 'fn inertia(data: &Matrix<f32>, centroids: &Matrix<f32>, labels: &[usize])
+    -> f32'
   status: implemented
   notes: Within-cluster sum of squares
 - contract: metrics-clustering-v1.yaml
@@ -906,15 +934,16 @@ bindings:
   equation: eigenvector
   module_path: aprender::graph::centrality
   function: Graph::eigenvector_centrality
-  signature: 'fn eigenvector_centrality(&self, max_iter: usize, tol: f64) -> Result<HashMap<NodeId, f64>, &''static str>'
+  signature: 'fn eigenvector_centrality(&self, max_iter: usize, tol: f64) -> Result<HashMap<NodeId,
+    f64>, &''static str>'
   status: implemented
   notes: Power iteration for dominant eigenvector
 - contract: graph-centrality-v1.yaml
   equation: katz
   module_path: aprender::graph::centrality
   function: Graph::katz_centrality
-  signature: 'fn katz_centrality(&self, alpha: f64, beta: f64, max_iter: usize, tol: f64) -> Result<HashMap<NodeId, f64>,
-    &''static str>'
+  signature: 'fn katz_centrality(&self, alpha: f64, beta: f64, max_iter: usize, tol:
+    f64) -> Result<HashMap<NodeId, f64>, &''static str>'
   status: implemented
   notes: Katz centrality with attenuation factor
 - contract: graph-centrality-v1.yaml
@@ -928,14 +957,16 @@ bindings:
   equation: expected_calibration_error
   module_path: aprender::calibration
   function: expected_calibration_error
-  signature: 'fn expected_calibration_error(predictions: &[f32], labels: &[bool], n_bins: usize) -> f32'
+  signature: 'fn expected_calibration_error(predictions: &[f32], labels: &[bool],
+    n_bins: usize) -> f32'
   status: implemented
   notes: ECE with uniform-width binning
 - contract: calibration-v1.yaml
   equation: maximum_calibration_error
   module_path: aprender::calibration
   function: maximum_calibration_error
-  signature: 'fn maximum_calibration_error(predictions: &[f32], labels: &[bool], n_bins: usize) -> f32'
+  signature: 'fn maximum_calibration_error(predictions: &[f32], labels: &[bool], n_bins:
+    usize) -> f32'
   status: implemented
   notes: MCE — worst-case bin calibration error
 - contract: calibration-v1.yaml
@@ -956,28 +987,32 @@ bindings:
   equation: reliability_diagram
   module_path: aprender::calibration
   function: reliability_diagram
-  signature: 'fn reliability_diagram(predictions: &[f32], labels: &[bool], n_bins: usize) -> Vec<(f32, f32, usize)>'
+  signature: 'fn reliability_diagram(predictions: &[f32], labels: &[bool], n_bins:
+    usize) -> Vec<(f32, f32, usize)>'
   status: implemented
   notes: Bin-level (confidence, accuracy, count) tuples
 - contract: preprocessing-normalization-v1.yaml
   equation: standard_scaler
   module_path: aprender::preprocessing
   function: StandardScaler::fit + StandardScaler::transform
-  signature: 'fn fit(&mut self, x: &Matrix<f32>) -> Result<()>, fn transform(&self, x: &Matrix<f32>) -> Result<Matrix<f32>>'
+  signature: 'fn fit(&mut self, x: &Matrix<f32>) -> Result<()>, fn transform(&self,
+    x: &Matrix<f32>) -> Result<Matrix<f32>>'
   status: implemented
   notes: Zero-mean unit-variance standardization
 - contract: preprocessing-normalization-v1.yaml
   equation: minmax_scaler
   module_path: aprender::preprocessing
   function: MinMaxScaler::fit + MinMaxScaler::transform
-  signature: 'fn fit(&mut self, x: &Matrix<f32>) -> Result<()>, fn transform(&self, x: &Matrix<f32>) -> Result<Matrix<f32>>'
+  signature: 'fn fit(&mut self, x: &Matrix<f32>) -> Result<()>, fn transform(&self,
+    x: &Matrix<f32>) -> Result<Matrix<f32>>'
   status: implemented
   notes: Feature scaling to [min, max] range
 - contract: preprocessing-normalization-v1.yaml
   equation: robust_scaler
   module_path: aprender::preprocessing
   function: RobustScaler::fit + RobustScaler::transform
-  signature: 'fn fit(&mut self, x: &Matrix<f32>) -> Result<()>, fn transform(&self, x: &Matrix<f32>) -> Result<Matrix<f32>>'
+  signature: 'fn fit(&mut self, x: &Matrix<f32>) -> Result<()>, fn transform(&self,
+    x: &Matrix<f32>) -> Result<Matrix<f32>>'
   status: implemented
   notes: Robust scaling with median/IQR — uses percentile interpolation
 - contract: decision-tree-v1.yaml
@@ -1082,7 +1117,8 @@ bindings:
   equation: pca_transform
   module_path: aprender::preprocessing
   function: PCA::fit + PCA::transform
-  signature: 'fn fit(&mut self, x: &Matrix<f32>) -> Result<()>, fn transform(&self, x: &Matrix<f32>) -> Result<Matrix<f32>>'
+  signature: 'fn fit(&mut self, x: &Matrix<f32>) -> Result<()>, fn transform(&self,
+    x: &Matrix<f32>) -> Result<Matrix<f32>>'
   status: implemented
   notes: Eigendecomposition-based dimensionality reduction
 - contract: pca-v1.yaml
@@ -1194,14 +1230,16 @@ bindings:
   equation: univariate_drift
   module_path: aprender::metrics::drift
   function: DriftDetector::detect_univariate
-  signature: 'fn detect_univariate(&self, reference: &Vector<f32>, current: &Vector<f32>) -> DriftStatus'
+  signature: 'fn detect_univariate(&self, reference: &Vector<f32>, current: &Vector<f32>)
+    -> DriftStatus'
   status: implemented
   notes: 'Normalized mean difference: |μ_ref - μ_cur| / σ_ref'
 - contract: drift-detection-v1.yaml
   equation: performance_drift
   module_path: aprender::metrics::drift
   function: DriftDetector::detect_performance_drift
-  signature: 'fn detect_performance_drift(&self, baseline_scores: &[f32], current_scores: &[f32]) -> DriftStatus'
+  signature: 'fn detect_performance_drift(&self, baseline_scores: &[f32], current_scores:
+    &[f32]) -> DriftStatus'
   status: implemented
   notes: Score degradation detection
 - contract: drift-detection-v1.yaml
@@ -1215,14 +1253,16 @@ bindings:
   equation: min_samples_guard
   module_path: aprender::metrics::drift
   function: DriftDetector::detect_univariate
-  signature: 'fn detect_univariate(&self, reference: &Vector<f32>, current: &Vector<f32>) -> DriftStatus'
+  signature: 'fn detect_univariate(&self, reference: &Vector<f32>, current: &Vector<f32>)
+    -> DriftStatus'
   status: implemented
   notes: Returns NoDrift when samples < min_samples (avoid false positives)
 - contract: metrics-ranking-v1.yaml
   equation: hit_at_k
   module_path: aprender::metrics::ranking
   function: hit_at_k
-  signature: 'fn hit_at_k<T: PartialEq>(predictions: &[T], target: &T, k: usize) -> f32'
+  signature: 'fn hit_at_k<T: PartialEq>(predictions: &[T], target: &T, k: usize) ->
+    f32'
   status: implemented
   notes: 'Binary 0/1 indicator: target in top-K'
 - contract: metrics-ranking-v1.yaml
@@ -1236,7 +1276,8 @@ bindings:
   equation: mrr
   module_path: aprender::metrics::ranking
   function: mrr
-  signature: 'fn mrr<T: PartialEq + Clone>(predictions: &[Vec<T>], targets: &[T]) -> f32'
+  signature: 'fn mrr<T: PartialEq + Clone>(predictions: &[Vec<T>], targets: &[T])
+    -> f32'
   status: implemented
   notes: Mean Reciprocal Rank across queries
 - contract: metrics-ranking-v1.yaml
@@ -1369,7 +1410,8 @@ bindings:
   equation: global_mean_pool
   module_path: aprender::gnn
   function: global_mean_pool
-  signature: 'fn global_mean_pool(node_features: &[Vec<f32>], batch: &[usize]) -> Vec<Vec<f32>>'
+  signature: 'fn global_mean_pool(node_features: &[Vec<f32>], batch: &[usize]) ->
+    Vec<Vec<f32>>'
   status: implemented
   notes: Mean aggregation of node features per graph
 - contract: gnn-v1.yaml
@@ -1383,28 +1425,32 @@ bindings:
   equation: sa_acceptance
   module_path: aprender::metaheuristics::sa
   function: SimulatedAnnealing::optimize
-  signature: 'fn optimize(&mut self, objective: &dyn Fn(&[f64]) -> f64, space: &SearchSpace, budget: &Budget) -> OptimizationResult'
+  signature: 'fn optimize(&mut self, objective: &dyn Fn(&[f64]) -> f64, space: &SearchSpace,
+    budget: &Budget) -> OptimizationResult'
   status: implemented
   notes: Metropolis acceptance criterion with exponential cooling
 - contract: metaheuristics-v1.yaml
   equation: ga_crossover
   module_path: aprender::metaheuristics::ga
   function: GeneticAlgorithm::optimize
-  signature: 'fn optimize(&mut self, objective: &dyn Fn(&[f64]) -> f64, space: &SearchSpace, budget: &Budget) -> OptimizationResult'
+  signature: 'fn optimize(&mut self, objective: &dyn Fn(&[f64]) -> f64, space: &SearchSpace,
+    budget: &Budget) -> OptimizationResult'
   status: implemented
   notes: SBX crossover + polynomial mutation + tournament selection
 - contract: metaheuristics-v1.yaml
   equation: pso_velocity
   module_path: aprender::metaheuristics::pso
   function: ParticleSwarm::optimize
-  signature: 'fn optimize(&mut self, objective: &dyn Fn(&[f64]) -> f64, space: &SearchSpace, budget: &Budget) -> OptimizationResult'
+  signature: 'fn optimize(&mut self, objective: &dyn Fn(&[f64]) -> f64, space: &SearchSpace,
+    budget: &Budget) -> OptimizationResult'
   status: implemented
   notes: Velocity update with inertia, cognitive, social components
 - contract: metaheuristics-v1.yaml
   equation: best_monotone
   module_path: aprender::metaheuristics
   function: PerturbativeMetaheuristic::optimize
-  signature: 'fn optimize(&mut self, objective: &dyn Fn(&[f64]) -> f64, space: &SearchSpace, budget: &Budget) -> OptimizationResult'
+  signature: 'fn optimize(&mut self, objective: &dyn Fn(&[f64]) -> f64, space: &SearchSpace,
+    budget: &Budget) -> OptimizationResult'
   status: implemented
   notes: Best-so-far value is monotone non-increasing across all metaheuristics
 - contract: classification-finetune-v1.yaml
@@ -1413,7 +1459,8 @@ bindings:
   function: ValidatedClassLogits::new
   signature: 'fn new(data: Vec<f32>, num_classes: usize) -> Result<Self, ContractValidationError>'
   status: implemented
-  notes: 'F-CLASS-001: Poka-Yoke — rejects data.len() != num_classes, num_classes < 2, NaN/Inf'
+  notes: 'F-CLASS-001: Poka-Yoke — rejects data.len() != num_classes, num_classes
+    < 2, NaN/Inf'
 - contract: classification-finetune-v1.yaml
   equation: label_bounds
   module_path: aprender::format::validated_classification
@@ -1425,9 +1472,11 @@ bindings:
   equation: classifier_weight_shape
   module_path: aprender::format::validated_classification
   function: ValidatedClassifierWeight::new
-  signature: 'fn new(data: Vec<f32>, hidden_size: usize, num_classes: usize) -> Result<Self, ContractValidationError>'
+  signature: 'fn new(data: Vec<f32>, hidden_size: usize, num_classes: usize) -> Result<Self,
+    ContractValidationError>'
   status: implemented
-  notes: 'F-CLASS-004: Poka-Yoke — rejects data.len() != hidden_size * num_classes, NaN/Inf'
+  notes: 'F-CLASS-004: Poka-Yoke — rejects data.len() != hidden_size * num_classes,
+    NaN/Inf'
 - contract: classification-finetune-v1.yaml
   equation: softmax_sum
   module_path: aprender::format::validated_classification

@@ -55,7 +55,7 @@ bindings:
   module_path: entrenar::autograd::cuda_training
   function: weight_roundtrip
   signature: 'fn weight_roundtrip(cpu: &[f32], device: &CudaDevice) -> Vec<f32>'
-  status: implemented
+  status: pending
   notes: function not found in source
 - contract: cuda-classify-training-v1.yaml
   equation: device_dispatch
@@ -83,7 +83,7 @@ bindings:
   module_path: entrenar::finetune::data_parallel
   function: weighted_loss_aggregate
   signature: 'fn weighted_loss_aggregate(losses: &[f32], counts: &[usize]) -> f32'
-  status: implemented
+  status: pending
   notes: function not found in source
 - contract: distributed-training-v1.yaml
   equation: swiglu_ffn
@@ -96,8 +96,9 @@ bindings:
   equation: lora_gradient_size
   module_path: entrenar::finetune::data_parallel
   function: lora_gradient_byte_size
-  signature: 'fn lora_gradient_byte_size(rank: usize, hidden: usize, layers: usize) -> usize'
-  status: implemented
+  signature: 'fn lora_gradient_byte_size(rank: usize, hidden: usize, layers: usize)
+    -> usize'
+  status: pending
   notes: function not found in source
 - contract: lora-gradient-flow-v1.yaml
   equation: transpose_tracked
@@ -334,15 +335,16 @@ bindings:
   equation: C-WGPU-TRAIN-001
   module_path: entrenar::train::transformer_trainer::wgpu_trainer
   function: full_train_step
-  signature: 'fn full_train_step(&mut self, hidden: &[f32], targets: &[u32], model: &mut WgpuModelState) -> Result<(f32, f32),
-    String>'
+  signature: 'fn full_train_step(&mut self, hidden: &[f32], targets: &[u32], model:
+    &mut WgpuModelState) -> Result<(f32, f32), String>'
   status: implemented
   notes: 36-layer Qwen3-4B forward + lm_head + loss + backward + AdamW on WGPU
 - contract: wgpu-transformer-trainer-v1.yaml
   equation: C-WGPU-CKPT-001
   module_path: entrenar::train::transformer_trainer::wgpu_trainer
   function: save_checkpoint
-  signature: 'fn save_checkpoint(&self, dir: &Path, step: u32, loss: f32, rank: u32, alpha: f32) -> Result<PathBuf, String>'
+  signature: 'fn save_checkpoint(&self, dir: &Path, step: u32, loss: f32, rank: u32,
+    alpha: f32) -> Result<PathBuf, String>'
   status: implemented
   notes: Serializes LoRA A/B + optimizer state to JSON
 - contract: wgpu-transformer-trainer-v1.yaml
