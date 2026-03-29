@@ -1,5 +1,5 @@
 contract: wgpu-transformer-trainer-v1
-version: 3.0.0
+version: 4.0.0
 status: implemented
 kaizen: 203
 description: >
@@ -84,6 +84,19 @@ invariants:
   - test_checkpoint_round_trip — PASS
   severity: critical
 
+- id: C-WGPU-TRAIN-008
+  description: Attention forward with LoRA produces finite output
+  preconditions:
+  - Hidden states finite, QKVO weights dequanted
+  - LoRA Q/V adapters initialized
+  postconditions:
+  - Output is finite with non-zero norm
+  - LoRA B≠0 changes output vs LoRA B=0 (adapter contributes)
+  - GQA respects causal mask (no future token leakage)
+  verified_by:
+  - test_attention_forward_basic — PASS on AMD W5700X
+  severity: critical
+
 - id: C-WGPU-TRAIN-007
   description: Backward through all FFN layers updates LoRA Q/V adapters
   preconditions:
@@ -154,6 +167,9 @@ affected_files:
   - 'dequant_gate/up/down: GPU NF4→fp32 dispatch'
   - 'LoraAdapter::new: Kaiming-uniform A, zero B'
   - 'LoraCheckpoint: serializable checkpoint format'
+- path: src/train/transformer_trainer/wgpu_attention.rs
+  functions:
+  - 'attention_forward: QKV proj + LoRA + RoPE + GQA + causal mask + O proj'
 - path: src/train/transformer_trainer/wgpu_backward.rs
   functions:
   - 'backward_through_layers: 36-layer FFN backward + LoRA Q/V AdamW'
