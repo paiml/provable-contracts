@@ -107,6 +107,8 @@ fn emit_precondition_macro(
             "/// Domain-specific. Call: `contract_pre_{macro_name}!(slice_expr)`\n"
         ));
         rust.push_str(&format!("macro_rules! contract_pre_{macro_name} {{\n"));
+        // Zero-arg form: no-op (proc-macro compatibility)
+        rust.push_str("    () => {{}};\n");
         rust.push_str("    ($input:expr) => {{\n");
         rust.push_str(&format!("        let {pv} = &$input;\n"));
         for pre in pres {
