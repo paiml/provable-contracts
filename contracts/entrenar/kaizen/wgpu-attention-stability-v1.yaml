@@ -1,0 +1,46 @@
+contract: wgpu-attention-stability-v1
+version: 1.0.0
+status: investigating
+kaizen: 203
+description: >
+  Attention forward output must not amplify hidden state norm excessively.
+  QK-norm required for Qwen3-4B to prevent attention score explosion.
+  Without QK-norm, output_norm >> hidden_norm → loss explosion in 3 steps.
+
+invariants:
+- id: C-WGPU-ATTN-STABLE-001
+  description: Attention output norm bounded relative to input
+  preconditions:
+  - Hidden input is finite with positive norm
+  - QK-norm applied to Q and K before attention scores
+  postconditions:
+  - output_norm <= 10 * hidden_norm (no amplification explosion)
+  - All output values finite
+  verified_by:
+  - PENDING — tracing added, re-running on AMD W5700X
+  severity: critical
+
+- id: C-WGPU-ATTN-STABLE-002
+  description: QK-norm prevents attention score explosion
+  preconditions:
+  - Q and K projected from NF4-dequanted weights (large magnitude)
+  postconditions:
+  - Per-head Q and K have unit RMS norm after QK-norm
+  - Attention scores in [-100, 100] before softmax
+  verified_by:
+  - PENDING
+  severity: critical
+
+root_cause_analysis:
+  five_whys:
+  - "Loss explodes 11→17→35 in 3 steps with attention enabled"
+  - "Hidden states grow unbounded through 36 residual additions"
+  - "Attention output has large norm (NF4-dequanted QKV weights × large hidden)"
+  - "Missing QK-norm: Qwen3 uses per-head RMS normalization of Q and K"
+  - "Test used small random weights — real model has much larger magnitudes"
+  fix: "Add QK-norm (per-head RMS normalization) before computing attention scores"
+
+affected_files:
+- path: src/train/transformer_trainer/wgpu_attention.rs
+  functions:
+  - 'attention_forward: added QK-norm + output norm tracing'
