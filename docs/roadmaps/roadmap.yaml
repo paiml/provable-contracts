@@ -2204,3 +2204,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-129
+  github_issue: null
+  item_type: task
+  title: 'Spec v2.4.0: real contract enforcement — preconditions, postconditions, per-binding assertions'
+  status: inprogress
+  priority: critical
+  assigned_to: null
+  created: 2026-03-29T07:22:12Z
+  updated: 2026-03-29T07:22:18.208827695+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
