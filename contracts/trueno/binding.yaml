@@ -55,15 +55,15 @@ bindings:
   module_path: trueno_gpu::kernels::backward::gemm
   function: GemmBackwardAKernel::arithmetic_intensity
   signature: fn arithmetic_intensity(&self) -> f32
-  status: implemented
-  notes: AI = TILE/sizeof(f32); >= 4.0 for TILE=16
+  status: pending
+  notes: "function not found in source"
 - contract: gemm-backward-tiled-v1.yaml
   equation: shared_memory_per_tile
   module_path: trueno_gpu::kernels::backward::gemm
   function: GemmBackwardAKernel::shared_memory_bytes
   signature: fn shared_memory_bytes(&self) -> usize
-  status: implemented
-  notes: smem = 2 * TILE^2 * 4 bytes
+  status: pending
+  notes: "function not found in source"
 - contract: gemm-backward-tiled-v1.yaml
   equation: unrolled_instruction_ratio
   module_path: trueno_gpu::kernels::backward::gemm
@@ -111,20 +111,20 @@ bindings:
   equation: read
   module_path: trueno
   function: read
-  status: implemented
-  notes: Auto-inferred by pv infer
+  status: pending
+  notes: "function not found in source"
 - contract: gated-delta-net-v1.yaml
   equation: write
   module_path: trueno
   function: write
-  status: implemented
-  notes: Auto-inferred by pv infer
+  status: pending
+  notes: "function not found in source"
 - contract: model-config-algebra-v1.yaml
   equation: bounds
   module_path: trueno
   function: bounds
-  status: implemented
-  notes: Auto-inferred by pv infer
+  status: pending
+  notes: "function not found in source"
 - contract: activation-kernel-v1.yaml
   equation: silu
   module_path: trueno
@@ -165,32 +165,32 @@ bindings:
   equation: tensor_count
   module_path: trueno
   function: tensor_count
-  status: implemented
-  notes: Auto-inferred by pv infer
+  status: pending
+  notes: "function not found in source"
 - contract: metrics-classification-v1.yaml
   equation: precision
   module_path: trueno
   function: precision
-  status: implemented
-  notes: Auto-inferred by pv infer
+  status: pending
+  notes: "function not found in source"
 - contract: metrics-classification-v1.yaml
   equation: recall
   module_path: trueno
   function: recall
-  status: implemented
-  notes: Auto-inferred by pv infer
+  status: pending
+  notes: "function not found in source"
 - contract: attention-kernel-v1.yaml
   equation: attention
   module_path: trueno
   function: attention
-  status: implemented
-  notes: Auto-inferred by pv infer
+  status: pending
+  notes: "function not found in source"
 - contract: int8-symmetric-quant-v1.yaml
   equation: quantize
   module_path: trueno
   function: quantize
-  status: implemented
-  notes: Auto-inferred by pv infer
+  status: pending
+  notes: "function not found in source"
 - contract: roofline-model-v1.yaml
   equation: bandwidth_ceiling
   module_path: trueno::monitor::compute_device
