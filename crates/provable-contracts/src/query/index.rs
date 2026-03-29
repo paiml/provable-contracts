@@ -3,6 +3,8 @@
 use std::collections::HashMap;
 use std::path::Path;
 
+use provable_contracts_macros::requires;
+
 use crate::schema::{Contract, parse_contract};
 use crate::scoring;
 
@@ -253,6 +255,7 @@ impl ContractIndex {
     /// Returns a map from stem to pagerank score. Higher scores indicate
     /// more "important" contracts (more depended-upon by others).
     #[allow(clippy::cast_precision_loss)]
+    #[requires(iterations > 0 && damping > 0.0 && damping < 1.0)]
     pub fn pagerank(&self, iterations: usize, damping: f64) -> HashMap<String, f64> {
         let n = self.entries.len();
         if n == 0 {

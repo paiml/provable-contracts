@@ -565,6 +565,7 @@ version = "0.1.1"
 dependencies = [
  "criterion",
  "proptest",
+ "provable-contracts-macros",
  "regex",
  "serde",
  "serde_json",

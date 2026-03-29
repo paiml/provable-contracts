@@ -15,6 +15,8 @@
 //! - Lam, Rothberg & Wolf (1991) Cache Performance of Blocked Algorithms
 //! - Intel Intrinsics Guide: _mm256_unpacklo_ps, _mm256_shuffle_ps, _mm256_permute2f128_ps
 
+use provable_contracts_macros::requires;
+
 #[cfg(target_arch = "x86_64")]
 use std::arch::x86_64::*;
 
@@ -206,6 +208,7 @@ pub unsafe fn transpose_avx2(rows: usize, cols: usize, a: &[f32], b: &mut [f32])
 /// # Panics
 ///
 /// Panics if `a.len() != rows * cols` or `b.len() != rows * cols`.
+#[requires(a.len() == rows * cols && b.len() == rows * cols)]
 pub fn transpose(rows: usize, cols: usize, a: &[f32], b: &mut [f32]) {
     #[cfg(target_arch = "x86_64")]
     {
