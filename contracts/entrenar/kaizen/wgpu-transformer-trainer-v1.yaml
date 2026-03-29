@@ -1,5 +1,5 @@
 contract: wgpu-transformer-trainer-v1
-version: 4.0.0
+version: 5.0.0
 status: implemented
 kaizen: 203
 description: >
@@ -82,6 +82,20 @@ invariants:
   - Step and loss metadata preserved
   verified_by:
   - test_checkpoint_round_trip — PASS
+  severity: critical
+
+- id: C-WGPU-TRAIN-009
+  description: Full pipeline training run (attention+FFN+LoRA) converges on real data
+  preconditions:
+  - Qwen3-4B model loaded with attention+FFN weight caches
+  - conversations_v4.jsonl tokenized
+  - LoRA Q/V adapters participate in forward AND backward
+  postconditions:
+  - Loss decreases from initial value within 100 steps
+  - Checkpoint saved and loadable
+  - All losses and gradients finite
+  verified_by:
+  - PENDING — validation run on AMD W5700X (2026-03-29)
   severity: critical
 
 - id: C-WGPU-TRAIN-008
