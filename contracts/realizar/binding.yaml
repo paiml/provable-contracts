@@ -396,6 +396,76 @@ bindings:
   function: sample
   status: implemented
   notes: Auto-inferred by pv infer
+- contract: rope-extrapolation-v1.yaml
+  equation: base_frequency
+  module_path: realizar::layers::position
+  function: RoPE::new
+  signature: 'pub fn new(dim: usize, base: f32) -> Result<Self>'
+  status: implemented
+  notes: 'PMAT-414: freq_i = theta^(-2i/d). Computes inv_freq table at init'
+- contract: rope-extrapolation-v1.yaml
+  equation: rotation_matrix
+  module_path: realizar::quantize::rope
+  function: apply_rope_rotation_simd
+  signature: 'pub fn apply_rope_rotation_simd(x1: &mut [f32], x2: &mut [f32], cos_vals: &[f32], sin_vals: &[f32])'
+  status: implemented
+  notes: 'PMAT-414: 2x2 rotation [cos,-sin; sin,cos] on paired dimensions. SIMD path'
+- contract: architecture-requirements-v1.yaml
+  equation: weight_completeness
+  module_path: realizar::contract_gate
+  function: validate_completeness
+  signature: 'fn validate_completeness(arch: &ArchConstraints, present: &[WeightRole], arch_name: &str) -> Result<(), ModelLoadError>'
+  status: implemented
+  notes: 'PMAT-414: Checks all required roles present for arch. Returns missing list'
+- contract: architecture-requirements-v1.yaml
+  equation: role_mapping
+  module_path: realizar::arch_requirements_fallback
+  function: WeightRole::field_name
+  signature: 'pub const fn field_name(&self) -> &''static str'
+  status: implemented
+  notes: 'PMAT-414: Injective mapping WeightRole → IndexedLayerWeights field name'
+- contract: architecture-requirements-v1.yaml
+  equation: constraint_matrix_exhaustiveness
+  module_path: realizar::arch_requirements_fallback
+  function: required_roles
+  signature: 'pub fn required_roles(arch: &ArchConstraints) -> &''static [WeightRole]'
+  status: implemented
+  notes: 'PMAT-414: 4 exhaustive arms for (has_qk_norm, has_bias) boolean pairs'
+- contract: qwen35-hybrid-forward-v1.yaml
+  equation: attention_sublayer
+  module_path: realizar::gpu::scheduler::forward_from_model
+  function: forward_block_traced
+  signature: 'fn forward_block_traced(&mut self, input: &[f32], seq_len: usize, block_idx: usize) -> Result<(Vec<f32>, LayerActivation)>'
+  status: implemented
+  notes: 'PMAT-414: Full attention sublayer: pre-norm, QKV, RoPE, attention, O proj, residual'
+- contract: qwen35-hybrid-forward-v1.yaml
+  equation: ffn_sublayer
+  module_path: realizar::quantize::quantize_rmsnorm_into
+  function: fused_swiglu_simd
+  signature: 'pub fn fused_swiglu_simd(gate: &mut [f32], up: &[f32])'
+  status: implemented
+  notes: 'PMAT-414: SwiGLU FFN kernel. gate *= sigmoid(gate) * up'
+- contract: qwen35-hybrid-forward-v1.yaml
+  equation: hybrid_block
+  module_path: realizar::safetensors::safetensors_config
+  function: SafeTensorsConfig::is_hybrid_attention
+  signature: 'pub fn is_hybrid_attention(&self) -> bool'
+  status: implemented
+  notes: 'PMAT-414: Dispatches attention vs GDN per layer_types array'
+- contract: qwen35-shapes-v1.yaml
+  equation: rope_frequency
+  module_path: realizar::gpu::simd_ops
+  function: rope_frequency_table
+  signature: 'fn rope_frequency_table(half_head: usize, head_dim: usize, theta: f32) -> Vec<f32>'
+  status: implemented
+  notes: 'PMAT-414: freq_i = 1/theta^(2i/head_dim). Used by GPU scheduler'
+- contract: quantization-ordering-v1.yaml
+  equation: size_ordering
+  module_path: realizar::quantize::format_trait
+  function: QuantBlockFormat
+  signature: 'trait QuantBlockFormat { const SUPERBLOCK_BYTES: usize; const ELEMENTS_PER_SUPERBLOCK: usize; }'
+  status: implemented
+  notes: 'PMAT-414: Q4K 0.5625 < Q6K 0.8203 < Q8_0 1.0625 B/param'
 - contract: fused-qkv-projection-v1.yaml
   equation: fused_qkv
   module_path: realizar::gpu::scheduler::model_forward_block_gpu
