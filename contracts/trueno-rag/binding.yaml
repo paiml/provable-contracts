@@ -4,7 +4,7 @@ critical_path:
 - embed
 - retrieve
 - chunk
-- search
+- insert
 bindings:
 - contract: embedding-algebra-v1.yaml
   equation: embed

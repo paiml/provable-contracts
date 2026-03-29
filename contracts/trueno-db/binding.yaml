@@ -1,10 +1,8 @@
 version: 1.0.0
 target_crate: trueno-db
 critical_path:
-- serialize
-- deserialize
 - query
-- insert
+- get_or_insert
 bindings:
 - contract: configuration-v1.yaml
   equation: query

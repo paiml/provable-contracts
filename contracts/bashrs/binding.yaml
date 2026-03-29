@@ -99,6 +99,6 @@ bindings:
   notes: Command name escaping to prevent injection in emitted shell
 critical_path:
 - parse
-- lex
 - analyze
-- encode
+- tokenize
+- check

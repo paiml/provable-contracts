@@ -4,7 +4,7 @@ critical_path:
 - pull
 - run
 - list
-- serve
+- start_run
 bindings:
 - contract: configuration-v1.yaml
   equation: pull

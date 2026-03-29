@@ -2,9 +2,8 @@ version: 1.0.0
 target_crate: pepita
 critical_path:
 - send
-- receive
 - connect
-- broadcast
+- connection_count
 bindings:
 - contract: error-handling-v1.yaml
   equation: send

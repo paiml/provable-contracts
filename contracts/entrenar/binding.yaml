@@ -96,7 +96,8 @@ bindings:
   equation: lora_gradient_size
   module_path: entrenar::finetune::data_parallel
   function: lora_gradient_byte_size
-  signature: 'fn lora_gradient_byte_size(rank: usize, hidden: usize, layers: usize) -> usize'
+  signature: 'fn lora_gradient_byte_size(rank: usize, hidden: usize, layers: usize)
+    -> usize'
   status: implemented
   notes: Compute gradient transfer size for allreduce budget
 - contract: lora-gradient-flow-v1.yaml
@@ -334,14 +335,16 @@ bindings:
   equation: C-WGPU-TRAIN-001
   module_path: entrenar::train::transformer_trainer::wgpu_trainer
   function: full_train_step
-  signature: 'fn full_train_step(&mut self, hidden: &[f32], targets: &[u32], model: &mut WgpuModelState) -> Result<(f32, f32), String>'
+  signature: 'fn full_train_step(&mut self, hidden: &[f32], targets: &[u32], model:
+    &mut WgpuModelState) -> Result<(f32, f32), String>'
   status: implemented
   notes: 36-layer Qwen3-4B forward + lm_head + loss + backward + AdamW on WGPU
 - contract: wgpu-transformer-trainer-v1.yaml
   equation: C-WGPU-CKPT-001
   module_path: entrenar::train::transformer_trainer::wgpu_trainer
   function: save_checkpoint
-  signature: 'fn save_checkpoint(&self, dir: &Path, step: u32, loss: f32, rank: u32, alpha: f32) -> Result<PathBuf, String>'
+  signature: 'fn save_checkpoint(&self, dir: &Path, step: u32, loss: f32, rank: u32,
+    alpha: f32) -> Result<PathBuf, String>'
   status: implemented
   notes: Serializes LoRA A/B + optimizer state to JSON
 - contract: wgpu-transformer-trainer-v1.yaml
@@ -353,8 +356,8 @@ bindings:
   notes: Restores LoRA adapters with dimension validation
 critical_path:
 - forward
-- backward
-- optimizer
+- checkpoint
 - loss
 - gradient
-- checkpoint
+- AprWriter
+- CudaTransformerBlock

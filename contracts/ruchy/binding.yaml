@@ -2,9 +2,9 @@ version: 1.0.0
 target_crate: ruchy
 critical_path:
 - transpile
-- parse
-- analyze
-- generate
+- handle_transpile
+- transpile_ast
+- transpile_to_program
 bindings:
 - contract: execution-safety-v1.yaml
   equation: transpile

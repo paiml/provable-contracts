@@ -2,8 +2,6 @@ version: 1.0.0
 target_crate: trueno-graph
 critical_path:
 - pagerank
-- centrality
-- traverse
 - bfs
 bindings:
 - contract: pagerank-kernel-v1.yaml

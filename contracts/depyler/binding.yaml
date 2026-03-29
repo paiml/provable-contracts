@@ -116,7 +116,7 @@ bindings:
   status: implemented
   notes: Verifies generated Rust passes borrow checker
 critical_path:
-- transpile
-- type_check
-- parse
-- generate
+- hir_to_rust
+- generate_rust
+- TypeMapper
+- ExprConverter

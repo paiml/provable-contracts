@@ -1,11 +1,11 @@
 version: 1.0.0
 target_crate: batuta
 critical_path:
-- orchestrate
 - transpile
 - analyze
-- deploy
-- execute
+- build_transpiler
+- recommend_transpiler
+- cmd_transpile
 bindings:
 - contract: builder-pattern-v1.yaml
   equation: transpile

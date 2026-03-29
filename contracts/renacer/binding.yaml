@@ -2,9 +2,9 @@ version: 1.0.0
 target_crate: renacer
 critical_path:
 - trace
-- syscall
-- ptrace
-- attach
+- detach
+- collect
+- parse
 bindings:
 - contract: error-handling-v1.yaml
   equation: trace

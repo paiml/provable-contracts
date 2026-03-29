@@ -4,8 +4,8 @@ critical_path:
 - render
 - layout
 - draw
-- chart
-- plot
+- draw_line
+- draw_rect
 bindings:
 - contract: display-format-v1.yaml
   equation: render

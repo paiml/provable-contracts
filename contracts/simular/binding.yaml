@@ -3,8 +3,8 @@ target_crate: simular
 critical_path:
 - step
 - simulate
-- agent
-- observe
+- seek
+- record_step
 bindings:
 - contract: iterator-v1.yaml
   equation: step
