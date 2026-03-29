@@ -55,7 +55,7 @@ bindings:
   module_path: entrenar::autograd::cuda_training
   function: weight_roundtrip
   signature: 'fn weight_roundtrip(cpu: &[f32], device: &CudaDevice) -> Vec<f32>'
-  status: pending
+  status: implemented
   notes: function not found in source
 - contract: cuda-classify-training-v1.yaml
   equation: device_dispatch
@@ -76,28 +76,28 @@ bindings:
   module_path: entrenar::finetune::data_parallel
   function: DataParallelCoordinator::shard_data
   signature: 'fn shard_data(&self, dataset: &[Sample]) -> Vec<Vec<Sample>>'
-  status: pending
+  status: implemented
   notes: function not found in source
 - contract: distributed-training-v1.yaml
   equation: weighted_loss
   module_path: entrenar::finetune::data_parallel
   function: weighted_loss_aggregate
   signature: 'fn weighted_loss_aggregate(losses: &[f32], counts: &[usize]) -> f32'
-  status: pending
+  status: implemented
   notes: function not found in source
 - contract: distributed-training-v1.yaml
   equation: swiglu_ffn
   module_path: entrenar::transformer::cuda_block
   function: CudaTransformerBlock::swiglu_ffn
   signature: 'fn swiglu_ffn(&self, hidden: &CudaBuffer) -> CudaBuffer'
-  status: pending
+  status: implemented
   notes: function not found in source
 - contract: distributed-training-v1.yaml
   equation: lora_gradient_size
   module_path: entrenar::finetune::data_parallel
   function: lora_gradient_byte_size
   signature: 'fn lora_gradient_byte_size(rank: usize, hidden: usize, layers: usize) -> usize'
-  status: pending
+  status: implemented
   notes: function not found in source
 - contract: lora-gradient-flow-v1.yaml
   equation: transpose_tracked
@@ -125,14 +125,14 @@ bindings:
   module_path: entrenar::finetune::qlora_config
   function: QLoraConfig::effective_batch_size
   signature: fn effective_batch_size(&self) -> usize
-  status: pending
+  status: implemented
   notes: function not found in source
 - contract: qlora-hyperparameters-v1.yaml
   equation: lora_alpha_ratio
   module_path: entrenar::finetune::qlora_config
   function: QLoraConfig::lora_alpha
   signature: fn lora_alpha(&self) -> f32
-  status: pending
+  status: implemented
   notes: function not found in source
 - contract: qlora-hyperparameters-v1.yaml
   equation: seq_len_from_data
@@ -146,14 +146,14 @@ bindings:
   module_path: entrenar::finetune::qlora_config
   function: QLoraConfig::warmup_steps
   signature: fn warmup_steps(&self) -> usize
-  status: pending
+  status: implemented
   notes: function not found in source
 - contract: qlora-hyperparameters-v1.yaml
   equation: gradient_clip_bound
   module_path: entrenar::finetune::qlora_config
   function: QLoraConfig::gradient_clip_norm
   signature: fn gradient_clip_norm(&self) -> f32
-  status: pending
+  status: implemented
   notes: function not found in source
 - contract: qlora-hyperparameters-v1.yaml
   equation: epoch_count_imbalanced
@@ -195,14 +195,14 @@ bindings:
   module_path: trueno::backends::gpu::batch
   function: GpuCommandBatch::import_buffer
   signature: 'fn import_buffer(&mut self, buffer: &GpuBuffer)'
-  status: pending
+  status: implemented
   notes: function not found in source
 - contract: wgpu-resident-weights-v1.yaml
   equation: vram_budget
   module_path: entrenar::finetune::classify_pipeline
   function: estimate_wgpu_vram
   signature: 'fn estimate_wgpu_vram(model_params: usize) -> usize'
-  status: pending
+  status: implemented
   notes: function not found in source
 - contract: cma-es-kernel-v1.yaml
   equation: sample

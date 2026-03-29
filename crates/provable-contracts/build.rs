@@ -18,6 +18,7 @@ struct Binding {
     status: String,
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() {
     // Phase 1: binding env vars
     let contracts_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -38,9 +39,8 @@ fn main() {
             }
             println!("cargo:rerun-if-changed={}", binding_path.display());
 
-            let yaml = match std::fs::read_to_string(&binding_path) {
-                Ok(s) => s,
-                Err(_) => continue,
+            let Ok(yaml) = std::fs::read_to_string(&binding_path) else {
+                continue;
             };
 
             let bindings: BindingFile = match serde_yaml::from_str(&yaml) {
@@ -114,11 +114,8 @@ fn main() {
                 if let Ok(c) = std::fs::read_to_string(&p) {
                     if let Ok(y) = serde_yaml::from_str::<CY>(&c) {
                         for (n, eq) in &y.equations {
-                            let k = format!(
-                                "CONTRACT_{}_{}",
-                                s,
-                                n.to_uppercase().replace('-', "_")
-                            );
+                            let k =
+                                format!("CONTRACT_{}_{}", s, n.to_uppercase().replace('-', "_"));
                             if !eq.preconditions.is_empty() {
                                 println!(
                                     "cargo:rustc-env={k}_PRE_COUNT={}",

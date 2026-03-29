@@ -125,13 +125,19 @@ fn emit_precondition_macro(
             "/// Call at function entry: `contract_pre_{macro_name}!(input_expr)`\n"
         ));
         rust.push_str(&format!("macro_rules! contract_pre_{macro_name} {{\n"));
+        rust.push_str("    () => {{}};\n");
         rust.push_str("    ($input:expr) => {{\n        let _contract_input = &$input;\n");
         for pre in pres {
-            let esc = pre.replace('"', "\\\"");
+            // Map common variable names to _contract_input
             let assertion = pre
                 .replace("input", "_contract_input")
                 .replace("x.", "_contract_input.")
                 .replace("x)", "_contract_input)");
+            // Skip assertions that still have unbound variables after substitution
+            if has_unbound_vars(&assertion, "_contract_input") {
+                continue;
+            }
+            let esc = pre.replace('"', "\\\"");
             rust.push_str(&format!("        debug_assert!({assertion},\n            \"Contract {eq_name}: precondition violated — {esc}\");\n"));
             count += 1;
         }
@@ -218,6 +224,7 @@ fn has_unbound_vars(expr: &str, primary_var: &str) -> bool {
     // or standalone (bare variables like m, k, n)
     let safe_names = [
         primary_var,
+        "_contract_input",
         "true",
         "false",
         "f32",
