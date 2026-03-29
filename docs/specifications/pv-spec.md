@@ -2665,8 +2665,13 @@ enforcement = sum(level_weight * binding_count_at_level) / total_bindings
   where E0 = 0.1, E1 = 0.5, E2 = 1.0
 ```
 
-Current state: 27 bindings at E0, 585 at nothing = **0.004** (0.4%).
+v2.3.0 state: 27 bindings at E0, 585 at nothing = **0.004** (0.4%).
+v2.4.0 state: 4 bindings at E1 (softmax, rmsnorm, cross_entropy), 23 at E0 = **0.008**.
 Target: 9 core kernel contracts at E2, 156 others at E1 = **0.52** (52%).
+
+**v2.4.0 progress:** Codegen now emits real YAML preconditions (32 domain-specific
+assertions). 18/18 repos compile, 0 contract-caused test failures across 84,000+ tests.
+ruchy: all 20,319 tests pass after fixing opcode table UB + variable binding.
 
 ### Implementation Priority (by bug-detection ROI)
 

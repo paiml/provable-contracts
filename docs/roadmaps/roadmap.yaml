@@ -2252,3 +2252,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-132
+  github_issue: null
+  item_type: task
+  title: 'Fix remaining gaps: ruchy opcode table + E0→E1 upgrades + spec falsify'
+  status: inprogress
+  priority: critical
+  assigned_to: null
+  created: 2026-03-29T08:25:37Z
+  updated: 2026-03-29T08:25:37.810056479+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
