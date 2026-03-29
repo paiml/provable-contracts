@@ -61,22 +61,22 @@ bindings:
   module_path: realizar::quantize::fused_k
   function: fused_q4k_dot
   signature: 'fn fused_q4k_dot(q4k_data: &[u8], activations: &[f32]) -> Result<f32>'
-  status: implemented
-  notes: Scalar, AVX2, AVX-512 VNNI variants; also Q6K, Q8_0 in realizar::gpu
+  status: pending
+  notes: function not found in source
 - contract: flash-attention-v1.yaml
   equation: flash_attention
   module_path: realizar::gguf::inference::attention_part_02
   function: flash_attention_tiled
   signature: 'fn flash_attention_tiled(q: &[f32], k: &[f32], v: &[f32], ...) -> Vec<f32>'
-  status: implemented
-  notes: CPU tiled + CUDA flash attention with causal masking in realizar
+  status: pending
+  notes: function not found in source
 - contract: swiglu-kernel-v1.yaml
   equation: swiglu
   module_path: aprender::models::qwen2
   function: swiglu_fused
   signature: 'fn swiglu_fused(gate: &Tensor, up: &Tensor) -> Tensor'
-  status: implemented
-  notes: 'Private in aprender qwen2; full public impls in realizar: fused_swiglu_host/gpu + FusedFfnBrick'
+  status: pending
+  notes: function not found in source
 - contract: swiglu-kernel-v1.yaml
   equation: silu
   module_path: provable_contracts::kernels::activation
@@ -110,8 +110,8 @@ bindings:
   module_path: provable_contracts::kernels::silu_standalone
   function: silu_standalone_scalar
   signature: 'fn silu_standalone_scalar(input: &[f32], output: &mut [f32])'
-  status: implemented
-  notes: Scalar, AVX2, PTX variants in provable-contracts; also in realizar::gguf::ops
+  status: pending
+  notes: function not found in source
 - contract: silu-kernel-v1.yaml
   equation: sigmoid
   module_path: provable_contracts::kernels::silu_standalone
@@ -131,8 +131,8 @@ bindings:
   module_path: provable_contracts::kernels::cross_entropy
   function: log_softmax_scalar
   signature: 'fn log_softmax_scalar(logits: &[f32], output: &mut [f32])'
-  status: implemented
-  notes: Scalar and AVX2 variants in provable-contracts; used internally by CrossEntropyLoss
+  status: pending
+  notes: function not found in source
 - contract: adamw-kernel-v1.yaml
   equation: adam_moments
   module_path: aprender::nn::optim::AdamW
@@ -250,22 +250,22 @@ bindings:
   module_path: aprender::metaheuristics::CmaEs
   function: CmaEs::ask
   signature: fn ask(&mut self) -> Vec<Vec<f64>>
-  status: implemented
-  notes: Sample population from N(m, sigma^2*C)
+  status: pending
+  notes: function not found in source
 - contract: cma-es-kernel-v1.yaml
   equation: mean_update
   module_path: aprender::metaheuristics::CmaEs
   function: CmaEs::tell
   signature: 'fn tell(&mut self, solutions: &[(Vec<f64>, f64)])'
-  status: implemented
-  notes: Weighted recombination of best mu solutions
+  status: pending
+  notes: function not found in source
 - contract: cma-es-kernel-v1.yaml
   equation: covariance_update
   module_path: aprender::metaheuristics::CmaEs
   function: CmaEs::tell
   signature: 'fn tell(&mut self, solutions: &[(Vec<f64>, f64)])'
-  status: implemented
-  notes: Rank-one and rank-mu covariance update
+  status: pending
+  notes: function not found in source
 - contract: qk-norm-v1.yaml
   equation: qk_rmsnorm
   module_path: aprender::nn::RMSNorm
@@ -278,53 +278,50 @@ bindings:
   module_path: trueno_gpu::kernels::layernorm::PerHeadRmsNormKernel
   function: PerHeadRmsNormKernel::build_ptx
   signature: fn build_ptx(&self) -> PtxKernel
-  status: implemented
-  notes: 'GPU per-head RMSNorm using rsqrt.approx and warp shuffle reduction. Launched via realizar::per_head_rmsnorm_into().
-    Cross-backend equivalence tested by FALSIFY-QKN-005 (GPU reference simulation vs CPU RMSNorm::forward).
-
-    '
+  status: pending
+  notes: function not found in source
 - contract: gated-delta-net-v1.yaml
   equation: decay
   module_path: realizar::gpu::scheduler::linear_attn
   function: gated_delta_net_decay
   signature: 'fn gated_delta_net_decay(a_log: &[f32], dt: &[f32]) -> Vec<f32>'
-  status: implemented
-  notes: 'Decay in gated_delta_rule_step(): decay = exp(g_h), S *= decay (line 648-652 of linear_attn.rs)'
+  status: pending
+  notes: function not found in source
 - contract: gated-delta-net-v1.yaml
   equation: write
   module_path: realizar::gpu::scheduler::linear_attn
   function: gated_delta_net_write
   signature: 'fn gated_delta_net_write(state: &mut [f32], k: &[f32], delta: &[f32], decay: &[f32])'
-  status: implemented
-  notes: 'State write in gated_delta_rule_step(): S += k ⊗ delta (line 670-680 of linear_attn.rs)'
+  status: pending
+  notes: function not found in source
 - contract: gated-delta-net-v1.yaml
   equation: output
   module_path: realizar::gpu::scheduler::linear_attn
   function: gated_delta_net_output
   signature: 'fn gated_delta_net_output(y: &[f32], z: &[f32]) -> Vec<f32>'
-  status: implemented
-  notes: 'Output in gated_delta_rule_step(): o = S^T @ q, then rms_norm_gated (line 682-694 of linear_attn.rs)'
+  status: pending
+  notes: function not found in source
 - contract: kv-cache-equivalence-v1.yaml
   equation: prefill_incremental
   module_path: realizar::gguf::inference::forward::batch_part_02_part_03
   function: prefill_batch
   signature: 'fn prefill_batch(model: &mut Model, tokens: &[u32], ...) -> Result<Vec<f32>>'
-  status: implemented
-  notes: Batched and chunked prefill in realizar; KV cache populated incrementally
+  status: pending
+  notes: function not found in source
 - contract: kv-cache-equivalence-v1.yaml
   equation: batched_serial_equivalence
   module_path: realizar::gguf::inference::forward
   function: generate_with_batched_prefill
   signature: fn generate_with_batched_prefill(...) -> Result<Vec<u32>>
-  status: implemented
-  notes: Batched prefill produces same KV cache as serial; tested via FALSIFY-KV gates
+  status: pending
+  notes: function not found in source
 - contract: kv-cache-equivalence-v1.yaml
   equation: fused_kernel
   module_path: realizar::cuda::executor::kv_cache_part_02_part_03
   function: flash_attention_cached
   signature: 'fn flash_attention_cached(q: &CudaSlice, k_cache: &CudaSlice, v_cache: &CudaSlice, ...) -> Result<()>'
-  status: implemented
-  notes: CUDA flash attention with fused KV cache read in realizar
+  status: pending
+  notes: function not found in source
 - contract: rope-extrapolation-v1.yaml
   equation: base_frequency
   module_path: aprender::nn::RotaryPositionEmbedding
@@ -379,8 +376,8 @@ bindings:
   module_path: realizar::gguf::inference::forward::batch_part_02_part_03
   function: prefill_batch
   signature: 'fn prefill_batch(model: &mut Model, tokens: &[u32], ...) -> Result<Vec<f32>>'
-  status: implemented
-  notes: Batched and chunked prefill in realizar; 8.2x speedup over serial
+  status: pending
+  notes: function not found in source
 - contract: inference-pipeline-v1.yaml
   equation: decode_step
   module_path: realizar::gguf::inference::forward
@@ -393,9 +390,8 @@ bindings:
   module_path: realizar::gpu::scheduler::linear_attn
   function: gated_delta_net_forward
   signature: 'fn gated_delta_net_forward(input: &[f32], weights: &GdnWeights, state: &mut GdnState) -> Vec<f32>'
-  status: implemented
-  notes: 'forward_linear_block_with_cache() in linear_attn.rs: pre-norm → projections → causal Conv1D → SiLU → gated_delta_rule_step
-    → RMSNorm_gated → out_proj → residual'
+  status: pending
+  notes: function not found in source
 - contract: attention-scaling-v1.yaml
   equation: scaled_dot_product
   module_path: aprender::nn::transformer
@@ -417,65 +413,65 @@ bindings:
   function: simple_attention
   signature: 'fn simple_attention(q: &[f32], k: &[f32], v: &[f32], seq_len: usize, num_heads: usize, num_kv_heads: usize,
     head_dim: usize) -> Vec<f32>'
-  status: implemented
-  notes: Multi-sequence causal attention in realizar; GQA-aware with head broadcasting
+  status: pending
+  notes: function not found in source
 - contract: flash-attention-v1.yaml
   equation: flash_attention
   module_path: realizar::gguf::inference::attention_part_02
   function: flash_attention_tiled
   signature: 'fn flash_attention_tiled(q: &[f32], k: &[f32], v: &[f32], ...) -> Vec<f32>'
-  status: implemented
-  notes: CPU tiled + CUDA flash attention (causal, multi-head, cached) in realizar
+  status: pending
+  notes: function not found in source
 - contract: gated-delta-net-v1.yaml
   equation: decay
   module_path: realizar::gpu::scheduler::linear_attn
   function: gated_delta_net_decay
   signature: 'fn gated_delta_net_decay(a_log: &[f32], dt: &[f32]) -> Vec<f32>'
-  status: implemented
-  notes: 'Decay in gated_delta_rule_step(): decay = exp(g_h), S *= decay (line 648-652)'
+  status: pending
+  notes: function not found in source
 - contract: gated-delta-net-v1.yaml
   equation: read
   module_path: realizar::gpu::scheduler::linear_attn
   function: gated_delta_net_read
   signature: 'fn gated_delta_net_read(state: &[f32], q: &[f32]) -> Vec<f32>'
-  status: implemented
-  notes: 'State read in gated_delta_rule_step(): mem = S^T @ k_norm (line 654-665)'
+  status: pending
+  notes: function not found in source
 - contract: gated-delta-net-v1.yaml
   equation: delta
   module_path: realizar::gpu::scheduler::linear_attn
   function: gated_delta_net_delta
   signature: 'fn gated_delta_net_delta(v: &[f32], read: &[f32], beta: &[f32]) -> Vec<f32>'
-  status: implemented
-  notes: 'Delta rule in gated_delta_rule_step(): delta = beta * (v - mem) (line 667-680)'
+  status: pending
+  notes: function not found in source
 - contract: gated-delta-net-v1.yaml
   equation: write
   module_path: realizar::gpu::scheduler::linear_attn
   function: gated_delta_net_write
   signature: 'fn gated_delta_net_write(state: &mut [f32], k: &[f32], delta: &[f32], decay: &[f32])'
-  status: implemented
-  notes: 'State write in gated_delta_rule_step(): S += k ⊗ delta (line 670-680)'
+  status: pending
+  notes: function not found in source
 - contract: gated-delta-net-v1.yaml
   equation: output
   module_path: realizar::gpu::scheduler::linear_attn
   function: gated_delta_net_output
   signature: 'fn gated_delta_net_output(y: &[f32], z: &[f32]) -> Vec<f32>'
-  status: implemented
-  notes: 'Output in gated_delta_rule_step(): o = S^T @ q_norm (line 682-694)'
+  status: pending
+  notes: function not found in source
 - contract: gqa-kernel-v1.yaml
   equation: gqa
   module_path: realizar::apr::helpers
   function: simple_attention
   signature: 'fn simple_attention(q: &[f32], k: &[f32], v: &[f32], seq_len: usize, num_heads: usize, num_kv_heads: usize,
     head_dim: usize) -> Vec<f32>'
-  status: implemented
-  notes: GQA with head broadcasting (num_heads/num_kv_heads grouping) in realizar
+  status: pending
+  notes: function not found in source
 - contract: silu-kernel-v1.yaml
   equation: silu
   module_path: provable_contracts::kernels::silu_standalone
   function: silu_standalone_scalar
   signature: 'fn silu_standalone_scalar(input: &[f32], output: &mut [f32])'
-  status: implemented
-  notes: Scalar/AVX2/PTX in provable-contracts; also in realizar::gguf::ops::silu
+  status: pending
+  notes: function not found in source
 - contract: silu-kernel-v1.yaml
   equation: sigmoid
   module_path: provable_contracts::kernels::silu_standalone
@@ -530,16 +526,15 @@ bindings:
   module_path: realizar::gpu::scheduler::linear_attn
   function: gated_delta_net_forward
   signature: 'fn gated_delta_net_forward(input: &[f32], weights: &GdnWeights, state: &mut GdnState) -> Vec<f32>'
-  status: implemented
-  notes: Full 216-line impl in realizar::gpu::scheduler::linear_attn::forward_linear_block_incremental — Conv1D, SiLU, delta
-    rule, L2 norm
+  status: pending
+  notes: function not found in source
 - contract: inference-pipeline-v1.yaml
   equation: prefill_phase
   module_path: realizar::gguf::inference::forward::batch_part_02_part_03
   function: prefill_batch
   signature: 'fn prefill_batch(model: &mut Model, tokens: &[u32], ...) -> Result<Vec<f32>>'
-  status: implemented
-  notes: Batched prefill in realizar; 8.2x speedup over serial
+  status: pending
+  notes: function not found in source
 - contract: inference-pipeline-v1.yaml
   equation: decode_step
   module_path: realizar::gguf::inference::forward
@@ -552,30 +547,30 @@ bindings:
   module_path: realizar::gguf::config
   function: ArchConstraints::from_gguf_metadata
   signature: 'fn from_gguf_metadata(metadata: &GgufMetadata) -> ArchConstraints'
-  status: implemented
-  notes: O projection shape [hidden, n_h * d_k] validated by ArchConstraints in realizar
+  status: pending
+  notes: function not found in source
 - contract: architecture-requirements-v1.yaml
   equation: gguf_loader_validation
   module_path: realizar::cuda::executor::weights
   function: CudaExecutor::build_indexed_weights
   signature: 'fn build_indexed_weights(&mut self, num_layers: usize, layer_prefix_fn: F, arch: &ArchConstraints) -> Result<(),
     GpuError>'
-  status: implemented
-  notes: GGUF loader path — validates via ValidatedLayerWeights::validate()
+  status: pending
+  notes: function not found in source
 - contract: architecture-requirements-v1.yaml
   equation: apr_loader_validation
   module_path: realizar::apr::cuda_part_02_part_03
   function: AprV2ModelCuda::upload_quantized_weights_to_gpu
   signature: fn upload_quantized_weights_to_gpu(&mut self) -> Result<usize>
-  status: implemented
-  notes: APR loader path — derives ArchConstraints from metadata, validates via build_indexed_weights
+  status: pending
+  notes: function not found in source
 - contract: architecture-requirements-v1.yaml
   equation: safetensors_loader_validation
   module_path: realizar::safetensors_cuda
   function: SafeTensorsCudaModel::upload_weights
   signature: fn upload_weights(...) -> Result<(Vec<f32>, ...)>
-  status: implemented
-  notes: SafeTensors loader calls validate_safetensors_completeness() + validate_model_load_basic() before GPU init (GH-279)
+  status: pending
+  notes: function not found in source
 - contract: architecture-requirements-v1.yaml
   equation: import_completeness_gate
   module_path: aprender::format::layout_contract
@@ -596,8 +591,8 @@ bindings:
   module_path: provable_contracts::kernels::activation
   function: gelu_scalar
   signature: 'fn gelu_scalar(input: &[f32], output: &mut [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: activation-kernel-v1.yaml
   equation: silu
   module_path: provable_contracts::kernels::activation
@@ -610,8 +605,8 @@ bindings:
   module_path: provable_contracts::kernels::silu_standalone
   function: silu_standalone_scalar
   signature: 'fn silu_standalone_scalar(input: &[f32], output: &mut [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: silu-kernel-v1.yaml
   equation: sigmoid
   module_path: provable_contracts::kernels::silu_standalone
@@ -624,30 +619,30 @@ bindings:
   module_path: provable_contracts::kernels::softmax
   function: softmax_scalar
   signature: 'fn softmax_scalar(input: &[f32], output: &mut [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: rmsnorm-kernel-v1.yaml
   equation: rmsnorm
   module_path: provable_contracts::kernels::rmsnorm
   function: rmsnorm_scalar
   signature: 'fn rmsnorm_scalar(input: &[f32], gamma: &[f32], eps: f32, output: &mut [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: layernorm-kernel-v1.yaml
   equation: layernorm
   module_path: provable_contracts::kernels::layernorm
   function: layernorm_scalar
   signature: 'fn layernorm_scalar(input: &[f32], gamma: &[f32], beta: &[f32], eps: f32, output: &mut [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: batchnorm-kernel-v1.yaml
   equation: batchnorm_train
   module_path: provable_contracts::kernels::batchnorm
   function: batchnorm_scalar
   signature: 'fn batchnorm_scalar(input: &[f32], n: usize, c: usize, gamma: &[f32], beta: &[f32], eps: f32, output: &mut [f32],
     mean: &mut [f32], var: &mut [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: swiglu-kernel-v1.yaml
   equation: swiglu
   module_path: provable_contracts::kernels::swiglu
@@ -660,106 +655,106 @@ bindings:
   module_path: provable_contracts::kernels::cross_entropy
   function: cross_entropy_scalar
   signature: 'fn cross_entropy_scalar(targets: &[f32], logits: &[f32], num_classes: usize) -> f32'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: rope-kernel-v1.yaml
   equation: rope
   module_path: provable_contracts::kernels::rope
   function: rope_scalar
   signature: 'fn rope_scalar(x: &[f32], position: usize, dim: usize, base: f32, output: &mut [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: matmul-kernel-v1.yaml
   equation: matmul
   module_path: provable_contracts::kernels::matmul
   function: matmul_scalar
   signature: 'fn matmul_scalar(a: &[f32], b: &[f32], m: usize, p: usize, n: usize, c: &mut [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: attention-kernel-v1.yaml
   equation: attention
   module_path: provable_contracts::kernels::attention
   function: attention_scalar
   signature: 'fn attention_scalar(q: &[f32], k: &[f32], v: &[f32], n: usize, m: usize, d_k: usize, d_v: usize, output: &mut
     [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: gqa-kernel-v1.yaml
   equation: gqa
   module_path: provable_contracts::kernels::gqa
   function: gqa_scalar
   signature: 'fn gqa_scalar(q: &[f32], k: &[f32], v: &[f32], n: usize, d_k: usize, d_v: usize, num_heads: usize, num_kv_heads:
     usize, output: &mut [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: flash-attention-v1.yaml
   equation: flash_attention
   module_path: provable_contracts::kernels::flash_attention
   function: flash_attention_scalar
   signature: 'fn flash_attention_scalar(q: &[f32], k: &[f32], v: &[f32], n: usize, d: usize, tile_size: usize, output: &mut
     [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: adamw-kernel-v1.yaml
   equation: weight_update
   module_path: provable_contracts::kernels::adamw
   function: adamw_step_scalar
   signature: 'fn adamw_step_scalar(params: &mut [f32], grads: &[f32], m: &mut [f32], v: &mut [f32], lr: f32, beta1: f32, beta2:
     f32, eps: f32, wd: f32, t: u32)'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: conv1d-kernel-v1.yaml
   equation: conv1d
   module_path: provable_contracts::kernels::conv1d
   function: conv1d_scalar
   signature: 'fn conv1d_scalar(input: &[f32], weight: &[f32], bias: Option<&[f32]>, c_in: usize, c_out: usize, l: usize, k:
     usize, stride: usize, pad: usize, output: &mut [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: ssm-kernel-v1.yaml
   equation: ssm_scan
   module_path: provable_contracts::kernels::ssm
   function: ssm_scan_scalar
   signature: 'fn ssm_scan_scalar(a_bar: &[f32], b_bar: &[f32], c: &[f32], x: &[f32], n: usize, l: usize, output: &mut [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: kmeans-kernel-v1.yaml
   equation: assignment
   module_path: provable_contracts::kernels::kmeans
   function: kmeans_assign_scalar
   signature: 'fn kmeans_assign_scalar(points: &[f32], centroids: &[f32], n: usize, k: usize, d: usize, assignments: &mut [u32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: pagerank-kernel-v1.yaml
   equation: pagerank
   module_path: provable_contracts::kernels::pagerank
   function: pagerank_iterate_scalar
   signature: 'fn pagerank_iterate_scalar(transition: &[f32], rank: &[f32], n: usize, damping: f32, output: &mut [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: lbfgs-kernel-v1.yaml
   equation: two_loop_recursion
   module_path: provable_contracts::kernels::lbfgs
   function: lbfgs_direction_scalar
   signature: 'fn lbfgs_direction_scalar(gradient: &[f32], s_history: &[Vec<f32>], y_history: &[Vec<f32>], direction: &mut
     [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: cma-es-kernel-v1.yaml
   equation: sample
   module_path: provable_contracts::kernels::cma_es
   function: cma_sample_scalar
   signature: 'fn cma_sample_scalar(mean: &[f32], sigma: f32, cholesky_l: &[f32], d: usize, z: &[f32], output: &mut [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: gated-delta-net-v1.yaml
   equation: write
   module_path: provable_contracts::kernels::gated_delta_net
   function: gdn_recurrence_scalar
   signature: 'fn gdn_recurrence_scalar(state: &mut [f32], k: &[f32], v: &[f32], q: &[f32], z: &[f32], alpha: f32, beta: f32,
     k_dim: usize, v_dim: usize, output: &mut [f32])'
-  status: implemented
-  notes: Scalar + AVX2 + PTX backends
+  status: pending
+  notes: function not found in source
 - contract: metrics-regression-v1.yaml
   equation: r_squared
   module_path: aprender::metrics
@@ -1445,8 +1440,8 @@ bindings:
   module_path: entrenar::transformer::config
   function: TransformerConfig::qwen3_5_9b
   signature: fn qwen3_5_9b() -> Self
-  status: implemented
-  notes: Config factory matches qwen3_5.yaml contract; verified by FALSIFY-FT-QWEN35-001..007
+  status: pending
+  notes: function not found in source
 - contract: attention-scaling-v1.yaml
   equation: attention_entropy
   module_path: aprender

@@ -6,14 +6,13 @@ bindings:
   module_path: trueno::backends::gpu::batch::execute
   function: PipelineCache::get_or_create
   signature: 'fn get_or_create(&mut self, shader: &str, device: &Device) -> &ComputePipeline'
-  status: implemented
-  notes: HashMap keyed by shader source pointer; compile-once semantics
+  status: pending
+  notes: function not found in source
 - contract: pipeline-cache-v1.yaml
   equation: single_encoder
   module_path: trueno::backends::gpu::batch::execute
   function: GpuCommandBatch::execute
-  signature: 'fn execute(&mut self, device: &Device, queue: &Queue) -> Result<(),
-    GpuError>'
+  signature: 'fn execute(&mut self, device: &Device, queue: &Queue) -> Result<(), GpuError>'
   status: implemented
   notes: Single command encoder per execute() call; N ops batched
 - contract: tiled-matmul-shader-v1.yaml
@@ -27,18 +26,16 @@ bindings:
   equation: matmul_dispatch
   module_path: trueno::backends::gpu::device::linalg::matmul
   function: matmul_async
-  signature: 'fn matmul_async(a: &GpuBuffer, b: &GpuBuffer, m: u32, n: u32, k: u32)
-    -> GpuBuffer'
+  signature: 'fn matmul_async(a: &GpuBuffer, b: &GpuBuffer, m: u32, n: u32, k: u32) -> GpuBuffer'
   status: implemented
   notes: 'Dispatch: ceil(M/16) x ceil(N/16) x 1 workgroups'
 - contract: tiled-matmul-shader-v1.yaml
   equation: execute_matmul_op
   module_path: trueno::backends::gpu::batch::execute::dispatch
   function: execute_matmul_op
-  signature: 'fn execute_matmul_op(batch: &mut GpuCommandBatch, op: &MatmulOp) ->
-    Result<()>'
-  status: implemented
-  notes: Batched matmul dispatch via pipeline cache
+  signature: 'fn execute_matmul_op(batch: &mut GpuCommandBatch, op: &MatmulOp) -> Result<()>'
+  status: pending
+  notes: function not found in source
 - contract: gemm-backward-tiled-v1.yaml
   equation: backward_a_gemm
   module_path: trueno_gpu::kernels::backward::gemm
@@ -207,26 +204,21 @@ bindings:
   function: BackendCostModel::roofline_analysis
   signature: 'pub fn roofline_analysis(&self, m: usize, n: usize, k: usize) -> RooflineResult'
   status: implemented
-  notes: 'PMAT-405: min(compute_ceiling, bandwidth * arithmetic_intensity). 5x PCIe
-    rule'
+  notes: 'PMAT-405: min(compute_ceiling, bandwidth * arithmetic_intensity). 5x PCIe rule'
 - contract: gpu-context-health-v1.yaml
   equation: culink_skip
   module_path: trueno_gpu::driver::module
   function: compile_ptx_to_cubin
-  signature: 'fn compile_ptx_to_cubin(driver: &CudaDriver, ptx: &str, jit_target:
-    c_uint) -> Result<Vec<u8>, GpuError>'
+  signature: 'fn compile_ptx_to_cubin(driver: &CudaDriver, ptx: &str, jit_target: c_uint) -> Result<Vec<u8>, GpuError>'
   status: implemented
-  notes: 'PMAT-404: Always returns Err — cuLinkCreate skipped (PMAT-369). Legacy JIT
-    used.'
+  notes: 'PMAT-404: Always returns Err — cuLinkCreate skipped (PMAT-369). Legacy JIT used.'
 - contract: gpu-weight-residency-v1.yaml
   equation: pcie_overhead
   module_path: trueno_gpu::driver::memory::buffer
   function: GpuBuffer::from_host_registered
-  signature: 'pub unsafe fn from_host_registered(host_ptr: *mut T, len: usize) ->
-    Result<Self, GpuError>'
+  signature: 'pub unsafe fn from_host_registered(host_ptr: *mut T, len: usize) -> Result<Self, GpuError>'
   status: implemented
-  notes: 'PMAT-404: Zero-copy on unified memory (cc>=120). Eliminates PCIe transfer.
-    cuMemHostRegister path.'
+  notes: 'PMAT-404: Zero-copy on unified memory (cc>=120). Eliminates PCIe transfer. cuMemHostRegister path.'
 - contract: gpu-decode-profiling-v1.yaml
   equation: wall_coverage
   module_path: trueno::brick::profiler::BrickProfiler
@@ -240,16 +232,14 @@ bindings:
   function: BrickProfiler::set_sync_mode
   signature: 'pub fn set_sync_mode(&mut self, mode: SyncMode)'
   status: implemented
-  notes: 'PMAT-403: Immediate sync = brick avg correlates with kernel complexity;
-    Deferred < 100us'
+  notes: 'PMAT-403: Immediate sync = brick avg correlates with kernel complexity; Deferred < 100us'
 - contract: gpu-decode-profiling-v1.yaml
   equation: token_accounting
   module_path: trueno::brick::profiler::BrickProfiler
   function: BrickProfiler::total_tokens
   signature: pub fn total_tokens(&self) -> u64
   status: implemented
-  notes: 'PMAT-403: Counts brick ELEMENTS not decoded tokens. LmHead.count = decoded
-    tokens'
+  notes: 'PMAT-403: Counts brick ELEMENTS not decoded tokens. LmHead.count = decoded tokens'
 - contract: gpu-decode-profiling-v1.yaml
   equation: brick_ordering
   module_path: trueno::brick::profiler::BrickProfiler
