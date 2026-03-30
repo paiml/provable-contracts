@@ -143,3 +143,25 @@ bindings:
   module_path: decy_codegen::CodeGenerator::generate_class
   status: implemented
   notes: Deref/DerefMut generation for base class composition
+# DECY-224: CUDA kernel safety bindings
+- contract: cuda-kernel-safety-v1.yaml
+  equation: kernel_ffi
+  function: generate_cuda_kernel_ffi
+  module_path: decy_codegen::CodeGenerator::generate_cuda_kernel_ffi
+  status: implemented
+- contract: cuda-kernel-safety-v1.yaml
+  equation: qualifier_preservation
+  function: set_cuda_qualifier
+  module_path: decy_hir::HirFunction::set_cuda_qualifier
+  status: implemented
+- contract: cuda-kernel-safety-v1.yaml
+  equation: qualifier_preservation
+  function: apply_cuda_qualifiers_from_source
+  module_path: decy_parser::parser::apply_cuda_qualifiers_from_source
+  status: implemented
+- contract: cuda-kernel-safety-v1.yaml
+  equation: host_transpilation
+  function: generate_function_with_lifetimes_and_structs
+  module_path: decy_codegen::CodeGenerator::generate_function_with_lifetimes_and_structs
+  status: implemented
+  notes: Checks cuda_qualifier at top, bypasses normal codegen for kernels
