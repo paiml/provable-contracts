@@ -24,7 +24,7 @@ equations:
     - coverage < 0.50 indicates graph replay hiding brick instrumentation
     - coverage > 1.0 is impossible (bricks are subsets of wall time)
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Wall_Coverage
   sync_verification:
@@ -35,7 +35,7 @@ equations:
     - 'Immediate sync: brick avg correlates with kernel complexity (large GEMV > small norm)'
     - LmHead (n=151936) must be >10x RmsNorm in Immediate mode
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Sync_Verification
   token_accounting:
@@ -47,7 +47,7 @@ equations:
     - calls_per_decoded_token(AttentionScore) = num_layers
     - calls_per_decoded_token(RmsNorm) = 2 * num_layers + 1
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Token_Accounting
   brick_ordering:
@@ -58,7 +58,7 @@ equations:
     - GateProjection per-call avg > RmsNorm per-call avg (GEMV > elementwise)
     - AttentionScore per-call avg > Residual per-call avg (flash attn > vector add)
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Brick_Ordering
   graph_disable:
@@ -69,7 +69,7 @@ equations:
     - Bricks instrumented during graph CAPTURE only (first token), not REPLAY
     - Profiling with graphs enabled measures 1/N of actual decode time
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Graph_Disable
   report_fidelity:
@@ -83,7 +83,7 @@ equations:
     - JSON gap_factor must equal actual_us / budget_us — never 1.0 unless actual == budget
     - 'No BrickScore field may be a compile-time constant (score: 100, grade: ''R'', gap: 1.0)'
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Report_Fidelity
   report_completeness:
@@ -95,7 +95,7 @@ equations:
     - FalsificationSummary.total_points == len(JSON.brick_scores)
     - FalsificationSummary.passed + failed == total_points
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Report_Completeness
   report_denominator:
@@ -106,7 +106,7 @@ equations:
     - profiler.total_tokens counts brick ELEMENTS — must NEVER be used as decoded token count
     - Dividing total_ns by profiler.total_tokens produces values 100-300x too small
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Report_Denominator
   report_metadata:
@@ -119,7 +119,7 @@ equations:
     - FalsificationSummary must derive from actual pass/fail counts, not constants
     - 'No hardcoded magic numbers: 137, 173.9, 98.1, 95.2, 976.0'
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Report_Metadata
 proof_obligations:

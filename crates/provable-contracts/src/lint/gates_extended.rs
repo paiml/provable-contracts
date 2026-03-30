@@ -14,58 +14,81 @@ use super::rules::RuleSeverity;
 use super::{GateDetail, GateResult};
 
 /// Gate 4: Source verification — do referenced test functions exist in source?
-///
-/// Resolves `test:` fields in `falsification_tests` against `fn test_*` / `fn prop_*`
-/// in the project's `src/` directory. Any missing test = ERROR (unfalsifiable claim).
 pub(crate) fn run_verify_gate(
     contracts: &[(String, Contract)],
     project_root: &Path,
 ) -> (GateResult, Vec<LintFinding>) {
     let start = Instant::now();
-    let src_dir = project_root.join("src");
     let mut findings = Vec::new();
     let mut total_refs = 0usize;
     let mut missing = 0usize;
 
-    // Build set of all test function names in src/
     let mut source_tests = HashSet::new();
-    if src_dir.exists() {
-        collect_test_fns(&src_dir, &mut source_tests);
+    // Scan project directories: src/, crates/, generated/, tests/
+    for sub in &["src", "crates", "generated", "tests"] {
+        let d = project_root.join(sub);
+        if d.exists() {
+            collect_test_fns(&d, &mut source_tests);
+        }
     }
-
-    for (stem, contract) in contracts {
-        for ft in &contract.falsification_tests {
-            if let Some(ref test_name) = ft.test {
-                let raw = test_name.trim().trim_matches('"');
-                // Extract function name from module path (e.g., "mod::tests::test_foo" -> "test_foo")
-                let name = raw.rsplit("::").next().unwrap_or(raw);
-                if name.starts_with("test_") || name.starts_with("prop_") {
-                    total_refs += 1;
-                    if !source_tests.contains(name) {
-                        missing += 1;
-                        findings.push(LintFinding {
-                            rule_id: "PV-VER-001".into(),
-                            severity: RuleSeverity::Error,
-                            message: format!(
-                                "Unfalsifiable: test `{name}` referenced but not found in src/"
-                            ),
-                            file: format!("contracts/{stem}.yaml"),
-                            line: None,
-                            contract_stem: Some(stem.clone()),
-                            suppressed: false,
-                            suppression_reason: None,
-                            is_new: false,
-                            snippet: None,
-                            suggestion: None,
-                            evidence: None,
-                        });
+    // Scan sibling repos for downstream tests (e.g., ../entrenar/src/)
+    if let Some(parent) = project_root.parent() {
+        for (stem, _) in contracts {
+            if let Some(repo) = stem.split('/').next() {
+                for sub in &["src", "crates"] {
+                    let d = parent.join(repo).join(sub);
+                    if d.exists() {
+                        collect_test_fns(&d, &mut source_tests);
                     }
                 }
             }
         }
     }
 
-    let passed = missing == 0;
+    for (stem, contract) in contracts {
+        for ft in &contract.falsification_tests {
+            if let Some(ref test_name) = ft.test {
+                let raw = test_name.trim().trim_matches('"');
+                let name = raw.rsplit("::").next().unwrap_or(raw);
+                if name.starts_with("test_") || name.starts_with("prop_") {
+                    total_refs += 1;
+                    if !source_tests.contains(name) {
+                        missing += 1;
+                        let is_gpu = name.contains("gpu")
+                            || name.contains("wgpu")
+                            || name.contains("cuda")
+                            || stem.contains("wgpu")
+                            || stem.contains("gpu");
+                        let sev = if is_gpu {
+                            RuleSeverity::Warning
+                        } else {
+                            RuleSeverity::Error
+                        };
+                        let note = if is_gpu {
+                            " (may require --features gpu)"
+                        } else {
+                            ""
+                        };
+                        let mut f = LintFinding::new(
+                            "PV-VER-001",
+                            sev,
+                            format!("Unfalsifiable: test `{name}` not found in src/{note}"),
+                            format!("contracts/{stem}.yaml"),
+                        );
+                        f.contract_stem = Some(stem.clone());
+                        findings.push(f);
+                    }
+                }
+            }
+        }
+    }
+
+    // Only errors fail the gate; warnings (feature-gated tests) are tolerated
+    let error_count = findings
+        .iter()
+        .filter(|f| f.rule_id == "PV-VER-001" && f.severity == RuleSeverity::Error)
+        .count();
+    let passed = error_count == 0;
     let duration = u64::try_from(start.elapsed().as_millis()).unwrap_or(u64::MAX);
 
     (

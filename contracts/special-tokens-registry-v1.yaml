@@ -21,7 +21,7 @@ equations:
     - All additional_eos entries < vocab_size
     - Every architecture key maps to a valid family
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Token_Bounds
 families:

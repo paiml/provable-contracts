@@ -35,7 +35,7 @@ equations:
     - Causal conv1d before GDN recurrence
     - Residual connection preserves gradient flow
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - hidden_size > 0
     lean_theorem: Theorems.Gdn_Sublayer
   ffn_sublayer:
@@ -46,7 +46,7 @@ equations:
     - SwiGLU uses gate/up projections
     - Down projection restores d_model dimension
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - hidden_size > 0
     lean_theorem: Theorems.Ffn_Sublayer
   hybrid_block:
@@ -57,7 +57,7 @@ equations:
     - FFN sublayer is identical regardless of attention type
     - Output shape equals input shape
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - num_layers > 0
     lean_theorem: Theorems.Hybrid_Block
   activation_magnitude:

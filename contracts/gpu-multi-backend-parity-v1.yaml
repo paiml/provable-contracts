@@ -28,7 +28,7 @@ equations:
     - Backend selection is deterministic for a given (model, device) pair
     - Parity gate runs at model load time, not per-token
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - num_backends > 0
     lean_theorem: Theorems.Multi_Backend_Parity
   backend_priority:
@@ -39,7 +39,7 @@ equations:
     - wgpu fallback when CUDA JIT broken (Blackwell sm_121)
     - CPU always available as last resort
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - num_backends > 0
     lean_theorem: Theorems.Backend_Priority
   bandwidth_bound_theorem:
@@ -51,7 +51,7 @@ equations:
     - Q4K backend is at most bandwidth(FP16)/bandwidth(Q4K) = 3.56x faster
     - Memory bandwidth is the bottleneck for M=1 decode (Ivanov 2021)
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - bandwidth_gbps > 0.0
     lean_theorem: Theorems.Bandwidth_Bound_Theorem
   jit_compilation_correctness:
@@ -63,8 +63,7 @@ equations:
     - NVIDIA PTX ISA guarantees forward compatibility for .target <= device SM
     - 'VIOLATION on sm_121: cosine = -0.005 (GH-559)'
     preconditions:
-    - '!config.is_empty()'
-    - '!path.is_empty()'
+    - 'input.len() > 0'
     lean_theorem: Theorems.Jit_Compilation_Correctness
 proof_obligations:
 - type: invariant

@@ -20,7 +20,7 @@ equations:
     - Output shape equals input shape (residual connection preserves dimensions)
     - No NaN or Inf in output for finite input
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Encoder_Layer
   cls_pooling:
@@ -30,7 +30,7 @@ equations:
     invariants:
     - Output is exactly the first row of encoder output
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Cls_Pooling
 proof_obligations:

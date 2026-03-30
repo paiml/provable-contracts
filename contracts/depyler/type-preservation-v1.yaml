@@ -23,6 +23,7 @@ equations:
     - 'TypeMap preserves container nesting: TypeMap(List[T]) = Vec<TypeMap(T)>'
     - 'TypeMap preserves optionality: TypeMap(Optional[T]) = Option<TypeMap(T)>'
     preconditions:
+    - 'input.len() > 0'
     - '!config.is_empty()'
     - '!source.is_empty()'
     lean_theorem: Theorems.Type_Map
@@ -37,6 +38,7 @@ equations:
     - Python // (floor div) -> Rust checked_div or explicit floor
     - Python % (modulo) -> Rust rem_euclid for negative operands
     preconditions:
+    - 'input.len() > 0'
     - '!config.is_empty()'
     - '!source.is_empty()'
     lean_theorem: Theorems.Numeric_Semantics
@@ -50,6 +52,7 @@ equations:
     - 'Set[T] -> HashSet<T_rust>: uniqueness preserved'
     - 'Tuple[T1,...,Tn] -> (T1_rust,...,Tn_rust): positional types preserved'
     preconditions:
+    - 'input.len() > 0'
     - '!config.is_empty()'
     - '!source.is_empty()'
     lean_theorem: Theorems.Container_Preservation
@@ -62,6 +65,7 @@ equations:
     - Unification variables resolve to concrete Rust types
     - Type annotations in Python source are respected as ground truth
     preconditions:
+    - 'input.len() > 0'
     - '!config.is_empty()'
     - '!source.is_empty()'
     lean_theorem: Theorems.Type_Inference
@@ -74,6 +78,7 @@ equations:
     - Optional[Copy] maps to Option<Copy> which is Copy
     - Tuple of all-Copy maps to tuple of Copy which is Copy
     preconditions:
+    - 'input.len() > 0'
     - '!config.is_empty()'
     - '!source.is_empty()'
     lean_theorem: Theorems.Copy_Semantics

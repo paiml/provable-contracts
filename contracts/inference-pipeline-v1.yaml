@@ -32,7 +32,7 @@ equations:
     - KV cache grows by 1 position per step
     - All intermediate activations finite
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Decode_Step
   residual_stream:

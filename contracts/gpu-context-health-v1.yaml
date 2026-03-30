@@ -38,7 +38,7 @@ equations:
     - If fp8_enabled = true and warmup fails, context MUST be destroyed and recreated
     - A poisoned context (CUDA_ERROR_ILLEGAL_ADDRESS) MUST NOT be reused for inference
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - device_id >= 0
     lean_theorem: Theorems.Context_Health
   culink_skip:
@@ -50,7 +50,7 @@ equations:
     - compile_ptx_to_cubin() always returns Err (cuLinkCreate skipped)
     - Legacy JIT (cuModuleLoadDataEx) used for all PTX modules
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - device_id >= 0
     lean_theorem: Theorems.Culink_Skip
   cuda_graph_guard:

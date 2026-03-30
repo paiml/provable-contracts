@@ -5,6 +5,7 @@ use provable_contracts::coverage::{coverage_report, overall_percentage};
 use provable_contracts::reverse_coverage::reverse_coverage;
 use provable_contracts::schema::parse_contract;
 
+#[allow(clippy::too_many_lines)]
 pub fn run(
     contract_dir: &Path,
     binding_path: Option<&Path>,
@@ -27,10 +28,23 @@ pub fn run(
             "  Coverage: {:.1}% (bound + exempt / total)",
             report.coverage_pct
         );
+        // Count feature-gated functions
+        let gated_count = report
+            .unbound
+            .iter()
+            .filter(|f| f.feature_gate.is_some())
+            .count();
+        if gated_count > 0 {
+            println!("  Feature-gated:   {gated_count} (require --features to test)");
+        }
         if !report.unbound.is_empty() {
             println!("\nUnbound functions:");
             for f in report.unbound.iter().take(20) {
-                println!("  {} ({}:{})", f.path, f.file, f.line);
+                let gate_note = match &f.feature_gate {
+                    Some(feat) => format!(" [requires --features {feat}]"),
+                    None => String::new(),
+                };
+                println!("  {} ({}:{}){gate_note}", f.path, f.file, f.line);
             }
             if report.unbound.len() > 20 {
                 println!("  ... and {} more", report.unbound.len() - 20);
@@ -271,7 +285,8 @@ fn classify_macro(macro_name: &str, gen_content: &str) -> EnforcementLevel {
     let has_domain_pre = body.contains("is_finite")
         || body.contains("len() >")
         || body.contains("len() %")
-        || body.contains("len() ==");
+        || body.contains("len() ==")
+        || body.contains("is_empty()");
 
     // Check if there's a corresponding post macro
     let post_name = macro_name.replace("contract_pre_", "contract_post_");

@@ -23,7 +23,7 @@ equations:
     - Merge order is deterministic given fixed merge list
     - 'Concatenation of token strings is preserved: concat(tokens'') == concat(tokens)'
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Merge_Rule
   encode:
@@ -38,7 +38,7 @@ equations:
     - All token IDs are valid vocabulary indices
     - Greedy left-to-right merge with priority ordering yields unique result
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Encode
   decode:
@@ -51,7 +51,7 @@ equations:
     - Every valid token ID maps to a non-empty byte sequence
     - Concatenation order matches token ID order
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Decode
 proof_obligations:

@@ -37,7 +37,7 @@ equations:
     - Adjusted distribution r(x) is a valid probability distribution (sums to 1)
     - Rejection sampling preserves correctness — accepted tokens follow q(x)
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Token_Acceptance
   output_equivalence:

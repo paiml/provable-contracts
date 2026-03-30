@@ -276,6 +276,29 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             format,
         } => commands::roofline::run(&contract_dir, params, bits, &hardware, &format),
         Commands::Pipeline { pipeline, format } => commands::pipeline::run(&pipeline, &format),
+        Commands::Kaizen {
+            contract_dir,
+            src_root,
+            repo,
+            dry_run,
+            codegen,
+            fix,
+            json,
+            min_score,
+        } => {
+            let default_root = std::path::PathBuf::from("..");
+            let root = src_root.as_deref().unwrap_or(&default_root);
+            commands::kaizen::run(
+                &contract_dir,
+                root,
+                repo.as_deref(),
+                dry_run || !fix, // default to dry-run unless --fix
+                codegen || fix,  // --fix implies --codegen
+                fix,
+                json,
+                min_score,
+            )
+        }
         Commands::VerifyBindings {
             binding,
             output,

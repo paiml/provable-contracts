@@ -15,7 +15,7 @@ equations:
     invariants:
     - Q projection is square for this config
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - num_heads > 0
     lean_theorem: Theorems.Q_Projection_Shape
   kv_projection_shape:
@@ -24,7 +24,7 @@ equations:
     invariants:
     - 'GQA ratio: n_h / n_kv = 4'
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - num_heads > 0
     lean_theorem: Theorems.Kv_Projection_Shape
   swiglu_ratio:
@@ -33,7 +33,7 @@ equations:
     invariants:
     - Expansion ratio is exactly 3.0
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - intermediate_size > 0
     lean_theorem: Theorems.Swiglu_Ratio
   o_projection_transpose:

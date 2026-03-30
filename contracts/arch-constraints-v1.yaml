@@ -21,8 +21,7 @@ equations:
     - Enum fields are exhaustive over the defined enum variants
     - DeepSeek eps = 1e-6 (not default 1e-5)
     preconditions:
-    - '!config.is_empty()'
-    - '!arch_name.is_empty()'
+    - 'input.len() > 0'
     lean_theorem: Theorems.Arch_Constraint_Lookup
 enums:
   NormType:

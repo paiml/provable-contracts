@@ -21,7 +21,7 @@ equations:
     - No construct produces > 20 tokens
     - Tokenization is deterministic
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Tokenizer_Adequacy
 tokenizer_config:

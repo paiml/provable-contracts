@@ -10,8 +10,7 @@ equations:
     - Type safety preserved
     - No panics on valid input
     preconditions:
-    - '!config.is_empty()'
-    - '!path.is_empty()'
+    - 'input.len() > 0'
     lean_theorem: Theorems.Configuration
 proof_obligations:
 - type: invariant

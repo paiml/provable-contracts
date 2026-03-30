@@ -18,7 +18,7 @@ equations:
     - Q projection is expanding (8192 > 4096) due to n_h*d_k > hidden
     - Q output dim = 8192
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - num_heads > 0
     lean_theorem: Theorems.Q_Projection_Shape
   kv_projection_shape:
@@ -28,7 +28,7 @@ equations:
     - 'GQA ratio: n_h / n_kv = 64 / 4 = 16'
     - Aggressive GQA with 16:1 head ratio
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - num_heads > 0
     lean_theorem: Theorems.Kv_Projection_Shape
   moe_expert_shape:
@@ -40,7 +40,7 @@ equations:
     - Total expert params per layer = 128 * 3 * 4096 * 1536
     - Active expert params per token = 8 * 3 * 4096 * 1536
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - num_heads > 0
     lean_theorem: Theorems.Moe_Expert_Shape
   moe_router_shape:
@@ -60,7 +60,7 @@ equations:
     - 'Per-expert expansion ratio 0.375 (sub-unity: compact experts)'
     - 'Effective expansion with 8 active: 8 * 1536 / 4096 = 3.0'
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - intermediate_size > 0
     lean_theorem: Theorems.Swiglu_Ratio
   o_projection_transpose:

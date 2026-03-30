@@ -24,7 +24,7 @@ equations:
     - Persistent residency eliminates per-inference transfer
     - VRAM usage = model_bytes (constant after startup)
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - model_bytes > 0
     lean_theorem: Theorems.Pcie_Overhead
   throughput_target:
@@ -37,7 +37,7 @@ equations:
     - Throughput bounded by min(bw_ceiling, compute_ceiling)
     - Weight residency eliminates PCIe bottleneck
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - batch_size > 0
     lean_theorem: Theorems.Throughput_Target
 proof_obligations:

@@ -19,7 +19,7 @@ equations:
     - Only W and b are updated during training
     - probs sum to 1.0
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - num_classes > 0
     lean_theorem: Theorems.Linear_Probe
 proof_obligations:

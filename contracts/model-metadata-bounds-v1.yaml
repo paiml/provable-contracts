@@ -18,7 +18,7 @@ equations:
     - eps ∈ [1e-10, 0.01] when configured
     - rope_theta ∈ [1.0, 1e8] when configured
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - num_layers > 0
     lean_theorem: Theorems.Config_Bounds_Check
 fields:

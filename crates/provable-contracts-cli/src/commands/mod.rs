@@ -13,6 +13,7 @@ pub mod generate;
 pub mod graph;
 pub mod infer;
 pub mod invariants;
+pub mod kaizen;
 pub mod kani;
 pub mod lean;
 pub mod lean_status;

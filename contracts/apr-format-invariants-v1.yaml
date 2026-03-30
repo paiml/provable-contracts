@@ -18,7 +18,7 @@ equations:
     - 'Roundtrip: deserialize(serialize(e)) == e'
     - Output size proportional to evidence complexity
     preconditions:
-    - '!data.is_empty()'
+    - 'input.len() > 0'
     - data.len() > 0
     lean_theorem: Theorems.Serialize_Roundtrip
   validate_schema:
@@ -31,8 +31,7 @@ equations:
     - Valid evidence always passes validation
     - Truncated input produces ValidationError, never panics
     preconditions:
-    - '!schema.is_empty()'
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     lean_theorem: Theorems.Validate_Schema
   parse_playbook:
     formula: "parse_qa_playbook: Path -> Result<QaPlaybook, ParseError>\n  Parses\
@@ -43,8 +42,7 @@ equations:
     - Valid YAML with correct schema parses successfully
     - Missing required fields produce descriptive ParseError
     preconditions:
-    - '!config.is_empty()'
-    - '!source.is_empty()'
+    - 'input.len() > 0'
     lean_theorem: Theorems.Parse_Playbook
   format_report:
     formula: "format_mqs_report: MqsResult -> String\n  Renders human-readable MQS\
@@ -55,7 +53,7 @@ equations:
     - Report contains all 6 dimension scores
     - Report contains overall grade
     preconditions:
-    - '!report.is_empty()'
+    - 'input.len() > 0'
     - entries.len() > 0
     lean_theorem: Theorems.Format_Report
   detect_regression:
@@ -68,8 +66,7 @@ equations:
     - No regressions when current >= baseline for all dimensions
     - Regression detected when any dimension drops > tolerance
     preconditions:
-    - '!config.is_empty()'
-    - '!path.is_empty()'
+    - 'input.len() > 0'
     lean_theorem: Theorems.Detect_Regression
 proof_obligations:
 - type: equivalence

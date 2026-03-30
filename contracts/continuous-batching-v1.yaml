@@ -20,7 +20,7 @@ equations:
     - No single request exceeds budget
     - Running requests prioritized over waiting
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Token_Budget
   request_state:
@@ -61,7 +61,7 @@ equations:
     - 'vLLM target: min_ratio >= 0.90 for c <= 8'
     - 'Bounded degradation: GEMV reads weights once for M requests'
     preconditions:
-    - '!input.is_empty()'
+    - 'input.len() > 0'
     - vocab_size > 0
     lean_theorem: Theorems.Decode_Degradation
   scheduling_fairness:

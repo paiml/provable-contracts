@@ -129,10 +129,32 @@ fn emit_precondition_macro(
         rust.push_str("    ($input:expr) => {{\n        let _contract_input = &$input;\n");
         for pre in pres {
             // Map common variable names to _contract_input
-            let assertion = pre
+            let mut assertion = pre
                 .replace("input", "_contract_input")
                 .replace("x.", "_contract_input.")
                 .replace("x)", "_contract_input)");
+            // Handle !var.method() patterns — map leading var to _contract_input
+            // Only for safe methods: is_empty, len, is_finite, iter (type-polymorphic)
+            if has_unbound_vars(&assertion, "_contract_input") {
+                let stripped = pre.trim_start_matches('!');
+                if let Some(dot) = stripped.find('.') {
+                    let var = &stripped[..dot];
+                    let method = &stripped[dot + 1..];
+                    // Only map for methods that exist on slices/vecs (not is_empty which fails on scalars)
+                    let safe_method = method.starts_with("len()")
+                        || method.starts_with("iter()")
+                        || method.starts_with("is_finite()");
+                    if safe_method
+                        && !var.is_empty()
+                        && var.chars().all(|c| c.is_alphanumeric() || c == '_')
+                    {
+                        let mapped = pre.replace(var, "_contract_input");
+                        if !has_unbound_vars(&mapped, "_contract_input") {
+                            assertion = mapped;
+                        }
+                    }
+                }
+            }
             // Skip assertions that still have unbound variables after substitution
             if has_unbound_vars(&assertion, "_contract_input") {
                 continue;
@@ -164,7 +186,18 @@ fn emit_postcondition_macro(
     rust.push_str(&format!("macro_rules! contract_post_{macro_name} {{\n"));
     rust.push_str("    ($result:expr) => {{\n        let _contract_result = &$result;\n");
     for post in posts {
-        let fixed = post.replace("result", "_contract_result");
+        // Replace result with *_contract_result for scalar comparisons (>= 0.0, etc.)
+        // and _contract_result for method calls (.is_finite(), .iter(), .len())
+        let fixed = if post.contains("result.") || post.contains("result)") {
+            post.replace("result", "_contract_result")
+        } else {
+            // Scalar comparison: result >= 0.0 → *_contract_result >= 0.0
+            post.replace("result", "*_contract_result")
+        };
+        // Skip postconditions that reference unbound variables (same hygiene fix as preconditions)
+        if has_unbound_vars(&fixed, "_contract_result") {
+            continue;
+        }
         let esc = post.replace('"', "\\\"");
         rust.push_str(&format!("        debug_assert!({fixed}, \"Contract {eq_name}: postcondition violated — {esc}\");\n"));
         count += 1;

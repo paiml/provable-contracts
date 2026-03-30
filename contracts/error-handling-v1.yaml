@@ -10,7 +10,7 @@ equations:
     - Type safety preserved
     - No panics on valid input
     preconditions:
-    - '!error_msg.is_empty()'
+    - 'input.len() > 0'
     - severity > 0
     lean_theorem: Theorems.Error_Handling
 proof_obligations:

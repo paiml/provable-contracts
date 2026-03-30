@@ -62,6 +62,7 @@ pub struct VerifyResult {
 /// - The binding YAML cannot be read or parsed
 /// - Policy is `AllImplemented` and any binding is not `implemented`
 /// - Policy is `TieredEnforcement` and any binding is `not_implemented`
+#[allow(clippy::too_many_lines)]
 pub fn verify_bindings(binding_yaml_path: &str, policy: BindingPolicy) -> VerifyResult {
     let path = Path::new(binding_yaml_path);
 

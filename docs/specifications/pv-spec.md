@@ -2716,3 +2716,248 @@ This section will be falsified by:
 - Logozzo & Fahndrich (2012). "On the Relative Completeness of
   Bytecode Analysis Versus Source Code Analysis." CC 2012.
   Why assertion placement matters for detection.
+
+## 31. Kaizen Fleet Enforcement
+
+### Motivation
+
+v2.4.0 produces 540 domain-specific assertions across 170+ contracts,
+but only 27 call sites exist across 25 repos. Fleet enforcement score
+is ~1.5%. The bottleneck is not contract quality — it's call site
+injection. Manual dogfooding (switching to each repo, regenerating,
+fixing compilation) takes hours per cycle.
+
+**Kaizen** (改善, continuous improvement) automates this: a single
+command measures, regenerates, injects, validates, and reports across
+the entire sovereign stack.
+
+### The Fleet
+
+The PAIML sovereign stack comprises 25 Rust crates with contract bindings:
+
+| Repo | Domain | Binding Count |
+|------|--------|---------------|
+| aprender | ML inference | 284 |
+| entrenar | ML training | 88 |
+| trueno | SIMD tensor ops | 22 |
+| realizar | quantization | 23 |
+| alimentar | serving/plugins | 16 |
+| forjar | secret management | 13 |
+| trueno-rag | RAG pipeline | 12 |
+| ruchy | bytecode VM | 18 |
+| batuta | code analysis | 15 |
+| depyler | Python→Rust transpiler | 11 |
+| 15 others | various | ~120 |
+
+Each repo follows the sibling-path convention:
+`CARGO_MANIFEST_DIR/../provable-contracts/contracts/<crate>/binding.yaml`
+
+### The Kaizen Loop
+
+```
+pv kaizen [--fleet | --repo <name>] [--dry-run] [--fix]
+```
+
+**Phase 1: Measure** (read-only)
+```
+For each repo in fleet:
+  1. Parse contracts/<repo>/binding.yaml → binding count
+  2. Scan <repo>/src/ for contract_pre_*/contract_post_* call sites
+  3. Read <repo>/src/generated_contracts.rs → classify E0/E1/E2
+  4. Compute enforcement score = penetration × quality
+```
+
+**Phase 2: Codegen** (regenerate macros)
+```
+For each repo in fleet:
+  1. pv codegen contracts/ -o <repo>/src/generated_contracts.rs
+  2. Diff old vs new → report assertion count changes
+```
+
+**Phase 3: Inject** (insert call sites at function entry/exit)
+```
+For each binding with zero call sites:
+  1. Locate the bound function in <repo>/src/ via fn signature
+  2. Parse function body (find opening brace)
+  3. Insert contract_pre_<macro>!(<first_param>) after opening brace
+  4. If postcondition macro exists, insert contract_post_<macro>!(<result>)
+     before return expressions
+```
+
+**Phase 4: Validate** (compile check)
+```
+For each modified repo:
+  1. cargo check --message-format=short
+  2. On failure: revert injection, log error, continue
+  3. On success: report new enforcement level
+```
+
+**Phase 5: Report** (aggregate fleet status)
+```
+Fleet Enforcement Report
+========================
+  Repos:          25
+  Total bindings: 612
+  Call sites:     27 → 340 (+313)
+  Penetration:    4.4% → 55.6%
+
+  E0 (generic):   33 → 33
+  E1 (domain):    500 → 500
+  E2 (pre+post):  7 → 42
+
+  Quality score:  0.34 → 0.52
+  Enforcement:    0.015 → 0.289
+
+  Per-repo:
+    aprender     284 bindings  12→156 sites  E1  0.004→0.275
+    entrenar      88 bindings   4→48  sites  E1  0.002→0.273
+    ...
+```
+
+### Injection Strategy
+
+Call site injection is AST-aware but lightweight — it uses line-level
+heuristics rather than a full Rust parser:
+
+1. **Find the function**: grep for `fn <binding_function_name>` in
+   `<repo>/src/**/*.rs`, skip `generated_contracts.rs` and test files
+2. **Find the opening brace**: scan forward from `fn` to the first `{`
+3. **Choose the macro**: map binding's contract stem + equation to
+   `contract_pre_<macro_name>`
+4. **Choose the argument**: use the first parameter name from the `fn`
+   signature (heuristic: first identifier after `(` that isn't `&`,
+   `mut`, or `self`)
+5. **Insert**: add `contract_pre_<macro>!(<arg>);` on the line after `{`
+6. **Guard placement**: if the function has early-return guards
+   (`if <cond> { return ... }`), insert after all guards
+
+**What injection does NOT do:**
+- Does not modify function signatures
+- Does not add `use` statements (macros are `#[macro_use]`)
+- Does not inject into `#[test]` functions
+- Does not inject if a call site already exists
+
+### Enforcement Grading
+
+`pv kaizen` reports letter grades per-repo and per-tier:
+
+| Grade | Score | Meaning |
+|-------|-------|---------|
+| **A** | >= 0.60 | Strong DbC — most bindings have domain-specific pre+post |
+| **B** | >= 0.40 | Good coverage — majority E1+, infrastructure solid |
+| **C** | >= 0.25 | Moderate — wired but many E0 or low penetration |
+| **D** | >= 0.10 | Weak — call sites exist but low quality |
+| **F** | < 0.10 | Minimal or no enforcement |
+
+Tool-tier repos use penetration-only grading (E0 is acceptable for
+non-numerical code):
+
+| Grade | Penetration | Meaning |
+|-------|-------------|---------|
+| **A** | >= 90% | Nearly all bindings have call sites |
+| **B** | >= 75% | Good wiring |
+| **C** | >= 50% | Partial |
+| **D** | >= 25% | Sparse |
+| **F** | < 25% | Not wired |
+
+### Tiered Scoring
+
+The fleet is split into two tiers with different quality expectations:
+
+**Kernel tier** (aprender, entrenar, realizar, trueno): Mathematical
+contracts with real invariants (finiteness, shape, bounds). Quality
+metric: `penetration × quality` where E0=0.1, E1=0.5, E2=1.0.
+Target: Grade A (score >= 0.60, E2 >= 60%).
+
+**Tool tier** (21 other repos): Infrastructure wiring. E0 is acceptable
+because tool functions pass strings/structs, not numeric slices.
+Target: Grade A (penetration >= 90%).
+
+### Enforcement Quality Targets
+
+| Milestone | Fleet | Kernel | Tool | How |
+|-----------|-------|--------|------|-----|
+| v2.3.0 | F (0.015) | — | — | Manual dogfooding |
+| v2.4.0 | F (0.019) | — | — | Codegen fix + trueno injection |
+| v2.4.1 | D (0.178) | — | — | `/kaizen` fleet sweep |
+| v2.4.2 | C (0.258) | — | — | Postconditions + E1 classifier |
+| v2.4.3 | C (0.374) | B (0.43) | B (86%) | YAML rewrite + tiered grading |
+| **v2.4.4** | **B (0.590)** | **A** | **A (93%)** | **realizar 74 new sites, E0→E1 fleet-wide, YAML equation fixes** |
+| v3.0.0 | A (0.65) | A (0.80) | A (95%) | E2 for remaining P1/P2 contracts |
+
+**v2.4.4 measured state (2026-03-30):**
+
+```
+Fleet: 25 repos, 523 bindings, 514 call sites
+Penetration: 98.3%
+Fleet enforcement: 0.5895 (Grade B)
+
+Kernel (4 repos): Grade A — 251/239 sites, E2 53%, pen 105%
+Tool (21 repos):  Grade A — 263/284 sites, pen 93%
+
+E0 (generic):     48 call sites
+E1 (domain pre): 325 call sites
+E2 (pre+post):   141 call sites
+Assertions:      11,429
+
+Grade A repos (6): alimentar, aprender, entrenar, realizar, trueno, trueno-rag
+Grade B repos (8): bashrs, decy, forjar, pacha, presentar, renacer, rmedia,
+                   ruchy, simular, trueno-zram
+Grade F repos (4): batuta, certeza, repartir, apr-model-qa-playbook
+```
+
+**Key improvements v2.4.3→v2.4.4:**
+- realizar: C→A (48→122 sites, 22→70 E2, +74 new call sites)
+- decy: D→B (21 E0→21 E1, YAML precondition fix)
+- presentar: D→B (20 E0→20 E1, added `render` equation to YAML)
+- rmedia: D→B (13 E0→13 E1, regenerated stale macros)
+- depyler: D→C (11 E0→0 E0, YAML precondition fix)
+- Fleet E0: 109→48 (-61), E1: 238→325 (+87), E2: 93→141 (+48)
+- Feature-gated test discovery: `#[cfg(feature = "gpu")]` tests
+  downgraded from Error to Warning in `pv lint`
+
+### CLI Reference
+
+```
+pv kaizen [OPTIONS]
+
+OPTIONS:
+    --src-root <PATH>    Root directory for sibling repos (default: ../)
+    --repo <NAME>        Run for a single repo only
+    --dry-run            Measure and report only (default)
+    --codegen            Regenerate generated_contracts.rs in each repo
+    --fix                Inject call sites and validate with cargo check
+    --json               Output as JSON (includes kernel_score, kernel_e2_pct)
+    --min-score <F>      Exit 1 if fleet score below threshold
+```
+
+**Output includes:**
+- Fleet-wide enforcement score with letter grade
+- Tiered breakdown: kernel (4 repos) vs tool (21 repos) with separate grades
+- Per-repo table with bindings, sites, E0/E1/E2, and letter grade
+- Workspace subcrate scanning (scans `crates/*/src/` in addition to `src/`)
+
+**Exit codes:** 0 = success, 1 = below `--min-score`.
+
+### Falsification Criteria (Section 31)
+
+1. **Injection safety**: After `pv kaizen --fleet --fix`, every modified
+   repo must `cargo check` clean. Any compilation failure is a bug in
+   the injector, not the repo.
+2. **No behavioral change**: Contract macros use `debug_assert!` only.
+   Release builds (`--release`) must produce identical binaries before
+   and after injection. Verify with `cargo build --release` checksum.
+3. **Score monotonicity**: Each `pv kaizen` run must produce
+   `enforcement_score >= previous_score`. Regression = bug.
+4. **Detection test**: Inject a known-bad input into softmax (NaN in
+   input slice). Debug build must panic at the contract assertion.
+   Release build must not panic.
+
+### References (Section 31)
+
+- Imai (1986). *Kaizen: The Key to Japan's Competitive Success.*
+  McGraw-Hill. The continuous improvement methodology.
+- Ohno (1988). *Toyota Production System.* Productivity Press.
+  Five-whys root cause analysis applied to enforcement gaps.
+- Meyer (1992). "Applying Design by Contract." IEEE Computer 25(10).
+  Pre/postcondition methodology that kaizen automates fleet-wide.

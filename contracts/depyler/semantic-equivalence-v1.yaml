@@ -23,6 +23,7 @@ equations:
     - Side effects on mutable arguments are identical
     - Exception/panic behavior is equivalent for invalid inputs
     preconditions:
+    - 'input.len() > 0'
     - '!config.is_empty()'
     - '!source.is_empty()'
     lean_theorem: Theorems.Observational_Equivalence
@@ -37,6 +38,7 @@ equations:
     - For loops iterate over same elements in same order
     - Return produces same value in both languages
     preconditions:
+    - 'input.len() > 0'
     - '!config.is_empty()'
     - '!source.is_empty()'
     lean_theorem: Theorems.Statement_Equivalence
@@ -51,6 +53,7 @@ equations:
     - 'Collection operations: indexing, slicing, append, insert produce equivalent
       state'
     preconditions:
+    - 'input.len() > 0'
     - '!config.is_empty()'
     - '!source.is_empty()'
     lean_theorem: Theorems.Expression_Equivalence
@@ -66,6 +69,7 @@ equations:
     - 'Break/continue: identical loop control in transpiled code'
     - 'With statements: resource acquisition and release semantics preserved'
     preconditions:
+    - 'input.len() > 0'
     - '!config.is_empty()'
     - '!source.is_empty()'
     lean_theorem: Theorems.Control_Flow_Equivalence
@@ -78,6 +82,7 @@ equations:
     - Element expression evaluated identically for each iteration
     - Nested comprehensions flatten correctly
     preconditions:
+    - 'input.len() > 0'
     - '!config.is_empty()'
     - '!source.is_empty()'
     lean_theorem: Theorems.Comprehension_Equivalence

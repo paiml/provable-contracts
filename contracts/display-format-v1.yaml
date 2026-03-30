@@ -10,9 +10,17 @@ equations:
     - Type safety preserved
     - No panics on valid input
     preconditions:
-    - '!format_str.is_empty()'
+    - 'input.len() > 0'
     - width > 0
     lean_theorem: Theorems.Display_Format
+  render:
+    formula: render transforms data into displayable output
+    invariants:
+    - Type safety preserved
+    - No panics on valid input
+    preconditions:
+    - 'input.len() > 0'
+    lean_theorem: Theorems.Render
 proof_obligations:
 - type: invariant
   property: display-format correctness

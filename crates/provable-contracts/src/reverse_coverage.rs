@@ -20,6 +20,8 @@ pub struct PubFn {
     pub line: usize,
     /// Whether it has a #[contract] annotation
     pub has_contract_macro: bool,
+    /// Feature gate if the function is behind `#[cfg(feature = "...")]`
+    pub feature_gate: Option<String>,
 }
 
 /// Result of reverse coverage analysis.
@@ -137,9 +139,46 @@ fn scan_file(path: &Path, results: &mut Vec<PubFn>) {
     };
     let file_str = path.display().to_string();
     let mut prev_line_has_contract = false;
+    // Track feature gates from #[cfg(feature = "...")] or #[cfg(all(test, feature = "..."))]
+    let mut module_feature_gate: Option<String> = None;
+    let mut pending_feature_gate: Option<String> = None;
+    let mut brace_depth: usize = 0;
+    let mut gate_depth: Option<usize> = None;
 
     for (i, line) in content.lines().enumerate() {
         let trimmed = line.trim();
+
+        // Track brace depth for module-level cfg gates
+        for ch in trimmed.chars() {
+            if ch == '{' {
+                brace_depth += 1;
+            } else if ch == '}' {
+                brace_depth = brace_depth.saturating_sub(1);
+                // If we exit the gated block, clear the module gate
+                if gate_depth.is_some_and(|d| brace_depth < d) {
+                    module_feature_gate = None;
+                    gate_depth = None;
+                }
+            }
+        }
+
+        // Detect #[cfg(feature = "...")] on functions or modules
+        if trimmed.starts_with("#[cfg(") {
+            if let Some(feat) = extract_feature_gate(trimmed) {
+                pending_feature_gate = Some(feat);
+                continue;
+            }
+        }
+
+        // Detect cfg-gated module declarations: `mod foo {`
+        if trimmed.starts_with("mod ") && pending_feature_gate.is_some() {
+            if trimmed.contains('{') {
+                module_feature_gate = pending_feature_gate.take();
+                gate_depth = Some(brace_depth);
+            }
+            pending_feature_gate = None;
+            continue;
+        }
 
         if trimmed.contains("#[contract(") {
             prev_line_has_contract = true;
@@ -160,18 +199,35 @@ fn scan_file(path: &Path, results: &mut Vec<PubFn>) {
                 .trim();
 
             if !fn_name.is_empty() && fn_name != "main" && fn_name != "new" {
+                let gate = pending_feature_gate
+                    .take()
+                    .or_else(|| module_feature_gate.clone());
                 results.push(PubFn {
                     path: fn_name.to_string(),
                     file: file_str.clone(),
                     line: i + 1,
                     has_contract_macro: prev_line_has_contract,
+                    feature_gate: gate,
                 });
             }
             prev_line_has_contract = false;
-        } else {
+            pending_feature_gate = None;
+        } else if !trimmed.starts_with("//") && !trimmed.starts_with('#') {
             prev_line_has_contract = false;
+            pending_feature_gate = None;
         }
     }
+}
+
+/// Extract the feature name from a `#[cfg(feature = "...")]` or
+/// `#[cfg(all(test, feature = "..."))]` attribute.
+fn extract_feature_gate(cfg_line: &str) -> Option<String> {
+    let feat_pos = cfg_line.find("feature")?;
+    let rest = &cfg_line[feat_pos..];
+    let quote_start = rest.find('"')?;
+    let after_quote = &rest[quote_start + 1..];
+    let quote_end = after_quote.find('"')?;
+    Some(after_quote[..quote_end].to_string())
 }
 
 #[cfg(test)]

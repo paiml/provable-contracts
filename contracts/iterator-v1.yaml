@@ -10,7 +10,7 @@ equations:
     - Type safety preserved
     - No panics on valid input
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - max_iterations > 0
     lean_theorem: Theorems.Iterator
 proof_obligations:

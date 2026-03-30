@@ -17,7 +17,7 @@ equations:
     - drift_score = 0 when mu_ref = mu_cur (no drift)
     - Larger shift produces larger score
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - window_size > 0
     lean_theorem: Theorems.Univariate_Drift
   performance_drift:
@@ -28,7 +28,7 @@ equations:
     - perf_drift >= 0
     - perf_drift = 0 when metric_ref = metric_cur
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - window_size > 0
     lean_theorem: Theorems.Performance_Drift
   classify_drift:

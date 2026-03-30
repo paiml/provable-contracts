@@ -5,8 +5,7 @@ use clap::Subcommand;
 /// Available subcommands for the `pv` CLI
 #[derive(Subcommand)]
 pub enum Commands {
-    /// Explain a contract in detail — narrative walkthrough of equations,
-    /// obligations, verification chain, and falsification strategy
+    /// Explain a contract in detail
     Explain {
         /// Path to the contract YAML file
         contract: PathBuf,
@@ -33,7 +32,7 @@ pub enum Commands {
         #[arg(short, long)]
         output: Option<PathBuf>,
     },
-    /// Extract kernel equations from `PyTorch` source into YAML contract
+    /// Extract kernel equations from `PyTorch` source into YAML
     #[command(name = "extract-pytorch")]
     ExtractPytorch {
         /// `PyTorch` source target (`file.py::function_name`)
@@ -42,7 +41,7 @@ pub enum Commands {
         #[arg(short, long)]
         output: Option<PathBuf>,
     },
-    /// Generate Rust `debug_assert`!() from YAML contract preconditions/postconditions
+    /// Generate Rust `debug_assert`!() from YAML contracts
     Codegen {
         /// Directory containing contract YAML files
         #[arg(default_value = "contracts")]
@@ -52,13 +51,9 @@ pub enum Commands {
         output: Option<PathBuf>,
     },
     /// Generate Kani proof harnesses from a contract
-    Kani {
-        /// Path to the contract YAML file
-        contract: PathBuf,
-    },
+    Kani { contract: PathBuf },
     /// Generate probar property tests from a contract
     Probar {
-        /// Path to the contract YAML file
         contract: PathBuf,
         /// Path to binding registry YAML (generates wired tests)
         #[arg(long)]
@@ -378,31 +373,16 @@ pub enum Commands {
         exit_code: bool,
     },
     /// Generate type invariant trait + Kani preservation harnesses
-    Invariants {
-        /// Path to the contract YAML file
-        contract: PathBuf,
-    },
+    Invariants { contract: PathBuf },
     /// Generate Coq theorem stubs from a contract
-    Coq {
-        /// Path to the contract YAML file
-        contract: PathBuf,
-    },
+    Coq { contract: PathBuf },
     /// Generate libfuzzer fuzz targets from a contract
-    Fuzz {
-        /// Path to the contract YAML file
-        contract: PathBuf,
-    },
-    /// Generate MIRAI abstract interpretation annotations from a contract
-    Mirai {
-        /// Path to the contract YAML file
-        contract: PathBuf,
-    },
-    /// Generate Flux refinement type annotations from a contract
-    Flux {
-        /// Path to the contract YAML file
-        contract: PathBuf,
-    },
-    /// Generate TLA+ system-level specification from contract dependency DAG
+    Fuzz { contract: PathBuf },
+    /// Generate MIRAI annotations from a contract
+    Mirai { contract: PathBuf },
+    /// Generate Flux refinement types from a contract
+    Flux { contract: PathBuf },
+    /// Generate TLA+ specification from contract dependency DAG
     Tla {
         /// Directory containing contract YAML files
         #[arg(default_value = "contracts")]
@@ -445,7 +425,7 @@ pub enum Commands {
         #[arg(long)]
         reason: String,
     },
-    /// Compute roofline performance ceilings from contract equations
+    /// Compute roofline ceilings from contract equations
     Roofline {
         /// Directory containing contract YAML files (must have roofline-model-v1.yaml)
         #[arg(long, default_value = "contracts")]
@@ -463,13 +443,32 @@ pub enum Commands {
         #[arg(short, long, default_value = "text")]
         format: String,
     },
-    /// Validate a pipeline contract (cross-repo compositional verification)
+    /// Validate a pipeline contract (cross-repo verification)
     Pipeline {
         /// Path to the pipeline YAML file
         pipeline: PathBuf,
         /// Output format: text (default) or json
         #[arg(short, long, default_value = "text")]
         format: String,
+    },
+    /// Fleet-wide contract enforcement (kaizen loop)
+    Kaizen {
+        #[arg(long, default_value = "contracts")]
+        contract_dir: PathBuf,
+        #[arg(long)]
+        src_root: Option<PathBuf>,
+        #[arg(long)]
+        repo: Option<String>,
+        #[arg(long)]
+        dry_run: bool,
+        #[arg(long)]
+        codegen: bool,
+        #[arg(long)]
+        fix: bool,
+        #[arg(long)]
+        json: bool,
+        #[arg(long)]
+        min_score: Option<f64>,
     },
     /// Generate a Rust test that verifies all bound functions exist
     VerifyBindings {

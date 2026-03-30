@@ -27,7 +27,7 @@ equations:
     - Total element count preserved across format conversion
     - No data is lost or duplicated
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - expected_count > 0
     lean_theorem: Theorems.Element_Count
   identity_1d:
@@ -47,7 +47,7 @@ equations:
     - Every GGUF tensor has exactly one APR counterpart
     - Mapping is invertible
     preconditions:
-    - '!config.is_empty()'
+    - 'input.len() > 0'
     - names.len() > 0
     lean_theorem: Theorems.Name_Bijection
 proof_obligations:
