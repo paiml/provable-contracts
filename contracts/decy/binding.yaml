@@ -106,3 +106,40 @@ bindings:
   function: from_ast_parameter
   module_path: decy::crates::decy-hir::src::lib::from_ast_parameter
   status: implemented
+# DECY-216: C++ type preservation bindings
+- contract: cpp-type-preservation-v1.yaml
+  equation: class_to_struct
+  function: extract_class
+  module_path: decy_parser::extract::types::extract_class
+  status: implemented
+- contract: cpp-type-preservation-v1.yaml
+  equation: class_to_struct
+  function: from_ast_class
+  module_path: decy_hir::HirClass::from_ast_class
+  status: implemented
+- contract: cpp-type-preservation-v1.yaml
+  equation: class_to_struct
+  function: generate_class
+  module_path: decy_codegen::CodeGenerator::generate_class
+  status: implemented
+- contract: cpp-type-preservation-v1.yaml
+  equation: namespace_to_mod
+  function: extract_namespace
+  module_path: decy_parser::extract::types::extract_namespace
+  status: implemented
+- contract: cpp-type-preservation-v1.yaml
+  equation: namespace_to_mod
+  function: generate_namespace
+  module_path: decy_codegen::CodeGenerator::generate_namespace
+  status: implemented
+- contract: cpp-type-preservation-v1.yaml
+  equation: operator_to_trait
+  function: detect_operator_kind
+  module_path: decy_parser::extract::types::detect_operator_kind
+  status: implemented
+- contract: cpp-type-preservation-v1.yaml
+  equation: inheritance_to_composition
+  function: generate_class
+  module_path: decy_codegen::CodeGenerator::generate_class
+  status: implemented
+  notes: Deref/DerefMut generation for base class composition
