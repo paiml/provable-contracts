@@ -27,4 +27,5 @@ pub trait LayernormKernelV1 {
     /// Invariant: sigma^2 >= 0 (non-negative variance)
     /// Invariant: sigma^2 = 0 iff x is constant
     fn statistics(&self, x: &[f32]) -> Vec<f32>;
+
 }

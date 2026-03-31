@@ -26,4 +26,5 @@ pub trait MatmulKernelV1 {
     /// Codomain: ℝ
     /// Invariant: |q_dot - f32_dot| ≤ quantization_error_bound
     fn quantized_dot(&self, b: &[f32], s_b: f32) -> Vec<f32>;
+
 }

@@ -20,4 +20,5 @@ pub trait SoftmaxKernelV1 {
     /// Invariant: σ(x)_i > 0 for all i (strict positivity)
     /// Invariant: argmax(σ(x)) = argmax(x) (order preservation)
     fn softmax(&self, x: &[f32]) -> Vec<f32>;
+
 }
