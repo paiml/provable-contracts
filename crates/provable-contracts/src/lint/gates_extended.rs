@@ -436,6 +436,11 @@ pub(crate) fn run_reverse_coverage_gate(
     )
 }
 
+#[cfg(test)]
+#[allow(clippy::all)]
+#[path = "gates_extended_tests.rs"]
+mod tests;
+
 /// Detect stale suppressions: rules/findings that were suppressed but no
 /// longer fire. Returns PV-SUP-001 findings for each stale suppression.
 pub(crate) fn check_stale_suppressions(

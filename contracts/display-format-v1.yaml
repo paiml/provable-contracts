@@ -12,6 +12,8 @@ equations:
     preconditions:
     - 'input.len() > 0'
     - width > 0
+    postconditions:
+    - 'result.len() > 0'
     lean_theorem: Theorems.Display_Format
   render:
     formula: render transforms data into displayable output
@@ -20,6 +22,8 @@ equations:
     - No panics on valid input
     preconditions:
     - 'input.len() > 0'
+    postconditions:
+    - 'result.len() > 0'
     lean_theorem: Theorems.Render
 proof_obligations:
 - type: invariant

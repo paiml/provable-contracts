@@ -231,5 +231,6 @@ fn extract_feature_gate(cfg_line: &str) -> Option<String> {
 }
 
 #[cfg(test)]
+#[allow(clippy::all)]
 #[path = "reverse_coverage_tests.rs"]
 mod tests;

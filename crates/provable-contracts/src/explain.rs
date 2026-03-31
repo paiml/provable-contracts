@@ -19,6 +19,7 @@ use explain_render::{
 };
 
 #[cfg(test)]
+#[allow(clippy::all)]
 #[path = "explain_tests.rs"]
 mod tests;
 

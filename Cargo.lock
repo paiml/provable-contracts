@@ -561,7 +561,7 @@ dependencies = [
 
 [[package]]
 name = "provable-contracts"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "criterion",
  "proptest",
@@ -576,7 +576,7 @@ dependencies = [
 
 [[package]]
 name = "provable-contracts-cli"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "clap",
  "provable-contracts",
@@ -587,7 +587,7 @@ dependencies = [
 
 [[package]]
 name = "provable-contracts-macros"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "proc-macro2",
  "quote",

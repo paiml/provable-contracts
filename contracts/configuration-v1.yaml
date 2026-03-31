@@ -11,6 +11,8 @@ equations:
     - No panics on valid input
     preconditions:
     - 'input.len() > 0'
+    postconditions:
+    - 'result.len() > 0'
     lean_theorem: Theorems.Configuration
 proof_obligations:
 - type: invariant
