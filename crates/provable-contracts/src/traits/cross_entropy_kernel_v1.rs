@@ -28,4 +28,5 @@ pub trait CrossEntropyKernelV1 {
     /// Invariant: exp(log_softmax(x)) = softmax(x)
     /// Invariant: log_sum_exp trick preserves numerical stability
     fn log_softmax(&self, x: &[f32]) -> Vec<f32>;
+
 }
