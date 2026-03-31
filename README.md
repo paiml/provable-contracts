@@ -38,6 +38,7 @@ proving.
 - [Usage](#usage)
 - [CLI Reference](#cli-reference)
 - [Contract Registry](#contract-registry)
+- [Fleet Enforcement (Kaizen)](#fleet-enforcement-kaizen)
 - [The Seven-Phase Pipeline](#the-seven-phase-pipeline)
 - [Escape-Proof Enforcement](#escape-proof-enforcement)
 - [Proof Obligation Types](#proof-obligation-types)
@@ -77,14 +78,19 @@ proving.
 - **Contract Scoring** -- Five-dimension quality scoring (spec depth,
   falsification, Kani, Lean, binding) with A-F letter grades.
 - **Quality Gate (lint)** -- Unified validate + audit + score gate with
-  pass/fail exit codes, SARIF output, and CI integration. Five gates:
-  validate, audit, score, verify (test refs), enforce (pre/post/Lean).
+  pass/fail exit codes, SARIF output, and CI integration. Seven gates:
+  validate, audit, score, verify (test refs), enforce (pre/post/Lean),
+  enforcement-level, reverse-coverage.
 - **Semantic Query Engine** -- BM25 search across all contracts with
   tier/class filters, cross-project discovery, and graph-aware ranking.
 - **PyTorch Extraction** -- `pv extract-pytorch` infers pre/postconditions
   from PyTorch docstrings and generates YAML contract skeletons.
 - **Codegen** -- `pv codegen` generates `debug_assert!()` macros from
   YAML preconditions/postconditions for compile-time enforcement.
+- **Kaizen Fleet Enforcement** -- `pv kaizen` measures, regenerates,
+  injects, and validates contract enforcement across 25 sovereign stack
+  repos. Tiered scoring (kernel/tool), A-F letter grades per-repo,
+  workspace subcrate scanning, feature-gated test discovery.
 
 ## Installation
 
@@ -94,7 +100,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-provable-contracts = "0.1.1"
+provable-contracts = "0.2"
 ```
 
 ### CLI
@@ -235,11 +241,15 @@ pv book contracts/ -o book/src/contracts/
 | `infer`            | Auto-suggest contracts for unbound functions             |
 | `unlock`           | Remove enforcement level lock (`--reason` required)      |
 | `book`             | Generate mdBook pages for contracts                      |
+| `kaizen`           | Fleet-wide enforcement measurement with tiered grades    |
+| `roofline`         | Compute roofline ceilings from contract equations        |
+| `pipeline`         | Validate cross-repo pipeline contracts                   |
+| `verify-bindings`  | Generate compile-time binding verification tests         |
 
 ## Contract Registry
 
-192 contract YAML files ship in `contracts/`, organized by seven tiers,
-five equivalence classes (A-E), and thirteen per-crate directories.
+171+ contract YAML files ship in `contracts/`, organized by seven tiers,
+five equivalence classes (A-E), and twenty-five per-crate directories.
 
 **Tier 1 -- Foundation Kernels**: softmax, rmsnorm, rope, gelu, silu,
 layernorm, batchnorm, cross-entropy, transpose, matmul, embedding,
@@ -310,6 +320,40 @@ rope ← rope-extrapolation       hybrid-dispatch ────────↑
 model-config-algebra ← qwen35-shapes ──────────────────↑
                      ← kv-cache-sizing ─────────────────↑
 ```
+
+## Fleet Enforcement (Kaizen)
+
+`pv kaizen` measures contract enforcement across the entire PAIML
+sovereign stack -- 25 Rust repos with 534 bindings.
+
+```
+$ pv kaizen --src-root /home/noah/src
+
+Fleet Enforcement Report
+========================
+  Repos:              25
+  Call sites:         636
+  Penetration:        119%
+  Enforcement:        0.92 (Grade A)
+
+  Tiered:
+    Kernel (4 repos):  Grade A — 259 sites, E2 53%
+    Tool (21 repos):   Grade A — 287 sites, pen 97%
+```
+
+**Grading** (score = penetration x quality, E0=0.1 E1=0.5 E2=1.0):
+
+| Grade | Score  | Meaning                          |
+|-------|--------|----------------------------------|
+| A     | >= 0.60 | Strong DbC, domain pre+post     |
+| B     | >= 0.40 | Good coverage, majority E1+     |
+| C     | >= 0.25 | Moderate, wired but many E0     |
+| D     | >= 0.10 | Weak, low quality               |
+| F     | < 0.10  | Minimal enforcement             |
+
+24 of 25 Rust repos at Grade A. The `/kaizen` Claude Code skill
+automates the measure-inject-validate loop using five-whys root cause
+analysis.
 
 ## The Seven-Phase Pipeline
 

@@ -20,6 +20,7 @@
 - [Integration with PAIML Stack](./integration.md)
 - [Contract Lifecycle](./contract-lifecycle.md)
 - [Lint Quality Gate](./lint-quality-gate.md)
+- [Fleet Enforcement (Kaizen)](./kaizen.md)
 - [Examples](./examples.md)
 - [References](./references.md)
 
