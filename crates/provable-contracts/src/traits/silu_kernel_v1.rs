@@ -28,5 +28,4 @@ pub trait SiluKernelV1 {
     /// Invariant: SiLU(x) ~ x for large positive x (asymptotic linearity)
     /// Invariant: SiLU is monotonic for x > 0
     fn silu(&self, x: &[f32]) -> Vec<f32>;
-
 }

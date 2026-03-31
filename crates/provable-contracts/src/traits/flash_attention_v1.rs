@@ -20,5 +20,4 @@ pub trait FlashAttentionV1 {
     /// Invariant: Memory usage O(N) not O(N²)
     /// Invariant: Online softmax: running max and sum across tiles
     fn flash_attention(&self, q: &[f32], k: &[f32], v: &[f32]) -> Vec<f32>;
-
 }

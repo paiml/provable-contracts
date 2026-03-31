@@ -21,5 +21,4 @@ pub trait GqaKernelV1 {
     /// Invariant: GQA(kv_heads=num_heads) = standard MHA
     /// Invariant: num_heads must be divisible by num_kv_heads
     fn gqa(&self, q: &[f32], k: &[f32], v: &[f32]) -> Vec<f32>;
-
 }

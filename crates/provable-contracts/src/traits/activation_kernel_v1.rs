@@ -37,5 +37,4 @@ pub trait ActivationKernelV1 {
     /// Invariant: SiLU(x) → 0 as x → -∞
     /// Invariant: SiLU(0) = 0
     fn silu(&self, x: f32) -> Vec<f32>;
-
 }
