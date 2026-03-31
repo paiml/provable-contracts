@@ -35,8 +35,8 @@ missing_panics_doc = "allow"
 format_push_string = "allow"
 
 [workspace.dependencies]
-provable-contracts = { path = "crates/provable-contracts" }
-provable-contracts-macros = { path = "crates/provable-contracts-macros" }
+provable-contracts = { path = "crates/provable-contracts", version = "0.2.1" }
+provable-contracts-macros = { path = "crates/provable-contracts-macros", version = "0.2.1" }
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"
 thiserror = "2"
