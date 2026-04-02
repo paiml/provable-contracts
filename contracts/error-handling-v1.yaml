@@ -5,15 +5,18 @@ metadata:
   - 'Rust API Guidelines: https://rust-lang.github.io/api-guidelines/'
 equations:
   error_handling:
-    formula: error-handling follows standard Rust conventions
+    formula: "Result<T, E> where E: Error + Send + Sync + 'static"
+    domain: "Rust error types implementing std::error::Error trait chain"
     invariants:
-    - Type safety preserved
-    - No panics on valid input
+    - "Error::source() forms a DAG (no cycles in error chain)"
+    - "Display output includes root cause (no silent swallowing)"
+    - "downcast_ref recovers original error type"
     preconditions:
-    - 'input.len() > 0'
-    - severity > 0
+    - "E implements std::error::Error"
+    - "E implements Display with human-readable message"
     postconditions:
-    - 'result.len() > 0'
+    - "Err(e) preserves full causal chain via source()"
+    - "error.to_string() is non-empty and contains context"
     lean_theorem: Theorems.Error_Handling
 proof_obligations:
 - type: invariant

@@ -9,6 +9,7 @@ metadata:
 equations:
   class_to_struct:
     formula: 'forall c in C++ classes: transpile(c) = struct + impl + (Drop if destructor)'
+    lean_theorem: Theorems.Class_To_Struct
     domain: C++ class declarations with fields, methods, constructors, destructors
     codomain: Rust struct + impl block + optional Drop trait
     invariants:
@@ -25,6 +26,7 @@ equations:
     - Output compiles with rustc --edition 2021
   namespace_to_mod:
     formula: 'forall ns in C++ namespaces: transpile(ns) = pub mod { contents }'
+    lean_theorem: Theorems.Namespace_To_Mod
     domain: C++ namespace declarations
     codomain: Rust pub mod blocks
     invariants:
@@ -37,6 +39,7 @@ equations:
     - Output contains pub mod with correct name
   operator_to_trait:
     formula: 'forall op in overloaded operators: transpile(op) = impl std::ops::Trait'
+    lean_theorem: Theorems.Operator_To_Trait
     domain: C++ operator overloading methods (operator+, operator==, etc.)
     codomain: Rust std::ops trait implementations
     invariants:
@@ -50,6 +53,7 @@ equations:
     - Output contains impl std::ops::Trait for ClassName
   inheritance_to_composition:
     formula: 'forall derived : base: transpile(derived) = struct { base: Base, ...fields } + Deref'
+    lean_theorem: Theorems.Inheritance_To_Composition
     domain: 'C++ single inheritance (class Derived : public Base)'
     codomain: 'Rust composition with Deref/DerefMut'
     invariants:

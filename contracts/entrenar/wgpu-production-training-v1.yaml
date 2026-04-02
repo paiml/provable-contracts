@@ -14,18 +14,23 @@ metadata:
 equations:
   lora_grad_b:
     formula: "dL/dB = (alpha/rank) * grad_output^T @ (A @ x)^T"
+    lean_theorem: Theorems.Lora_Grad_B
     domain: "B in R^{d_out x rank}, grad_output in R^{seq x d_out}"
   lora_grad_a:
     formula: "dL/dA = (alpha/rank) * B^T @ grad_output @ x^T"
+    lean_theorem: Theorems.Lora_Grad_A
     domain: "A in R^{rank x d_in}, x in R^{seq x d_in}"
   attn_grad_v:
     formula: "dV = P^T @ dO where P = softmax attention weights"
+    lean_theorem: Theorems.Attn_Grad_V
     domain: "P in R^{seq x seq}, dO in R^{seq x d_v}"
   attn_grad_q:
     formula: "dQ = (P * (dP - rowsum(P*dP))) @ K / sqrt(d_k)"
+    lean_theorem: Theorems.Attn_Grad_Q
     domain: "Q, K in R^{seq x d_k}"
   grad_accumulation:
     formula: "effective_lr = lr / accumulation_steps"
+    lean_theorem: Theorems.Grad_Accumulation
     domain: "lr > 0, accumulation_steps >= 1"
 
 proof_obligations:

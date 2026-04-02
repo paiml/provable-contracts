@@ -5,14 +5,18 @@ metadata:
   - 'Rust API Guidelines: https://rust-lang.github.io/api-guidelines/'
 equations:
   configuration:
-    formula: configuration follows standard Rust conventions
+    formula: "Config::load(path) -> Result<Config, ConfigError> with defaults + override"
+    domain: "Layered configuration: defaults < file < env < CLI"
     invariants:
-    - Type safety preserved
-    - No panics on valid input
+    - "Config is always valid after load() succeeds (no partial state)"
+    - "Unknown keys are rejected, not silently ignored"
+    - "Serde roundtrip: serialize(deserialize(bytes)) == bytes"
     preconditions:
-    - 'input.len() > 0'
+    - "path.exists() || default config is defined"
+    - "file content is valid TOML/YAML (schema-validated)"
     postconditions:
-    - 'result.len() > 0'
+    - "all required fields have values (from defaults or file)"
+    - "numeric fields are within documented bounds"
     lean_theorem: Theorems.Configuration
 proof_obligations:
 - type: invariant

@@ -13,6 +13,7 @@ metadata:
 equations:
   elementwise_binary:
     formula: "c[i] = a[i] ⊕ b[i] for ⊕ ∈ {+, -, *, /}"
+    lean_theorem: Theorems.Elementwise_Binary
     domain: "a, b ∈ ℝ^n (same length)"
     codomain: "c ∈ ℝ^n"
     invariants:
@@ -21,11 +22,13 @@ equations:
 
   scalar_mul:
     formula: "c[i] = α * a[i]"
+    lean_theorem: Theorems.Scalar_Mul
     domain: "a ∈ ℝ^n, α ∈ ℝ"
     codomain: "c ∈ ℝ^n"
 
   dot_product:
     formula: "s = Σ_i a[i] * b[i]"
+    lean_theorem: Theorems.Dot_Product
     domain: "a, b ∈ ℝ^n"
     codomain: "s ∈ ℝ"
 

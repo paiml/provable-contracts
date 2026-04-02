@@ -5,12 +5,18 @@ metadata:
   - 'Rust API Guidelines: https://rust-lang.github.io/api-guidelines/'
 equations:
   builder_pattern:
-    formula: builder-pattern follows standard Rust conventions
+    formula: "Builder::new().field(v).build() -> Result<T, BuilderError>"
+    domain: "Typestate builder with required and optional fields"
     invariants:
-    - Type safety preserved
-    - No panics on valid input
+    - "build() returns Err if required fields are unset"
+    - "Builder is consumed on build() — no reuse after build"
+    - "Partial builder is valid — only build() checks completeness"
     preconditions:
-    - 'input.len() > 0'
+    - "Builder struct has at least one required field"
+    - "All field setters return &mut Self or Self (fluent API)"
+    postconditions:
+    - "Ok(T) implies all required fields are set"
+    - "Err(BuilderError) names the missing field(s)"
     lean_theorem: Theorems.Builder_Pattern
 proof_obligations:
 - type: invariant

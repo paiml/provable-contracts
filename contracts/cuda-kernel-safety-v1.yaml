@@ -8,6 +8,7 @@ metadata:
 equations:
   kernel_ffi:
     formula: 'forall f with __global__: transpile(f) = extern "C" { fn name(raw_params); }'
+    lean_theorem: Theorems.Kernel_Ffi
     domain: CUDA __global__ kernel functions
     codomain: 'Rust extern "C" FFI declarations with raw pointer types'
     invariants:
@@ -23,6 +24,7 @@ equations:
     - Output contains fn with matching name
   qualifier_preservation:
     formula: 'cuda_qualifier(AST) = cuda_qualifier(HIR) = cuda_qualifier(codegen input)'
+    lean_theorem: Theorems.Qualifier_Preservation
     domain: Functions with CUDA qualifiers through transformation pipeline
     codomain: Preserved qualifier at codegen stage
     invariants:
@@ -35,6 +37,7 @@ equations:
     - Codegen receives non-None cuda_qualifier for annotated functions
   host_transpilation:
     formula: 'forall f without CUDA qualifier: transpile(f) = normal Rust function'
+    lean_theorem: Theorems.Host_Transpilation
     domain: Host-side functions in .cu files
     codomain: Standard safe Rust functions
     invariants:
