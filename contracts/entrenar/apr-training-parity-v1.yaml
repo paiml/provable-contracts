@@ -32,6 +32,58 @@ current_state:
   cpu_utilization_pct: 493
   root_symptom: "CPU lm_head fallback, NaN in GPU forward"
 
+# =============================================================================
+# MANDATORY DIAGNOSTIC PROTOCOL — run BEFORE forming any hypothesis
+# =============================================================================
+# Five-whys lesson (2026-04-02): We spent hours on V-proj dequant, VRAM budget,
+# and rank override when the real bug was cuBLAS GEMM returning zeros. The
+# contract had pipeline-level hypotheses but no operation-level postconditions.
+# These checks would have caught the zeros on the FIRST run.
+
+diagnostic_protocol:
+  - id: DIAG-001
+    name: "Per-operation output non-zero check"
+    description: >
+      After EVERY compute operation (RMSNorm, GEMM, Attention, SwiGLU, Residual),
+      verify output[:4] contains at least one non-zero value. Zeros indicate the
+      operation produced no output — either the op didn't execute, wrote to the
+      wrong buffer, or received zero input.
+    when: "FIRST forward pass of FIRST training step"
+    check: "output[:4].any(|x| x != 0.0)"
+    if_fails: "The specific operation that first produces zeros IS the root cause"
+    postcondition: "Every intermediate buffer (norm1_out, q, k, v, attn_out, ffn_out, output) is non-zero"
+
+  - id: DIAG-002
+    name: "cuBLAS GEMM input/output verification"
+    description: >
+      After the first cuBLAS GEMM call, verify: A[:4] non-zero, B[:4] non-zero,
+      C[:4] non-zero. If A and B are non-zero but C is zero, cuBLAS GEMM is
+      silently failing — check stream sync, handle validity, or dimension mismatch.
+    when: "FIRST GEMM call in FIRST forward pass"
+    check: "A[:4].any(!=0) AND B[:4].any(!=0) AND C[:4].any(!=0)"
+    if_fails: "cuBLAS GEMM broken — check cublas_gemm_forward parameters"
+
+  - id: DIAG-003
+    name: "Weight buffer residency check"
+    description: >
+      After GPU upload, verify each weight buffer[:4] matches the CPU source[:4].
+      The TRACE logs show nonzero counts but don't verify the uploaded values
+      are accessible from the compute stream.
+    when: "After CudaNf4TransformerBlock::new completes"
+    check: "gpu_download(w_q_fp32)[:4] == cpu_transposed[:4]"
+    if_fails: "Upload succeeded but memory is inaccessible from compute context"
+
+# =============================================================================
+# MEASURED FINDING (2026-04-02): cuBLAS GEMM returns zeros
+# =============================================================================
+# [ENT-318] cuBLAS m=74 k=1536 n=1536 c[:4]=[0.0, 0.0, 0.0, 0.0]
+#
+# cuBLAS returns Ok(()) but output is ALL ZEROS. This means either:
+# 1. Input A (norm1_out after RMSNorm) is zero → check DIAG-001
+# 2. Input B (w_q_fp32 dequantized weight) is zero ON GPU → check DIAG-003
+# 3. cuBLAS handle is on wrong stream/context → check DIAG-002
+# 4. cuBLAS wrote to a different memory address than C's device pointer
+
 # Each hypothesis MUST be falsified before investing engineering effort.
 # A hypothesis that survives falsification becomes an action item.
 # A hypothesis that fails falsification is RETRACTED — saving wasted effort.
@@ -77,19 +129,22 @@ hypotheses:
       CONFIRMATION TEST: Run apr finetune with --method lora (NO NF4).
       If GPU forward works without NF4: CONFIRMED — NF4 V-proj dequant is root cause.
       If NaN persists: FALSIFIED — deeper issue in forward pass.
-    status: TRACED
+    status: PARTIALLY_CONFIRMED
     date: 2026-04-02
     evidence: >
-      apr finetune stderr trace analysis on yoga:
-      - 196 total weight tensors dequantized via NF4
-      - 185 nonzero (correctly dequantized)
-      - 11 all-zero (100% of V projection weights, shape 256x1536)
-      - Pattern: every [K proj nonzero=354K] followed by [V proj nonzero=0]
-      Filed: paiml/trueno#233
+      Two discoveries:
+      1. OLD binary (crates.io entrenar): V-proj ALL ZEROS after NF4 dequant (trueno#233)
+      2. NEW binary (local entrenar): V-proj CORRECT (nonzero=350K+) but NaN PERSISTS
+      The V-proj zero bug was real and is FIXED in local entrenar HEAD.
+      But NaN continues from a SECOND source: the inference-style CPU forward path
+      that runs when GPU can't fit embeddings (1780MB > 1228MB free on 8GB yoga).
+      H-PARITY-002 on gx10 (120GB, everything on GPU) shows 96% GPU = WORKS.
+      Filed: paiml/trueno#233 (V-proj fix), paiml/entrenar#317 (CPU forward NaN)
     next_action: >
-      1. Confirm with --method lora (no NF4) that GPU forward works
-      2. Fix trueno NF4 dequant for V projection weight layout
-      3. Re-run canary — expected throughput jump 44 → 2000+ tok/s
+      1. Publish fixed entrenar to crates.io (V-proj fix is local only)
+      2. Fix CPU inference-style forward NaN (entrenar#317)
+      3. OR fix VRAM check (1780MB claim for 446MB embed) to keep lm_head on GPU
+      4. OR implement chunked GPU lm_head to eliminate CPU fallback entirely
 
   - id: H-PARITY-003
     name: "Forward pass itself is broken → entrenar transformer block bug"
@@ -125,6 +180,33 @@ hypotheses:
       Fix: chunked GPU lm_head instead.
     status: UNTESTED
     next_action: "Grep entrenar for the VRAM threshold calculation"
+
+  - id: H-PARITY-006
+    name: "cuBLAS GEMM silently produces zeros — handle/stream/context issue"
+    description: >
+      MEASURED: cuBLAS m=74 k=1536 n=1536 returns c[:4]=[0,0,0,0] (entrenar#318).
+      cuBLAS_gemm_forward returns Ok(()) but output is all zeros.
+      Three sub-hypotheses to test via DIAG protocol:
+      A) RMSNorm output (GEMM input A) is zero → RMSNorm bug
+      B) Weight buffer (GEMM input B) is zero on GPU despite upload trace showing nonzero
+         → upload went to wrong address or different CUDA context
+      C) cuBLAS wrote to wrong C address → pointer stale after buffer realloc
+    prediction: >
+      One of DIAG-001/002/003 will identify which input/output is zero.
+      The ZERO input is the root cause. Fix that operation.
+    falsification_test: >
+      Add A[:4], B[:4], C[:4] trace to first cuBLAS call.
+      If A is zero: RMSNorm bug.
+      If B is zero: weight upload failed or context mismatch.
+      If A and B non-zero but C zero: cuBLAS handle issue (stream/context).
+    status: MEASURED
+    date: 2026-04-02
+    evidence: >
+      [ENT-318] cuBLAS m=74 k=1536 n=1536 c[:4]=[0.0, 0.0, 0.0, 0.0]
+      cuBLAS returns Ok but output is zeros. Next: add A/B trace.
+    next_action: >
+      Build apr with A[:4]+B[:4]+C[:4] trace in gemm_forward.
+      Deploy to yoga. Identify which buffer is zero. Fix that buffer.
 
   - id: H-PARITY-005
     name: "Chunked GPU lm_head eliminates CPU bottleneck"
@@ -171,6 +253,14 @@ proof_obligations:
     property: Hypothesis tested before effort invested
     formal: "for all h in hypotheses: h.status != UNTESTED before implementing h.fix"
     applies_to: all
+  - type: invariant
+    property: Every forward op produces non-zero output
+    formal: "for all op in [RMSNorm, GEMM, Attention, SwiGLU, Residual]: output[:4].any(!=0)"
+    applies_to: forward_pass
+  - type: invariant
+    property: cuBLAS GEMM inputs and output are non-zero
+    formal: "A[:4].any(!=0) AND B[:4].any(!=0) => C[:4].any(!=0)"
+    applies_to: gemm_forward
 
 falsification_tests:
   - id: FALSIFY-PAR-001
@@ -197,6 +287,31 @@ falsification_tests:
           embed_size_mb = 151936 * 1536 * 2 / (1024*1024)  # ~446 MB FP16
           assert embed_size_mb < 1228, "FALSIFIED: embedding genuinely too large"
     if_fails: Check is correct, need chunked approach
+  - id: FALSIFY-PAR-004
+    rule: DIAG-001 (Every forward op non-zero)
+    prediction: Layer 0 first GEMM output is non-zero
+    test: |
+      def test_layer0_gemm_output_nonzero():
+          # After cuBLAS GEMM in NF4 forward, output[:4] must be non-zero
+          result = run_apr_with_gemm_trace()
+          assert any(v != 0 for v in result["c_first4"]), "cuBLAS GEMM output is zeros"
+    if_fails: cuBLAS GEMM broken — check inputs A/B, handle, stream
+  - id: FALSIFY-PAR-005
+    rule: DIAG-002 (cuBLAS inputs non-zero implies output non-zero)
+    prediction: If A[:4] and B[:4] non-zero, C[:4] must be non-zero
+    test: |
+      def test_cublas_inputs_imply_output():
+          result = run_apr_with_gemm_trace()
+          a_nz = any(v != 0 for v in result["a_first4"])
+          b_nz = any(v != 0 for v in result["b_first4"])
+          c_nz = any(v != 0 for v in result["c_first4"])
+          if a_nz and b_nz:
+              assert c_nz, "cuBLAS A/B non-zero but C zero — handle/stream broken"
+          elif not a_nz:
+              assert False, "RMSNorm output (A) is zero — norm bug"
+          else:
+              assert False, "Weight buffer (B) is zero on GPU — upload/context bug"
+    if_fails: Identifies exact broken component (A=norm, B=weight, C=cublas)
 
 kani_harnesses:
   - id: KANI-PAR-001
