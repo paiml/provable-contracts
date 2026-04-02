@@ -299,8 +299,9 @@ via `build.rs` + `#[contract]` proc macro (Level 3 integration):
 | **decy** | 456 | AllImplemented |
 | **rmedia** | 405 | AllImplemented |
 | **trueno** | 100 | AllImplemented |
+| **ttop** | 8 | AllImplemented |
 
-**Total: 16,989 bindings across 13 repos. 100% AllImplemented.**
+**Total: 16,997 bindings across 14 repos. 100% AllImplemented.**
 
 ### Qwen 3.5 Verification DAG
 
