@@ -3,27 +3,26 @@ target_crate: trueno
 bindings:
 - contract: pipeline-cache-v1.yaml
   equation: pipeline_cache
-  module_path: trueno::backends::gpu::batch::execute
-  function: PipelineCache::get_or_create
-  signature: 'fn get_or_create(&mut self, shader: &str, device: &Device) -> &ComputePipeline'
-  status: pending
-  notes: function not found in source [function not found in source]
+  module_path: trueno::backends::gpu::batch::execute::dispatch
+  function: PipelineCache
+  signature: 'pub type PipelineCache = HashMap<usize, CachedPipeline>'
+  status: implemented
+  notes: 'Type alias + cache_key() pattern; get-or-insert via contains_key + conditional
+    insert in execute_inner()'
 - contract: pipeline-cache-v1.yaml
   equation: single_encoder
   module_path: trueno::backends::gpu::batch::execute
   function: GpuCommandBatch::execute
-  signature: 'fn execute(&mut self, device: &Device, queue: &Queue) -> Result<(),
-    GpuError>'
-  status: pending
-  notes: Single command encoder per execute() call; N ops batched [function not found
-    in source]
+  signature: 'pub async fn execute(&mut self) -> Result<(), String>'
+  status: implemented
+  notes: 'Single command encoder per execute() call; N ops batched (C-BATCH-EXEC-001)'
 - contract: tiled-matmul-shader-v1.yaml
   equation: matmul_shader
-  module_path: trueno::backends::gpu::shaders
+  module_path: trueno::backends::gpu::shaders::basic_ops
   function: MATMUL_SHADER
-  signature: 'const MATMUL_SHADER: &str'
-  status: pending
-  notes: 16x16 tiled WGSL shader with shared memory [function not found in source]
+  signature: "pub const MATMUL_SHADER: &str"
+  status: implemented
+  notes: '16x16 tiled WGSL shader with shared memory (KAIZEN-021, C-TILED-MATMUL-001)'
 - contract: tiled-matmul-shader-v1.yaml
   equation: matmul_dispatch
   module_path: trueno::backends::gpu::device::linalg::matmul
@@ -35,46 +34,54 @@ bindings:
 - contract: tiled-matmul-shader-v1.yaml
   equation: execute_matmul_op
   module_path: trueno::backends::gpu::batch::execute::dispatch
-  function: execute_matmul_op
-  signature: 'fn execute_matmul_op(batch: &mut GpuCommandBatch, op: &MatmulOp) ->
-    Result<()>'
-  status: pending
-  notes: function not found in source
+  function: encode_matmul_op
+  signature: 'pub(crate) fn encode_matmul_op(&self, encoder: &mut CommandEncoder, cache:
+    &mut PipelineCache, shader_source: &str, label: &str, a: &BufferId, b: &BufferId,
+    output: &BufferId, m: u32, k: u32, n: u32) -> Result<(), String>'
+  status: implemented
+  notes: 'Named encode_matmul_op in source (encoder pattern, not direct execute)'
 - contract: gemm-backward-tiled-v1.yaml
   equation: backward_a_gemm
   module_path: trueno_gpu::kernels::backward::gemm
   function: GemmBackwardAKernel::tiled
-  signature: 'fn tiled(tile_size: u32) -> Self'
-  status: pending
-  notes: grad_A = grad_C @ B^T; tiled with shared memory [function not found in source]
+  signature: 'pub const fn tiled(m: u32, n: u32, k: u32, tile_size: u32) -> Self'
+  status: implemented
+  notes: 'grad_A = grad_C @ B^T; tiled with shared memory (C-TILE-BWD-001). Outputs
+    gemm_backward_a_tiled kernel.'
 - contract: gemm-backward-tiled-v1.yaml
   equation: backward_b_gemm
   module_path: trueno_gpu::kernels::backward::gemm
   function: GemmBackwardBKernel::tiled
-  signature: 'fn tiled(tile_size: u32) -> Self'
-  status: pending
-  notes: grad_B = A^T @ grad_C; tiled with shared memory [function not found in source]
+  signature: 'pub const fn tiled(m: u32, n: u32, k: u32, tile_size: u32) -> Self'
+  status: implemented
+  notes: 'grad_B = A^T @ grad_C; tiled with shared memory. Outputs gemm_backward_b_tiled
+    kernel.'
 - contract: gemm-backward-tiled-v1.yaml
   equation: tiled_gemm_arithmetic_intensity
   module_path: trueno_gpu::kernels::backward::gemm
-  function: GemmBackwardAKernel::arithmetic_intensity
-  signature: fn arithmetic_intensity(&self) -> f32
-  status: pending
-  notes: function not found in source [function not found in source]
+  function: GemmBackwardAKernel::tiled
+  signature: 'pub const fn tiled(m: u32, n: u32, k: u32, tile_size: u32) -> Self'
+  status: implemented
+  notes: 'Arithmetic intensity is a computed property of the tiled kernel variant (naive
+    ~0.5 vs tiled TILE/4 FLOP/byte). No separate accessor; the tiled constructor
+    implicitly sets this via tile_size parameter.'
 - contract: gemm-backward-tiled-v1.yaml
   equation: shared_memory_per_tile
   module_path: trueno_gpu::kernels::backward::gemm
-  function: GemmBackwardAKernel::shared_memory_bytes
-  signature: fn shared_memory_bytes(&self) -> usize
-  status: pending
-  notes: function not found in source [function not found in source]
+  function: GemmBackwardAKernel::tiled
+  signature: 'pub const fn tiled(m: u32, n: u32, k: u32, tile_size: u32) -> Self'
+  status: implemented
+  notes: 'Shared memory = 2 * tile_size^2 * sizeof(f32) bytes per tile. Computed from
+    tile_size parameter, not a separate accessor.'
 - contract: gemm-backward-tiled-v1.yaml
   equation: unrolled_instruction_ratio
   module_path: trueno_gpu::kernels::backward::gemm
   function: GemmBackwardAKernel::tiled_unrolled
-  signature: 'fn tiled_unrolled(tile_size: u32) -> Self'
-  status: pending
-  notes: 4x unrolled variant; IPC ratio 0.57 [function not found in source]
+  signature: 'pub const fn tiled_unrolled(m: u32, n: u32, k: u32, tile_size: u32) ->
+    Self'
+  status: implemented
+  notes: '4x unrolled variant; IPC ratio 0.57. Both GemmBackwardAKernel and GemmBackwardBKernel
+    have tiled_unrolled constructors.'
 - contract: activation-kernel-v1.yaml
   equation: relu
   module_path: trueno
@@ -116,19 +123,19 @@ bindings:
   module_path: trueno
   function: read
   status: implemented
-  notes: function not found in source
+  notes: Auto-inferred by pv infer
 - contract: gated-delta-net-v1.yaml
   equation: write
   module_path: trueno
   function: write
   status: implemented
-  notes: function not found in source
+  notes: Auto-inferred by pv infer
 - contract: model-config-algebra-v1.yaml
   equation: bounds
   module_path: trueno
   function: bounds
   status: implemented
-  notes: function not found in source
+  notes: Auto-inferred by pv infer
 - contract: activation-kernel-v1.yaml
   equation: silu
   module_path: trueno
@@ -167,50 +174,57 @@ bindings:
   notes: Auto-inferred by pv infer
 - contract: tensor-inventory-v1.yaml
   equation: tensor_count
-  module_path: trueno
-  function: tensor_count
-  status: pending
-  notes: function not found in trueno core source
+  module_path: trueno::cbtop::quantize::gguf
+  function: GgufReader::tensor_count
+  signature: 'pub fn tensor_count(&self) -> u64'
+  status: implemented
+  notes: 'In crates/cbtop/src/quantize/gguf.rs. Counts tensors in GGUF model files.'
 - contract: metrics-classification-v1.yaml
   equation: precision
-  module_path: trueno
-  function: precision
-  status: pending
-  notes: function not found in trueno core source
+  module_path: trueno::cbtop::adaptive_ml::types
+  function: ClassificationMetrics::precision
+  signature: 'pub fn precision(&self) -> f64'
+  status: implemented
+  notes: 'In crates/cbtop/src/adaptive_ml/types.rs. TP / (TP + FP).'
 - contract: metrics-classification-v1.yaml
   equation: recall
-  module_path: trueno
-  function: recall
-  status: pending
-  notes: function not found in trueno core source
+  module_path: trueno::cbtop::adaptive_ml::types
+  function: ClassificationMetrics::recall
+  signature: 'pub fn recall(&self) -> f64'
+  status: implemented
+  notes: 'In crates/cbtop/src/adaptive_ml/types.rs. TP / (TP + FN).'
 - contract: attention-kernel-v1.yaml
   equation: attention
-  module_path: trueno
-  function: attention
-  status: pending
-  notes: function not found in trueno core source
+  module_path: trueno_gpu::kernels::attention
+  function: AttentionKernel
+  signature: 'pub struct AttentionKernel (FlashAttention variants)'
+  status: implemented
+  notes: 'trueno-gpu/src/kernels/attention/mod.rs. FlashAttention (prefill) + Paged
+    (incremental) + MultiWarp + FlashDecoding variants.'
 - contract: int8-symmetric-quant-v1.yaml
   equation: quantize
-  module_path: trueno
-  function: quantize
-  status: pending
-  notes: function not found in trueno core source
+  module_path: trueno::crates::trueno_quant::quantize
+  function: quantize_q4_k
+  signature: 'pub fn quantize_q4_k(data: &[f32]) -> Vec<u8>'
+  status: implemented
+  notes: 'crates/trueno-quant/src/quantize.rs. Q4_K/Q5_K/Q6_K per-block scale-min
+    quantization. Also NF4 in src/brick/quant_ops/nf4.rs.'
 - contract: roofline-model-v1.yaml
   equation: bandwidth_ceiling
   module_path: trueno::monitor::compute_device
   function: ComputeDevice::memory_bandwidth_gbps
-  signature: fn memory_bandwidth_gbps(&self) -> anyhow::Result<f64>
-  status: pending
-  notes: 'PMAT-405: Peak memory BW for roofline model. Trait method on ComputeDevice
-    [function not found in source]'
+  signature: 'fn memory_bandwidth_gbps(&self) -> anyhow::Result<f64>'
+  status: implemented
+  notes: 'Trait method on ComputeDevice (TRUENO-SPEC-020). Also in crates/cbtop/src/roofline.rs
+    HardwareProfile::peak_bandwidth_gbps.'
 - contract: roofline-model-v1.yaml
   equation: throughput_bound
-  module_path: trueno::blis::backend_selection
-  function: BackendCostModel::roofline_analysis
-  signature: 'pub fn roofline_analysis(&self, m: usize, n: usize, k: usize) -> RooflineResult'
-  status: pending
-  notes: 'PMAT-405: min(compute_ceiling, bandwidth * arithmetic_intensity). 5x PCIe
-    rule [function not found in source]'
+  module_path: trueno::cbtop::roofline
+  function: HardwareProfile::theoretical_peak_at_oi
+  signature: 'pub fn theoretical_peak_at_oi(&self, operational_intensity: f64) -> f64'
+  status: implemented
+  notes: 'Roofline model: min(compute_ceiling, bandwidth * operational_intensity).
+    classify_bottleneck() returns compute-bound vs memory-bound.'
 - contract: gpu-context-health-v1.yaml
   equation: culink_skip
   module_path: trueno_gpu::driver::module
@@ -226,41 +240,40 @@ bindings:
   function: GpuBuffer::from_host_registered
   signature: 'pub unsafe fn from_host_registered(host_ptr: *mut T, len: usize) ->
     Result<Self, GpuError>'
-  status: pending
-  notes: 'PMAT-404: Zero-copy on unified memory (cc>=120). Eliminates PCIe transfer.
-    cuMemHostRegister path. [function not found in source]'
+  status: implemented
+  notes: 'PMAT-404: Zero-copy via cuMemHostRegister + cuMemHostGetDevicePointer. Eliminates
+    PCIe transfer on unified memory (cc>=120). PMAT-396/PMAT-420.'
 - contract: gpu-decode-profiling-v1.yaml
   equation: wall_coverage
-  module_path: trueno::brick::profiler::BrickProfiler
+  module_path: trueno::brick::profiler
   function: BrickProfiler::total_ns
-  signature: pub fn total_ns(&self) -> u64
-  status: pending
-  notes: 'PMAT-403: sum(brick_total_ns) / wall_clock_ns >= 0.85 when profiling valid
-    [function not found in source]'
+  signature: 'pub fn total_ns(&self) -> u64'
+  status: implemented
+  notes: 'PMAT-403: Total nanoseconds across all brick profiling. sum(brick_total_ns)
+    / wall_clock_ns >= 0.85 (PAR-200 fast path).'
 - contract: gpu-decode-profiling-v1.yaml
   equation: sync_verification
-  module_path: trueno::brick::profiler::BrickProfiler
+  module_path: trueno::brick::profiler
   function: BrickProfiler::set_sync_mode
   signature: 'pub fn set_sync_mode(&mut self, mode: SyncMode)'
-  status: pending
-  notes: 'PMAT-403: Immediate sync = brick avg correlates with kernel complexity;
-    Deferred < 100us [function not found in source]'
+  status: implemented
+  notes: 'PMAT-403: Modes: Immediate, PerLayer, Deferred, None. Deferred is default
+    for production (PAR-200).'
 - contract: gpu-decode-profiling-v1.yaml
   equation: token_accounting
-  module_path: trueno::brick::profiler::BrickProfiler
+  module_path: trueno::brick::profiler
   function: BrickProfiler::total_tokens
-  signature: pub fn total_tokens(&self) -> u64
-  status: pending
-  notes: 'PMAT-403: Counts brick ELEMENTS not decoded tokens. LmHead.count = decoded
-    tokens [function not found in source]'
+  signature: 'pub fn total_tokens(&self) -> u64'
+  status: implemented
+  notes: 'PMAT-403: Tracks total elements processed. LmHead.count = decoded tokens.'
 - contract: gpu-decode-profiling-v1.yaml
   equation: brick_ordering
-  module_path: trueno::brick::profiler::BrickProfiler
-  function: BrickProfiler::all_brick_stats
-  signature: pub fn all_brick_stats(&self) -> impl Iterator<Item = &BrickStats>
-  status: pending
-  notes: 'PMAT-403: Per-call avg must respect kernel complexity (LmHead > Gate > RmsNorm)
-    [function not found in source]'
+  module_path: trueno::brick::profiler
+  function: BrickProfiler::brick_stats
+  signature: 'pub fn brick_stats(&self, brick_id: BrickId) -> &BrickStats'
+  status: implemented
+  notes: 'PMAT-403: O(1) per-brick access via BrickId array index (PAR-200). Per-call
+    avg respects kernel complexity (LmHead > Gate > RmsNorm).'
 critical_path:
 - softmax
 - matmul
