@@ -37,9 +37,12 @@ falsification_tests:
   - id: FALSIFY-TARGET-001
     rule: speed_proportional
     prediction: "2-target training < 30 min for 99 samples × 3 epochs"
+    if_fails: "Target count introduces unexpected overhead — profile per-layer backward"
   - id: FALSIFY-TARGET-002
     rule: quality_preserved
     prediction: "Loss decreases across epochs with 2-target LoRA"
+    if_fails: "Gradient flow broken for subset targets — check backward skip logic"
   - id: FALSIFY-TARGET-003
     rule: target_subset
     prediction: "Invalid target names rejected at construction time"
+    if_fails: "Input validation missing — add target name allowlist check"
