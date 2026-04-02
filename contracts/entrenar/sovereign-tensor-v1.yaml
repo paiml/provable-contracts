@@ -43,22 +43,32 @@ invariants:
     rationale: "Replacing ndarray ops with Vec<f32> loops must not change results"
 
 falsification_tests:
-  FALSIFY-SOV-001:
+  - id: FALSIFY-SOV-001
+    rule: no_ndarray
+    prediction: "Zero ndarray references in Cargo.toml"
+    if_fails: "ndarray dependency not fully removed"
+  - id: FALSIFY-SOV-002
+    rule: optimizer_parity
+    prediction: "All AdamW/Adam/SGD tests pass without ndarray"
+    if_fails: "Optimizer regression after ndarray removal"
+  - id: FALSIFY-SOV-003
+    rule: lora_parity
+    prediction: "All LoRA forward/backward tests pass without ndarray"
+    if_fails: "LoRA regression after ndarray removal"
+  - id: FALSIFY-SOV-004
+    rule: no_ndarray_source
+    prediction: "Zero 'use ndarray' in production source"
+    if_fails: "ndarray imports remain in source code"
+
+proof_obligations:
+  - type: postcondition
+    property: No ndarray in sovereign tensor ops
+    formal: "zero ndarray references"
+
+kani_harnesses:
+  - id: KANI-SOV-001
     obligation: no_ndarray
-    method: "grep -r 'ndarray' entrenar/Cargo.toml"
-    pass_criterion: "Zero matches"
+    property: ndarray-free tensor operations
+    bound: 4
+    strategy: bounded_int
 
-  FALSIFY-SOV-002:
-    obligation: optimizer_parity
-    method: "Run existing AdamW/Adam/SGD tests — must pass without ndarray"
-    pass_criterion: "All optimizer tests pass"
-
-  FALSIFY-SOV-003:
-    obligation: lora_parity
-    method: "Run existing LoRA forward/backward tests — must pass without ndarray"
-    pass_criterion: "All LoRA tests pass"
-
-  FALSIFY-SOV-004:
-    obligation: no_ndarray
-    method: "grep -rn 'use ndarray' entrenar/src/ --include='*.rs'"
-    pass_criterion: "Zero matches in production code"

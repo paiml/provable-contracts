@@ -270,8 +270,7 @@ fn lean_theorem_names() -> &'static std::collections::HashSet<String> {
     CACHE.get_or_init(|| {
         let mut names = std::collections::HashSet::new();
         for base in &["lean", "../provable-contracts/lean"] {
-            let search_dir =
-                std::path::Path::new(base).join("ProvableContracts/Theorems");
+            let search_dir = std::path::Path::new(base).join("ProvableContracts/Theorems");
             if !search_dir.exists() {
                 continue;
             }
@@ -288,7 +287,8 @@ fn lean_theorem_names() -> &'static std::collections::HashSet<String> {
                             if path.extension().is_some_and(|e| e == "lean") {
                                 if let Ok(content) = std::fs::read_to_string(&path) {
                                     if !content.contains("sorry") {
-                                        let stem = path.file_stem()
+                                        let stem = path
+                                            .file_stem()
                                             .unwrap_or_default()
                                             .to_string_lossy()
                                             .to_string();
@@ -306,7 +306,9 @@ fn lean_theorem_names() -> &'static std::collections::HashSet<String> {
                                                 let rest = &line[pos + 8..];
                                                 let tname: String = rest
                                                     .chars()
-                                                    .take_while(|c| c.is_alphanumeric() || *c == '_')
+                                                    .take_while(|c| {
+                                                        c.is_alphanumeric() || *c == '_'
+                                                    })
                                                     .collect();
                                                 if !tname.is_empty() {
                                                     // CamelCase the theorem name for matching
@@ -316,7 +318,10 @@ fn lean_theorem_names() -> &'static std::collections::HashSet<String> {
                                                             let mut c = s.chars();
                                                             match c.next() {
                                                                 None => String::new(),
-                                                                Some(f) => f.to_uppercase().chain(c).collect(),
+                                                                Some(f) => f
+                                                                    .to_uppercase()
+                                                                    .chain(c)
+                                                                    .collect(),
                                                             }
                                                         })
                                                         .collect();
@@ -327,11 +332,15 @@ fn lean_theorem_names() -> &'static std::collections::HashSet<String> {
                                                     let first_word: String = camel
                                                         .chars()
                                                         .enumerate()
-                                                        .take_while(|(i, c)| *i == 0 || !c.is_uppercase())
+                                                        .take_while(|(i, c)| {
+                                                            *i == 0 || !c.is_uppercase()
+                                                        })
                                                         .map(|(_, c)| c)
                                                         .collect();
                                                     if first_word.len() >= 3 {
-                                                        names.insert(format!("Theorems.{first_word}"));
+                                                        names.insert(format!(
+                                                            "Theorems.{first_word}"
+                                                        ));
                                                         names.insert(first_word);
                                                     }
                                                 }

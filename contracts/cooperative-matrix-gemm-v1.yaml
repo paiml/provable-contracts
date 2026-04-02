@@ -25,6 +25,7 @@ equations:
     domain: "K reduction dimension, ε_f16 = 2^{-10}"
     codomain: "error bound ∈ ℝ≥0"
     lean_theorem: ProvableContracts.CooperativeMatrix.f16_accumulation_error_bound
+    notes:
       - "Uses wgpu::Features::SUBGROUP_VERTEX_STAGE or cooperative_matrix feature"
       - "Dispatch: ceil(M/coop_M) × ceil(N/coop_N) workgroups"
 
@@ -42,17 +43,28 @@ invariants:
     rationale: "Not all GPUs support VK_KHR_cooperative_matrix"
 
 falsification_tests:
-  FALSIFY-COOP-001:
+  - id: FALSIFY-COOP-001
+    rule: parity_with_tiled
+    prediction: "max |coop - tiled| < 1e-3"
+    if_fails: "Cooperative matrix GEMM diverges from tiled reference"
+  - id: FALSIFY-COOP-002
+    rule: throughput_improvement
+    prediction: "coop GFLOPS > 2 * tiled GFLOPS"
+    if_fails: "Cooperative matrix provides no performance benefit"
+  - id: FALSIFY-COOP-003
+    rule: fallback
+    prediction: "Falls back to tiled GEMM, no crash"
+    if_fails: "Missing fallback causes crash on unsupported hardware"
+
+proof_obligations:
+  - type: postcondition
+    property: Parity with tiled reference
+    formal: "|coop - tiled| < 1e-3"
+
+kani_harnesses:
+  - id: KANI-COOP-001
     obligation: parity_with_tiled
-    method: "Run both tiled and coop GEMM on same input, compare"
-    pass_criterion: "max |coop - tiled| < 1e-3"
+    property: Output parity
+    bound: 8
+    strategy: bounded_int
 
-  FALSIFY-COOP-002:
-    obligation: throughput_improvement
-    method: "Benchmark coop vs tiled on M=512, K=3584, N=3584"
-    pass_criterion: "coop GFLOPS > 2 * tiled GFLOPS"
-
-  FALSIFY-COOP-003:
-    obligation: fallback
-    method: "Run on device without cooperative matrix support"
-    pass_criterion: "Falls back to tiled GEMM, no crash"
