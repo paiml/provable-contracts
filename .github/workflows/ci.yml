@@ -35,14 +35,45 @@ jobs:
           done
           echo "All 13 traits match their YAML contracts"
 
+  lean-proofs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install elan (Lean 4 toolchain manager)
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+      - name: Cache Lean build
+        uses: actions/cache@v4
+        with:
+          path: lean/.lake
+          key: lean-${{ hashFiles('lean/lakefile.lean', 'lean/lean-toolchain') }}
+          restore-keys: lean-
+      - name: Build all Lean 4 theorems (0 sorry enforced)
+        working-directory: lean
+        run: lake build
+      - name: Verify zero sorry in theorem files
+        run: |
+          sorry_count=$(grep -rl "sorry" lean/ProvableContracts/Theorems/ 2>/dev/null | wc -l)
+          if [ "$sorry_count" -gt 0 ]; then
+            echo "FATAL: $sorry_count theorem file(s) contain sorry"
+            grep -rl "sorry" lean/ProvableContracts/Theorems/
+            exit 1
+          fi
+          theorem_count=$(find lean/ProvableContracts/Theorems -name "*.lean" | wc -l)
+          echo "L5 verified: $theorem_count theorems, 0 sorry"
+
   gate:
-    needs: [ci, trait-staleness]
+    needs: [ci, trait-staleness, lean-proofs]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - run: |
-          if [ "${{ needs.ci.result }}" != "success" ] || [ "${{ needs.trait-staleness.result }}" != "success" ]; then
-            echo "CI or trait-staleness failed"
-            exit 1
-          fi
+          for job in ci trait-staleness lean-proofs; do
+            result="${{ needs[job].result }}"
+            if [ "$result" != "success" ]; then
+              echo "FAILED: $job ($result)"
+              exit 1
+            fi
+          done
           echo "All checks passed"
