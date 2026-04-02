@@ -62,23 +62,34 @@ hypotheses:
     wasted_effort_saved: "~2 days of model conversion and testing"
 
   - id: H-PARITY-002
-    name: "NaN is in entrenar's NF4 dequant kernel → fix trueno NF4 code"
+    name: "NaN is in trueno's NF4 dequant kernel — specifically V projection weights"
     description: >
-      Since H-PARITY-001 is falsified, the NaN must be in trueno's NF4
-      dequantization kernel or entrenar's forward pass with NF4 weights.
-      The dequant produces near-zero or denormalized values that accumulate
-      to NaN through 28 transformer layers.
+      Layer tracing (`apr finetune` stderr + grep nonzero=0) found the
+      precise root cause: 11 of 196 weight tensors dequantize to ALL ZEROS.
+      All 11 are shape 256x1536 — the V (value) projection weights in GQA.
+      K projection (same shape) dequantizes correctly. V projection is zeroed.
+      Zero V → zero attention values → softmax(0/0) = NaN → propagates 28 layers.
     prediction: >
-      Fixing trueno's NF4 dequant to produce properly scaled values will
-      eliminate NaN and enable GPU forward. GPU utilization > 50%.
+      Fixing trueno's NF4 dequant for V projection weights will eliminate NaN
+      and enable GPU forward. GPU utilization > 50%, throughput > 500 tok/s.
     falsification_test: >
-      Run: apr finetune with --method lora (NO NF4, full FP16 weights).
-      If GPU forward still NaN: FALSIFIED — the problem is in the forward
-      pass itself, not NF4 dequant. The fix is in entrenar's transformer
-      block code, not trueno's quantization.
-      If GPU forward works: CONFIRMED — NF4 dequant is the root cause.
-    status: UNTESTED
-    next_action: "Run apr finetune with --method lora (no --quantize-nf4)"
+      DIAGNOSTIC (completed): apr trace shows 11 zero V-projection tensors.
+      CONFIRMATION TEST: Run apr finetune with --method lora (NO NF4).
+      If GPU forward works without NF4: CONFIRMED — NF4 V-proj dequant is root cause.
+      If NaN persists: FALSIFIED — deeper issue in forward pass.
+    status: TRACED
+    date: 2026-04-02
+    evidence: >
+      apr finetune stderr trace analysis on yoga:
+      - 196 total weight tensors dequantized via NF4
+      - 185 nonzero (correctly dequantized)
+      - 11 all-zero (100% of V projection weights, shape 256x1536)
+      - Pattern: every [K proj nonzero=354K] followed by [V proj nonzero=0]
+      Filed: paiml/trueno#233
+    next_action: >
+      1. Confirm with --method lora (no NF4) that GPU forward works
+      2. Fix trueno NF4 dequant for V projection weight layout
+      3. Re-run canary — expected throughput jump 44 → 2000+ tok/s
 
   - id: H-PARITY-003
     name: "Forward pass itself is broken → entrenar transformer block bug"
