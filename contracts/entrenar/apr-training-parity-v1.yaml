@@ -1,0 +1,218 @@
+metadata:
+  version: 1.0.0
+  created: '2026-04-02'
+  author: PAIML Engineering
+  description: >
+    Parity contract for APR (entrenar) training throughput vs unsloth baseline.
+    Defines falsification conditions for every hypothesis about WHY apr is slow
+    and what fix SHOULD work — so hypotheses are tested before effort is spent.
+  references:
+    - training-canary-spec.md Section 3.0 (APR Fine-Tune Canary)
+    - optimization-roadmap.md P0/P1/P2
+    - F-WL-06 falsification condition
+    - paiml/aprender#566 (structured metrics)
+  depends_on:
+    - canary-metrics-schema-v1
+    - canary-score-gate-v1
+
+# The parity target: unsloth QLoRA on same hardware
+parity_target:
+  runtime: unsloth
+  host: yoga
+  measured_tok_s: 6628
+  config: "QLoRA NF4, rank=16, alpha=32, batch=4, seq=512"
+
+# Current state: apr is 151x slower
+current_state:
+  runtime: apr (entrenar)
+  host: yoga
+  measured_tok_s: 44
+  gap_ratio: 151
+  gpu_utilization_pct: 0
+  cpu_utilization_pct: 493
+  root_symptom: "CPU lm_head fallback, NaN in GPU forward"
+
+# Each hypothesis MUST be falsified before investing engineering effort.
+# A hypothesis that survives falsification becomes an action item.
+# A hypothesis that fails falsification is RETRACTED — saving wasted effort.
+hypotheses:
+  - id: H-PARITY-001
+    name: "Q4K model format causes NaN → switching to FP16 fixes GPU forward"
+    description: >
+      Hypothesis: Q4K (pre-quantized GGUF) produces near-uniform logits that
+      cause NaN after 28 transformer layers. FP16 model with runtime NF4
+      quantization (--quantize-nf4) will produce differentiated logits and
+      the GPU forward path will work.
+    prediction: >
+      apr finetune with FP16 model produces GPU utilization > 50% and
+      tokens_per_sec > 500 (at least 10x improvement over Q4K's 44 tok/s).
+    falsification_test: >
+      Run: apr finetune qwen2.5-coder-1.5b-instruct-fp16.apr --quantize-nf4
+      Measure: nvidia-smi GPU utilization during training.
+      If GPU utilization == 0%: FALSIFIED — the NaN is in entrenar's NF4
+      quantization kernel, not the input format. The fix is in trueno/entrenar
+      NF4 code, not the model file.
+    status: FALSIFIED
+    date: 2026-04-02
+    evidence: >
+      FP16 model with --quantize-nf4 shows identical behavior: 0% GPU,
+      146% CPU, stderr shows "[CUDA] NaN in forward output". The NaN is
+      in entrenar's runtime NF4 quantization, not the Q4K input format.
+      Q4K and FP16+NF4 both produce the same NaN.
+    wasted_effort_saved: "~2 days of model conversion and testing"
+
+  - id: H-PARITY-002
+    name: "NaN is in entrenar's NF4 dequant kernel → fix trueno NF4 code"
+    description: >
+      Since H-PARITY-001 is falsified, the NaN must be in trueno's NF4
+      dequantization kernel or entrenar's forward pass with NF4 weights.
+      The dequant produces near-zero or denormalized values that accumulate
+      to NaN through 28 transformer layers.
+    prediction: >
+      Fixing trueno's NF4 dequant to produce properly scaled values will
+      eliminate NaN and enable GPU forward. GPU utilization > 50%.
+    falsification_test: >
+      Run: apr finetune with --method lora (NO NF4, full FP16 weights).
+      If GPU forward still NaN: FALSIFIED — the problem is in the forward
+      pass itself, not NF4 dequant. The fix is in entrenar's transformer
+      block code, not trueno's quantization.
+      If GPU forward works: CONFIRMED — NF4 dequant is the root cause.
+    status: UNTESTED
+    next_action: "Run apr finetune with --method lora (no --quantize-nf4)"
+
+  - id: H-PARITY-003
+    name: "Forward pass itself is broken → entrenar transformer block bug"
+    description: >
+      If H-PARITY-002 is also falsified (FP16 LoRA without NF4 also produces
+      NaN), then entrenar's transformer forward pass has a bug unrelated to
+      quantization — possibly in attention scaling, RoPE, or RMSNorm.
+    prediction: >
+      The forward pass produces correct (non-NaN) output with full FP16
+      weights and no quantization.
+    falsification_test: >
+      Run: apr finetune with --method full (full fine-tune, FP16, no LoRA).
+      If NaN persists: FALSIFIED — the transformer block itself is broken.
+      This requires deep debugging of entrenar's CUDA kernels.
+    status: UNTESTED
+    depends_on: H-PARITY-002
+
+  - id: H-PARITY-004
+    name: "GPU lm_head memory check is too conservative"
+    description: >
+      The stderr shows: "[CUDA] Skipping GPU embeddings (1780MB > 1228MB free)"
+      The embedding matrix (151936 * 1536 * 2 bytes = 446 MB in FP16) should
+      fit in remaining VRAM, but entrenar's check says 1780 MB > 1228 MB free.
+      The 1780 MB figure may include unnecessary padding or be using the wrong
+      data type size.
+    prediction: >
+      Fixing the VRAM check to accurately reflect FP16 embedding size will
+      keep lm_head on GPU, eliminating the CPU fallback entirely.
+    falsification_test: >
+      Check entrenar source: what does the 1780 MB figure represent?
+      If 1780 MB is accurate (e.g., includes activation memory): FALSIFIED
+      — the check is correct, GPU genuinely can't fit lm_head with 8 GB.
+      Fix: chunked GPU lm_head instead.
+    status: UNTESTED
+    next_action: "Grep entrenar for the VRAM threshold calculation"
+
+  - id: H-PARITY-005
+    name: "Chunked GPU lm_head eliminates CPU bottleneck"
+    description: >
+      Even if full lm_head doesn't fit, chunked computation (process
+      vocab in chunks of 32K) would keep the matmul on GPU while fitting
+      in available VRAM. This is how unsloth handles large vocabularies
+      on constrained GPUs.
+    prediction: >
+      Chunked GPU lm_head produces throughput > 1000 tok/s (at least 20x
+      improvement) because the bottleneck shifts from CPU matmul to GPU
+      GEMM kernels.
+    falsification_test: >
+      Implement chunked lm_head in entrenar. If throughput < 500 tok/s:
+      FALSIFIED — the bottleneck is elsewhere (memory bandwidth, kernel
+      launch overhead, etc.).
+    status: UNTESTED
+    depends_on: "H-PARITY-002 or H-PARITY-003 (GPU forward must work first)"
+
+equations:
+  parity_ratio:
+    formula: ratio = apr_tok_s / unsloth_tok_s
+    preconditions:
+      - apr_tok_s > 0
+      - unsloth_tok_s > 0
+    lean_theorem: Theorems.Parity_Ratio
+  gpu_utilization_gate:
+    formula: gpu_parity = (gpu_util_pct > 50)
+    preconditions:
+      - gpu_util_pct >= 0
+      - gpu_util_pct <= 100
+    lean_theorem: Theorems.GPU_Utilization_Gate
+
+proof_obligations:
+  - type: invariant
+    property: Parity ratio improves with each fix tier
+    formal: "P0_tok_s > current_tok_s AND P1_tok_s > P0_tok_s"
+    applies_to: all
+  - type: invariant
+    property: GPU utilization > 0 is prerequisite for parity
+    formal: "gpu_util_pct > 50 => tok_s > 500"
+    applies_to: all
+  - type: bound
+    property: Hypothesis tested before effort invested
+    formal: "for all h in hypotheses: h.status != UNTESTED before implementing h.fix"
+    applies_to: all
+
+falsification_tests:
+  - id: FALSIFY-PAR-001
+    rule: H-PARITY-001 (Q4K → FP16 fixes GPU forward)
+    prediction: FP16 model produces GPU util > 50%
+    test: |
+      def test_fp16_enables_gpu():
+          result = run_apr_canary(model="fp16.apr", method="qlora")
+          assert result["gpu_utilization"] > 50, "FALSIFIED: FP16 still 0% GPU"
+    if_fails: NaN is in NF4 quantization kernel, not input format
+  - id: FALSIFY-PAR-002
+    rule: H-PARITY-002 (NF4 dequant causes NaN)
+    prediction: FP16 LoRA (no NF4) produces GPU util > 50%
+    test: |
+      def test_fp16_lora_no_nf4():
+          result = run_apr_canary(model="fp16.apr", method="lora")
+          assert result["gpu_utilization"] > 50, "FALSIFIED: forward broken without NF4"
+    if_fails: Transformer forward pass itself is broken
+  - id: FALSIFY-PAR-003
+    rule: H-PARITY-004 (VRAM check too conservative)
+    prediction: Actual embedding size < available VRAM
+    test: |
+      def test_vram_check_accurate():
+          embed_size_mb = 151936 * 1536 * 2 / (1024*1024)  # ~446 MB FP16
+          assert embed_size_mb < 1228, "FALSIFIED: embedding genuinely too large"
+    if_fails: Check is correct, need chunked approach
+
+kani_harnesses:
+  - id: KANI-PAR-001
+    obligation: Parity ratio improves monotonically
+    strategy: bounded_int
+    solver: cadical
+    bound: 16
+    description: Verify each fix tier strictly improves throughput
+  - id: KANI-PAR-002
+    obligation: GPU utilization prerequisite
+    strategy: exhaustive
+    solver: cadical
+    bound: 8
+    description: Verify GPU util > 50% implies tok/s > 500
+  - id: KANI-PAR-003
+    obligation: Hypotheses tested before implementation
+    strategy: exhaustive
+    solver: cadical
+    bound: 8
+    description: Verify no fix implemented with UNTESTED hypothesis
+
+qa_gate:
+  id: F-WL-06-PARITY
+  name: apr-training-parity-v1 Contract
+  description: Validate APR parity hypotheses before investing engineering effort
+  checks:
+    - hypothesis_falsification
+    - parity_ratio_improvement
+    - gpu_utilization_gate
+  pass_criteria: All hypotheses either CONFIRMED or FALSIFIED before implementation
