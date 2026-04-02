@@ -78,20 +78,19 @@ equations:
     postconditions:
     - violated_instructions.len() == 0
     lean_theorem: Theorems.Apr_Md_Compliance
-  model_fallback:
+  no_model_error:
     formula: |
-      if preferred_model unavailable:
-        notify_user(reason)
-        AND fallback_to(next_available_model)
-        AND never_silently_degrade
-    domain: Model discovery and provider routing
+      if no_local_model_found:
+        display_error(reason)
+        AND display_download_instructions("apr pull <model>")
+        AND exit(5)
+    domain: Local model discovery (Sovereign only — no remote fallback)
     invariants:
-    - User always informed of model switch
-    - Fallback respects privacy tier
-    - No silent quality degradation
+    - Never silently fall back to MockDriver in production
+    - Error message includes exact download command
+    - Exit code 5 = no model available
     postconditions:
-    - model_used.is_some()
-    - user_notified if model_used != preferred_model
+    - user_sees_actionable_error OR model_loaded
     lean_theorem: Theorems.Model_Fallback
   single_binary:
     formula: |
@@ -167,10 +166,10 @@ falsification_tests:
   test: Write 100 messages, kill -9 mid-write, resume, assert no duplicates
   if_fails: Crash recovery corrupts session — user loses work
 - id: FALSIFY-AC-004
-  rule: Model fallback
-  prediction: Unavailable model triggers user notification before fallback
-  test: Configure model that doesn't exist; assert notification displayed
-  if_fails: Silent quality degradation — user unaware of model change
+  rule: No model error
+  prediction: Missing model produces actionable error with download instructions
+  test: Run apr code with no models installed; assert error contains "apr pull"
+  if_fails: User stuck with no path to fix — silent MockDriver fallback
 - id: FALSIFY-AC-005
   rule: Single binary
   prediction: apr code works on clean machine with only apr binary
@@ -214,12 +213,12 @@ kani_harnesses:
   solver: cadical
   harness: verify_blocked_tools
 - id: KANI-AC-004
-  obligation: Model fallback notifies user
-  property: Model switch always produces notification
+  obligation: No model produces actionable error
+  property: Missing model exits with error, never silent fallback
   bound: 4
   strategy: exhaustive
   solver: cadical
-  harness: verify_fallback_notification
+  harness: verify_no_model_error
 - id: KANI-AC-005
   obligation: Startup latency under 2s
   property: No blocking operation in startup path
@@ -236,7 +235,7 @@ qa_gate:
   - tool_safety_three_layers
   - session_persist_resume
   - apr_md_compliance
-  - model_fallback_notification
+  - no_model_actionable_error
   - single_binary_no_deps
   - startup_latency
   - local_quality_benchmark
