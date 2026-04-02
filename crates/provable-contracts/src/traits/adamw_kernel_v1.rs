@@ -40,5 +40,4 @@ pub trait AdamwKernelV1 {
     /// Invariant: Weight decay applied AFTER Adam update (decoupled)
     /// Invariant: Update finite when inputs finite and eps > 0
     fn weight_update(&self, theta: &[f32]) -> Vec<f32>;
-
 }

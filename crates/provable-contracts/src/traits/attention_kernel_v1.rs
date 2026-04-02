@@ -19,5 +19,4 @@ pub trait AttentionKernelV1 {
     /// Invariant: Attention weights ∈ (0,1)
     /// Invariant: Output rows are convex combinations of V rows
     fn attention(&self, q: &[f32], k: &[f32], v: &[f32]) -> Vec<f32>;
-
 }

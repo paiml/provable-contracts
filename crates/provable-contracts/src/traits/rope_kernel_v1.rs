@@ -18,5 +18,4 @@ pub trait RopeKernelV1 {
     /// Invariant: ‖RoPE(x, m)‖ = ‖x‖ (norm preservation)
     /// Invariant: ⟨RoPE(q, m), RoPE(k, n)⟩ depends only on q, k, m-n (relative position)
     fn rope(&self, x: &[f32], m: &[f32]) -> Vec<f32>;
-
 }

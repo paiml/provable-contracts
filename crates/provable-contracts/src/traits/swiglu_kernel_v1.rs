@@ -27,5 +27,4 @@ pub trait SwigluKernelV1 {
     /// Invariant: SwiGLU(0, W, V, 0, 0) = 0 (zero preservation)
     /// Invariant: Decomposable as gate * value where gate = SiLU(xW+b)
     fn swiglu(&self, x: &[f32], w: &[f32], v: &[f32], b: &[f32], c: &[f32]) -> Vec<f32>;
-
 }
