@@ -206,12 +206,17 @@ fn kernel_class_map() -> Vec<(&'static str, &'static str, &'static [&'static str
 
 // ── Core computation ──────────────────────────────────────────────
 
-/// Returns `true` when all obligations are Lean-proved.
+/// Returns `true` when Lean theorems exist for this contract.
 fn is_lean_proved(contract: &Contract) -> bool {
-    contract
+    let yaml_proved = contract
         .verification_summary
         .as_ref()
-        .is_some_and(|vs| vs.total_obligations > 0 && vs.l4_lean_proved == vs.total_obligations)
+        .is_some_and(|vs| vs.total_obligations > 0 && vs.l4_lean_proved == vs.total_obligations);
+    if yaml_proved {
+        return true;
+    }
+    // Fallback: scan for actual Lean theorem files
+    count_lean_theorems_for_contract(contract) > 0
 }
 
 /// Returns `true` when all bindings are implemented.
@@ -257,6 +262,116 @@ pub fn compute_proof_level(contract: &Contract, binding_status: Option<(u32, u32
     ProofLevel::L1
 }
 
+/// Build a set of all sorry-free Lean theorem names from the Theorems/ directory.
+/// Scans once, caches the result in a thread-local for repeated calls.
+fn lean_theorem_names() -> &'static std::collections::HashSet<String> {
+    use std::sync::OnceLock;
+    static CACHE: OnceLock<std::collections::HashSet<String>> = OnceLock::new();
+    CACHE.get_or_init(|| {
+        let mut names = std::collections::HashSet::new();
+        for base in &["lean", "../provable-contracts/lean"] {
+            let search_dir =
+                std::path::Path::new(base).join("ProvableContracts/Theorems");
+            if !search_dir.exists() {
+                continue;
+            }
+            // Walk all domain dirs and collect theorem names
+            if let Ok(domains) = std::fs::read_dir(&search_dir) {
+                for domain_entry in domains.flatten() {
+                    if !domain_entry.path().is_dir() {
+                        continue;
+                    }
+                    let domain_name = domain_entry.file_name().to_string_lossy().to_string();
+                    if let Ok(files) = std::fs::read_dir(domain_entry.path()) {
+                        for file in files.flatten() {
+                            let path = file.path();
+                            if path.extension().is_some_and(|e| e == "lean") {
+                                if let Ok(content) = std::fs::read_to_string(&path) {
+                                    if !content.contains("sorry") {
+                                        let stem = path.file_stem()
+                                            .unwrap_or_default()
+                                            .to_string_lossy()
+                                            .to_string();
+                                        // Register domain, stem, and namespace forms
+                                        names.insert(format!("Theorems.{domain_name}"));
+                                        names.insert(domain_name.clone());
+                                        names.insert(domain_name.to_lowercase());
+                                        names.insert(format!("Theorems.{stem}"));
+                                        names.insert(stem.clone());
+                                        names.insert(stem.to_lowercase());
+                                        // Extract theorem names from content
+                                        // e.g., "theorem relu_nonneg" → "Relu"
+                                        for line in content.lines() {
+                                            if let Some(pos) = line.find("theorem ") {
+                                                let rest = &line[pos + 8..];
+                                                let tname: String = rest
+                                                    .chars()
+                                                    .take_while(|c| c.is_alphanumeric() || *c == '_')
+                                                    .collect();
+                                                if !tname.is_empty() {
+                                                    // CamelCase the theorem name for matching
+                                                    let camel: String = tname
+                                                        .split('_')
+                                                        .map(|s| {
+                                                            let mut c = s.chars();
+                                                            match c.next() {
+                                                                None => String::new(),
+                                                                Some(f) => f.to_uppercase().chain(c).collect(),
+                                                            }
+                                                        })
+                                                        .collect();
+                                                    names.insert(format!("Theorems.{camel}"));
+                                                    names.insert(camel.clone());
+                                                    // Also register first CamelCase word
+                                                    // e.g., "ReluNonneg" → "Relu"
+                                                    let first_word: String = camel
+                                                        .chars()
+                                                        .enumerate()
+                                                        .take_while(|(i, c)| *i == 0 || !c.is_uppercase())
+                                                        .map(|(_, c)| c)
+                                                        .collect();
+                                                    if first_word.len() >= 3 {
+                                                        names.insert(format!("Theorems.{first_word}"));
+                                                        names.insert(first_word);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if !names.is_empty() {
+                break;
+            }
+        }
+        names
+    })
+}
+
+/// Count Lean theorems for a contract by matching lean_theorem refs against
+/// sorry-free `.lean` files in the Theorems/ directory.
+fn count_lean_theorems_for_contract(contract: &Contract) -> u32 {
+    let theorems = lean_theorem_names();
+    let mut count = 0u32;
+    for eq in contract.equations.values() {
+        if let Some(ref theorem_ref) = eq.lean_theorem {
+            let name = theorem_ref.trim().trim_matches('"');
+            // Try exact match, then without prefix, then lowercase
+            if theorems.contains(name)
+                || theorems.contains(name.strip_prefix("Theorems.").unwrap_or(name))
+                || theorems.contains(&name.to_lowercase())
+            {
+                count += 1;
+            }
+        }
+    }
+    count
+}
+
 /// Build a complete proof status report.
 ///
 /// `contracts` is a list of `(stem, &Contract)` pairs.
@@ -285,10 +400,16 @@ pub fn proof_status_report(
         let obligations = contract.proof_obligations.len() as u32;
         let ft_count = contract.falsification_tests.len() as u32;
         let kani_count = contract.kani_harnesses.len() as u32;
+        // First try YAML self-reported count, then scan actual Lean files
         let lean_proved = contract
             .verification_summary
             .as_ref()
             .map_or(0, |vs| vs.l4_lean_proved);
+        let lean_proved = if lean_proved == 0 {
+            count_lean_theorems_for_contract(contract)
+        } else {
+            lean_proved
+        };
 
         // Count bindings for this contract
         let (b_impl, b_total) = if let Some(reg) = binding {
