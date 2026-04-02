@@ -22,15 +22,17 @@ parity_target:
   measured_tok_s: 6628
   config: "QLoRA NF4, rank=16, alpha=32, batch=4, seq=512"
 
-# Current state: apr is 151x slower
+# Current state: training working, 154x gap remains (throughput)
 current_state:
   runtime: apr (entrenar)
   host: yoga
-  measured_tok_s: 44
-  gap_ratio: 151
-  gpu_utilization_pct: 0
-  cpu_utilization_pct: 493
-  root_symptom: "CPU lm_head fallback, NaN in GPU forward"
+  measured_tok_s: 43
+  gap_ratio: 154
+  gpu_utilization_pct: 7
+  cpu_utilization_pct: 100
+  root_symptom: "Memory bandwidth bound — cuBLAS fp32 GEMM reads 9.4MB/layer"
+  training_status: "WORKING — 20+ steps finite loss, cuBLAS + NF4 fused both confirmed"
+  canary_date: 2026-04-03
 
 # =============================================================================
 # MANDATORY DIAGNOSTIC PROTOCOL — run BEFORE forming any hypothesis
@@ -129,22 +131,18 @@ hypotheses:
       CONFIRMATION TEST: Run apr finetune with --method lora (NO NF4).
       If GPU forward works without NF4: CONFIRMED — NF4 V-proj dequant is root cause.
       If NaN persists: FALSIFIED — deeper issue in forward pass.
-    status: PARTIALLY_CONFIRMED
-    date: 2026-04-02
+    status: CONFIRMED_AND_RESOLVED
+    date: 2026-04-03
     evidence: >
-      Two discoveries:
-      1. OLD binary (crates.io entrenar): V-proj ALL ZEROS after NF4 dequant (trueno#233)
-      2. NEW binary (local entrenar): V-proj CORRECT (nonzero=350K+) but NaN PERSISTS
-      The V-proj zero bug was real and is FIXED in local entrenar HEAD.
-      But NaN continues from a SECOND source: the inference-style CPU forward path
-      that runs when GPU can't fit embeddings (1780MB > 1228MB free on 8GB yoga).
-      H-PARITY-002 on gx10 (120GB, everything on GPU) shows 96% GPU = WORKS.
-      Filed: paiml/trueno#233 (V-proj fix), paiml/entrenar#317 (CPU forward NaN)
-    next_action: >
-      1. Publish fixed entrenar to crates.io (V-proj fix is local only)
-      2. Fix CPU inference-style forward NaN (entrenar#317)
-      3. OR fix VRAM check (1780MB claim for 446MB embed) to keep lm_head on GPU
-      4. OR implement chunked GPU lm_head to eliminate CPU fallback entirely
+      V-proj zero bug FIXED (trueno#233). Additional 20 upstream fixes resolved
+      remaining issues: VRAM halving (1780→890MB), scratch zeroing (entrenar#318),
+      gemm_forward_bt for lm_head, training state buffer zeroing (entrenar#319).
+      APR NF4 QLoRA now training at 43 tok/s on yoga 8GB with finite loss.
+      Both cuBLAS (43 tok/s) and NF4 fused PTX (33 tok/s) backends confirmed.
+    resolution: >
+      21 upstream fixes across entrenar/trueno/aprender. Root cause chain:
+      V-proj zeros → VRAM overflow → scratch contamination → training state NaN cascade.
+      All fixed. Training working. Remaining gap (154x) is memory bandwidth bound.
 
   - id: H-PARITY-003
     name: "Forward pass itself is broken → entrenar transformer block bug"
@@ -159,8 +157,9 @@ hypotheses:
       Run: apr finetune with --method full (full fine-tune, FP16, no LoRA).
       If NaN persists: FALSIFIED — the transformer block itself is broken.
       This requires deep debugging of entrenar's CUDA kernels.
-    status: UNTESTED
-    depends_on: H-PARITY-002
+    status: NOT_APPLICABLE
+    date: 2026-04-03
+    evidence: "Forward pass works correctly after H-PARITY-002 fixes. 43 tok/s confirmed."
 
   - id: H-PARITY-004
     name: "GPU lm_head memory check is too conservative"
@@ -178,8 +177,12 @@ hypotheses:
       If 1780 MB is accurate (e.g., includes activation memory): FALSIFIED
       — the check is correct, GPU genuinely can't fit lm_head with 8 GB.
       Fix: chunked GPU lm_head instead.
-    status: UNTESTED
-    next_action: "Grep entrenar for the VRAM threshold calculation"
+    status: RESOLVED
+    date: 2026-04-02
+    evidence: >
+      VRAM halved from 1780→890MB via single embedding layout (entrenar f9845e07).
+      Rank override (aprender ba0e392f) reduced optimizer states. GPU lm_head now
+      works via gemm_forward_bt using embed_original (no transposed copy needed).
 
   - id: H-PARITY-006
     name: "cuBLAS GEMM silently produces zeros — handle/stream/context issue"
@@ -199,14 +202,15 @@ hypotheses:
       If A is zero: RMSNorm bug.
       If B is zero: weight upload failed or context mismatch.
       If A and B non-zero but C zero: cuBLAS handle issue (stream/context).
-    status: MEASURED
+    status: RESOLVED
     date: 2026-04-02
     evidence: >
-      [ENT-318] cuBLAS m=74 k=1536 n=1536 c[:4]=[0.0, 0.0, 0.0, 0.0]
-      cuBLAS returns Ok but output is zeros. Next: add A/B trace.
-    next_action: >
-      Build apr with A[:4]+B[:4]+C[:4] trace in gemm_forward.
-      Deploy to yoga. Identify which buffer is zero. Fix that buffer.
+      Root cause: `let _ =` on copy_to_host silenced a partial readback error.
+      The 4-element readback buffer didn't match GPU buffer length. copy_to_host
+      returned Err but `let _ =` discarded it, leaving the readback buffer at zeros.
+      Weights WERE on GPU (nonzero=2.1M verified after trueno partial readback fix).
+      cuBLAS GEMM was working correctly the entire time. The diagnostic was wrong.
+      L5 lesson: NEVER use `let _ =` on GPU ops (#[must_use] enforcement).
 
   - id: H-PARITY-005
     name: "Chunked GPU lm_head eliminates CPU bottleneck"
@@ -223,8 +227,12 @@ hypotheses:
       Implement chunked lm_head in entrenar. If throughput < 500 tok/s:
       FALSIFIED — the bottleneck is elsewhere (memory bandwidth, kernel
       launch overhead, etc.).
-    status: UNTESTED
-    depends_on: "H-PARITY-002 or H-PARITY-003 (GPU forward must work first)"
+    status: SUPERSEDED
+    date: 2026-04-02
+    evidence: >
+      Chunked lm_head not needed — gemm_forward_bt uses embed_original directly
+      with cuBLAS transposed GEMM (C = hidden @ embed^T). Full lm_head fits on
+      8GB yoga after VRAM optimizations. Throughput bottleneck is memory BW, not lm_head.
 
 equations:
   parity_ratio:
