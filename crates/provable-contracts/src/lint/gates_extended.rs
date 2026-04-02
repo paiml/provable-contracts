@@ -31,6 +31,34 @@ pub(crate) fn run_verify_gate(
             collect_test_fns(&d, &mut source_tests);
         }
     }
+    // Scan workspace member directories (e.g., trueno-gpu/src/)
+    // Workspace members have their own src/ and tests/ dirs at root level
+    let effective_root = if project_root.as_os_str().is_empty() {
+        Path::new(".")
+    } else {
+        project_root
+    };
+    let root_canon = effective_root
+        .canonicalize()
+        .unwrap_or_else(|_| effective_root.to_path_buf());
+    if let Ok(entries) = std::fs::read_dir(&root_canon) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() && path.join("Cargo.toml").exists() {
+                // Skip dirs already covered (src/, crates/, etc.)
+                let name = path.file_name().unwrap_or_default();
+                if name == "src" || name == "crates" || name == "tests" {
+                    continue;
+                }
+                for sub in &["src", "tests"] {
+                    let d = path.join(sub);
+                    if d.exists() {
+                        collect_test_fns(&d, &mut source_tests);
+                    }
+                }
+            }
+        }
+    }
     // Scan sibling repos for downstream tests (e.g., ../entrenar/src/)
     if let Some(parent) = project_root.parent() {
         for (stem, _) in contracts {
