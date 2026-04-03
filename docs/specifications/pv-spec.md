@@ -122,7 +122,7 @@ provable-contracts/
 |   |   +-- error.rs                Error types
 |   +-- provable-contracts-cli/     CLI binary (`pv`)
 |   +-- provable-contracts-macros/  Proc macro (#[contract])
-+-- contracts/                      YAML contract registry (315 contracts)
++-- contracts/                      YAML contract registry (271 scored contracts)
 +-- docs/specifications/            This spec
 ```
 
@@ -130,14 +130,14 @@ provable-contracts/
 
 | Metric | Value | Verified |
 |---|---|---|
-| YAML contracts (total files) | 204 | `find contracts/ -name '*.yaml' ! -name 'binding.yaml' \| wc -l` |
-| Parseable kernel contracts | 315 | `pv coverage` (excludes kaizen/, legacy/, pipelines/) |
-| Equations | 516 | `pv coverage contracts/` (recursive, v2.3.0) |
-| Proof obligations | 790 | `pv coverage contracts/` (recursive, v2.3.0) |
-| Falsification tests | 878 | `pv coverage contracts/` (recursive, v2.3.0) |
-| Kani harnesses (YAML-defined) | 985 | `pv coverage contracts/` (recursive, v2.3.0) |
-| **Real bindings (with module_path)** | **660** | Ghost bindings stripped 2026-03-28 |
-| Binding repos with entries | 33 directories, 33 with real bindings | `ls contracts/*/binding.yaml` |
+| YAML contracts (total files) | 204+ | `find contracts/ -name '*.yaml' ! -name 'binding.yaml' \| wc -l` |
+| Parseable scored contracts | 271 | `pv coverage` (excludes kaizen/, legacy/, pipelines/) |
+| Equations | 896 | `pv coverage contracts/` (recursive, v2.5.0) |
+| Proof obligations | 1241 | `pv coverage contracts/` (recursive, v2.5.0) |
+| Falsification tests | 1365 | `pv coverage contracts/` (recursive, v2.5.0) |
+| Kani harnesses (YAML-defined) | 1355 | `pv coverage contracts/` (recursive, v2.5.0) |
+| **Real bindings (with module_path)** | **660+** | Ghost bindings stripped 2026-03-28 |
+| Binding repos with entries | 35 directories | `ls contracts/*/binding.yaml` |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) | schema/types.rs |
 | CLI commands | 34 | `pv --help` (includes `pv pipeline`) |
 | Repos with build.rs enforcement | 7/33 | aprender, trueno, entrenar, realizar, forjar, ruchy, simular |
