@@ -111,83 +111,83 @@ bindings:
   equation: cellbuffer_bounds
   function: get
   module_path: presentar::crates::presentar-terminal::src::direct::cell_buffer::get
-  status: planned
+  status: pending
 - contract: tui-rendering-v1.yaml
   equation: cellbuffer_bounds
   function: set
   module_path: presentar::crates::presentar-terminal::src::direct::cell_buffer::set
-  status: planned
+  status: pending
 - contract: tui-rendering-v1.yaml
   equation: diff_renderer_correctness
   function: render_diff
   module_path: presentar::crates::presentar-terminal::src::direct::diff_renderer::render_diff
-  status: planned
+  status: pending
 - contract: tui-rendering-v1.yaml
   equation: dirty_tracking
   function: mark_dirty
   module_path: presentar::crates::presentar-terminal::src::direct::cell_buffer::mark_dirty
-  status: planned
+  status: pending
 - contract: tui-rendering-v1.yaml
   equation: unicode_width
   function: display_width
   module_path: presentar::crates::presentar-terminal::src::direct::cell_buffer::display_width
-  status: planned
+  status: pending
 - contract: tui-rendering-v1.yaml
   equation: color_mode_fallback
   function: nearest_256
   module_path: presentar::crates::presentar-terminal::src::color::nearest_256
-  status: planned
+  status: pending
 - contract: tui-rendering-v1.yaml
   equation: zero_alloc_render
   function: render_diff
   module_path: presentar::crates::presentar-terminal::src::direct::diff_renderer::render_diff
-  status: planned
+  status: pending
 - contract: tui-rendering-v1.yaml
   equation: resize_safety
   function: resize
   module_path: presentar::crates::presentar-terminal::src::direct::cell_buffer::resize
-  status: planned
+  status: pending
 # --- Agent TUI panel contracts (2026-04-02) ---
 - contract: tui-panels-v1.yaml
   equation: panel_layout_nonoverlap
   function: compute_layout
   module_path: batuta::src::agent::tui::layout::compute_layout
-  status: planned
+  status: pending
 - contract: tui-panels-v1.yaml
   equation: adaptive_degradation
   function: detail_level
   module_path: batuta::src::agent::tui::layout::detail_level
-  status: planned
+  status: pending
 - contract: tui-panels-v1.yaml
   equation: streaming_token_ordering
   function: push_token
   module_path: batuta::src::agent::tui::streaming::push_token
-  status: planned
+  status: pending
 - contract: tui-panels-v1.yaml
   equation: tool_progress_monotonic
   function: update_tool
   module_path: batuta::src::agent::tui::tools::update_tool
-  status: planned
+  status: pending
 - contract: tui-panels-v1.yaml
   equation: cost_display_invariants
   function: update_cost
   module_path: batuta::src::agent::tui::cost::update_cost
-  status: planned
+  status: pending
 - contract: tui-panels-v1.yaml
   equation: sandbox_violation_visibility
   function: add_violation
   module_path: batuta::src::agent::tui::sandbox::add_violation
-  status: planned
+  status: pending
 - contract: tui-panels-v1.yaml
   equation: brick_budget_enforcement
   function: verify_all
   module_path: batuta::src::agent::brick::verify_all
-  status: planned
+  status: pending
 - contract: tui-panels-v1.yaml
   equation: statusbar_state_display
   function: update_statusbar
   module_path: batuta::src::agent::tui::statusbar::update_statusbar
-  status: planned
+  status: pending
 # --- TUI lifecycle contracts (2026-04-03) ---
 - contract: tui-lifecycle-v1.yaml
   equation: widget_lifecycle

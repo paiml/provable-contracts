@@ -112,119 +112,119 @@ bindings:
   equation: privacy_enforcement
   function: route_to_provider
   module_path: batuta::src::agent::driver::routing::route_to_provider
-  status: planned
+  status: pending
 - contract: provider-routing-v1.yaml
   equation: failover_cascade
   function: failover_next
   module_path: batuta::src::agent::driver::routing::failover_next
-  status: planned
+  status: pending
 - contract: provider-routing-v1.yaml
   equation: cost_budget
   function: estimate_cost
   module_path: batuta::src::agent::driver::remote::estimate_cost
-  status: planned
+  status: pending
 - contract: provider-routing-v1.yaml
   equation: backoff_jitter
   function: delay_for
   module_path: batuta::src::agent::driver::remote::backoff::delay_for
-  status: planned
+  status: pending
 - contract: provider-routing-v1.yaml
   equation: format_translation
   function: to_openai
   module_path: batuta::src::agent::driver::remote::translator::to_openai
-  status: planned
+  status: pending
 - contract: agent-loop-v1.yaml
   equation: loop_termination
   function: run_loop
   module_path: batuta::src::agent::run_loop
-  status: planned
+  status: pending
 - contract: agent-loop-v1.yaml
   equation: state_machine
   function: transition
   module_path: batuta::src::agent::state::transition
-  status: planned
+  status: pending
 - contract: agent-loop-v1.yaml
   equation: context_compaction
   function: compact
   module_path: batuta::src::agent::context::compact
-  status: planned
+  status: pending
 - contract: agent-loop-v1.yaml
   equation: sandbox_enforcement
   function: check_sandbox
   module_path: batuta::src::agent::sandbox::check_sandbox
-  status: planned
+  status: pending
 - contract: agent-loop-v1.yaml
   equation: parallel_tool_safety
   function: execute_all
   module_path: batuta::src::agent::tool::execute_all
-  status: planned
+  status: pending
 - contract: agent-loop-v1.yaml
   equation: session_crash_recovery
   function: resume
   module_path: batuta::src::agent::session::resume
-  status: planned
+  status: pending
 - contract: agent-loop-v1.yaml
   equation: hook_ordering
   function: execute_with_hooks
   module_path: batuta::src::agent::hook::execute_with_hooks
-  status: planned
+  status: pending
 # --- Presentar/Probar UX contracts (2026-04-02) ---
 - contract: agent-ux-v1.yaml
   equation: streaming_responsiveness
   function: push_token
   module_path: batuta::src::agent::tui::streaming::push_token
-  status: planned
+  status: pending
 - contract: agent-ux-v1.yaml
   equation: frame_budget
   function: render_frame
   module_path: batuta::src::agent::tui::layout::render_frame
-  status: planned
+  status: pending
 - contract: agent-ux-v1.yaml
   equation: brick_verification
   function: can_render
   module_path: batuta::src::agent::brick::can_render
-  status: planned
+  status: pending
 - contract: agent-ux-v1.yaml
   equation: cost_display_accuracy
   function: update_cost
   module_path: batuta::src::agent::tui::cost::update_cost
-  status: planned
+  status: pending
 - contract: agent-ux-v1.yaml
   equation: layout_correctness
   function: compute_layout
   module_path: batuta::src::agent::tui::layout::compute_layout
-  status: planned
+  status: pending
 - contract: agent-ux-v1.yaml
   equation: state_machine_validity
   function: transition
   module_path: batuta::src::agent::state::transition
-  status: planned
+  status: pending
 # --- apr code contracts (2026-04-02) ---
 - contract: apr-code-v1.yaml
   equation: sovereignty_guarantee
   function: enforce_offline
   module_path: batuta::src::agent::sandbox::enforce_offline
-  status: planned
+  status: pending
 - contract: apr-code-v1.yaml
   equation: tool_safety
   function: execute_tool_checked
   module_path: batuta::src::agent::tool::execute_tool_checked
-  status: planned
+  status: pending
 - contract: apr-code-v1.yaml
   equation: session_integrity
   function: resume_session
   module_path: batuta::src::agent::session::resume_session
-  status: planned
+  status: pending
 - contract: apr-code-v1.yaml
   equation: apr_md_compliance
   function: load_apr_md
   module_path: batuta::src::agent::config::load_apr_md
-  status: planned
+  status: pending
 - contract: apr-code-v1.yaml
   equation: startup_latency
   function: run_apr_code
   module_path: batuta::src::agent::run_apr_code
-  status: planned
+  status: pending
 # --- Oracle CLI contracts (2026-04-03) ---
 - contract: cli-oracle-v1.yaml
   equation: dispatch_correctness
