@@ -103,6 +103,28 @@ equations:
     - No runtime dependencies beyond OS (libc, kernel)
     - WASM features degrade gracefully if browser unavailable
     lean_theorem: Theorems.Single_Binary
+  apr_model_validity:
+    formula: |
+      load_model(path) requires:
+        IF is_apr(path):
+          has_embedded_tokenizer(path) == true
+          AND has_valid_magic(path) == true
+          AND metadata.vocab_size > 0
+        ELSE IF is_gguf(path):
+          gguf_magic_valid(path) == true
+    domain: Model loading boundary (RealizarDriver::new)
+    invariants:
+    - APR models without embedded tokenizer rejected at load time (Jidoka)
+    - Error message includes exact re-conversion command
+    - GGUF models validated for magic bytes
+    - No invalid model propagates to inference loop
+    preconditions:
+    - path.exists() == true
+    - file_size > 0
+    postconditions:
+    - model_valid OR user_sees_actionable_error
+    - never reaches inference with broken tokenizer
+    lean_theorem: Theorems.Apr_Model_Validity
   startup_latency:
     formula: |
       t(first_prompt_displayed) - t(apr_code_invoked) <= 2.0s
@@ -186,6 +208,11 @@ falsification_tests:
   test: 50-task benchmark (file edits, renames, test fixes) with Qwen2.5-Coder 7B
   if_fails: Sovereign tier unusable — need larger default or cloud fallback
 - id: FALSIFY-AC-008
+  rule: APR model validity
+  prediction: APR file without embedded tokenizer rejected at load time with actionable error
+  test: Create APR file without tokenizer data; load via RealizarDriver::new(); assert error before REPL starts; assert error contains "apr convert"
+  if_fails: Broken APR model propagates to inference — user sees opaque tokenizer error instead of clear fix instructions (Jidoka violation)
+- id: FALSIFY-AC-009
   rule: pmat query superiority
   prediction: pmat query finds more relevant results than grep for code tasks
   test: 50 code search queries; compare relevance (human-rated) pmat vs grep
@@ -220,6 +247,13 @@ kani_harnesses:
   solver: cadical
   harness: verify_no_model_error
 - id: KANI-AC-005
+  obligation: APR model validity at load boundary
+  property: APR without tokenizer never reaches inference
+  bound: 4
+  strategy: exhaustive
+  solver: cadical
+  harness: verify_apr_model_validity
+- id: KANI-AC-006
   obligation: Startup latency under 2s
   property: No blocking operation in startup path
   bound: 8
@@ -236,8 +270,9 @@ qa_gate:
   - session_persist_resume
   - apr_md_compliance
   - no_model_actionable_error
+  - apr_model_validity
   - single_binary_no_deps
   - startup_latency
   - local_quality_benchmark
-  pass_criteria: All 8 falsification tests pass + 5 Kani harnesses verify
+  pass_criteria: All 9 falsification tests pass + 6 Kani harnesses verify
   falsification: renacer syscall trace + clean-room Docker + coding benchmark

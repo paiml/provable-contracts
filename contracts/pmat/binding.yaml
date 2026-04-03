@@ -172,28 +172,34 @@ bindings:
 # === CRITICAL: Work DBC ===
 - contract: work-dbc-v1.yaml
   equation: work_lifecycle
-  function: transition_work_item
-  module_path: pmat::cli::handlers::work_contract_core
-  status: pending
-  notes: Work item lifecycle state machine
+  function: handle_work_start
+  module_path: pmat::cli::handlers::work_handlers::core_handlers::handlers
+  status: implemented
+  notes: Work item lifecycle — start creates contract, sets InProgress in roadmap
+- contract: work-dbc-v1.yaml
+  equation: work_lifecycle
+  function: handle_work_complete
+  module_path: pmat::cli::handlers::work_handlers::core_handlers::handlers
+  status: implemented
+  notes: Work item lifecycle — complete validates claims, sets Completed in roadmap
 - contract: work-dbc-v1.yaml
   equation: falsifiable_claim
-  function: evaluate_claim
-  module_path: pmat::cli::handlers::work_contract_falsification
-  status: pending
-  notes: Popperian falsification of quality claims
+  function: run_falsification_tests
+  module_path: pmat::cli::handlers::work_falsification::runner
+  status: implemented
+  notes: Popperian falsification — runs 22 checks, produces FalsificationReport
 - contract: work-dbc-v1.yaml
   equation: contract_profile
-  function: compute_profile_score
+  function: score_contract
   module_path: pmat::cli::handlers::work_contract_scoring
-  status: pending
-  notes: 5-dimension quality scoring
+  status: implemented
+  notes: 5-dimension quality scoring (coverage, completeness, drift, lint, freshness)
 - contract: work-dbc-v1.yaml
   equation: rescue_protocol
   function: execute_rescue
   module_path: pmat::cli::handlers::work_contract_rescue
-  status: pending
-  notes: Meyer Section 11 rescue strategies
+  status: implemented
+  notes: Meyer Section 11 rescue strategies with bounded retries
 critical_path:
 - tdg
 - comply
