@@ -123,6 +123,59 @@ impact:
     '
   severity: P0
   critical: true
+proof_obligations:
+- id: PO-RC-DATA-001
+  name: Clone is O(1) reference count only
+  property: 'For all tensors t: Tensor::clone(&t) performs exactly one
+    Rc::clone (reference count increment) and zero heap allocations.
+    The cloned tensor shares the same underlying Array1<f32> allocation.'
+  type: invariant
+  severity: P0
+  status: specified
+- id: PO-RC-DATA-002
+  name: Copy-on-write correctness
+  property: 'For all tensors t with refcount > 1: data_mut(&mut t) clones
+    the underlying Array1<f32> into a new allocation before returning
+    &mut, ensuring no aliased mutation. For refcount == 1, no clone occurs.'
+  type: safety
+  severity: P0
+  status: specified
+- id: PO-RC-DATA-003
+  name: API backward compatibility
+  property: 'For all tensors t: data(&t) returns &Array1<f32> with identical
+    semantics to pre-Rc implementation via Deref coercion. No consumer
+    code changes required for read-only access patterns.'
+  type: equivalence
+  severity: P0
+  status: specified
+kani_harnesses:
+- id: KH-RC-DATA-001
+  name: verify_clone_shares_allocation
+  description: 'Create a tensor, clone it, and verify both point to the same
+    heap allocation (data pointer equality) and that Rc::strong_count == 2.'
+  property_tested: PO-RC-DATA-001
+  status: specified
+- id: KH-RC-DATA-002
+  name: verify_copy_on_write_isolation
+  description: 'Create a tensor, clone it, call data_mut on the clone, and
+    verify the original tensor data is unchanged while the clone has
+    a new independent allocation with Rc::strong_count == 1.'
+  property_tested: PO-RC-DATA-002
+  status: specified
+falsification_tests:
+- id: FT-RC-DATA-001
+  name: test_clone_does_not_deep_copy
+  description: 'Clone a 10M-element tensor; assert wall-clock time < 1μs
+    and no new allocation via memory tracking (Rc::strong_count == 2).'
+  falsifies: PO-RC-DATA-001
+  status: specified
+- id: FT-RC-DATA-002
+  name: test_data_mut_with_shared_ref_clones
+  description: 'Create tensor, clone twice (refcount=3), call data_mut on
+    one; assert that data_mut''s tensor now has refcount=1 and the
+    other two still share the original (refcount=2).'
+  falsifies: PO-RC-DATA-002
+  status: specified
 equations:
   identity:
     formula: f(x) = x

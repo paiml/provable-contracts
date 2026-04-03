@@ -123,6 +123,62 @@ performance:
 
     '
   target: < 0.01 seconds amortized per forward pass
+proof_obligations:
+- id: PO-WGPU-RESIDENT-001
+  name: One-time upload invariant
+  property: 'For all WgpuForwardPass instances created via with_resident_weights():
+    weight buffers are uploaded exactly once at construction time. Subsequent
+    forward_ffn_gpu() calls perform zero H2D transfers for weight data.'
+  type: invariant
+  severity: P0
+  status: specified
+- id: PO-WGPU-RESIDENT-002
+  name: Frozen weight immutability
+  property: 'For all GPU-resident weight buffers: no write operation occurs
+    after construction. The buffers are read-only for the entire lifetime
+    of the WgpuForwardPass instance, preserving base model integrity
+    during LoRA fine-tuning.'
+  type: safety
+  severity: P0
+  status: specified
+- id: PO-WGPU-RESIDENT-003
+  name: Graceful degradation chain
+  property: 'For all failure modes: with_resident_weights() failure falls back
+    to new_default() (per-call upload); new_default() failure falls back
+    to CPU-only forward pass. No panic occurs at any stage.'
+  type: safety
+  severity: P0
+  status: specified
+kani_harnesses:
+- id: KH-WGPU-RESIDENT-001
+  name: verify_zero_h2d_after_construction
+  description: 'Create a WgpuForwardPass with resident weights, run N forward
+    passes, and verify that the H2D transfer count for weight buffers
+    remains at exactly the initial upload count (no additional transfers).'
+  property_tested: PO-WGPU-RESIDENT-001
+  status: specified
+- id: KH-WGPU-RESIDENT-002
+  name: verify_fallback_no_panic
+  description: 'Simulate GPU VRAM exhaustion during with_resident_weights();
+    verify that the fallback chain completes without panic and returns
+    a functional (possibly CPU-only) forward pass instance.'
+  property_tested: PO-WGPU-RESIDENT-003
+  status: specified
+falsification_tests:
+- id: FT-WGPU-RESIDENT-001
+  name: test_no_weight_reupload_across_steps
+  description: 'Run 100 forward passes with resident weights; instrument
+    buffer creation calls and assert zero new weight buffer allocations
+    after construction.'
+  falsifies: PO-WGPU-RESIDENT-001
+  status: specified
+- id: FT-WGPU-RESIDENT-002
+  name: test_fallback_on_oom
+  description: 'Mock device.create_buffer_init to return OOM error; verify
+    with_resident_weights() returns Err and new_default() is successfully
+    used without panic.'
+  falsifies: PO-WGPU-RESIDENT-003
+  status: specified
 equations:
   identity:
     formula: f(x) = x

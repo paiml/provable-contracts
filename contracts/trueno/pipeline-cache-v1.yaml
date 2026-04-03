@@ -72,6 +72,58 @@ impact:
     '
   severity: P0
   critical: true
+proof_obligations:
+- id: PO-PIPELINE-CACHE-001
+  name: Cache hit guarantees no recompilation
+  property: 'For all shader sources s: if cache.contains_key(hash(s)) then
+    get_or_create_pipeline(s) returns the cached pipeline without invoking
+    device.create_shader_module() or device.create_compute_pipeline().'
+  type: invariant
+  severity: P0
+  status: specified
+- id: PO-PIPELINE-CACHE-002
+  name: Single encoder submission atomicity
+  property: 'For all execute() calls: exactly one CommandEncoder is created,
+    exactly one queue.submit() is called, and all N operations are encoded
+    into that single encoder regardless of N.'
+  type: invariant
+  severity: P0
+  status: specified
+- id: PO-PIPELINE-CACHE-003
+  name: Static pointer stability for cache keys
+  property: 'For all &''static str shader sources s: the pointer address of s
+    is stable across the entire program lifetime, ensuring cache key equality
+    is deterministic and collision-free.'
+  type: safety
+  severity: P0
+  status: specified
+kani_harnesses:
+- id: KH-PIPELINE-CACHE-001
+  name: verify_cache_hit_idempotent
+  description: 'Verify that inserting a pipeline and retrieving it twice returns
+    the same CachedPipeline reference, and no new compilation occurs on the
+    second retrieval.'
+  property_tested: PO-PIPELINE-CACHE-001
+  status: specified
+- id: KH-PIPELINE-CACHE-002
+  name: verify_single_encoder_per_batch
+  description: 'Verify that for any batch of 1..=MAX_OPS operations, execute()
+    creates exactly one CommandEncoder and calls queue.submit() exactly once.'
+  property_tested: PO-PIPELINE-CACHE-002
+  status: specified
+falsification_tests:
+- id: FT-PIPELINE-CACHE-001
+  name: test_duplicate_shader_causes_single_compilation
+  description: 'Submit the same shader source 100 times; assert pipeline
+    compilation count == 1 via instrumented counter.'
+  falsifies: PO-PIPELINE-CACHE-001
+  status: specified
+- id: FT-PIPELINE-CACHE-002
+  name: test_multi_op_single_submit
+  description: 'Execute a batch of 5 heterogeneous ops; assert exactly 1
+    queue.submit() call via mock device tracker.'
+  falsifies: PO-PIPELINE-CACHE-002
+  status: specified
 equations:
   identity:
     formula: f(x) = x

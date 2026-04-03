@@ -86,6 +86,60 @@ impact:
     \ forward pass (estimated)\n"
   severity: P0
   critical: true
+proof_obligations:
+- id: PO-TILED-MATMUL-001
+  name: Tiled matmul numerical equivalence
+  property: 'For all matrices A(M×K) and B(K×N): tiled_matmul(A, B) produces
+    the same result as naive_matmul(A, B) within f32 epsilon tolerance,
+    regardless of whether M, K, N are multiples of TILE_SIZE=16.'
+  type: equivalence
+  severity: P0
+  status: specified
+- id: PO-TILED-MATMUL-002
+  name: Barrier correctness prevents data races
+  property: 'For all tile iterations t in 0..ceil(K/16): workgroupBarrier()
+    after tile load ensures all 256 threads have written shared memory before
+    any thread reads; workgroupBarrier() after accumulation ensures all
+    threads finish reading before the next tile overwrites shared memory.'
+  type: safety
+  severity: P0
+  status: specified
+- id: PO-TILED-MATMUL-003
+  name: Boundary threads produce zero contribution
+  property: 'For all threads where row >= M or col >= N: the thread loads 0.0
+    into shared memory tiles and does not write to the output buffer,
+    ensuring zero-padding equivalence without corrupting results.'
+  type: safety
+  severity: P0
+  status: specified
+kani_harnesses:
+- id: KH-TILED-MATMUL-001
+  name: verify_tiled_equals_naive
+  description: 'For symbolically bounded M, K, N in 1..=32, verify that
+    tiled_matmul output matches naive_matmul output element-wise within
+    1e-5 relative tolerance.'
+  property_tested: PO-TILED-MATMUL-001
+  status: specified
+- id: KH-TILED-MATMUL-002
+  name: verify_boundary_zero_padding
+  description: 'For M, K, N not divisible by 16, verify that boundary threads
+    contribute exactly 0.0 to shared memory and that no out-of-bounds
+    write occurs in the output buffer.'
+  property_tested: PO-TILED-MATMUL-003
+  status: specified
+falsification_tests:
+- id: FT-TILED-MATMUL-001
+  name: test_non_tile_aligned_dimensions
+  description: 'Run tiled matmul with M=17, K=33, N=7 and compare against
+    naive CPU matmul; assert max element-wise error < 1e-4.'
+  falsifies: PO-TILED-MATMUL-001
+  status: specified
+- id: FT-TILED-MATMUL-002
+  name: test_single_element_matmul
+  description: 'Run tiled matmul with M=1, K=1, N=1 (extreme boundary case);
+    verify result equals a[0]*b[0] exactly.'
+  falsifies: PO-TILED-MATMUL-003
+  status: specified
 equations:
   identity:
     formula: f(x) = x
