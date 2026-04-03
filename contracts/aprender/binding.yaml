@@ -1774,24 +1774,6 @@ bindings:
   module_path: apr_cli::mcp::tool_metadata
   status: pending
   notes: Read-only tools classified idempotent, mutation tools non-idempotent
-critical_path:
-- softmax
-- rmsnorm
-- attention
-- matmul
-- rope
-- swiglu
-- gelu
-- embedding_lookup
-- cross_entropy
-- forward
-- tokenize
-- sample
-- layernorm
-- dispatch
-- exit_code
-- error_envelope
-- tool_schema
 # === Model Format Safety (GGUF) ===
 - contract: ../gguf-format-safety-v1.yaml
   equation: magic_validation
@@ -1855,3 +1837,25 @@ critical_path:
   function: export_model
   status: implemented
   notes: Atomic write via temp file + rename
+critical_path:
+- softmax
+- rmsnorm
+- attention
+- matmul
+- rope
+- swiglu
+- gelu
+- embedding_lookup
+- cross_entropy
+- forward
+- tokenize
+- sample
+- layernorm
+- dispatch
+- exit_code
+- error_envelope
+- tool_schema
+- magic_validation
+- header_size_validation
+- format_conversion_roundtrip
+- quantization_bounds
