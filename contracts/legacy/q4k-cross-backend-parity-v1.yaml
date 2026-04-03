@@ -1,5 +1,10 @@
-name: q4k-cross-backend-parity-v1
-version: 1.0.0
+metadata:
+  version: 1.0.0
+  created: '2026-03-01'
+  author: PAIML Engineering
+  description: Q4K cross-backend parity — GPU/CPU dot product epsilon and factual match
+  references:
+  - Legacy contract migrated to v2 schema
 equations:
   dot_product_epsilon:
     description: Q4K dot within sqrt(K)*2^-23 across backends
