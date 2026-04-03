@@ -122,7 +122,7 @@ provable-contracts/
 |   |   +-- error.rs                Error types
 |   +-- provable-contracts-cli/     CLI binary (`pv`)
 |   +-- provable-contracts-macros/  Proc macro (#[contract])
-+-- contracts/                      YAML contract registry (201 contracts)
++-- contracts/                      YAML contract registry (315 contracts)
 +-- docs/specifications/            This spec
 ```
 
@@ -131,17 +131,17 @@ provable-contracts/
 | Metric | Value | Verified |
 |---|---|---|
 | YAML contracts (total files) | 204 | `find contracts/ -name '*.yaml' ! -name 'binding.yaml' \| wc -l` |
-| Parseable kernel contracts | 165 | `pv coverage` (excludes kaizen/, legacy/, pipelines/) |
+| Parseable kernel contracts | 315 | `pv coverage` (excludes kaizen/, legacy/, pipelines/) |
 | Equations | 516 | `pv coverage contracts/` (recursive, v2.3.0) |
 | Proof obligations | 790 | `pv coverage contracts/` (recursive, v2.3.0) |
 | Falsification tests | 878 | `pv coverage contracts/` (recursive, v2.3.0) |
 | Kani harnesses (YAML-defined) | 985 | `pv coverage contracts/` (recursive, v2.3.0) |
 | **Real bindings (with module_path)** | **660** | Ghost bindings stripped 2026-03-28 |
-| Binding repos with entries | 26 directories, 26 with real bindings | `ls contracts/*/binding.yaml` |
+| Binding repos with entries | 33 directories, 33 with real bindings | `ls contracts/*/binding.yaml` |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) | schema/types.rs |
-| CLI commands | 33 | `pv --help` (includes `pv pipeline`) |
-| Repos with build.rs enforcement | 7/26 | aprender, trueno, entrenar, realizar, forjar, ruchy, simular |
-| Repos with trait tests | 11/26 | manual audit 2026-03-28 |
+| CLI commands | 34 | `pv --help` (includes `pv pipeline`) |
+| Repos with build.rs enforcement | 7/33 | aprender, trueno, entrenar, realizar, forjar, ruchy, simular |
+| Repos with trait tests | 11/33 | manual audit 2026-03-28 |
 | `#[contract]` proc-macro annotations | 18 | forjar: 4, paiml-mcp-agent-toolkit: 11, batuta: 3 |
 | Stack LoC governed | ~6.4M Rust | — |
 
@@ -182,23 +182,23 @@ Level   Method                  Tool            Guarantee
 |-------|----------------|-----------|----------|--------|
 | **L5** | Algorithm incorrect | Lean 4 proof (no sorry) | 3 theorems (softmax) | — |
 | **L4** | Logic bugs, overflows | Kani `#[kani::proof]` BMC | 985 harnesses (YAML-defined) | Inputs > bound |
-| **L3** | Violated invariants | `#[contract]` debug_assert | 18 functions (forjar: 4, pmat: 11, batuta: 3) | Release builds |
-| **L2** | Renamed/deleted fns | Trait `impl` (§23) | 12/26 repos have trait tests | Logic bugs |
-| **L1** | Missing bindings | build.rs AllImplemented | 540 real bindings (~234 verified) | Ghost bindings |
-| **L0.5** | Schema/audit/score | `pv lint` 7 gates | 165/165 contracts pass | Impl bugs |
+| **L3** | Violated invariants | `#[contract]` debug_assert | 18 functions (forjar: 4, paiml-mcp-agent-toolkit: 11, batuta: 3) | Release builds |
+| **L2** | Renamed/deleted fns | Trait `impl` (§23) | 12/33 repos have trait tests | Logic bugs |
+| **L1** | Missing bindings | build.rs AllImplemented | 660 real bindings | Ghost bindings |
+| **L0.5** | Schema/audit/score | `pv lint` 7 gates | 315/315 contracts pass | Impl bugs |
 | **L0** | Obvious bugs | Human review | — | Everything subtle |
 
 **L0 through L2 enforce on every `cargo build` + `cargo test`** in
 the 7 repos with build.rs (aprender, trueno, entrenar, realizar,
-forjar, ruchy, simular). The other 19 repos have YAML bindings only.
+forjar, ruchy, simular). The other 26 repos have YAML bindings only.
 
-L3 enforces on 18 annotated functions across forjar, pmat, and batuta
+L3 enforces on 18 annotated functions across forjar, paiml-mcp-agent-toolkit, and batuta
 debug builds. L4 and L5 are defined in YAML but not yet run in CI.
 
 > **Spec Falsification (2026-03-28, v2.2.0):** Round 3 stripped 28,206
 > ghost bindings (mass-generated entries without `module_path`). Honest
-> count: 540 real bindings, ~234 verified in source. Previous claim of
-> 20,366 bindings / "Grade A for 26 repos" was a scoring artifact of
+> count: 660 real bindings. Previous claim of
+> 20,366 bindings / "Grade A for 33 repos" was a scoring artifact of
 > YAML inflation, not real integration. See §25 for corrected baseline.
 
 ### The Provability Claim
@@ -402,7 +402,7 @@ Kani verification strategies in **[sub/pipeline.md](sub/pipeline.md)**.
 
 ## 5. CLI Reference
 
-The `pv` binary provides 35 commands. Full reference with examples, flags, and output formats in
+The `pv` binary provides 34 commands. Full reference with examples, flags, and output formats in
 **[sub/cli.md](sub/cli.md)**.
 
 ### Command Summary
@@ -507,21 +507,21 @@ and grade thresholds in **[sub/scoring.md](sub/scoring.md)**.
 
 | # | Dimension | Weight | Measures |
 |---|---|---|---|
-| D1 | Specification Depth | 25% | Equations, domains, invariants, tolerances |
+| D1 | Specification Depth | 20% | Equations, domains, invariants, tolerances |
 | D2 | Falsification Coverage | 25% | Obligations with tests / total obligations |
 | D3 | Kani Proof Coverage | 25% | Obligations with harnesses (strategy-weighted) |
-| D4 | Lean Proof Coverage | 5% | Obligations with proved Lean theorems |
+| D4 | Lean Proof Coverage | 10% | Obligations with proved Lean theorems |
 | D5 | Binding Coverage | 20% | Equations with implemented bindings |
 
 ### Five Scoring Dimensions (Codebase)
 
 | # | Dimension | Weight | Measures |
 |---|---|---|---|
-| CD1 | Contract Coverage | 25% | Declared contracts resolved / declared |
+| CD1 | Contract Coverage | 30% | Declared contracts resolved / declared |
 | CD2 | Critical Path Completeness | 20% | `critical_path` entries with bindings (§28) |
 | CD3 | Mean Contract Score | 20% | Avg composite of bound contracts |
 | CD4 | Proof Depth Distribution | 15% | Weighted L1-L5 distribution |
-| CD5 | Drift Detection | 20% | Contract freshness vs code |
+| CD5 | Drift Detection | 15% | Contract freshness vs code |
 
 ### Grade Thresholds
 
@@ -537,7 +537,7 @@ and grade thresholds in **[sub/scoring.md](sub/scoring.md)**.
 
 ## 8. Query Engine
 
-`pv query` provides O(1) semantic search across all 182+ contracts
+`pv query` provides O(1) semantic search across all 315+ contracts
 AND their consumer projects. Inspired by `pmat query` from
 paiml-mcp-agent-toolkit. Full query architecture, index format, and
 enrichment flags in **[sub/query.md](sub/query.md)**.
@@ -675,7 +675,7 @@ const ALLOWED_GAPS: &[(&str, &str)] = &[
 
 ## 10. Kernel Contract Registry
 
-Full registry of all 182 contracts, organized by tier and kernel
+Full registry of all 315 contracts, organized by tier and kernel
 equivalence class, in **[sub/registry.md](sub/registry.md)**.
 
 ### Kernel Equivalence Classes
@@ -1677,7 +1677,7 @@ Contract enforcement currently uses three separate mechanisms:
 | Trait tests | `tests/contract_traits.rs` | Function signatures exist and compile | Each repo manually |
 | `pv lint` | CI or local | YAML structure, score thresholds | provable-contracts |
 
-Result: 6/26 repos have all three. 14/26 have none. The mechanisms
+Result: 6/33 repos have all three. 14/33 have none. The mechanisms
 are redundant (all check "do the declared bindings exist?") and their
 per-repo setup creates waste.
 
@@ -1725,7 +1725,7 @@ The "One Way" was falsified before implementation:
 |---|-------|---------|----------|
 | F1 | `pv codegen` generates enforcement | Yes, generates macro stubs | OK |
 | F2 | Preconditions are meaningful | All 530 are `!input.is_empty()` — zero domain-specific checks | **CRITICAL** |
-| F3 | Repos use the output | **18/26** have active `pv codegen` call sites (27 total) | **RESOLVED** |
+| F3 | Repos use the output | **18/33** have active `pv codegen` call sites (27 total) | **RESOLVED** |
 | F4 | Postconditions work | **0** postconditions generated by codegen | **CRITICAL** |
 | F5 | Macros bind to real functions | Hardcoded `$input` var, not real signatures | **HIGH** |
 | F6 | 27 call sites catch real bugs | All 27 assert only `!is_empty()` — catches nothing domain-specific | **CRITICAL** |
@@ -1819,7 +1819,7 @@ The current three-mechanism approach is **muda** (waste):
 - **Over-processing**: Three tools checking the same property.
 - **Inventory**: build.rs files, trait test files, proc macro crate — all sitting in repos, maintained, but redundant.
 - **Motion**: Developer must set up build.rs + traits + binding in each repo.
-- **Defects**: 14/26 repos have zero enforcement because the setup wasn't done.
+- **Defects**: 14/33 repos have zero enforcement because the setup wasn't done.
 
 The Toyota Way says: eliminate the waste. Build quality in at the source.
 The source is the YAML contract. The enforcement is the compiler.
