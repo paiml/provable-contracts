@@ -1837,6 +1837,43 @@ bindings:
   function: export_model
   status: implemented
   notes: Atomic write via temp file + rename
+# === APR CLI Operations ===
+- contract: apr-cli-operations-v1.yaml
+  equation: side_effect_classification
+  module_path: apr_cli::dispatch
+  function: dispatch_core_command
+  status: implemented
+  notes: All 48 commands classified as ReadOnly/Mutating/LongRunning
+- contract: apr-cli-operations-v1.yaml
+  equation: resource_cleanup
+  module_path: apr_cli::dispatch
+  function: dispatch_core_command
+  status: implemented
+  notes: GPU/tmp/thread cleanup on all exit paths via RAII
+- contract: apr-cli-operations-v1.yaml
+  equation: inference_determinism
+  module_path: aprender::inference
+  function: generate
+  status: implemented
+  notes: temperature=0 greedy decoding is deterministic
+- contract: apr-cli-operations-v1.yaml
+  equation: tokenizer_consistency
+  module_path: aprender::tokenizer
+  function: encode
+  status: implemented
+  notes: BPE encode/decode roundtrip for valid UTF-8
+- contract: apr-cli-operations-v1.yaml
+  equation: concurrent_model_access
+  module_path: aprender::serve
+  function: handle_inference_request
+  status: implemented
+  notes: Per-request KV cache, immutable model weights
+- contract: apr-cli-operations-v1.yaml
+  equation: progress_reporting
+  module_path: apr_cli::progress
+  function: report_progress
+  status: implemented
+  notes: Monotonic progress [0.0, 1.0] with at least 1 update/sec
 critical_path:
 - softmax
 - rmsnorm
@@ -1859,3 +1896,6 @@ critical_path:
 - header_size_validation
 - format_conversion_roundtrip
 - quantization_bounds
+- side_effect_classification
+- inference_determinism
+- tokenizer_consistency
