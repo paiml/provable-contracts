@@ -46,6 +46,23 @@ equations:
     - doc.content is non-empty
     - doc.url is valid
     lean_theorem: Theorems.Index_Insert_Retrieve
+  tokenize_normalization:
+    formula: 'tokenize(text) = normalize(split(lowercase(nfd(text))))'
+    domain: text ∈ String (UTF-8, any language)
+    codomain: Vec<String> where all tokens are lowercase, NFC-normalized
+    invariants:
+    - 'Empty text yields empty token list'
+    - 'Tokens are lowercase after normalization'
+    - 'Stop words removed when configured'
+    - 'Accented characters normalized via Unicode NFD/NFC'
+    - 'Token count <= word count of input'
+    preconditions:
+    - text is valid UTF-8
+    - TokenizerConfig specifies language (es, ca, gl, eu)
+    postconditions:
+    - All returned tokens have length >= min_length and <= max_length
+    - No token contains whitespace
+    lean_theorem: Theorems.Tokenize_Normalization
 proof_obligations:
 - type: invariant
   property: BM25 score is non-negative

@@ -3,9 +3,9 @@ target_crate: faro
 bindings:
 - contract: beacon-dispatch-v1.yaml
   equation: bm25_ranking
-  module_path: faro::ranking
-  function: bm25_score
-  signature: 'fn bm25_score(query: &str, document: &Document, corpus: &Index) -> f64'
+  module_path: faro::ranking::bm25
+  function: Bm25Scorer::score
+  signature: 'pub fn score(&self, index: &InvertedIndex, document_id: &str, query_terms: &[&str]) -> f64'
   status: implemented
   notes: BM25 with k1=1.2, b=0.75 defaults; Spanish-aware tokenization
 - contract: beacon-dispatch-v1.yaml
