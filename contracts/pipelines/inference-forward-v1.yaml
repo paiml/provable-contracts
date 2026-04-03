@@ -4,6 +4,7 @@ metadata:
   author: "PAIML Engineering"
   description: "Cross-repo inference pipeline: aprender(tokenize,embed) → trueno(transformer blocks) → realizar(sample)"
   pipeline: true
+  registry: true
   references:
     - "Vaswani et al. (2017) Attention Is All You Need. arXiv:1706.03762"
     - "Yuan et al. (2024) LLM Inference Unveiled: Roofline Model Insights. arXiv:2402.16363"
@@ -18,6 +19,18 @@ metadata:
     - bpe-tokenization-v1
     - sampling-algorithms-v1
     - roofline-model-v1
+
+equations:
+  pipeline_composition:
+    formula: |
+      forward(tokens) = sample(lm_head(transformer^L(embed(tokens))))
+      Where L = num_layers, transformer = norm + attention + ffn + residual
+    domain: tokens in Vec<u32>, all t in [0, vocab_size)
+    codomain: token_id in [0, vocab_size)
+    invariants:
+    - Shape preserved through all stages
+    - All intermediate tensors are finite (no NaN/Inf)
+    lean_theorem: Theorems.PipelineComposition
 
 stages:
   - name: tokenize
