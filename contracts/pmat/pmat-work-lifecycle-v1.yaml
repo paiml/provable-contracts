@@ -12,7 +12,7 @@ metadata:
   - Meyer (1997). Object-Oriented Software Construction. Prentice Hall, Ch. 11 (DbC), Ch. 16 (Inheritance and contracts)
   - Popper (1959). The Logic of Scientific Discovery. Routledge
   - Liskov & Wing (1994). A Behavioral Notion of Subtyping. ACM TOPLAS 16(6)
-  - pmat work DBC system v5.0 (Meyer triad, 22 falsification claims)
+  - pmat work DBC system v5.0 (Meyer triad, 25 falsification claims)
   - PMAT-033 contract-first enforcement
   depends_on:
   - work-dbc-v1
@@ -86,7 +86,7 @@ equations:
           exists c in claims: c.tests(p) AND c.prediction is testable
         Coverage: |{p : exists c testing p}| / |postconditions| = 1.0
         No postcondition is unfalsifiable (Popper criterion).
-        22 default claims cover all postcondition categories:
+        25 default claims cover all postcondition categories (Pmat profile):
           ManifestIntegrity, DifferentialCoverage, AbsoluteCoverage,
           TdgRegression, ComplexityRegression, FileSizeRegression,
           SpecQuality, RoadmapUpdate, GitHubSync, CoverageGaming,

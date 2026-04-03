@@ -101,7 +101,7 @@ equations:
         evidence matches claim.prediction -> Verified
         evidence contradicts claim.prediction -> Falsified
         evidence inconclusive -> Blocked
-      22 default claims: ManifestIntegrity, DifferentialCoverage, AbsoluteCoverage,
+      25 default claims (Pmat profile): ManifestIntegrity, DifferentialCoverage, AbsoluteCoverage,
         TdgRegression, ComplexityRegression, FileSizeRegression, SpecQuality,
         RoadmapUpdate, GitHubSync, CoverageGaming, SupplyChainIntegrity,
         MetaFalsification, ExamplesCompile, BookValidation, SatdDetection,
@@ -123,12 +123,15 @@ equations:
   contract_profile:
     formula: |
       profile: (WorkItem, ProfileName) -> ContractProfile
-        ProfileName in {universal, rust, pmat, python}
-        Each profile activates a subset of the 22 claims:
-          universal: compiles, tests, roadmap_update (3 claims)
-          rust: universal + clippy, examples, cargo-deny, satd (7 claims)
-          pmat: rust + coverage, tdg, complexity, file_size, spec (12+ claims)
-          python: universal + mypy, ruff, pytest (6 claims)
+        ProfileName in {Universal, Rust, Pmat, Stack, Custom}
+        Each profile activates a subset of the 25 claims:
+          Universal: compiles, tests, manifest, meta, coverage_gaming, roadmap (6 claims)
+          Rust: Universal + clippy, examples, cargo-deny, satd, dead_code,
+                unwrap, per_file_coverage, lint (14 claims)
+          Pmat: Rust + coverage, tdg, complexity, file_size, spec, github_sync,
+                supply_chain, book, variant, cross_crate, regression (25 claims)
+          Stack: Pmat + third-party tool claims from manifest (variable)
+          Custom: user cherry-picked claims subset (variable)
         score = active_claims_verified / total_active_claims
         grade = letter_grade(score * 100)
     domain: WorkItem with profile name string
