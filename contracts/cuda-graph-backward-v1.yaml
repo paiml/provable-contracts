@@ -134,6 +134,22 @@ falsification_tests:
   test: Run 1000-step extended canary with both clipping modes, final loss diff < 0.5
   if_fails: Per-layer clipping prevents gradient explosion in early layers that global clipping misses
 
+kani_harnesses:
+- id: KANI-CGBW-001
+  obligation: Graph boundary contains only GPU kernel launches
+  property: No D2H sync inside graph boundary
+  bound: 8
+  strategy: stub_float
+  solver: cadical
+  harness: verify_no_sync_in_graph
+- id: KANI-CGBW-002
+  obligation: Gradient equivalence across graphed and ungraphed paths
+  property: Graphed backward produces same gradients
+  bound: 4
+  strategy: stub_float
+  solver: cadical
+  harness: verify_gradient_equivalence
+
 qa_gate:
   id: F-CGBW-001
   name: cuda-graph-backward-v1 Contract

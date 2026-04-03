@@ -104,12 +104,14 @@ kani_harnesses:
     the same CachedPipeline reference, and no new compilation occurs on the
     second retrieval.'
   obligation: PO-PIPELINE-CACHE-001
+  bound: 8
   status: specified
 - id: KH-PIPELINE-CACHE-002
   name: verify_single_encoder_per_batch
   description: 'Verify that for any batch of 1..=MAX_OPS operations, execute()
     creates exactly one CommandEncoder and calls queue.submit() exactly once.'
   obligation: PO-PIPELINE-CACHE-002
+  bound: 8
   status: specified
 falsification_tests:
 - id: FT-PIPELINE-CACHE-001

@@ -104,3 +104,11 @@ kani_harnesses:
   bound: 16
   strategy: exhaustive
   harness: verify_semver_regex
+
+qa_gate:
+  id: F-REGEX-EX-001
+  name: Regex Contract Example Contract
+  description: Quality gate for regex-based string-output postcondition contracts
+  checks:
+  - validation
+  - falsification

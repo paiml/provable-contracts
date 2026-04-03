@@ -68,3 +68,11 @@ kani_harnesses:
     bound: 8
     strategy: bounded_int
 
+qa_gate:
+  id: F-COOP-GEMM-001
+  name: Cooperative Matrix GEMM Contract
+  description: Quality gate for cooperative matrix GEMM hardware tensor core acceleration
+  checks:
+  - validation
+  - falsification
+

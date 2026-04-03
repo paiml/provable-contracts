@@ -122,6 +122,22 @@ falsification_tests:
   test: Run 10 training steps with fused forward, verify gradients are finite and non-zero
   if_fails: Fused kernel doesn't save intermediate activations needed for backward
 
+kani_harnesses:
+- id: KANI-NFGS-001
+  obligation: Fused FFN equivalence to separate kernels
+  property: Fused output matches separate within tolerance
+  bound: 8
+  strategy: stub_float
+  solver: cadical
+  harness: verify_fused_ffn_equivalence
+- id: KANI-NFGS-002
+  obligation: SwiGLU numerical stability
+  property: SiLU(gate) * up finite for bounded inputs
+  bound: 8
+  strategy: stub_float
+  solver: cadical
+  harness: verify_swiglu_stability
+
 qa_gate:
   id: F-NFGS-001
   name: nf4-fused-gate-up-swiglu-v1 Contract

@@ -75,3 +75,11 @@ kani_harnesses:
     bound: 4
     strategy: bounded_int
 
+qa_gate:
+  id: F-SOV-TENSOR-001
+  name: Sovereign Tensor Contract
+  description: Quality gate for sovereign tensor operations using trueno instead of external libraries
+  checks:
+  - validation
+  - falsification
+

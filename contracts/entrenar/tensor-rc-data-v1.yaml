@@ -154,6 +154,7 @@ kani_harnesses:
   description: 'Create a tensor, clone it, and verify both point to the same
     heap allocation (data pointer equality) and that Rc::strong_count == 2.'
   obligation: PO-RC-DATA-001
+  bound: 8
   status: specified
 - id: KH-RC-DATA-002
   name: verify_copy_on_write_isolation
@@ -161,6 +162,7 @@ kani_harnesses:
     verify the original tensor data is unchanged while the clone has
     a new independent allocation with Rc::strong_count == 1.'
   obligation: PO-RC-DATA-002
+  bound: 8
   status: specified
 falsification_tests:
 - id: FT-RC-DATA-001

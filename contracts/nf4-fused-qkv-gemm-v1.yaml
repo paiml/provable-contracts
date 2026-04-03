@@ -37,7 +37,7 @@ equations:
     domain: same as separate
     codomain: same as separate
     invariants:
-    - K and V output dims are identical (GQA: both = num_kv_heads × head_dim)
+    - "K and V output dims are identical (GQA: both = num_kv_heads × head_dim)"
     - A loaded from DRAM at most twice (Q path + KV path)
     preconditions:
     - K dim == V dim (required for fused K+V)
@@ -56,16 +56,55 @@ equations:
         Per forward (28 layers) = 352 MB saved
     domain: bytes
 
+proof_obligations:
+- type: equivalence
+  property: Fused K+V output matches separate K, V projections
+  formal: '|fused_kv(A, W_k, W_v) - [separate_k(A, W_k), separate_v(A, W_v)]| < ε'
+  tolerance: 1.0e-4
+  applies_to: all
+- type: bound
+  property: Reduces input reads from 3 to 2 per attention layer
+  formal: dram_reads(fused) == 2 AND dram_reads(separate) == 3
+  applies_to: fused_qkv
+- type: invariant
+  property: K dim equals V dim for fused K+V path
+  formal: kv_dim_k == kv_dim_v
+  applies_to: fused_qkv
+
+kani_harnesses:
+- id: KANI-NFQKV-001
+  obligation: Fused K+V equivalence to separate projections
+  property: Fused K+V output matches separate within tolerance
+  bound: 8
+  strategy: stub_float
+  solver: cadical
+  harness: verify_fused_kv_equivalence
+- id: KANI-NFQKV-002
+  obligation: Dimension precondition enforcement
+  property: kv_dim_k == kv_dim_v enforced at input
+  bound: 4
+  strategy: exhaustive
+  solver: cadical
+  harness: verify_kv_dim_precondition
+
 falsification_tests:
 - id: F-NF4-QKV-001
-  claim: Fused K+V output matches separate K, V within 1e-4
+  rule: Fused K+V output matches separate K, V within 1e-4
+  prediction: Fused K+V output matches separate projections within 1e-4 tolerance
   test: Run both paths with Qwen dims (K=1536, kv_dim=256). Compare element-wise.
-  status: PENDING
+  if_fails: Check NF4 dequant ordering or accumulation precision in fused path
 
 - id: F-NF4-QKV-002
-  claim: Throughput improvement >= 10% for attention projections
+  rule: Reduces input reads from 3 to 2 per attention layer
+  prediction: Throughput improvement >= 10% for attention projections
   test: Run 100-step canary with separate vs fused K+V. Compare tok/s.
-  status: PENDING
+  if_fails: Memory bandwidth is not the QKV bottleneck — profile for compute saturation
+
+- id: F-NF4-QKV-003
+  rule: K dim equals V dim for fused K+V path
+  prediction: Fused path rejects asymmetric K/V dims at initialization
+  test: Attempt fused K+V with kv_dim_k=256 and kv_dim_v=128. Expect error, not silent corruption.
+  if_fails: Fused kernel silently computes wrong V output with mismatched dims
 
 qa_gate:
   id: F-NFQKV-001

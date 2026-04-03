@@ -156,6 +156,7 @@ kani_harnesses:
     passes, and verify that the H2D transfer count for weight buffers
     remains at exactly the initial upload count (no additional transfers).'
   obligation: PO-WGPU-RESIDENT-001
+  bound: 8
   status: specified
 - id: KH-WGPU-RESIDENT-002
   name: verify_fallback_no_panic
@@ -163,6 +164,7 @@ kani_harnesses:
     verify that the fallback chain completes without panic and returns
     a functional (possibly CPU-only) forward pass instance.'
   obligation: PO-WGPU-RESIDENT-003
+  bound: 8
   status: specified
 falsification_tests:
 - id: FT-WGPU-RESIDENT-001

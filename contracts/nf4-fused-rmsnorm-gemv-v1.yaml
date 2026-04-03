@@ -111,6 +111,22 @@ falsification_tests:
   test: Test with Qwen 1.5B Q (1536→1536) and K/V (1536→256) rectangular weight matrices
   if_fails: Kernel tile size assumes square — add rectangular support
 
+kani_harnesses:
+- id: KANI-NFRG-001
+  obligation: Fused RMSNorm+GEMV equivalence
+  property: Fused output matches separate within tolerance
+  bound: 8
+  strategy: stub_float
+  solver: cadical
+  harness: verify_fused_rmsnorm_gemv_equivalence
+- id: KANI-NFRG-002
+  obligation: NF4 dequant numerical identity
+  property: NF4 dequant in fused kernel matches standalone
+  bound: 8
+  strategy: exhaustive
+  solver: cadical
+  harness: verify_nf4_dequant_identity
+
 qa_gate:
   id: F-NFRG-001
   name: nf4-fused-rmsnorm-gemv-v1 Contract

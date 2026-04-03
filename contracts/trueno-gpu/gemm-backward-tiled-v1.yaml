@@ -290,30 +290,40 @@ kani_harnesses:
 - id: KANI-TGBW-001
   obligation: C-TILE-BWD-001
   property: Arithmetic intensity bounds hold for all tile sizes
+  bound: 8
 - id: KANI-TGBW-002
   obligation: C-TILE-BWD-002
   property: Shared memory per tile fits SM limits
+  bound: 8
 - id: KANI-TGBW-003
   obligation: C-TILE-BWD-003
   property: Backward GEMM A matches naive within tolerance
+  bound: 8
 - id: KANI-TGBW-004
   obligation: C-TILE-BWD-004
   property: Backward GEMM B matches naive within tolerance
+  bound: 8
 - id: KANI-TGBW-005
   obligation: C-TILE-BWD-005
   property: FMA instructions emitted in tiled kernel
+  bound: 8
 - id: KANI-TGBW-006
   obligation: C-TILE-BWD-006
   property: Barrier safety — unconditional convergence
+  bound: 8
 - id: KANI-TGBW-007
   obligation: C-TILE-BWD-007
   property: Register pressure within SM limit
+  bound: 8
 - id: KANI-TGBW-008
   obligation: C-TILE-BWD-008
   property: Tiled backward faster than naive
+  bound: 8
 - id: KANI-TGBW-009
   obligation: C-TILE-BWD-009
   property: Non-square matrix backward correctness
+  bound: 8
 - id: KANI-TGBW-010
   obligation: C-TILE-BWD-010
   property: Batch backward through LoRA training step
+  bound: 8

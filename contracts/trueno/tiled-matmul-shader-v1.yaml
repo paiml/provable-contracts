@@ -119,6 +119,7 @@ kani_harnesses:
     tiled_matmul output matches naive_matmul output element-wise within
     1e-5 relative tolerance.'
   obligation: PO-TILED-MATMUL-001
+  bound: 8
   status: specified
 - id: KH-TILED-MATMUL-002
   name: verify_boundary_zero_padding
@@ -126,6 +127,7 @@ kani_harnesses:
     contribute exactly 0.0 to shared memory and that no out-of-bounds
     write occurs in the output buffer.'
   obligation: PO-TILED-MATMUL-003
+  bound: 8
   status: specified
 falsification_tests:
 - id: FT-TILED-MATMUL-001

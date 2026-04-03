@@ -126,3 +126,11 @@ training_quality:
     prediction: PASS
     verified: "2026-03-31: MCC=0.6416, TP=84 FP=43 TN=351 FN=22 — PASS"
     if_fails: "N/A — already verified PASS"
+
+qa_gate:
+  id: F-WGPU-TRAIN-001
+  name: WGPU Production Training Contract
+  description: Quality gate for production-quality QLoRA training on WGPU
+  checks:
+  - validation
+  - falsification
