@@ -101,7 +101,7 @@ proof_obligations:
     after tile load ensures all 256 threads have written shared memory before
     any thread reads; workgroupBarrier() after accumulation ensures all
     threads finish reading before the next tile overwrites shared memory.'
-  type: safety
+  type: invariant
   severity: P0
   status: specified
 - id: PO-TILED-MATMUL-003
@@ -109,7 +109,7 @@ proof_obligations:
   property: 'For all threads where row >= M or col >= N: the thread loads 0.0
     into shared memory tiles and does not write to the output buffer,
     ensuring zero-padding equivalence without corrupting results.'
-  type: safety
+  type: invariant
   severity: P0
   status: specified
 kani_harnesses:
@@ -118,28 +118,26 @@ kani_harnesses:
   description: 'For symbolically bounded M, K, N in 1..=32, verify that
     tiled_matmul output matches naive_matmul output element-wise within
     1e-5 relative tolerance.'
-  property_tested: PO-TILED-MATMUL-001
+  obligation: PO-TILED-MATMUL-001
   status: specified
 - id: KH-TILED-MATMUL-002
   name: verify_boundary_zero_padding
   description: 'For M, K, N not divisible by 16, verify that boundary threads
     contribute exactly 0.0 to shared memory and that no out-of-bounds
     write occurs in the output buffer.'
-  property_tested: PO-TILED-MATMUL-003
+  obligation: PO-TILED-MATMUL-003
   status: specified
 falsification_tests:
 - id: FT-TILED-MATMUL-001
-  name: test_non_tile_aligned_dimensions
-  description: 'Run tiled matmul with M=17, K=33, N=7 and compare against
-    naive CPU matmul; assert max element-wise error < 1e-4.'
-  falsifies: PO-TILED-MATMUL-001
-  status: specified
+  rule: Non-tile-aligned dimensions correctness
+  prediction: M=17,K=33,N=7 tiled matmul matches naive CPU within 1e-4
+  test: Run tiled matmul with non-aligned dims, compare against naive
+  if_fails: Boundary padding or tile indexing bug
 - id: FT-TILED-MATMUL-002
-  name: test_single_element_matmul
-  description: 'Run tiled matmul with M=1, K=1, N=1 (extreme boundary case);
-    verify result equals a[0]*b[0] exactly.'
-  falsifies: PO-TILED-MATMUL-003
-  status: specified
+  rule: Single element extreme boundary
+  prediction: M=1,K=1,N=1 result equals a[0]*b[0] exactly
+  test: Run tiled matmul with 1x1x1, verify exact equality
+  if_fails: Edge case handling in tile dispatch
 equations:
   identity:
     formula: f(x) = x

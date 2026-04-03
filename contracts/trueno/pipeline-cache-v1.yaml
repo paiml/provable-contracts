@@ -94,7 +94,7 @@ proof_obligations:
   property: 'For all &''static str shader sources s: the pointer address of s
     is stable across the entire program lifetime, ensuring cache key equality
     is deterministic and collision-free.'
-  type: safety
+  type: invariant
   severity: P0
   status: specified
 kani_harnesses:
@@ -103,27 +103,25 @@ kani_harnesses:
   description: 'Verify that inserting a pipeline and retrieving it twice returns
     the same CachedPipeline reference, and no new compilation occurs on the
     second retrieval.'
-  property_tested: PO-PIPELINE-CACHE-001
+  obligation: PO-PIPELINE-CACHE-001
   status: specified
 - id: KH-PIPELINE-CACHE-002
   name: verify_single_encoder_per_batch
   description: 'Verify that for any batch of 1..=MAX_OPS operations, execute()
     creates exactly one CommandEncoder and calls queue.submit() exactly once.'
-  property_tested: PO-PIPELINE-CACHE-002
+  obligation: PO-PIPELINE-CACHE-002
   status: specified
 falsification_tests:
 - id: FT-PIPELINE-CACHE-001
-  name: test_duplicate_shader_causes_single_compilation
-  description: 'Submit the same shader source 100 times; assert pipeline
-    compilation count == 1 via instrumented counter.'
-  falsifies: PO-PIPELINE-CACHE-001
-  status: specified
+  rule: Cache hit prevents recompilation
+  prediction: Submitting same shader 100 times causes only 1 compilation
+  test: Submit same shader source 100 times, count compilations
+  if_fails: Cache lookup or key comparison is broken
 - id: FT-PIPELINE-CACHE-002
-  name: test_multi_op_single_submit
-  description: 'Execute a batch of 5 heterogeneous ops; assert exactly 1
-    queue.submit() call via mock device tracker.'
-  falsifies: PO-PIPELINE-CACHE-002
-  status: specified
+  rule: Single encoder per batch
+  prediction: Batch of 5 ops creates exactly 1 CommandEncoder
+  test: Execute 5 heterogeneous ops, count queue.submit() calls
+  if_fails: Encoder batching logic not aggregating
 equations:
   identity:
     formula: f(x) = x

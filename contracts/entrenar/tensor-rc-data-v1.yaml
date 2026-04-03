@@ -137,7 +137,7 @@ proof_obligations:
   property: 'For all tensors t with refcount > 1: data_mut(&mut t) clones
     the underlying Array1<f32> into a new allocation before returning
     &mut, ensuring no aliased mutation. For refcount == 1, no clone occurs.'
-  type: safety
+  type: invariant
   severity: P0
   status: specified
 - id: PO-RC-DATA-003
@@ -153,29 +153,26 @@ kani_harnesses:
   name: verify_clone_shares_allocation
   description: 'Create a tensor, clone it, and verify both point to the same
     heap allocation (data pointer equality) and that Rc::strong_count == 2.'
-  property_tested: PO-RC-DATA-001
+  obligation: PO-RC-DATA-001
   status: specified
 - id: KH-RC-DATA-002
   name: verify_copy_on_write_isolation
   description: 'Create a tensor, clone it, call data_mut on the clone, and
     verify the original tensor data is unchanged while the clone has
     a new independent allocation with Rc::strong_count == 1.'
-  property_tested: PO-RC-DATA-002
+  obligation: PO-RC-DATA-002
   status: specified
 falsification_tests:
 - id: FT-RC-DATA-001
-  name: test_clone_does_not_deep_copy
-  description: 'Clone a 10M-element tensor; assert wall-clock time < 1μs
-    and no new allocation via memory tracking (Rc::strong_count == 2).'
-  falsifies: PO-RC-DATA-001
-  status: specified
+  rule: Clone is O(1) reference count only
+  prediction: Cloning 10M-element tensor takes < 1us with no new allocation
+  test: Clone tensor, measure time, check Rc::strong_count == 2
+  if_fails: Clone is doing deep copy instead of Rc increment
 - id: FT-RC-DATA-002
-  name: test_data_mut_with_shared_ref_clones
-  description: 'Create tensor, clone twice (refcount=3), call data_mut on
-    one; assert that data_mut''s tensor now has refcount=1 and the
-    other two still share the original (refcount=2).'
-  falsifies: PO-RC-DATA-002
-  status: specified
+  rule: Copy-on-write isolation
+  prediction: data_mut on shared tensor clones data, isolating mutation
+  test: Clone twice (refcount=3), call data_mut, verify isolation
+  if_fails: data_mut not triggering COW when refcount > 1
 equations:
   identity:
     formula: f(x) = x
