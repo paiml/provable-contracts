@@ -99,36 +99,28 @@ proof_obligations:
 
 falsification_tests:
 - id: F-NF4-FFN-001
-  claim: Fused FFN output matches separate kernels
-  test: |
-    Run both paths with Qwen 1.5B dimensions (hidden=1536, intermediate=8960).
-    Compare output element-wise. Max abs diff < 1e-4.
-  status: PENDING
-  action_if_falsified: Check SiLU precision, NF4 scale order, warp reduction correctness
+  rule: Fused FFN matches separate RMSNorm + Gate + Up + SwiGLU
+  prediction: Fused FFN output matches separate kernels within 1e-4 tolerance
+  test: Run both paths with Qwen 1.5B dims (hidden=1536, intermediate=8960), compare element-wise
+  if_fails: Check SiLU precision, NF4 scale order, warp reduction correctness
 
 - id: F-NF4-FFN-002
-  claim: Fused FFN throughput improvement >= 15%
-  test: |
-    Run 100-step APR canary with fused vs separate FFN. Compare tok/s.
-    Fused throughput >= separate * 1.15.
-  status: PENDING
-  action_if_falsified: Memory bandwidth is not the FFN bottleneck — profile for compute saturation
+  rule: Reduces kernel launches from 4 to 1 per FFN block
+  prediction: Fused FFN throughput improvement >= 15%
+  test: Run 100-step APR canary with fused vs separate FFN, compare tok/s
+  if_fails: Memory bandwidth is not the FFN bottleneck — profile for compute saturation
 
 - id: F-NF4-FFN-003
-  claim: SwiGLU numerical stability in FP32 registers
-  test: |
-    For gate values in [-100, 100], verify SiLU(gate) * up matches reference.
-    Edge cases: gate = 0, gate = -88 (sigmoid underflow), gate = 88 (sigmoid overflow).
-  status: PENDING
-  action_if_falsified: Use stable SiLU implementation (x * sigmoid(x) with clamped exp)
+  rule: Fused FFN matches separate RMSNorm + Gate + Up + SwiGLU
+  prediction: SwiGLU numerical stability in FP32 registers for gate in [-100, 100]
+  test: Verify SiLU(gate) * up matches reference including edge cases (gate=0, -88, 88)
+  if_fails: Use stable SiLU implementation (x * sigmoid(x) with clamped exp)
 
 - id: F-NF4-FFN-004
-  claim: Training backward works with fused forward
-  test: |
-    Fused forward must produce activations that backward GEMM can differentiate.
-    Run 10 training steps, verify gradients are finite and non-zero.
-  status: PENDING
-  action_if_falsified: Fused kernel doesn't save intermediate activations needed for backward
+  rule: Memory bandwidth savings >= 100 KB per FFN at Qwen 1.5B dimensions
+  prediction: Training backward works with fused forward producing finite non-zero gradients
+  test: Run 10 training steps with fused forward, verify gradients are finite and non-zero
+  if_fails: Fused kernel doesn't save intermediate activations needed for backward
 
 qa_gate:
   id: F-NFGS-001

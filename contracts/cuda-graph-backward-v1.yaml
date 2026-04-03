@@ -111,37 +111,28 @@ proof_obligations:
 
 falsification_tests:
 - id: F-GRAPH-BWD-001
-  claim: Graphed backward loss trajectory matches ungraphed
-  test: |
-    Run 100-step canary with CUDA_GRAPH=0 and CUDA_GRAPH=1.
-    Compare loss at steps 10, 50, 100. Max abs diff < 0.1.
-  status: PENDING
-  action_if_falsified: Gradient clipping order matters — per-layer vs global norm produces different trajectories
+  rule: Graphed backward produces same gradients as non-graphed
+  prediction: Graphed backward loss trajectory matches ungraphed within 0.1 tolerance
+  test: Run 100-step canary with CUDA_GRAPH=0 and CUDA_GRAPH=1, compare loss at steps 10/50/100
+  if_fails: Gradient clipping order matters — per-layer vs global norm produces different trajectories
 
 - id: F-GRAPH-BWD-002
-  claim: Backward graph capture succeeds (no CUDA_ERROR)
-  test: |
-    Set CUDA_GRAPH=1, run training. Verify graph capture
-    (cudaStreamBeginCapture + cudaStreamEndCapture) succeeds without
-    CUDA_ERROR_STREAM_CAPTURE_UNSUPPORTED or CUDA_ERROR_INVALID_VALUE.
-  status: PENDING
-  action_if_falsified: Remaining D2H sync inside graph — grep for synchronize() in backward path
+  rule: No D2H synchronization inside graph boundary
+  prediction: Backward graph capture succeeds without CUDA_ERROR
+  test: Set CUDA_GRAPH=1, verify cudaStreamBeginCapture+EndCapture succeeds without errors
+  if_fails: Remaining D2H sync inside graph — grep for synchronize() in backward path
 
 - id: F-GRAPH-BWD-003
-  claim: Throughput improvement >= 10% at batch=4
-  test: |
-    Run 100-step canary with CUDA_GRAPH=0 and CUDA_GRAPH=1 on yoga.
-    Graphed throughput >= ungraphed * 1.10.
-  status: PENDING
-  action_if_falsified: Sync overhead is not the backward bottleneck — profile with nsys
+  rule: Reduces sync points from 168 to 1 per backward pass
+  prediction: Throughput improvement >= 10% at batch=4
+  test: Run 100-step canary with CUDA_GRAPH=0 and CUDA_GRAPH=1 on yoga, compare throughput
+  if_fails: Sync overhead is not the backward bottleneck — profile with nsys
 
 - id: F-GRAPH-BWD-004
-  claim: Global gradient clipping produces equivalent results to per-layer clipping
-  test: |
-    The fix changes clipping from per-layer-interleaved to post-backward-global.
-    Run 1000-step extended canary with both modes. Final loss diff < 0.5.
-  status: PENDING
-  action_if_falsified: Per-layer clipping prevents gradient explosion in early layers that global clipping misses
+  rule: Gradient clipping still applied (just moved outside graph)
+  prediction: Global gradient clipping produces equivalent results to per-layer clipping
+  test: Run 1000-step extended canary with both clipping modes, final loss diff < 0.5
+  if_fails: Per-layer clipping prevents gradient explosion in early layers that global clipping misses
 
 qa_gate:
   id: F-CGBW-001
