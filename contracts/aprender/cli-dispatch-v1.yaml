@@ -13,6 +13,7 @@ metadata:
 cli_config:
   binary_name: apr
   subcommands:
+  # Core operations (14)
   - run
   - check
   - serve
@@ -25,18 +26,49 @@ cli_config:
   - trace
   - tensors
   - diff
-  - export
+  - chat
+  - tui
+  # Model management (7)
   - import
-  - convert
-  - quantize
-  - merge
-  - finetune
-  - prune
-  - distill
+  - export
   - pull
   - list
   - rm
-  - tui
+  - convert
+  - compile
+  # Model transformation (5)
+  - quantize
+  - merge
+  - prune
+  - distill
+  - publish
+  # Analysis & profiling (8)
+  - eval
+  - bench
+  - profile
+  - parity
+  - ptx
+  - ptx-map
+  - flow
+  - tree
+  # Data & pipeline (4)
+  - data
+  - tokenize
+  - pipeline
+  - diagnose
+  # Quality & testing (5)
+  - qa
+  - qualify
+  - probar
+  - compare-hf
+  - showcase
+  # Specialized (5)
+  - hex
+  - cbtop
+  - rosetta
+  - oracle
+  - decrypt
+  - encrypt
   exit_codes:
     success: 0
     general_error: 1
