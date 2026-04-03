@@ -1880,6 +1880,43 @@ bindings:
   function: report_progress
   status: implemented
   notes: Monotonic progress [0.0, 1.0] with at least 1 update/sec
+# === APR CLI Interface (apr-cli-v1) ===
+- contract: apr-cli-v1.yaml
+  equation: command_parse_determinism
+  module_path: apr_cli::Cli
+  function: Cli::try_parse_from
+  status: implemented
+  notes: Clap-derived parse is pure and deterministic; global flags propagate via #[arg(global)]
+- contract: apr-cli-v1.yaml
+  equation: contract_gate_enforcement
+  module_path: apr_cli::dispatch
+  function: execute_command
+  status: implemented
+  notes: PMAT-237 contract gate — extract_model_paths + validate_model_contract before dispatch
+- contract: apr-cli-v1.yaml
+  equation: training_plan_apply_semantics
+  module_path: apr_cli::commands::train
+  function: train::run
+  status: implemented
+  notes: Plan is pure (no GPU/filesystem), Apply writes to --output directory only
+- contract: apr-cli-v1.yaml
+  equation: tokenizer_training_correctness
+  module_path: apr_cli::commands::tokenize
+  function: tokenize::run
+  status: implemented
+  notes: BPE plan/apply — vocab.json size equals requested vocab_size
+- contract: apr-cli-v1.yaml
+  equation: pipe_stdin_support
+  module_path: apr_cli::pipe
+  function: with_stdin_support
+  status: implemented
+  notes: TempModelFile RAII cleanup; POSIX "-" convention for stdin/stdout
+- contract: apr-cli-v1.yaml
+  equation: model_path_resolution
+  module_path: apr_cli::error
+  function: resolve_model_path
+  status: implemented
+  notes: Directory resolution with index.json priority (PMAT-314); O(1) stat-based
 critical_path:
 - softmax
 - rmsnorm
@@ -1905,3 +1942,6 @@ critical_path:
 - side_effect_classification
 - inference_determinism
 - tokenizer_consistency
+- command_parse_determinism
+- contract_gate_enforcement
+- model_path_resolution
