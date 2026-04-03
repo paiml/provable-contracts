@@ -48,6 +48,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 31 | [Kaizen Fleet Enforcement](#31-kaizen-fleet-enforcement) | — |
 | 32 | [PMAT Infrastructure Contracts](#32-pmat-infrastructure-contracts) | [sub/pmat-infrastructure-contracts.md](sub/pmat-infrastructure-contracts.md) |
 | 33 | [Forjar Heavy Types Contracts](#33-forjar-heavy-types-contracts) | [sub/forjar-heavy-types-contracts.md](sub/forjar-heavy-types-contracts.md) |
+| 34 | [Systems Contract Patterns](#34-systems-contract-patterns) | [sub/systems-contract-patterns.md](sub/systems-contract-patterns.md) |
 
 ---
 
@@ -2980,3 +2981,12 @@ Nine contracts covering CLI/HTTP interface, MCP protocol, Graph/Index, concurren
 > Sub-specification: [sub/forjar-heavy-types-contracts.md](sub/forjar-heavy-types-contracts.md)
 
 Eight contracts covering content-addressed store, OCI manifests, task/pipeline, event/rulebook, plugin lifecycle, secret providers, Copia delta sync, and sandbox isolation. Brings forjar from 5 to 13 contracts.
+
+---
+
+## 34. Systems Contract Patterns
+
+> Sub-specification: [sub/systems-contract-patterns.md](sub/systems-contract-patterns.md)
+
+19 reusable contract patterns for systems concerns that cut across all sovereign stack repos:
+threading (lock ordering, race freedom), async (cancellation safety, structured concurrency, channel conservation), compute dispatch (SIMD-scalar parity, GPU-CPU parity, backend completeness), memory lifecycle (lazy init, LRU, arena, budget), and LLM architecture (attention, KV-cache, quantization, tokenizer, sampling). Each pattern maps to pv-spec §3 proof obligation types with ULP tolerances derived from IEEE 754 arithmetic.
