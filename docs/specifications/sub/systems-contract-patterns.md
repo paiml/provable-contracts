@@ -15,8 +15,18 @@ invariants. These patterns cut across all sovereign stack repos.
 - Lamport (1978). Time, Clocks, and the Ordering of Events. CACM 21(7)
 - Flanagan & Freund (2009). FastTrack: Efficient and Precise Dynamic Race Detection. PLDI
 - Jung et al. (2020). RustBelt meets Relaxed Memory. POPL
-- Zhao & Sanan (2023). Rely-guarantee Reasoning about Concurrent Memory Management. arXiv:2309.09997
-- Ayoun et al. (2024). Gillian-Rust: Hybrid Semi-automated Rust Verification. arXiv:2403.15122
+- Zhao & Sanan (2023). Rely-guarantee Concurrent Memory Management. arXiv:2309.09997
+- Antonino et al. (2022). Pattern-based Deadlock-Freedom Analysis. arXiv:2207.08854
+- Wu et al. (2023). Model Checking Race-Freedom under SC-DRF. arXiv:2305.18198
+- Jacobs & Fasse (2025). Modular Verification of Rust Arc. arXiv:2505.00449
+- Hahnle et al. (2023). Context-aware Trace Contracts for Async. arXiv:2310.04384
+- Lagaillardie et al. (2022). Affine Rust with Multiparty Session Types. arXiv:2204.13464
+- Lattuada et al. (2023). Verus: Verifying Rust via Linear Ghost Types. arXiv:2303.05491
+- Cutner et al. (2021). Deadlock-free Async Message Reordering in Rust. arXiv:2112.12693
+- Barwell et al. (2022). Multiparty Session Types with Crash-Stop. arXiv:2207.02015
+- Shi et al. (2025). Complexity of Testing Message-Passing Concurrency. arXiv:2505.05162
+- Pearce et al. (2025). RustMC: Stateless Model Checker for Rust. arXiv:2502.06293
+- Ayoun et al. (2024). Gillian-Rust: Hybrid Semi-automated Verification. arXiv:2403.15122
 
 **Compute (SIMD, GPU, PTX):**
 - Liu et al. (2023). Minotaur: SIMD-Oriented Synthesizing Superoptimizer. arXiv:2306.00229
