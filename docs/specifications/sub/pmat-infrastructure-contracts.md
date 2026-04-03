@@ -4,10 +4,11 @@
 
 ## 32.1 Motivation
 
-PMAT has 289 provable contracts at L5 covering math, ML, GPU, and model-specific domains — all in
-the sovereign stack repos (aprender, trueno, etc.). The **pmat binary itself** has only 4 contracts
-(TDG scoring, comply check, composite score, context generation). Nine critical infrastructure
-domains remain uncontracted.
+PMAT has 271+ scored provable contracts covering math, ML, GPU, infrastructure, and model-specific
+domains across the sovereign stack repos. The **pmat binary itself** now has 15 contracts covering
+all 9 infrastructure domains below (TDG scoring, comply check, composite score, context generation,
+CLI interface, MCP protocol, graph/index, concurrency, tracing, memory, state machine, config,
+compression, work lifecycle, and work DBC).
 
 These are the domains where bugs actually bite users: silent wrong output, MCP protocol violations
 that confuse LLM agents, index corruption that requires rebuild, and state machine transitions that
