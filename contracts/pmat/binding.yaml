@@ -14,13 +14,13 @@ bindings:
   status: implemented
 - contract: score-composite-v1.yaml
   equation: geometric_mean
-  function: compute_composite_score
+  function: geometric_mean
   module_path: pmat::cli::handlers::score_handler_compute
   status: implemented
 - contract: context-generation-v1.yaml
   equation: generate_context
-  function: generate_agent_context
-  module_path: pmat::services::context
+  function: analyze_project
+  module_path: pmat::services::facades::complexity_facade
   status: implemented
 # === P0: CLI Interface ===
 - contract: cli-interface-v1.yaml
