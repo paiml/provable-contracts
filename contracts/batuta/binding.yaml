@@ -225,3 +225,22 @@ bindings:
   function: run_apr_code
   module_path: batuta::src::agent::run_apr_code
   status: planned
+# --- Oracle CLI contracts (2026-04-03) ---
+- contract: cli-oracle-v1.yaml
+  equation: dispatch_correctness
+  function: dispatch_oracle
+  module_path: batuta::src::cli::oracle::mod::dispatch_oracle
+  status: pending
+  notes: Every oracle subcommand variant has a dispatch handler
+- contract: cli-oracle-v1.yaml
+  equation: rag_query_correctness
+  function: rag_search
+  module_path: batuta::src::cli::oracle::rag::rag_search
+  status: pending
+  notes: RAG results sorted by BM25 score descending, empty query returns empty
+- contract: cli-oracle-v1.yaml
+  equation: index_freshness
+  function: check_freshness
+  module_path: batuta::src::cli::oracle::rag_index::check_freshness
+  status: pending
+  notes: Stale index warns but proceeds, missing index triggers auto-build

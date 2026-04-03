@@ -45,6 +45,9 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 28 | [Correctness + Completeness](#28-correctness--completeness) | — |
 | 29 | [Asset Contracts](#29-asset-contracts) | — |
 | 30 | [Real Contract Enforcement](#30-real-contract-enforcement) | — |
+| 31 | [Kaizen Fleet Enforcement](#31-kaizen-fleet-enforcement) | — |
+| 32 | [PMAT Infrastructure Contracts](#32-pmat-infrastructure-contracts) | [sub/pmat-infrastructure-contracts.md](sub/pmat-infrastructure-contracts.md) |
+| 33 | [Forjar Heavy Types Contracts](#33-forjar-heavy-types-contracts) | [sub/forjar-heavy-types-contracts.md](sub/forjar-heavy-types-contracts.md) |
 
 ---
 
@@ -2961,3 +2964,19 @@ OPTIONS:
   Five-whys root cause analysis applied to enforcement gaps.
 - Meyer (1992). "Applying Design by Contract." IEEE Computer 25(10).
   Pre/postcondition methodology that kaizen automates fleet-wide.
+
+---
+
+## 32. PMAT Infrastructure Contracts
+
+> Sub-specification: [sub/pmat-infrastructure-contracts.md](sub/pmat-infrastructure-contracts.md)
+
+Nine contracts covering CLI/HTTP interface, MCP protocol, Graph/Index, concurrency safety, tracing/observability, memory management, state machines, configuration schema, and compression roundtrip. Brings pmat from 4 to 13 contracts.
+
+---
+
+## 33. Forjar Heavy Types Contracts
+
+> Sub-specification: [sub/forjar-heavy-types-contracts.md](sub/forjar-heavy-types-contracts.md)
+
+Eight contracts covering content-addressed store, OCI manifests, task/pipeline, event/rulebook, plugin lifecycle, secret providers, Copia delta sync, and sandbox isolation. Brings forjar from 5 to 13 contracts.

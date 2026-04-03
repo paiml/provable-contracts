@@ -1701,6 +1701,79 @@ bindings:
   function: statistics
   status: implemented
   notes: Auto-inferred by pv infer
+# --- CLI/MCP/HTTP boundary contracts (2026-04-03) ---
+- contract: cli-dispatch-v1.yaml
+  equation: dispatch_completeness
+  function: dispatch_core_command
+  module_path: apr_cli::dispatch::dispatch_core_command
+  status: pending
+  notes: CLI subcommand dispatch — every Commands variant has a handler
+- contract: cli-dispatch-v1.yaml
+  equation: exit_code_semantics
+  function: exit_code
+  module_path: apr_cli::error::CliError::exit_code
+  status: pending
+  notes: Exit code mapping — distinct error classes to distinct non-zero codes
+- contract: cli-dispatch-v1.yaml
+  equation: output_format_fidelity
+  function: format_output
+  module_path: apr_cli::output
+  status: pending
+  notes: JSON/YAML/CSV output always parseable by respective parser
+- contract: cli-dispatch-v1.yaml
+  equation: idempotent_inspection
+  function: dispatch_inspection_commands
+  module_path: apr_cli::dispatch::dispatch_inspection_commands
+  status: pending
+  notes: Read-only commands (check, inspect, validate) have no side effects
+- contract: http-api-v1.yaml
+  equation: request_response_schema
+  function: handle_completions
+  module_path: apr_cli::serve::handle_completions
+  status: pending
+  notes: POST /v1/completions returns valid JSON with correct Content-Type
+- contract: http-api-v1.yaml
+  equation: error_envelope_preservation
+  function: error_response
+  module_path: apr_cli::serve::error_response
+  status: pending
+  notes: 'All HTTP errors wrapped in JSON envelope {error: {message, type, code}}'
+- contract: http-api-v1.yaml
+  equation: cors_negotiation
+  function: cors_middleware
+  module_path: apr_cli::serve::cors_middleware
+  status: pending
+  notes: --no-cors flag completely removes all CORS headers
+- contract: http-api-v1.yaml
+  equation: timeout_honoring
+  function: request_timeout
+  module_path: apr_cli::serve::request_timeout
+  status: pending
+  notes: Request timeout produces clean error response, no partial state mutation
+- contract: mcp-tool-schema-v1.yaml
+  equation: tool_schema_fidelity
+  function: handle_tools_list
+  module_path: apr_cli::mcp::handle_tools_list
+  status: pending
+  notes: inputSchema matches actual handler parameter types
+- contract: mcp-tool-schema-v1.yaml
+  equation: session_state_machine
+  function: handle_request
+  module_path: apr_cli::mcp::McpSession::handle_request
+  status: pending
+  notes: Session state S0→S1→S2→S3, tools/call before initialize returns -32600
+- contract: mcp-tool-schema-v1.yaml
+  equation: error_mapping
+  function: mcp_error
+  module_path: apr_cli::mcp::mcp_error
+  status: pending
+  notes: Handler errors map to valid JSON-RPC error codes (-327xx range)
+- contract: mcp-tool-schema-v1.yaml
+  equation: idempotency_classification
+  function: tool_metadata
+  module_path: apr_cli::mcp::tool_metadata
+  status: pending
+  notes: Read-only tools classified idempotent, mutation tools non-idempotent
 critical_path:
 - softmax
 - rmsnorm
@@ -1715,3 +1788,7 @@ critical_path:
 - tokenize
 - sample
 - layernorm
+- dispatch
+- exit_code
+- error_envelope
+- tool_schema

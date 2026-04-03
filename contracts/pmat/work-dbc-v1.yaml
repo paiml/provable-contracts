@@ -1,0 +1,197 @@
+metadata:
+  version: 1.0.0
+  created: '2026-04-03'
+  author: PAIML Engineering
+  description: Work DBC contracts — pmat work item lifecycle, falsifiable claims, contract profiles, rescue protocol
+  references:
+  - Meyer (1997). Object-Oriented Software Construction. Prentice Hall
+  - Popper (1959). The Logic of Scientific Discovery. Routledge
+  - pmat work DBC system (pv-spec §32.9)
+  depends_on:
+  - tdg-scoring-v1
+  - comply-check-v1
+equations:
+  work_lifecycle:
+    formula: |
+      lifecycle: (WorkItem, Event) -> Result<WorkItem, LifecycleError>
+        Valid transitions:
+          Draft -> Active -> Review -> Merged
+          Draft -> Cancelled
+          Active -> Blocked -> Active
+          Review -> Active (rework)
+        No skip: Draft -> Merged is INVALID
+        Terminal: Merged, Cancelled are final
+    domain: WorkItem with any lifecycle event
+    codomain: Next valid state or error
+    invariants:
+    - Only defined transitions allowed
+    - Terminal states are final
+    - Blocked state is recoverable
+    preconditions:
+    - work item exists and has valid ID
+    - event is a valid lifecycle event
+    postconditions:
+    - new state follows transition rules
+    lean_theorem: Theorems.WorkLifecycle
+  falsifiable_claim:
+    formula: |
+      claim: (Claim, Evidence) -> Verdict
+        claim.prediction is testable
+        evidence = run(claim.test)
+        evidence matches claim.prediction -> Verified
+        evidence contradicts claim.prediction -> Falsified
+        evidence inconclusive -> Blocked
+    domain: FalsifiableClaim with test procedure
+    codomain: Verdict in {Verified, Falsified, Blocked}
+    invariants:
+    - Every claim has a testable prediction
+    - Verdict is deterministic given same evidence
+    - Falsified claim blocks work completion
+    preconditions:
+    - claim.prediction is non-empty
+    - claim.test is executable
+    postconditions:
+    - verdict is one of {Verified, Falsified, Blocked}
+    lean_theorem: Theorems.FalsifiableClaim
+  contract_profile:
+    formula: |
+      profile: (WorkItem, QualityConfig) -> ContractProfile
+        score = w1*complexity + w2*coverage + w3*satd + w4*lint + w5*tdg
+        grade = letter_grade(score)
+        all_claims_verified -> profile.status = Pass
+        any_claim_falsified -> profile.status = Fail
+    domain: WorkItem with quality configuration
+    codomain: ContractProfile with 5-dimension score
+    invariants:
+    - Weights sum to 1.0
+    - Score is bounded [0.0, 100.0]
+    - Falsified claim always fails profile
+    preconditions:
+    - work item has associated source files
+    - quality config has valid thresholds
+    postconditions:
+    - profile.score in [0.0, 100.0]
+    lean_theorem: Theorems.ContractProfile
+  rescue_protocol:
+    formula: |
+      rescue: (WorkItem, Failure) -> RescueStrategy
+        retry -> re-run failed claim with fresh evidence
+        fallback -> use lower quality threshold
+        escalate -> notify human reviewer
+        abandon -> cancel work item
+        Max retries bounded: retries <= max_retries
+    domain: Failed work item with failure context
+    codomain: RescueStrategy enum
+    invariants:
+    - Retry count bounded
+    - Escalation always available as last resort
+    - Abandon transitions to Cancelled state
+    preconditions:
+    - work item is in Failed state
+    - failure context is non-empty
+    postconditions:
+    - rescue strategy is one of {Retry, Fallback, Escalate, Abandon}
+    lean_theorem: Theorems.RescueProtocol
+proof_obligations:
+- type: state_machine
+  property: Work lifecycle valid transitions
+  formal: Only defined edges, no skip, terminal states final
+  applies_to: all
+- type: determinism
+  property: Falsifiable claim determinism
+  formal: same evidence -> same verdict
+  applies_to: all
+- type: bound
+  property: Contract profile score bounded
+  formal: 0.0 <= score <= 100.0
+  applies_to: all
+- type: postcondition
+  property: Falsified blocks completion
+  formal: any_falsified -> status = Fail
+  applies_to: all
+  requires: claim.test is executable
+- type: termination
+  property: Rescue retry bounded
+  formal: retries <= max_retries, eventually terminates
+  applies_to: all
+- type: conservation
+  property: Profile weights sum to unity
+  formal: w1 + w2 + w3 + w4 + w5 = 1.0
+  applies_to: all
+falsification_tests:
+- id: FALSIFY-WDB-001
+  rule: Draft to Merged skip
+  prediction: Draft->Merged transition returns LifecycleError
+  test: Create work item in Draft, attempt transition to Merged
+  if_fails: Transition validation missing adjacency check
+- id: FALSIFY-WDB-002
+  rule: Falsified blocks completion
+  prediction: Work item with falsified claim cannot transition to Merged
+  test: Create claim, falsify it, attempt Merged transition
+  if_fails: Falsification check not wired to lifecycle
+- id: FALSIFY-WDB-003
+  rule: Profile score bounded
+  prediction: Extreme inputs produce score in [0.0, 100.0]
+  test: Create work item with all-zero and all-max metrics
+  if_fails: Weight overflow or underflow
+- id: FALSIFY-WDB-004
+  rule: Rescue retry bounded
+  prediction: After max_retries, rescue escalates (not infinite loop)
+  test: Set max_retries=3, fail 4 times, verify escalation
+  if_fails: Retry counter not decrementing or not checked
+- id: FALSIFY-WDB-005
+  rule: Claim determinism
+  prediction: Same test evidence produces same verdict twice
+  test: Run claim twice with fixed inputs, compare verdicts
+  if_fails: Non-deterministic state in claim evaluation
+- id: FALSIFY-WDB-006
+  rule: Terminal state finality
+  prediction: Merged work item cannot transition to any state
+  test: Create Merged item, attempt all transitions
+  if_fails: Terminal check missing for Merged state
+kani_harnesses:
+- id: KANI-WDB-001
+  obligation: Work lifecycle valid transitions
+  property: Only defined edges allowed
+  bound: 8
+  strategy: exhaustive
+  harness: verify_work_lifecycle_transitions
+- id: KANI-WDB-002
+  obligation: Falsifiable claim determinism
+  property: same evidence same verdict
+  bound: 8
+  strategy: exhaustive
+  harness: verify_claim_determinism
+- id: KANI-WDB-003
+  obligation: Contract profile score bounded
+  property: 0.0 <= score <= 100.0
+  bound: 16
+  strategy: stub_float
+  harness: verify_profile_score_bounded
+- id: KANI-WDB-004
+  obligation: Rescue retry bounded
+  property: retries <= max_retries
+  bound: 8
+  strategy: exhaustive
+  harness: verify_rescue_bounded
+- id: KANI-WDB-005
+  obligation: Profile weights sum to unity
+  property: w1+w2+w3+w4+w5 = 1.0
+  bound: 8
+  strategy: stub_float
+  harness: verify_weight_unity
+- id: KANI-WDB-006
+  obligation: Falsified blocks completion
+  property: falsified -> Fail
+  bound: 8
+  strategy: exhaustive
+  harness: verify_falsified_blocks
+qa_gate:
+  id: F-WDB-001
+  name: work-dbc-v1 Contract
+  description: Quality gate for pmat work DBC system
+  checks:
+  - validation
+  - falsification
+  pass_criteria: All 6 falsification tests pass
+  falsification: FALSIFY-WDB-001 through FALSIFY-WDB-006

@@ -188,3 +188,34 @@ bindings:
   function: update_statusbar
   module_path: batuta::src::agent::tui::statusbar::update_statusbar
   status: planned
+# --- TUI lifecycle contracts (2026-04-03) ---
+- contract: tui-lifecycle-v1.yaml
+  equation: widget_lifecycle
+  function: mount
+  module_path: presentar::crates::presentar-terminal::src::app::TuiApp::mount
+  status: pending
+  notes: Widget lifecycle state machine — Created→Mounted→Rendering→Unmounted
+- contract: tui-lifecycle-v1.yaml
+  equation: widget_lifecycle
+  function: unmount
+  module_path: presentar::crates::presentar-terminal::src::app::TuiApp::unmount
+  status: pending
+  notes: Unmounted is terminal state — no transitions out
+- contract: tui-lifecycle-v1.yaml
+  equation: render_cycle_correctness
+  function: render_diff
+  module_path: presentar::crates::presentar-terminal::src::direct::diff_renderer::render_diff
+  status: pending
+  notes: Only dirty cells written to terminal, zero writes for unchanged buffer
+- contract: tui-lifecycle-v1.yaml
+  equation: event_dispatch
+  function: dispatch_event
+  module_path: presentar::crates::presentar-terminal::src::app::dispatch_event
+  status: pending
+  notes: Key→focused widget, Mouse→hit-test, Resize→re-layout, non-blocking
+- contract: tui-lifecycle-v1.yaml
+  equation: terminal_restore
+  function: drop
+  module_path: presentar::crates::presentar-terminal::src::app::TuiApp::drop
+  status: pending
+  notes: Terminal restored on all exit paths — normal, panic, signal

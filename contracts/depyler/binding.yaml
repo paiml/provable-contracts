@@ -115,6 +115,30 @@ bindings:
   module_path: depyler_core::cargo_first
   status: implemented
   notes: Verifies generated Rust passes borrow checker
+- contract: cli-transpile-v1.yaml
+  equation: exit_code_dispatch
+  function: main
+  module_path: depyler::cli
+  status: pending
+  notes: CLI entry point — exit code dispatch for transpile subcommand
+- contract: cli-transpile-v1.yaml
+  equation: output_validity
+  function: write_output
+  module_path: depyler::cli::transpile
+  status: pending
+  notes: Validates generated Rust is syn-parseable before writing to output
+- contract: cli-transpile-v1.yaml
+  equation: input_validation
+  function: validate_input
+  module_path: depyler::cli::transpile
+  status: pending
+  notes: Validates source file exists, is UTF-8, and parses as Python
+- contract: cli-transpile-v1.yaml
+  equation: transpilation_determinism
+  function: transpile_file
+  module_path: depyler::cli::transpile
+  status: pending
+  notes: End-to-end transpilation must be deterministic (same input, same output)
 critical_path:
 - hir_to_rust
 - generate_rust
