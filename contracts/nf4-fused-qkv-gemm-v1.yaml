@@ -1,0 +1,76 @@
+metadata:
+  version: 1.0.0
+  created: '2026-04-03'
+  author: PAIML Engineering
+  description: >
+    Fused NF4 Q/K/V GEMM for GQA attention — computes all three projections
+    with shared input activation load. Handles asymmetric output dimensions
+    (Q: hidden→q_dim, K/V: hidden→kv_dim) in a single kernel.
+  pmat: [PMAT-478]
+  references:
+  - "Ainslie et al. (2023) GQA: Training Generalized Multi-Query Transformer Models"
+  - "FusedNf4GateUpGemmKernel: proven dual-output NF4 GEMM pattern"
+  depends_on:
+  - fused-qkv-projection-v1.yaml
+  - nf4-fused-gate-up-swiglu-v1.yaml
+
+equations:
+  separate_qkv:
+    formula: |
+      Standard (3 kernels, 3 input reads from DRAM):
+        q = A[M,K] @ dequant(W_q_nf4[K, q_dim])     # reads A from DRAM
+        k = A[M,K] @ dequant(W_k_nf4[K, kv_dim])    # reads A from DRAM AGAIN
+        v = A[M,K] @ dequant(W_v_nf4[K, kv_dim])    # reads A from DRAM AGAIN
+    domain: A ∈ ℝ^{M × K}, M = seq_len, K = hidden_size
+    codomain: q ∈ ℝ^{M × q_dim}, k,v ∈ ℝ^{M × kv_dim}
+    constants:
+      qwen_hidden: 1536
+      qwen_q_dim: 1536
+      qwen_kv_dim: 256
+
+  fused_qkv:
+    formula: |
+      Fused (1 kernel for Q, 1 for K+V — A loaded twice total, not 3×):
+        q = A @ dequant(W_q)                          # reads A from DRAM (once)
+        k, v = FusedKVGemm(A, W_k, W_v)               # reads A from DRAM (once)
+      Total: 2 reads instead of 3 (K+V share because same output dim)
+    domain: same as separate
+    codomain: same as separate
+    invariants:
+    - K and V output dims are identical (GQA: both = num_kv_heads × head_dim)
+    - A loaded from DRAM at most twice (Q path + KV path)
+    preconditions:
+    - K dim == V dim (required for fused K+V)
+    - hidden_size divisible by 64 (NF4 block alignment)
+    postconditions:
+    - q, k, v element-wise match separate within tolerance
+
+  bandwidth_savings:
+    formula: |
+      separate_bw = 3 × M × K × 4 bytes (3 input reads)
+      fused_bw = 2 × M × K × 4 bytes (Q + fused KV)
+      savings = M × K × 4 bytes
+
+      For Qwen 1.5B (K=1536, M=2048 at batch=4):
+        savings = 2048 × 1536 × 4 = 12.6 MB per layer
+        Per forward (28 layers) = 352 MB saved
+    domain: bytes
+
+falsification_tests:
+- id: F-NF4-QKV-001
+  claim: Fused K+V output matches separate K, V within 1e-4
+  test: Run both paths with Qwen dims (K=1536, kv_dim=256). Compare element-wise.
+  status: PENDING
+
+- id: F-NF4-QKV-002
+  claim: Throughput improvement >= 10% for attention projections
+  test: Run 100-step canary with separate vs fused K+V. Compare tok/s.
+  status: PENDING
+
+qa_gate:
+  id: F-NFQKV-001
+  name: nf4-fused-qkv-gemm-v1 Contract
+  description: Quality gate for fused NF4 Q/K/V GEMM
+  checks:
+  - validation
+  - falsification
