@@ -20,6 +20,10 @@ equations:
     preconditions:
     - input.len() > 0
     - input.iter().all(|v| v.is_finite())
+    postconditions:
+    - result >= 0.0 && result <= 100.0
+    - result <= arithmetic_mean(input)
+    - any_zero(input) => result == 0.0
     lean_theorem: Theorems.Geometric_Mean
   grade_from_score:
     formula: "grade: CompositeScore -> ProjectGrade\n  A if composite >= 90\n  B if composite >= 80\n  C if composite >= 70\n\
@@ -31,6 +35,10 @@ equations:
     preconditions:
     - grad_output.len() > 0
     - grad_output.iter().all(|v| v.is_finite())
+    postconditions:
+    - result in {A, B, C, D, F}
+    - score >= 90.0 => result == A
+    - score < 60.0 => result == F
     lean_theorem: Theorems.Grade_From_Score
 proof_obligations:
 - type: bound

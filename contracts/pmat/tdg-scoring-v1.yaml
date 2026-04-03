@@ -23,6 +23,9 @@ equations:
     preconditions:
     - '!config.is_empty()'
     - '!path.is_empty()'
+    postconditions:
+    - result >= 0.0 && result <= 100.0
+    - w_test + w_doc + w_grade == 1.0
     lean_theorem: Theorems.Calculate_Tdg
   letter_grade:
     formula: "grade: TdgScore -> LetterGrade\n  A+ if score >= 97, A if score >= 93,\
@@ -37,6 +40,10 @@ equations:
     preconditions:
     - grad_output.len() > 0
     - grad_output.iter().all(|v| v.is_finite())
+    postconditions:
+    - result in {A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F}
+    - score >= 97.0 => result == A+
+    - score < 60.0 => result == F
     lean_theorem: Theorems.Letter_Grade
 proof_obligations:
 - type: bound

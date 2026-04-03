@@ -23,6 +23,10 @@ equations:
     preconditions:
     - '!config.is_empty()'
     - '!path.is_empty()'
+    postconditions:
+    - report.gates.len() >= 1
+    - report.score >= 0.0 && report.score <= 1.0
+    - report.overall_pass == report.gates.iter().all(|g| g.status != Fail)
     lean_theorem: Theorems.Run_Checks
   aggregate_score:
     formula: "score: Vec<GateResult> -> f64\n  score = passed_gates / total_non_skipped_gates\n"
@@ -34,6 +38,10 @@ equations:
     preconditions:
     - '!config.is_empty()'
     - checks.len() > 0
+    postconditions:
+    - score >= 0.0 && score <= 1.0
+    - all_pass => score == 1.0
+    - all_fail => score == 0.0
     lean_theorem: Theorems.Aggregate_Score
 proof_obligations:
 - type: postcondition

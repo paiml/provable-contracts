@@ -24,6 +24,10 @@ equations:
     preconditions:
     - '!config.is_empty()'
     - '!project_path.is_empty()'
+    postconditions:
+    - context.functions.len() >= 1
+    - context.call_graph edges reference only functions in context.functions
+    - context.file_count == context.functions.iter().map(|f| &f.file).collect::<HashSet<_>>().len()
     lean_theorem: Theorems.Generate_Context
   index_persistence:
     formula: "save_index: AgentContext -> Result<PathBuf, IoError>\n  Serializes context\
@@ -38,6 +42,9 @@ equations:
     preconditions:
     - '!config.is_empty()'
     - '!project_path.is_empty()'
+    postconditions:
+    - result.is_ok() => result.unwrap().exists()
+    - load(save(ctx)).functions.len() == ctx.functions.len()
     lean_theorem: Theorems.Index_Persistence
 proof_obligations:
 - type: postcondition
