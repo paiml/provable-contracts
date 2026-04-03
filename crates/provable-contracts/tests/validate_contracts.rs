@@ -253,10 +253,10 @@ fn contract_data_integrity() {
         check_pass_criteria(stem, &contract, ft_count, &mut errors);
     }
 
-    assert_eq!(total_eq, 435, "Total equations changed");
-    assert_eq!(total_ob, 685, "Total obligations changed");
-    assert_eq!(total_ft, 715, "Total falsification tests changed");
-    assert_eq!(total_kani, 871, "Total Kani harnesses changed");
+    assert_eq!(total_eq, 460, "Total equations changed");
+    assert_eq!(total_ob, 714, "Total obligations changed");
+    assert_eq!(total_ft, 758, "Total falsification tests changed");
+    assert_eq!(total_kani, 895, "Total Kani harnesses changed");
 
     assert!(
         errors.is_empty(),
