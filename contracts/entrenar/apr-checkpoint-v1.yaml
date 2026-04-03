@@ -341,9 +341,42 @@ qa_gate:
   - F-CKPT-005 verified before any resumed training starts
   - No unwrap() in checkpoint save/load paths
 equations:
-  identity:
-    formula: f(x) = x
+  save_checkpoint:
+    formula: |
+      save: (Model, OptimizerState, Path) -> Result<(), WriteError>
+      Writes all model tensors + optimizer state atomically.
+    domain: Valid model with finite tensors, writable path
+    codomain: Result<(), WriteError>
     preconditions:
     - '!data.is_empty()'
-    - data.len() > 0
-    lean_theorem: Theorems.Identity
+    - data.iter().all(|t| t.is_finite())
+    postconditions:
+    - path.exists() => file is complete (no partial writes)
+    - load(save(model)) == model (roundtrip)
+    lean_theorem: Theorems.SaveCheckpoint
+  load_checkpoint:
+    formula: |
+      load: Path -> Result<(Model, OptimizerState), ReadError>
+      Reads and verifies CRC32, shapes, and NaN/Inf.
+    domain: Valid .apr file path
+    codomain: Result<(Model, OptimizerState), ReadError>
+    preconditions:
+    - path.exists()
+    - path.extension() == "apr"
+    postconditions:
+    - model.tensors.iter().all(|t| t.is_finite())
+    - shapes match architecture config
+    lean_theorem: Theorems.LoadCheckpoint
+proof_obligations:
+- type: roundtrip
+  property: Checkpoint save/load roundtrip
+  formal: load(save(model)) == model for all finite models
+  applies_to: all
+- type: invariant
+  property: No NaN/Inf in persisted tensors
+  formal: for all tensors t in checkpoint, t.is_finite()
+  applies_to: all
+- type: postcondition
+  property: Atomic write safety
+  formal: crash during save does not corrupt existing checkpoint
+  applies_to: all

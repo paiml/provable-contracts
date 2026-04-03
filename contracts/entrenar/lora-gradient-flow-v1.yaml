@@ -76,12 +76,40 @@ impact:
   severity: P0
   critical: true
 equations:
-  identity:
-    formula: f(x) = x
+  lora_forward:
+    formula: |
+      forward: (x, W, A, B, alpha, rank) -> y
+      y = W*x + (alpha/rank) * B * A * x
+    domain: x in R^d_in, W in R^{d_out x d_in}, A in R^{rank x d_in}, B in R^{d_out x rank}
+    codomain: y in R^d_out
     preconditions:
     - rank > 0
     - alpha > 0.0
-    lean_theorem: Theorems.Identity
+    postconditions:
+    - dy/dA exists and flows correctly through transpose
+    - dy/dB exists and flows correctly through transpose
+    lean_theorem: Theorems.LoraForward
+proof_obligations:
+- type: invariant
+  property: Gradient flow preserved through transpose
+  formal: d(loss)/d(A) != 0 when loss depends on output of LoRA layer
+  applies_to: all
+- type: equivalence
+  property: Autograd transpose matches manual transpose
+  formal: autograd_backward(f(x)) == manual_backward(f(x)) for all x
+  tolerance: 1e-5
+  applies_to: all
+falsification_tests:
+- id: FALSIFY-LGF-001
+  rule: Gradient flow through LoRA A matrix
+  prediction: d(loss)/d(lora_a) is non-zero after backward
+  test: Forward pass + loss.backward(), check grad_a.abs().sum() > 0
+  if_fails: Transpose breaks gradient chain for lora_a
+- id: FALSIFY-LGF-002
+  rule: Gradient flow through LoRA B matrix
+  prediction: d(loss)/d(lora_b) is non-zero after backward
+  test: Forward pass + loss.backward(), check grad_b.abs().sum() > 0
+  if_fails: Transpose breaks gradient chain for lora_b
 qa_gate:
   id: F-LGFV-001
   name: lora-gradient-flow-v1 Contract
