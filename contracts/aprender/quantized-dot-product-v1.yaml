@@ -253,3 +253,75 @@ equations:
     - input.len() > 0
     - scale > 0.0
     lean_theorem: Theorems.Identity
+  simd_scalar_equivalence:
+    formula: |
+      equiv: (SimdKernel, ScalarKernel, Data) -> bool
+        simd_result = simd_kernel(data)
+        scalar_result = scalar_kernel(data)
+        |simd_result - scalar_result| <= ULP_TOLERANCE * f32::EPSILON
+    domain: Quantized weight data and f32 activation vector
+    codomain: bool (true iff SIMD matches scalar within tolerance)
+    invariants:
+    - ULP tolerance is format-specific (2 for Q8_0, 4 for Q4_0, 8 for K-quants)
+    - Scalar kernel is the reference implementation
+    - Every SIMD variant must satisfy this equivalence
+    preconditions:
+    - data.len() % SUPERBLOCK_BYTES == 0
+    - activations.len() >= num_superblocks * ELEMENTS_PER_SUPERBLOCK
+    lean_theorem: Theorems.SimdScalarEquivalence
+  format_isolation:
+    formula: |
+      isolation: (Data_F1, Kernel_F2) -> bool
+        result = kernel_f2(data_f1)
+        |result - correct_result| > 100 * |correct_result|
+    domain: Quantized data in format F1, kernel for format F2 (F1 != F2)
+    codomain: bool (true iff cross-format produces garbage)
+    invariants:
+    - Cross-format dispatch always produces garbage
+    - Formats are not accidentally compatible
+    preconditions:
+    - F1 != F2
+    - data is valid for format F1
+    lean_theorem: Theorems.FormatIsolation
+  bsum_decomposition:
+    formula: |
+      bsum_equiv: (Activations, SubBlockBounds) -> bool
+        precomputed = precompute_bsums(activations, sub_block_bounds)
+        inline = compute_bsums_inline(activations, sub_block_bounds)
+        precomputed == inline  (exact integer equality)
+    domain: f32 activations quantized to Q8 sub-block sums
+    codomain: bool (true iff precomputed matches inline)
+    invariants:
+    - Bsums depend only on activations, not on weights
+    - Integer arithmetic ensures exact equality
+    - Precomputation is valid across all weight rows
+    preconditions:
+    - activations.len() is multiple of ELEMENTS_PER_SUBBLOCK
+    lean_theorem: Theorems.BsumDecomposition
+proof_obligations:
+- type: postcondition
+  property: SIMD-scalar numerical equivalence
+  formal: for all formats F and data D, |simd_F(D) - scalar_F(D)| <= ULP_TOLERANCE_F * f32::EPSILON
+  applies_to: all
+- type: invariant
+  property: Format isolation — cross-format dispatch produces garbage
+  formal: for all F1 != F2, |kernel_F2(data_F1) - correct| > 100 * |correct|
+  applies_to: all
+- type: postcondition
+  property: Bsum precomputation equivalence
+  formal: precompute_bsums(act) == inline_bsums(act) (exact integer equality)
+  applies_to: all
+  requires: format.has_dmin == true
+kani_harnesses:
+- id: KANI-QDOT-001
+  obligation: SIMD-scalar numerical equivalence
+  property: '|simd - scalar| <= ULP_TOLERANCE * epsilon'
+  bound: 16
+  strategy: stub_float
+  harness: verify_simd_scalar_equivalence
+- id: KANI-QDOT-002
+  obligation: Format isolation
+  property: Cross-format dispatch produces divergent output
+  bound: 8
+  strategy: exhaustive
+  harness: verify_format_isolation

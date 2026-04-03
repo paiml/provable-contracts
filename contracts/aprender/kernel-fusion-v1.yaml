@@ -159,3 +159,79 @@ equations:
     - q.len() > 0
     - k.len() == v.len()
     lean_theorem: Theorems.Identity
+  fusion_decision_registry:
+    formula: |
+      registry_check: KernelRegistry -> Result<(), RegistryError>
+        For every fused kernel K in trueno-gpu/src/kernels/:
+          exists entry E in fusion_decisions where E.kernels.fused == K
+        For every ACTIVE entry E:
+          E.call_site exists and dispatches E.kernels.fused
+        For every BLOCKED entry E:
+          E.benchmark.unfused_tok_s is non-null AND E.benchmark.fused_tok_s is non-null
+    domain: Set of fused kernel implementations and contract entries
+    codomain: Result<(), RegistryError>
+    invariants:
+    - No orphaned kernels (kernel exists without contract entry)
+    - No phantom entries (entry exists without kernel)
+    - ACTIVE kernels have valid call sites
+    - BLOCKED kernels have complete benchmark data
+    preconditions:
+    - trueno-gpu crate compiles
+    - fusion_decisions is non-empty
+    lean_theorem: Theorems.FusionDecisionRegistry
+  fusion_performance:
+    formula: |
+      perf_gate: (FusedKernel, UnfusedBaseline) -> Decision
+        fused_tok_s >= unfused_tok_s * 0.9 -> ACTIVE (fused is within 10%)
+        fused_tok_s < unfused_tok_s * 0.9 -> BLOCKED (fused too slow)
+    domain: Benchmark measurements for fused and unfused paths
+    codomain: Decision in {ACTIVE, BLOCKED}
+    invariants:
+    - BLOCKED fusions are slower than unfused by >10%
+    - ACTIVE fusions meet or exceed unfused performance
+    preconditions:
+    - benchmark.unfused_tok_s > 0
+    - benchmark.fused_tok_s > 0
+    lean_theorem: Theorems.FusionPerformance
+proof_obligations:
+- type: invariant
+  property: Registry completeness — no orphaned kernels
+  formal: for all K in fused_kernels, exists E in fusion_decisions where E.kernels.fused == K
+  applies_to: all
+- type: postcondition
+  property: ACTIVE entry call site validity
+  formal: for all E where E.status == ACTIVE, file_exists(E.call_site) and dispatches(E.kernels.fused)
+  applies_to: all
+- type: precondition
+  property: BLOCKED entries have complete benchmarks
+  formal: for all E where E.status == BLOCKED, E.benchmark.unfused_tok_s != null and E.benchmark.fused_tok_s != null
+  applies_to: all
+falsification_tests:
+- id: FALSIFY-FUSION-001
+  rule: Registry completeness
+  prediction: Adding a fused kernel without a contract entry triggers ERROR
+  test: Scan trueno-gpu/src/kernels/ for Kernel impls, verify each has fusion_decisions entry
+  if_fails: Registry enforcement check is not scanning all kernel files
+- id: FALSIFY-FUSION-002
+  rule: BLOCKED benchmark completeness
+  prediction: BLOCKED entry with null unfused_tok_s triggers ERROR
+  test: Validate all BLOCKED entries have non-null benchmark fields
+  if_fails: Benchmark completeness check not validating null fields
+- id: FALSIFY-FUSION-003
+  rule: Performance gate threshold
+  prediction: FUSION-003 (3x slower) remains BLOCKED because 26.9 < 80.6 * 0.9
+  test: Verify fused_tok_s < unfused_tok_s * 0.9 for all BLOCKED entries
+  if_fails: Performance threshold not enforced or gate bypassed
+kani_harnesses:
+- id: KANI-FUSION-001
+  obligation: Registry completeness
+  property: Every fused kernel has a contract entry
+  bound: 8
+  strategy: exhaustive
+  harness: verify_registry_completeness
+- id: KANI-FUSION-002
+  obligation: BLOCKED benchmark completeness
+  property: All BLOCKED entries have non-null benchmark measurements
+  bound: 8
+  strategy: exhaustive
+  harness: verify_blocked_benchmarks

@@ -163,3 +163,57 @@ equations:
     - '!input.is_empty()'
     - vocab_size > 0
     lean_theorem: Theorems.Identity
+  roundtrip_encoding:
+    formula: |
+      roundtrip: (Tokenizer, Text) -> bool
+        ids = tokenizer.encode(text)
+        decoded = tokenizer.decode(ids)
+        decoded == text
+    domain: Valid UTF-8 text and loaded BPE tokenizer
+    codomain: bool (true iff roundtrip is lossless)
+    invariants:
+    - Roundtrip holds for all valid UTF-8 input
+    - Token IDs are bounded by vocab_size
+    - Encoding is deterministic (same input -> same IDs)
+    preconditions:
+    - tokenizer is loaded with vocab_size > 0
+    - text is valid UTF-8
+    lean_theorem: Theorems.RoundtripEncoding
+  byte_encoder_coverage:
+    formula: |
+      coverage: ByteEncoder -> bool
+        for all b in 0..=255: byte_encoder.contains(b)
+    domain: Byte encoder mapping
+    codomain: bool (true iff all 256 bytes covered)
+    invariants:
+    - Exactly 256 entries in byte encoder
+    - Mapping is bijective (no duplicate targets)
+    preconditions:
+    - byte_encoder is initialized
+    lean_theorem: Theorems.ByteEncoderCoverage
+proof_obligations:
+- type: postcondition
+  property: Roundtrip encode-decode correctness
+  formal: for all valid UTF-8 text t, decode(encode(t)) == t
+  applies_to: all
+- type: invariant
+  property: Token IDs bounded by vocab_size
+  formal: for all ids in encode(text), id < vocab_size
+  applies_to: all
+- type: invariant
+  property: Byte encoder covers all 256 byte values
+  formal: byte_encoder.len() == 256 and for all b in 0..=255, byte_encoder.contains_key(b)
+  applies_to: all
+kani_harnesses:
+- id: KANI-TOK-001
+  obligation: Token IDs bounded by vocab_size
+  property: All encoded IDs < vocab_size
+  bound: 16
+  strategy: exhaustive
+  harness: verify_token_ids_bounded
+- id: KANI-TOK-002
+  obligation: Byte encoder covers all 256 byte values
+  property: byte_encoder.len() == 256
+  bound: 8
+  strategy: exhaustive
+  harness: verify_byte_encoder_coverage
