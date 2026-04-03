@@ -202,22 +202,22 @@ bindings:
   notes: Meyer Section 11 rescue strategies with bounded retries
 - contract: work-dbc-v1.yaml
   equation: meyer_triad
-  function: check_require_clauses
-  module_path: pmat::cli::handlers::work_contract_dbc
+  function: classify_claims
+  module_path: pmat::cli::handlers::work_contract_profile
   status: implemented
-  notes: Meyer require/ensure/invariant clause checking at Start/Complete/Checkpoint
+  notes: Meyer require/ensure/invariant clause classification and phase-specific checking
 - contract: work-dbc-v1.yaml
   equation: checkpoint_verification
   function: handle_work_checkpoint
-  module_path: pmat::cli::handlers::work_handlers::core_handlers::handlers
+  module_path: pmat::cli::handlers::work_handlers
   status: implemented
   notes: Idempotent invariant checking with score delta from baseline
 - contract: work-dbc-v1.yaml
   equation: override_accountability
-  function: handle_override_claims
-  module_path: pmat::cli::handlers::work_falsification::runner
+  function: handle_work_complete
+  module_path: pmat::cli::handlers::work_handlers
   status: implemented
-  notes: Override requires --ticket for accountability, logged in receipt
+  notes: Override via --override-claims requires --ticket for accountability, logged in receipt
 critical_path:
 - tdg
 - comply
