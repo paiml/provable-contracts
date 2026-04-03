@@ -7,7 +7,8 @@
 ## ML/Systems Contract Gaps
 
 Systematic gap analysis against the full ML systems landscape.
-Current registry: 182 contracts. 9 domains analyzed.
+Current registry: 271 scored contracts (896 equations). 9 domains analyzed.
+Updated 2026-04-03 with infrastructure contracts (MCP, CLI, HTTP).
 
 ### 1. Training Infrastructure (major gap)
 
