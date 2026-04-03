@@ -4,7 +4,7 @@
 - [Motivation](./motivation.md)
 - [Theoretical Foundations](./theoretical-foundations.md)
 - [The Verification Ladder](./verification-ladder.md)
-- [The Seven-Phase Pipeline](./six-phase-pipeline.md)
+- [The Seven-Phase Pipeline](./seven-phase-pipeline.md)
 - [Contract Schema](./contract-schema.md)
 - [Phase 1: Extract](./phase-1-extract.md)
 - [Phase 2: Specify](./phase-2-specify.md)
@@ -21,6 +21,7 @@
 - [Contract Lifecycle](./contract-lifecycle.md)
 - [Lint Quality Gate](./lint-quality-gate.md)
 - [Fleet Enforcement (Kaizen)](./kaizen.md)
+- [Contract Expression Languages](./expression-languages.md)
 - [Examples](./examples.md)
 - [References](./references.md)
 

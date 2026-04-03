@@ -299,6 +299,67 @@ field reference, and examples in **[sub/schema.md](sub/schema.md)**.
 `loop_invariant`, `loop_variant`, `old_state`, `subcontract`.
 See **[sub/eiffel-dbc.md](sub/eiffel-dbc.md)** for full definitions.
 
+### Contract Expression Languages (3 families)
+
+Preconditions, postconditions, and invariants support three expression
+languages. The expression language is auto-detected from the YAML field
+structure:
+
+| Language | Detection | Verification Chain |
+|----------|-----------|-------------------|
+| **Rust expressions** | Bare string in `preconditions:` | `debug_assert!` → Kani → Lean |
+| **Regex patterns** | `regex:` key in postcondition object | `Regex::is_match()` → Kani bounded regex → Lean language containment |
+| **Refinement types** | `type_enforcement:` top-level section | Rust compiler (private field) → Kani constructor → Lean type proof |
+
+**Rust expressions (default):** Raw Rust boolean expressions.
+Variables in scope: equation parameters, `result` for postconditions.
+
+```yaml
+preconditions:
+  - 'x.iter().all(|v| v.is_finite())'
+postconditions:
+  - '(result.iter().sum::<f32>() - 1.0).abs() < 1e-5'
+```
+
+**Regex patterns:** For string-producing functions. The `regex:` field
+contains a PCRE2/Rust regex; `target:` specifies which value to match.
+
+```yaml
+postconditions:
+  - regex: '^(PMAT|GH|EPIC)-\d+$'
+    target: result
+    description: Ticket ID matches canonical format
+regex_invariants:
+  - pattern: '^\d{4}-\d{2}-\d{2}T'
+    target: timestamp
+```
+
+**Refinement types (Haskell/F# style):** Type-level contracts via the
+newtype pattern — invalid states are unrepresentable at compile time.
+
+```yaml
+type_enforcement:
+  validated_types:
+    NonEmptyVec:
+      inner: Vec<T>
+      refinement: "self.len() > 0"
+      constructor: "fn new(v: Vec<T>) -> Result<Self, EmptyError>"
+      eliminates: "index-out-of-bounds on first/last"
+  type_class_contracts:
+    Invertible:
+      laws: ["∀ x. inverse(forward(x)) ≈ x"]
+      instances: [Tokenizer, Encoder]
+      verification: lean
+```
+
+**Dual expressions:** Postconditions can embed both Rust and Lean:
+
+```yaml
+postconditions:
+  - rust: '(result.iter().sum::<f32>() - 1.0).abs() < 1e-5'
+    lean: '(Array.sum (softmax x) - 1.0).abs < 1e-5'
+```
+
 ---
 
 ## 4. The Seven-Phase Pipeline
@@ -333,7 +394,7 @@ Kani verification strategies in **[sub/pipeline.md](sub/pipeline.md)**.
 
 ## 5. CLI Reference
 
-The `pv` binary provides 30 commands. Full reference with examples, flags, and output formats in
+The `pv` binary provides 35 commands. Full reference with examples, flags, and output formats in
 **[sub/cli.md](sub/cli.md)**.
 
 ### Command Summary
@@ -369,6 +430,12 @@ The `pv` binary provides 30 commands. Full reference with examples, flags, and o
 | `pv tla <dir>` | Generate TLA+ system-level specs |
 | `pv infer <crate>` | Auto-suggest contracts for unbound functions |
 | `pv unlock <contract>` | Remove enforcement level lock (`--reason`) |
+| `pv pipeline <dir>` | Seven-phase pipeline orchestration |
+| `pv kaizen <dir>` | Continuous improvement automation |
+| `pv verify-bindings <dir>` | Validate binding.yaml against source |
+| `pv roofline <contract>` | Performance roofline modeling |
+| `pv lint-render <dir>` | Render lint results (terminal) |
+| `pv lint-html <dir>` | Render lint results (HTML) |
 
 ---
 
