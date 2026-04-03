@@ -97,30 +97,6 @@ bindings:
   module_path: rash::emitter::escape
   status: implemented
   notes: Command name escaping to prevent injection in emitted shell
-- contract: cli-lint-v1.yaml
-  equation: exit_code_dispatch
-  function: main
-  module_path: bashrs::cli
-  status: implemented
-  notes: CLI entry point — exit code dispatch for lint subcommand
-- contract: cli-lint-v1.yaml
-  equation: output_format_validity
-  function: format_output
-  module_path: bashrs::cli::output
-  status: implemented
-  notes: Serializes diagnostics to valid JSON/SARIF/text output
-- contract: cli-lint-v1.yaml
-  equation: finding_determinism
-  function: lint_file
-  module_path: bashrs::cli::lint
-  status: implemented
-  notes: End-to-end lint must be deterministic (same input, same findings)
-- contract: cli-lint-v1.yaml
-  equation: severity_ordering
-  function: sort_diagnostics
-  module_path: bashrs::cli::output
-  status: implemented
-  notes: Diagnostics sorted by severity descending, position ascending, rule_id ascending
 critical_path:
 - parse
 - analyze

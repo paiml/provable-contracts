@@ -2300,3 +2300,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-135
+  github_issue: null
+  item_type: task
+  title: Fix work-dbc-v1 lifecycle states and expand contract
+  status: planned
+  priority: high
+  assigned_to: null
+  created: 2026-04-03T11:54:35Z
+  updated: 2026-04-03T11:54:35Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
