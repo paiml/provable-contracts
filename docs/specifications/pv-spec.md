@@ -324,11 +324,19 @@ postconditions:
 **Regex patterns:** For string-producing functions. The `regex:` field
 contains a PCRE2/Rust regex; `target:` specifies which value to match.
 
+> **Falsification (2026-04-03):** Map-style regex postconditions (`regex:` key)
+> are spec'd but not yet parsed. The `pv validate` parser expects bare strings.
+> **Workaround:** Use `Regex::new(r"pattern").unwrap().is_match(&result)` as a
+> string postcondition. Parser extension tracked as future work.
+
 ```yaml
 postconditions:
+  # Future syntax (not yet parsed):
   - regex: '^(PMAT|GH|EPIC)-\d+$'
     target: result
     description: Ticket ID matches canonical format
+  # Current workaround (works today):
+  - 'Regex::new(r"^(PMAT|GH|EPIC)-\d+$").unwrap().is_match(&result)'
 regex_invariants:
   - pattern: '^\d{4}-\d{2}-\d{2}T'
     target: timestamp
@@ -2214,6 +2222,11 @@ verification: scan tensor data, check per-element and per-row
 ```
 
 ### CLI: `pv verify-asset`
+
+> **Falsification (2026-04-03):** `pv verify-asset` is spec'd but NOT implemented.
+> Running `pv verify-asset` returns "unrecognized subcommand". The entire
+> `contracts/assets/` directory also does not exist. This section describes
+> the **proposed design** — implementation tracked as future work.
 
 ```bash
 # Verify a model file against its shape contract:
