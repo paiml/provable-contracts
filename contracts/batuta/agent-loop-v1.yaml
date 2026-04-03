@@ -45,6 +45,9 @@ equations:
     - No state reached without valid transition
     - Failed is absorbing
     - Act always returns to Reason
+    postconditions:
+    - "Final state is Done or Failed (no intermediate state on exit)"
+    - "Failed state is absorbing (no transitions out)"
     lean_theorem: Theorems.Agent_State_Machine
   context_compaction:
     formula: |
@@ -58,6 +61,9 @@ equations:
     preconditions:
     - context_window > 0
     - auto_threshold > micro_threshold
+    postconditions:
+    - "token_count(messages) <= context_window after compaction"
+    - "System prompt is preserved verbatim through compaction"
     lean_theorem: Theorems.Context_Compaction
   sandbox_enforcement:
     formula: |
@@ -71,6 +77,9 @@ equations:
     - Sandbox enforced at OS kernel level (Landlock/Seatbelt)
     preconditions:
     - manifest.capabilities.len() > 0
+    postconditions:
+    - "Unauthorized tool calls return permission error, never execute"
+    - "Sovereign tier produces zero network egress syscalls"
     lean_theorem: Theorems.Sandbox_Enforcement
   parallel_tool_safety:
     formula: |
@@ -82,6 +91,9 @@ equations:
     - Write-write conflicts always serialized
     - Read-write conflicts serialized (read first)
     - Read-read always parallelized
+    postconditions:
+    - "No concurrent write-write on the same resource"
+    - "All tool results returned regardless of execution order"
     lean_theorem: Theorems.Parallel_Tool_Safety
   session_crash_recovery:
     formula: |
@@ -92,6 +104,9 @@ equations:
     invariants:
     - Partial writes truncated, not corrupted
     - No message appears twice after resume
+    postconditions:
+    - "Resumed session contains only complete messages (no partial writes)"
+    - "No duplicate messages after crash recovery"
     lean_theorem: Theorems.Crash_Recovery
   hook_ordering:
     formula: |
@@ -102,6 +117,9 @@ equations:
     - Pre-hooks run before capability check
     - Post-hooks run even if tool returns error
     - Hook ordering is deterministic
+    postconditions:
+    - "Post-hooks execute even if tool returns error"
+    - "Pre-hook Block verdict prevents tool execution entirely"
     lean_theorem: Theorems.Hook_Ordering
 proof_obligations:
 - type: termination

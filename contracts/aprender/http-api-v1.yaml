@@ -53,6 +53,10 @@ equations:
     preconditions:
     - endpoint ∈ known_endpoints
     - Content-Type header present for POST requests
+    postconditions:
+    - "On Ok: response body is valid JSON matching endpoint schema"
+    - "Content-Type header is application/json for all API responses"
+    - "Streaming responses use text/event-stream with valid SSE framing"
     lean_theorem: Theorems.Request_Response_Schema
   error_envelope_preservation:
     formula: |
@@ -72,6 +76,9 @@ equations:
     - No information leakage (no file paths, no stack traces in production)
     preconditions:
     - Error is a well-formed HandlerError
+    postconditions:
+    - "Response body is valid JSON with {error: {message, type, code}} structure"
+    - "HTTP status code is semantically correct (4xx for client errors, 5xx for server errors)"
     lean_theorem: Theorems.Error_Envelope
   cors_negotiation:
     formula: |
@@ -89,6 +96,9 @@ equations:
     - CORS headers present on all responses when enabled (not just OPTIONS)
     preconditions:
     - Server is running and accepting connections
+    postconditions:
+    - "CORS enabled: Access-Control-Allow-Origin header present on all responses"
+    - "CORS disabled: zero CORS headers in any response"
     lean_theorem: Theorems.CORS_Negotiation
   timeout_honoring:
     formula: |
@@ -104,6 +114,9 @@ equations:
     - Streaming responses can timeout between chunks
     preconditions:
     - timeout > 0
+    postconditions:
+    - "Timed-out requests return 408 or 504 with JSON error envelope"
+    - "Model state is unchanged after timeout (no partial mutation)"
     lean_theorem: Theorems.Timeout_Honoring
 proof_obligations:
 - type: invariant
