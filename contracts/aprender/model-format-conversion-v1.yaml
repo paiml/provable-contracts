@@ -124,6 +124,29 @@ equations:
     - file at path passes format validation
     - file size > 0
     lean_theorem: Theorems.Export_Fidelity
+  apr_tokenizer_embedding:
+    formula: |
+      apr_convert(input, output, options): (Path, Path, ConvertOptions) -> Result<ConvertReport>
+        IF output format is APR:
+          metadata(output).contains("tokenizer.merges") OR
+          metadata(output).contains("tokenizer.vocabulary") OR
+          metadata(output).contains("tokenizer.ggml")
+        APR files MUST be self-contained — tokenizer embedded at write time.
+        Any code path that produces an APR file without tokenizer is a P0 defect.
+    domain: All APR file creation paths (convert, import, merge, quantize)
+    codomain: APR file with embedded tokenizer
+    invariants:
+    - Every APR creation path embeds tokenizer data (Jidoka)
+    - Q4K passthrough path — tokenizer from GGUF raw result
+    - Q4K fallback path — tokenizer from extract_gguf_config() (PMAT-154 fix)
+    - Non-Q4K path — tokenizer from save_model_tensors_with_gguf_config_and_tokenizer()
+    - SafeTensors path — tokenizer from tokenizer.json if present
+    preconditions:
+    - source model has tokenizer data (GGUF vocabulary or tokenizer.json)
+    postconditions:
+    - output APR metadata contains tokenizer.merges or tokenizer.vocabulary
+    - realizar can load and encode text without external tokenizer file
+    lean_theorem: Theorems.Apr_Tokenizer_Embedding
 proof_obligations:
 - type: roundtrip
   property: Format conversion preserves tensor count
@@ -149,6 +172,10 @@ proof_obligations:
   property: Atomic write — no partial files
   formal: file at path is either complete and valid OR does not exist
   applies_to: export_fidelity
+- type: postcondition
+  property: APR files embed tokenizer at write time
+  formal: for all APR creation paths, output.metadata contains tokenizer data
+  applies_to: apr_tokenizer_embedding
 falsification_tests:
 - id: FALSIFY-CONV-001
   rule: Format conversion preserves tensor count
@@ -180,6 +207,11 @@ falsification_tests:
   prediction: Interrupted export leaves no partial file at target path
   test: Start export, kill process mid-write, verify target does not exist
   if_fails: Partial file left on disk — corrupted model loaded on next run
+- id: FALSIFY-CONV-007
+  rule: APR tokenizer embedding (PMAT-154)
+  prediction: Every APR creation path (Q4K passthrough, Q4K fallback, non-Q4K, SafeTensors) produces APR with tokenizer.merges or tokenizer.vocabulary in metadata
+  test: Convert GGUF to APR via each code path; scan first 64KB of output for tokenizer.merges or tokenizer.vocabulary; assert present
+  if_fails: APR file without tokenizer — inference fails with opaque "Tokenizer encode failed" error instead of working. P0 catastrophic — the APR format promise of self-contained models is broken.
 kani_harnesses:
 - id: KANI-CONV-001
   obligation: Format conversion preserves tensor count
@@ -217,6 +249,12 @@ kani_harnesses:
   bound: 4
   strategy: exhaustive
   harness: verify_atomic_write
+- id: KANI-CONV-007
+  obligation: APR files embed tokenizer at write time
+  property: All APR creation paths embed tokenizer metadata
+  bound: 4
+  strategy: exhaustive
+  harness: verify_apr_tokenizer_embedded
 qa_gate:
   id: F-CONV-GATE
   name: Model Format Conversion Safety Contract
@@ -227,7 +265,7 @@ qa_gate:
   - merge_weight_algebra
   - import_integrity
   - export_fidelity
-  pass_criteria: All 6 falsification tests pass
+  pass_criteria: All 7 falsification tests pass
   falsification: >
     Convert a model, count tensors, verify all preserved.
     Quantize with extreme values, check error bounds.

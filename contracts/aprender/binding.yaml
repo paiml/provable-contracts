@@ -1837,6 +1837,12 @@ bindings:
   function: export_model
   status: implemented
   notes: Atomic write via temp file + rename
+- contract: model-format-conversion-v1.yaml
+  equation: apr_tokenizer_embedding
+  module_path: aprender::convert
+  function: save_model_tensors_with_gguf_config_and_tokenizer
+  status: implemented
+  notes: P0 invariant — every APR file embeds tokenizer (PMAT-154 fix, Q4K passthrough/fallback paths)
 # === APR CLI Operations ===
 - contract: apr-cli-operations-v1.yaml
   equation: side_effect_classification
