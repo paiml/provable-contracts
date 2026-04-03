@@ -273,3 +273,16 @@ proof_obligations:
   property: N_val >= 1
   formal: N_val >= 1
   applies_to: all
+kani_harnesses:
+- id: KANI-LOOP-001
+  obligation: Loss monotonicity
+  property: EMA of training loss decreases over 5-epoch windows for learnable data
+  bound: 16
+  strategy: exhaustive
+  harness: verify_loss_monotonicity
+- id: KANI-LOOP-002
+  obligation: Checkpoint roundtrip
+  property: Loading a checkpoint reproduces val_loss within epsilon of checkpoint time
+  bound: 8
+  strategy: exhaustive
+  harness: verify_checkpoint_roundtrip

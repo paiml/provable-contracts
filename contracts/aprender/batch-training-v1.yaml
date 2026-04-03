@@ -213,3 +213,16 @@ proof_obligations:
   property: L_batch >= 0 (cross-entropy is non-negative)
   formal: L_batch >= 0 (cross-entropy is non-negative)
   applies_to: all
+kani_harnesses:
+- id: KANI-BATCH-001
+  obligation: Gradient accumulation equivalence
+  property: Accumulated gradients over K micro-batches equal single-batch gradients within FP tolerance
+  bound: 8
+  strategy: exhaustive
+  harness: verify_gradient_accumulation_equivalence
+- id: KANI-BATCH-002
+  obligation: Learning rate bounded
+  property: Learning rate remains strictly positive and finite after gradient clipping
+  bound: 8
+  strategy: exhaustive
+  harness: verify_learning_rate_bounded

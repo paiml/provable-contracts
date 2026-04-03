@@ -316,3 +316,16 @@ proof_obligations:
   property: 'down_proj: [896, 4864]'
   formal: 'down_proj: [896, 4864]'
   applies_to: all
+kani_harnesses:
+- id: KANI-WGT-001
+  obligation: Weight shape validation
+  property: Every loaded tensor shape matches TransformerConfig dimensions
+  bound: 8
+  strategy: exhaustive
+  harness: verify_weight_shape_validation
+- id: KANI-WGT-002
+  obligation: Dtype preservation
+  property: BF16 to F32 conversion preserves relative magnitude ordering
+  bound: 8
+  strategy: exhaustive
+  harness: verify_dtype_preservation
