@@ -169,7 +169,7 @@ proof_obligations:
   applies_to: idempotent_inspection
 falsification_tests:
 - id: FALSIFY-CLI-001
-  rule: dispatch_completeness
+  rule: Every Commands variant has a dispatch handler
   prediction: Every subcommand dispatches to a handler (no panic, no silent drop)
   test: |
     #[test]
@@ -193,7 +193,7 @@ falsification_tests:
     }
   if_fails: A subcommand variant exists in the enum but has no dispatch arm
 - id: FALSIFY-CLI-002
-  rule: exit_code_semantics
+  rule: Exit codes are injective (no collisions)
   prediction: FileNotFound returns exit code 3, not 1
   test: |
     #[test]
@@ -207,7 +207,7 @@ falsification_tests:
     }
   if_fails: Exit code mapping incorrect — CliError::exit_code() not wired to process exit
 - id: FALSIFY-CLI-003
-  rule: output_format_fidelity
+  rule: JSON output is always parseable
   prediction: --json flag produces valid JSON on stdout
   test: |
     #[test]
@@ -226,7 +226,7 @@ falsification_tests:
     }
   if_fails: JSON serialization produces invalid JSON (unescaped strings, trailing comma)
 - id: FALSIFY-CLI-004
-  rule: idempotent_inspection
+  rule: Inspection commands have no side effects
   prediction: Running check twice on same file produces identical output
   test: |
     #[test]
@@ -247,17 +247,29 @@ falsification_tests:
   if_fails: Inspection command has hidden state mutation or non-deterministic output
 kani_harnesses:
 - id: KANI-CLI-001
-  obligation: Exit codes are injective by variant class
+  obligation: Exit codes are injective (no collisions)
   property: No two CliError variants share the same exit code
   bound: 11
   strategy: exhaustive
   harness: verify_exit_code_uniqueness
 - id: KANI-CLI-002
-  obligation: Dispatch is total
+  obligation: Every Commands variant has a dispatch handler
   property: All Commands variants handled
   bound: 30
   strategy: exhaustive
   harness: verify_dispatch_total
+- id: KANI-CLI-003
+  obligation: JSON output is always parseable
+  property: format(r, "json") always produces valid JSON
+  bound: 8
+  strategy: stub_float
+  harness: verify_json_output_parseable
+- id: KANI-CLI-004
+  obligation: Inspection commands have no side effects
+  property: read-only commands do not mutate filesystem state
+  bound: 8
+  strategy: exhaustive
+  harness: verify_inspection_idempotent
 qa_gate:
   id: F-CLI-GATE
   name: CLI Dispatch Contract

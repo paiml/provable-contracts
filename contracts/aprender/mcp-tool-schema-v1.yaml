@@ -127,7 +127,7 @@ proof_obligations:
   applies_to: idempotency_classification
 falsification_tests:
 - id: FALSIFY-MCP-001
-  rule: tool_schema_fidelity
+  rule: Schema matches handler parameters
   prediction: tools/list schema matches actual handler parameter types
   test: |
     #[test]
@@ -153,7 +153,7 @@ falsification_tests:
     }
   if_fails: Schema drift — inputSchema does not match handler function signature
 - id: FALSIFY-MCP-002
-  rule: session_state_machine
+  rule: Session state machine is acyclic
   prediction: tools/call before initialize returns error code -32600
   test: |
     #[test]
@@ -172,7 +172,7 @@ falsification_tests:
     }
   if_fails: Session state not enforced — tools/call succeeds without initialization
 - id: FALSIFY-MCP-003
-  rule: error_mapping
+  rule: Error codes are valid JSON-RPC
   prediction: Handler errors map to valid JSON-RPC error codes
   test: |
     #[test]
@@ -198,7 +198,7 @@ falsification_tests:
     }
   if_fails: Custom error codes outside JSON-RPC specification range
 - id: FALSIFY-MCP-004
-  rule: idempotency_classification
+  rule: Idempotent tools are deterministic
   prediction: Read-only tools return identical results on repeated calls
   test: |
     #[test]
@@ -227,6 +227,18 @@ kani_harnesses:
   bound: 8
   strategy: exhaustive
   harness: verify_error_code_range
+- id: KANI-MCP-003
+  obligation: Schema matches handler parameters
+  property: Tool schema required fields match handler params
+  bound: 16
+  strategy: exhaustive
+  harness: verify_schema_handler_parity
+- id: KANI-MCP-004
+  obligation: Idempotent tools are deterministic
+  property: Read-only tools produce same output for same input
+  bound: 4
+  strategy: exhaustive
+  harness: verify_idempotent_tools
 qa_gate:
   id: F-MCP-GATE
   name: MCP Tool Schema Contract

@@ -124,7 +124,7 @@ proof_obligations:
   applies_to: timeout_honoring
 falsification_tests:
 - id: FALSIFY-HTTP-001
-  rule: request_response_schema
+  rule: Streaming uses SSE framing
   prediction: POST to /v1/completions with valid JSON returns valid JSON response
   test: |
     #[tokio::test]
@@ -146,7 +146,7 @@ falsification_tests:
     }
   if_fails: Response serialization broken or Content-Type header wrong
 - id: FALSIFY-HTTP-002
-  rule: error_envelope_preservation
+  rule: Error responses always have JSON envelope
   prediction: Invalid JSON body returns 400 with error envelope
   test: |
     #[tokio::test]
@@ -168,7 +168,7 @@ falsification_tests:
     }
   if_fails: Error handler returns plain text or HTML instead of JSON envelope
 - id: FALSIFY-HTTP-003
-  rule: cors_negotiation
+  rule: CORS headers are all-or-nothing
   prediction: --no-cors flag removes CORS headers from response
   test: |
     #[tokio::test]
@@ -184,8 +184,8 @@ falsification_tests:
     }
   if_fails: CORS headers leak through when disabled
 - id: FALSIFY-HTTP-004
-  rule: error_envelope_preservation
-  prediction: Unknown endpoint returns 404 with JSON error envelope
+  rule: Timeout does not corrupt model state
+  prediction: Request timeout leaves model in usable state (next request succeeds)
   test: |
     #[tokio::test]
     async fn falsify_http_004_unknown_endpoint_404() {
@@ -203,17 +203,29 @@ falsification_tests:
   if_fails: 404 returns HTML error page instead of JSON envelope
 kani_harnesses:
 - id: KANI-HTTP-001
-  obligation: Error envelope always valid JSON
+  obligation: Error responses always have JSON envelope
   property: All error paths produce parseable JSON bodies
   bound: 16
   strategy: exhaustive
   harness: verify_error_envelope_structure
 - id: KANI-HTTP-002
-  obligation: HTTP status code correctness
-  property: Error type maps to correct HTTP status
+  obligation: CORS headers are all-or-nothing
+  property: Disabled CORS removes all CORS headers from response
   bound: 8
   strategy: exhaustive
-  harness: verify_status_code_mapping
+  harness: verify_cors_all_or_nothing
+- id: KANI-HTTP-003
+  obligation: Streaming uses SSE framing
+  property: Every streaming chunk has correct SSE framing
+  bound: 8
+  strategy: exhaustive
+  harness: verify_sse_framing
+- id: KANI-HTTP-004
+  obligation: Timeout does not corrupt model state
+  property: Model state identical before and after timeout
+  bound: 4
+  strategy: exhaustive
+  harness: verify_timeout_state_preservation
 qa_gate:
   id: F-HTTP-GATE
   name: HTTP API Contract
