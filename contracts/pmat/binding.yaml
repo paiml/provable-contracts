@@ -1,5 +1,6 @@
 version: 1.0.0
 target_crate: pmat
+source_dir: paiml-mcp-agent-toolkit
 bindings:
 # === IMPLEMENTED (4) ===
 - contract: tdg-scoring-v1.yaml

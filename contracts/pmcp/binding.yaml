@@ -1,5 +1,6 @@
 version: 1.0.0
 target_crate: pmcp
+source_dir: rust-mcp-sdk
 bindings:
 # === JSON-RPC Framing ===
 - contract: mcp-protocol-sdk-v1.yaml

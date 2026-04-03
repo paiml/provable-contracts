@@ -1,13 +1,9 @@
-//! `pv kaizen` — continuous fleet-wide contract enforcement improvement.
-//!
-//! Measures, regenerates, injects, validates, and reports contract
-//! enforcement across the entire PAIML sovereign stack.
+//! `pv kaizen` — fleet-wide contract enforcement improvement.
 
 use provable_contracts::binding::{BindingRegistry, ImplStatus, parse_binding};
 use provable_contracts::codegen;
 use std::path::{Path, PathBuf};
 
-/// Per-repo enforcement measurement.
 #[derive(Clone)]
 struct RepoReport {
     name: String,
@@ -25,7 +21,6 @@ struct RepoReport {
     injection_count: usize,
 }
 
-/// Enforcement level classification.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ELevel {
     E0,
@@ -33,7 +28,6 @@ enum ELevel {
     E2,
 }
 
-/// Call site found in source.
 struct CallSite {
     #[allow(dead_code)]
     file: PathBuf,
@@ -42,8 +36,6 @@ struct CallSite {
     macro_name: String,
     level: ELevel,
 }
-
-/// Run the kaizen fleet enforcement loop.
 #[allow(
     clippy::too_many_lines,
     clippy::too_many_arguments,
@@ -76,22 +68,19 @@ pub fn run(
             .unwrap_or("")
             .to_string();
 
-        if name == "kaizen" || name == "legacy" || name == "pipelines" {
+        if matches!(name.as_str(), "kaizen" | "legacy" | "pipelines") {
             continue;
         }
-
         let binding_path = path.join("binding.yaml");
         if !binding_path.exists() {
             continue;
         }
-
         if let Some(filter) = repo_filter {
             if name != filter {
                 continue;
             }
         }
-
-        let repo_path = src_root.join(&name);
+        let repo_path = resolve_repo_path(src_root, &name, &binding_path);
         if !repo_path.exists() {
             continue;
         }
@@ -565,7 +554,6 @@ fn skip_early_returns(content: &str, start_line: usize) -> usize {
     line
 }
 
-/// Collect all `.rs` files recursively.
 fn collect_rs_files(dir: &Path, out: &mut Vec<PathBuf>) {
     let Ok(entries) = std::fs::read_dir(dir) else {
         return;
@@ -580,14 +568,12 @@ fn collect_rs_files(dir: &Path, out: &mut Vec<PathBuf>) {
     }
 }
 
-/// Detect indentation from a line (return the whitespace prefix).
 fn detect_indent(line: &str) -> String {
     let trimmed = line.trim_start();
     let indent_len = line.len() - trimmed.len();
     line[..indent_len].to_string()
 }
 
-/// Enforcement grade from score (penetration x quality).
 fn enforcement_grade(score: f64) -> &'static str {
     if score >= 0.60 {
         "Grade A"
@@ -861,4 +847,18 @@ fn print_json_report(reports: &[RepoReport]) {
     }
     println!("  ]");
     println!("}}");
+}
+
+fn resolve_repo_path(src_root: &Path, name: &str, binding_path: &Path) -> PathBuf {
+    std::fs::read_to_string(binding_path)
+        .ok()
+        .and_then(|c| {
+            c.lines().find_map(|l| {
+                l.trim()
+                    .strip_prefix("source_dir:")
+                    .map(|v| src_root.join(v.trim()))
+            })
+        })
+        .filter(|p| p.exists())
+        .unwrap_or_else(|| src_root.join(name))
 }
