@@ -33,6 +33,20 @@ invariants:
     statement: "loss(2_target, epoch_N) < loss(2_target, epoch_1)"
     rationale: "Training must converge regardless of target count"
 
+proof_obligations:
+  - type: invariant
+    property: Target set is a valid subset of projections
+    formal: "for all t in target_modules: t ∈ {q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj}"
+    applies_to: all
+  - type: invariant
+    property: Non-target projections have zero LoRA contribution
+    formal: "for all p not in target_modules: lora_a[p] = None AND lora_b[p] = None"
+    applies_to: all
+  - type: bound
+    property: Backward compute proportional to target count
+    formal: "backward_time(N) / backward_time(7) ∈ [N/7 * 0.8, N/7 * 1.2]"
+    applies_to: all
+
 falsification_tests:
   - id: FALSIFY-TARGET-001
     rule: speed_proportional
@@ -46,3 +60,31 @@ falsification_tests:
     rule: target_subset
     prediction: "Invalid target names rejected at construction time"
     if_fails: "Input validation missing — add target name allowlist check"
+
+kani_harnesses:
+  - id: KANI-TARGET-001
+    obligation: Target set valid subset
+    strategy: exhaustive
+    solver: cadical
+    bound: 8
+    description: Verify all target module names are in the valid set
+  - id: KANI-TARGET-002
+    obligation: Non-target projections zero
+    strategy: exhaustive
+    solver: cadical
+    bound: 8
+    description: Verify non-target LoRA adapters are None
+  - id: KANI-TARGET-003
+    obligation: Backward proportional
+    strategy: bounded_int
+    solver: cadical
+    bound: 8
+    description: Verify backward time scales with target count
+
+qa_gate:
+  id: F-LTSV-001
+  name: lora-target-selection-v1 Contract
+  description: Quality gate for LoRA target module selection
+  checks:
+    - validation
+    - falsification
