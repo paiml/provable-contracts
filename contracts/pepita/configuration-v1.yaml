@@ -19,7 +19,7 @@ equations:
     - connection_count() < MAX_CONNECTIONS
     lean_theorem: Theorems.Connect_Lifecycle
   connection_count:
-    formula: N() = |{c ∈ Connections : c.is_active()}|
+    formula: 'N() = count(c in Connections where c.is_active())'
     domain: unit
     codomain: usize
     invariants:

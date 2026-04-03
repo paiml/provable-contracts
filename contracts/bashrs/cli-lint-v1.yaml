@@ -139,6 +139,18 @@ enforcement:
     description: Findings must be sorted by severity descending
     check: contract_tests::FALSIFY-BL-004
     severity: ERROR
+  exit_zero_empty:
+    description: Exit 0 must imply zero diagnostics
+    check: contract_tests::FALSIFY-BL-005
+    severity: ERROR
+  exit_one_nonempty:
+    description: Exit 1 must imply at least one diagnostic
+    check: contract_tests::FALSIFY-BL-006
+    severity: ERROR
+  exit_two_parse_failure:
+    description: Exit 2 must imply parse or I/O failure with no lint rules executed
+    check: contract_tests::FALSIFY-BL-007
+    severity: ERROR
 falsification_tests:
 - id: FALSIFY-BL-001
   rule: Exit code totality and semantics
@@ -171,6 +183,28 @@ falsification_tests:
     violations; parse JSON output; assert severity monotonically non-increasing'
   if_fails: Sort comparator missing severity as primary key, or appending diagnostics
     without final sort pass
+- id: FALSIFY-BL-005
+  rule: Exit 0 implies zero findings
+  prediction: When bashrs lint exits with code 0, the diagnostics list is empty
+  test: 'Postcondition test: lint a known-clean script (no violations); capture exit
+    code and JSON output; assert exit code == 0 AND parsed diagnostics array is empty'
+  if_fails: Exit code 0 returned despite non-empty diagnostic list, indicating exit
+    code not derived from findings count
+- id: FALSIFY-BL-006
+  rule: Exit 1 implies non-empty findings
+  prediction: When bashrs lint exits with code 1, at least one diagnostic is emitted
+  test: 'Postcondition test: lint a script containing eval $VAR (SC2046); capture exit
+    code and JSON output; assert exit code == 1 AND parsed diagnostics array has length >= 1'
+  if_fails: Exit code 1 returned with zero diagnostics, indicating error path conflated
+    with findings path
+- id: FALSIFY-BL-007
+  rule: Exit 2 implies parse failure
+  prediction: When bashrs lint exits with code 2, no lint rules were executed and the
+    error message indicates a parse or I/O failure
+  test: 'Postcondition test: lint a truncated script with unclosed heredoc; capture exit
+    code and stderr; assert exit code == 2 AND no diagnostic rule IDs appear in output'
+  if_fails: Parse errors misclassified as lint findings (exit 1) instead of parse
+    failures (exit 2)
 kani_harnesses:
 - id: KANI-BL-001
   obligation: Exit code totality
@@ -191,14 +225,14 @@ kani_harnesses:
   property: Output diagnostics satisfy total order (severity desc, position asc, rule_id
     asc)
   bound: 16
-  strategy: bounded_input
+  strategy: bounded_int
   solver: cadical
   harness: verify_severity_ordering
 - id: KANI-BL-004
   obligation: Deterministic findings
   property: Two invocations with identical input produce identical diagnostic vectors
   bound: 16
-  strategy: bounded_input
+  strategy: bounded_int
   solver: cadical
   harness: verify_determinism
 qa_gate:
@@ -211,6 +245,9 @@ qa_gate:
   - json_validity
   - determinism
   - severity_order
-  pass_criteria: All 4 falsification tests pass + 4 Kani harnesses verify
+  - exit_zero_empty
+  - exit_one_nonempty
+  - exit_two_parse_failure
+  pass_criteria: All 7 falsification tests pass + 4 Kani harnesses verify
   falsification: Remove severity sort pass from output formatter to break ordering
     invariant

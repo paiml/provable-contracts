@@ -8,7 +8,7 @@ metadata:
   - 'Biederman & Networker (2006) Linux Network Namespaces'
 equations:
   send_isolation:
-    formula: send(ns, data) delivers data only within namespace ns
+    formula: 'send(ns, data) delivers data only within namespace ns'
     domain: ns ∈ Namespace, data ∈ [u8]
     codomain: Result<usize>
     invariants:
@@ -20,7 +20,7 @@ equations:
     - data.len() > 0
     lean_theorem: Theorems.Send_Isolation
   connect_lifecycle:
-    formula: connect(addr) → handle; connection_count() incremented
+    formula: 'connect(addr) -> handle; connection_count() incremented'
     domain: addr ∈ SocketAddr
     codomain: Result<Connection>
     invariants:
@@ -31,7 +31,7 @@ equations:
     - addr is valid and reachable within namespace
     lean_theorem: Theorems.Connect_Lifecycle
 proof_obligations:
-- type: safety
+- type: soundness
   property: Namespace isolation
   formal: '∀ ns_a, ns_b, data: send(ns_a, data) ∧ ns_a ≠ ns_b → ¬recv(ns_b, data)'
   applies_to: send_isolation

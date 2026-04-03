@@ -83,6 +83,11 @@ falsification_tests:
   prediction: Higher score never maps to lower grade
   test: Sweep scores 0-100 in increments of 0.1, check monotonicity
   if_fails: Grade threshold boundary error
+- id: FALSIFY-MQA-004
+  rule: Weights sum to unity
+  prediction: Default playbook weights sum to exactly 1.0
+  test: Load default playbook, sum weights, assert within f64 epsilon
+  if_fails: Weight initialization not normalized
 kani_harnesses:
 - id: KANI-MQA-001
   obligation: MQS score bounded

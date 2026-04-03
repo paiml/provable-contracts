@@ -127,6 +127,14 @@ enforcement:
     description: Same input must produce byte-identical output
     check: contract_tests::FALSIFY-DT-004
     severity: ERROR
+  no_partial_output:
+    description: Failed transpilation must not leave partial output files
+    check: contract_tests::FALSIFY-DT-005
+    severity: ERROR
+  validation_ordering:
+    description: Input validation must complete before codegen begins
+    check: contract_tests::FALSIFY-DT-006
+    severity: ERROR
 falsification_tests:
 - id: FALSIFY-DT-001
   rule: Exit code totality
@@ -156,6 +164,24 @@ falsification_tests:
     output_1 == output_2 byte-for-byte'
   if_fails: Non-deterministic HashMap iteration in codegen, or timestamp/counter in
     generated comments
+- id: FALSIFY-DT-005
+  rule: No partial output on failure
+  prediction: When transpilation fails (exit code 1 or 2), the output file is either
+    not created or is empty
+  test: 'Unit test: invoke depyler transpile on a Python file with unsupported syntax
+    (e.g., async generators); assert exit code != 0 AND output file either does not
+    exist or has zero bytes'
+  if_fails: Codegen writes partial Rust output before encountering unsupported AST
+    node, leaving corrupt file on disk
+- id: FALSIFY-DT-006
+  rule: Validation before transpilation
+  prediction: Input validation (file existence, UTF-8, Python parse) completes before
+    any codegen phase begins
+  test: 'Ordering test: instrument codegen entry point with a probe; invoke depyler
+    transpile on /nonexistent.py; assert exit code == 2 AND codegen probe was never
+    triggered'
+  if_fails: Eager codegen pipeline starts before input validation, causing confusing
+    errors or partial work on invalid input
 kani_harnesses:
 - id: KANI-DT-001
   obligation: Exit code totality
@@ -168,7 +194,7 @@ kani_harnesses:
   obligation: Exit 0 implies valid Rust output
   property: Successful transpilation always produces syn-parseable Rust source
   bound: 16
-  strategy: bounded_input
+  strategy: bounded_int
   solver: cadical
   harness: verify_success_output_valid
 - id: KANI-DT-003
@@ -182,7 +208,7 @@ kani_harnesses:
   obligation: Deterministic output
   property: Two invocations with identical input produce identical output bytes
   bound: 16
-  strategy: bounded_input
+  strategy: bounded_int
   solver: cadical
   harness: verify_determinism
 qa_gate:
@@ -195,6 +221,8 @@ qa_gate:
   - output_parseable
   - input_rejection
   - determinism
-  pass_criteria: All 4 falsification tests pass + 4 Kani harnesses verify
+  - no_partial_output
+  - validation_ordering
+  pass_criteria: All 6 falsification tests pass + 4 Kani harnesses verify
   falsification: Remove input validation gate to allow binary files through, breaking
     exit code 2 contract

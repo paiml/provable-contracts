@@ -39,7 +39,7 @@ proof_obligations:
   property: All errors are categorized
   formal: '∀ err ∈ SendError: err.kind() ∈ {ConnectionClosed, Timeout, BufferFull}'
   applies_to: send_error_propagation
-- type: safety
+- type: soundness
   property: Send on closed connection does not panic
   formal: '∀ msg, closed_conn: send(msg, closed_conn) = Err(_)'
   applies_to: send

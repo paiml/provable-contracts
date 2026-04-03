@@ -46,7 +46,7 @@ proof_obligations:
   property: Render determinism
   formal: '∀ scene: render(scene) = render(scene)'
   applies_to: render_output
-- type: safety
+- type: soundness
   property: Primitive bounds safety
   formal: '∀ p, C: draw(p, C) writes only within C.bounds'
   applies_to: primitive_bounds

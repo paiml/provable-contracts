@@ -143,6 +143,13 @@ falsification_tests:
   prediction: Agent completes task despite 50% random provider failures
   test: Chaos injection — random 429/500/timeout, verify task completion
   if_fails: Failover cascade too brittle for real-world instability
+- id: FALSIFY-MPA-008
+  rule: Request immutability
+  prediction: The original CompletionRequest is not mutated by the routing process
+  test: 'Frame test: clone request before routing; invoke route(request); deep-compare
+    original clone with request after routing returns; assert byte-identical'
+  if_fails: Router mutates request fields (e.g., injects provider-specific headers
+    or rewrites model name) instead of working on a copy
 kani_harnesses:
 - id: KANI-MPA-001
   obligation: Sovereign tier blocks remote egress
@@ -191,5 +198,6 @@ qa_gate:
   - format_translation_roundtrip
   - sse_stream_completeness
   - chaos_failover_resilience
-  pass_criteria: All 7 falsification tests pass + 5 Kani harnesses verify
+  - request_immutability
+  pass_criteria: All 8 falsification tests pass + 5 Kani harnesses verify
   falsification: Inject chaos at provider boundary

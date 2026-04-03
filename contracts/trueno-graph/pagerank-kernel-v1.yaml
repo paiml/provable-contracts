@@ -61,6 +61,10 @@ enforcement:
     description: BFS distance from source to itself must be 0
     check: contract_tests::FALSIFY-TG-003
     severity: ERROR
+  bfs_triangle_inequality:
+    description: BFS distances must satisfy triangle inequality for all edges
+    check: contract_tests::FALSIFY-TG-004
+    severity: ERROR
 falsification_tests:
 - id: FALSIFY-TG-001
   rule: Probability distribution
@@ -77,6 +81,14 @@ falsification_tests:
   prediction: bfs(G, source)[source] = 0 for any graph and source node
   test: proptest with random graphs and random source nodes
   if_fails: Source node not initialized to distance 0 before traversal
+- id: FALSIFY-TG-004
+  rule: BFS triangle inequality
+  prediction: For every edge (u, v) in the graph, bfs(G, s)[v] <= bfs(G, s)[u] + 1
+  test: 'proptest: generate random directed graphs (10-50 nodes); run BFS from random
+    source; for every edge (u, v) where both u and v are reachable, assert dist[v] <=
+    dist[u] + 1'
+  if_fails: BFS queue processes nodes out of order or skips relaxation step, producing
+    non-shortest paths that violate the triangle inequality
 kani_harnesses:
 - id: KANI-TG-001
   obligation: Probability distribution
@@ -104,5 +116,6 @@ qa_gate:
   - probability_distribution
   - non_negative_rank
   - bfs_source_zero
-  pass_criteria: All 3 falsification tests pass
+  - bfs_triangle_inequality
+  pass_criteria: All 4 falsification tests pass
   falsification: Remove dangling node normalization to trigger FALSIFY-TG-001

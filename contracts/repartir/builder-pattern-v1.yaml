@@ -50,6 +50,10 @@ enforcement:
     description: Missing required fields must cause build failure
     check: contract_tests::FALSIFY-RP-002
     severity: ERROR
+  fresh_builder_empty:
+    description: Fresh builder must have empty targets and no strategy
+    check: contract_tests::FALSIFY-RP-003
+    severity: ERROR
 falsification_tests:
 - id: FALSIFY-RP-001
   rule: Build validity
@@ -61,6 +65,13 @@ falsification_tests:
   prediction: Builder::new().build() returns Err
   test: call build on fresh builder without setting required fields
   if_fails: Default values substituted for missing required fields
+- id: FALSIFY-RP-003
+  rule: Fresh builder has no targets
+  prediction: Builder::new().targets.len() == 0
+  test: 'Invariant test: construct a fresh builder via Builder::new(); assert
+    targets is empty and strategy is None'
+  if_fails: Builder constructor initializes default targets or default strategy,
+    violating the empty-initial-state invariant
 kani_harnesses:
 - id: KANI-RP-001
   obligation: Build validity
@@ -81,5 +92,6 @@ qa_gate:
   checks:
   - build_validity
   - missing_fields_fail
-  pass_criteria: All 2 falsification tests pass
+  - fresh_builder_empty
+  pass_criteria: All 3 falsification tests pass
   falsification: Remove required field check in build() to trigger FALSIFY-RP-002

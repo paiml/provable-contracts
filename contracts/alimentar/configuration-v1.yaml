@@ -37,6 +37,11 @@ falsification_tests:
   prediction: Config::new(params).unwrap().is_valid() = true for any valid params
   test: proptest with random valid parameter combinations
   if_fails: Missing validation in constructor allows invalid state
+- id: FALSIFY-ALC-002
+  rule: Threshold invariants
+  prediction: Invalid thresholds (min > max) rejected at construction
+  test: Config::new with min=100, max=0, verify error returned
+  if_fails: Threshold validation missing or inverted
 kani_harnesses:
 - id: KANI-ALC-001
   obligation: Constructor validity

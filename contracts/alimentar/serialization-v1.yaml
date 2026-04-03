@@ -37,7 +37,7 @@ proof_obligations:
   property: Deterministic serialization
   formal: '∀ v: to_bytes(v) = to_bytes(v)'
   applies_to: serialize
-- type: safety
+- type: soundness
   property: Invalid bytes never panic
   formal: '∀ bytes: from_bytes(bytes) ∈ {Ok(_), Err(_)}'
   applies_to: deserialize

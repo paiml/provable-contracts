@@ -50,7 +50,7 @@ proof_obligations:
   property: Decode preserves frame dimensions
   formal: '∀ frame, codec: decode(encode(frame, codec), codec).dimensions() = frame.dimensions()'
   applies_to: decode
-- type: consistency
+- type: invariant
   property: Encoder availability implies encode success
   formal: '∀ codec: encoder_available(codec) → encode(valid_frame, codec).is_ok()'
   applies_to: encoder_resolution
