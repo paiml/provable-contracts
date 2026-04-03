@@ -432,8 +432,8 @@ fn test_enforce_gate_multiple_equations_mixed() {
     let (result, findings) = run_enforce_gate(&contracts);
 
     assert!(result.passed);
-    // eq_bad is missing preconditions (PV-ENF-001) and lean (PV-ENF-002)
-    assert_eq!(findings.len(), 2);
+    // eq_bad is missing preconditions (PV-ENF-001), postconditions (PV-ENF-001), and lean (PV-ENF-002)
+    assert_eq!(findings.len(), 3);
 }
 
 // ---------------------------------------------------------------------------

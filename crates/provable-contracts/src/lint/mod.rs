@@ -214,7 +214,7 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
     if validation_passed {
         let min_level = config
             .min_level
-            .unwrap_or(crate::schema::EnforcementLevel::Basic);
+            .unwrap_or(crate::schema::EnforcementLevel::Standard);
         let (level_result, mut level_findings) = run_enforcement_level_gate(&contracts, min_level);
         gates.push(level_result);
         all_findings.append(&mut level_findings);

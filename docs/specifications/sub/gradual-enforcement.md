@@ -46,11 +46,15 @@ pv lint contracts/ --min-level standard   # Fail if any contract below standard
 pv lint contracts/ --min-level strict     # Require bindings + annotations
 ```
 
-### Implementation
+### Implementation Status
 
-- `crates/provable-contracts/src/schema/types.rs` — Add `EnforcementLevel` enum
-- `crates/provable-contracts/src/lint/gates.rs` — Gate 8: level enforcement
-- `.pv.toml` — `[lint] default_level = "standard"` with per-glob overrides
+- ✅ `crates/provable-contracts/src/schema/types.rs` — `EnforcementLevel` enum (Basic/Standard/Strict/Proven)
+- ✅ `crates/provable-contracts/src/lint/gates_extended.rs` — Gate 6: enforcement level checking
+- ✅ `--min-level` CLI flag implemented and parsed
+- ✅ `locked_level` field with `pv unlock --reason` command
+- ⚠️ `compute_actual_level()` does NOT detect Strict (no binding/annotation check)
+- ❌ `.pv.toml` config `default_level` — NOT IMPLEMENTED (CLI-only for now)
+- ❌ Per-glob enforcement overrides — NOT IMPLEMENTED
 
 ---
 

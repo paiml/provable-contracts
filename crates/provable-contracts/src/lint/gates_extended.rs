@@ -198,7 +198,24 @@ pub(crate) fn run_enforce_gate(contracts: &[(String, Contract)]) -> (GateResult,
             } else {
                 with_pre += 1;
             }
-            if !eq.postconditions.is_empty() {
+            if eq.postconditions.is_empty() {
+                findings.push(LintFinding {
+                    rule_id: "PV-ENF-001".into(),
+                    severity: RuleSeverity::Warning,
+                    message: format!("Equation `{eq_name}` has no postconditions"),
+                    file: format!("contracts/{stem}.yaml"),
+                    line: None,
+                    contract_stem: Some(stem.clone()),
+                    suppressed: false,
+                    suppression_reason: None,
+                    is_new: false,
+                    snippet: None,
+                    suggestion: Some(format!(
+                        "Add to equations.{eq_name}:\n  postconditions:\n    - \"result.len() > 0\""
+                    )),
+                    evidence: None,
+                });
+            } else {
                 with_post += 1;
             }
             if eq.lean_theorem.is_some() {

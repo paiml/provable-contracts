@@ -151,6 +151,8 @@ pub fn score_codebase_full(
         mean_contract_score,
         proof_depth_dist,
         drift,
+        // TODO: reverse_coverage is hardcoded to 0.0 — needs wiring
+        // reverse_coverage_report into the scoring pipeline to compute actual value.
         reverse_coverage: 0.0,
         mutation_testing: 1.0,
         ci_pipeline_depth: 1.0,

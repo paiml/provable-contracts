@@ -2,6 +2,16 @@
 
 **Parent:** [pv-spec.md](../pv-spec.md) Section 15.7
 
+> **Implementation Status (2026-04-03):**
+> - ✅ `pv coverage --reverse` — scans pub fns, diffs against binding.yaml
+> - ✅ Gate 7: reverse-coverage lint gate (50% threshold, hardcoded)
+> - ✅ `pv infer` — suggests bindings and new contracts for unmatched fns
+> - ✅ Auto-exemption for trivial functions (200+ patterns)
+> - ❌ `#[must_contract]` crate attribute — NOT IMPLEMENTED
+> - ❌ `pv annotate` auto-insert command — NOT IMPLEMENTED
+> - ⚠️ `reverse_coverage` in CodebaseScore hardcoded to 0.0
+> - ⚠️ Metric includes exempt fns: `(bound + exempt) / total` not `bound / total`
+
 ---
 
 ## Problem: Whack-a-Mole Enforcement

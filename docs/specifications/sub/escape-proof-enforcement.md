@@ -10,9 +10,16 @@ Not "difficult." Not "caught in CI." Impossible. The compiler refuses to
 produce a binary. Like a type error — you can't cast a String to an int,
 and you can't ship a function without its proven contract.
 
+> **Implementation Status (2026-04-03):** The full escape-proof pipeline is
+> partially implemented. Stages A, C, D, E, F are implemented. Stage B (Lean
+> verification in build.rs) tracks status but does NOT enforce at compile time.
+> The `#[contract]` macro uses `option_env!()` (not `env!()`), so missing
+> contracts produce no assertions rather than compile errors. The escape analysis
+> table below marks planned-but-unimplemented items with ⚠️.
+
 ## The Six-Stage Pipeline
 
-Each stage gates the next. Skip one → compile error.
+Each stage gates the next. Skip one → compile error (see status notes).
 
 ```
 A. Equation (YAML)
@@ -49,9 +56,14 @@ equations:
 
 ### Stage B: Lean 4 Proof
 
-The `lean_theorem:` field references a proven theorem. build.rs verifies:
-1. The theorem NAME exists in the Lean project
-2. The theorem has NO `sorry` (all proof obligations discharged)
+The `lean_theorem:` field references a proven theorem.
+
+> **Current status:** Lean proof status is TRACKED (via `pv lean-status`)
+> but NOT ENFORCED at compile time. build.rs does not verify theorem
+> existence or sorry status. This is a planned upgrade — the `LeanStatus`
+> enum (Proved/Sorry/Wip/NotApplicable) exists in lean_gen/mod.rs.
+
+**Planned enforcement** (not yet implemented) — build.rs would verify:
 
 ```rust
 // build.rs
@@ -141,17 +153,17 @@ and verified to exist by `pv lint` Gate 4.
 
 ## Escape Analysis
 
-| Attempted escape | What catches it |
-|-----------------|-----------------|
-| Delete contract YAML | build.rs: CONTRACT_* env var missing → compile_error! |
-| Remove lean_theorem | build.rs: theorem field required for equations → compile_error! |
-| Leave sorry in Lean | build.rs: sorry detection → compile_error! |
-| Remove #[contract] | pv lint Gate 4: test refs don't match → CI blocks |
-| Remove test function | pv lint Gate 4: test missing → CI blocks |
-| Skip pv lint | CI workflow requires pv lint pass |
-| Ship without tests | CB-1201: PV Lint FAIL → pmat comply NON-COMPLIANT |
-| Remove preconditions | pv lint Gate 5 (planned): equations without pre/post → ERROR |
-| Weaken postcondition | Lean proof no longer matches → sorry required → compile_error! |
+| Attempted escape | What catches it | Status |
+|-----------------|-----------------|--------|
+| Delete contract YAML | `#[contract]` macro: no assertions injected (silent) | ⚠️ Planned: switch `option_env!()` → `env!()` for compile_error! |
+| Remove lean_theorem | pv lint Gate 5: warning for missing lean_theorem | ✅ Warning (not compile error) |
+| Leave sorry in Lean | pv lean-status: tracks sorry count in YAML | ⚠️ Planned: build.rs sorry detection |
+| Remove #[contract] | pv lint Gate 4: test refs don't match → CI blocks | ✅ Implemented |
+| Remove test function | pv lint Gate 4: test missing → CI blocks | ✅ Implemented |
+| Skip pv lint | CI workflow requires pv lint pass | ✅ Implemented via CB-1201 |
+| Ship without tests | CB-1201: PV Lint FAIL → pmat comply NON-COMPLIANT | ✅ Implemented |
+| Remove preconditions | pv lint Gate 5: warning for missing pre/post | ✅ Implemented (warning, not error) |
+| Weaken postcondition | Lean proof status tracking | ⚠️ Planned: build.rs compile_error! |
 
 ## Design Principles (from research)
 
