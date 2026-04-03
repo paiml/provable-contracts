@@ -121,6 +121,13 @@ For each bin b: (mean_confidence(B_b), mean_accuracy(B_b))
 |----|------------|-------|----------|
 | KANI-CAL-001 | CAL-BND-001 | 8 | stub_float |
 | KANI-CAL-002 | CAL-BND-002 | 8 | stub_float |
+| KANI-CALIBR-003 | ECE bounded | 8 | stub_float |
+| KANI-CALIBR-004 | MCE bounded | 8 | stub_float |
+| KANI-CALIBR-005 | MCE dominates ECE | 8 | exhaustive |
+| KANI-CALIBR-006 | Perfect calibration zero error | 8 | exhaustive |
+| KANI-CALIBR-007 | Platt output bounded | 8 | stub_float |
+| KANI-CALIBR-008 | Isotonic monotonicity | 8 | exhaustive |
+| KANI-CALIBR-009 | Reliability bin bounds | 8 | stub_float |
 
 ## QA Gate
 

@@ -44,3 +44,19 @@ $$
 | FALSIFY-MMB-002 | Bounds rejection | validate() rejects hidden_dim = 131072 | Upper bound check missing for hidden_dim |
 | FALSIFY-MMB-003 | GQA divisibility | validate() rejects num_heads=7, num_kv_heads=3 | Missing GQA divisibility check |
 
+## Kani Harnesses
+
+| ID | Obligation | Bound | Strategy |
+|----|------------|-------|----------|
+| KANI-MODEL_-001 | All required fields within min/max bounds | 8 | stub_float |
+| KANI-MODEL_-002 | hidden_dim divisible by num_heads | 8 | exhaustive |
+| KANI-MODEL_-003 | num_kv_heads divides num_heads | 8 | exhaustive |
+
+## QA Gate
+
+**model-metadata-bounds-v1 Contract** (F-MMBV-001)
+
+Quality gate for Valid ranges for model configuration dimensions
+
+**Checks:** validation, falsification
+

@@ -51,8 +51,7 @@ $$
 | 3 | invariant | Idempotent with unit weight | $RMSNorm(RMSNorm(x, 1), 1) \approx RMSNorm(x, 1)$ |
 | 4 | invariant | Zero-input stability | $RMSNorm(0, w) = 0$ |
 | 5 | equivalence | SIMD matches scalar within ULP |  |
-| 6 | equivalence | GPU kernel matches CPU reference |  |
-| 7 | invariant | Per-head independence | $RMSNorm([h1;h2;...]) = [RMSNorm(h1); RMSNorm(h2); ...]$ |
+| 6 | invariant | Per-head independence | $RMSNorm([h1;h2;...]) = [RMSNorm(h1); RMSNorm(h2); ...]$ |
 
 ## Falsification Tests
 
@@ -72,6 +71,13 @@ $$
 |----|------------|-------|----------|
 | KANI-QKN-001 | QKN-INV-001 | 8 | stub_float |
 | KANI-QKN-002 | QKN-INV-004 | 8 | stub_float |
+| KANI-QK_NOR-003 | Unit RMS after normalization | 8 | exhaustive |
+| KANI-QK_NOR-004 | Output amplitude bounded | 8 | stub_float |
+| KANI-QK_NOR-005 | Idempotent with unit weight | 8 | exhaustive |
+| KANI-QK_NOR-006 | Zero-input stability | 8 | exhaustive |
+| KANI-QK_NOR-007 | SIMD matches scalar within ULP | 8 | exhaustive |
+| KANI-QK_NOR-008 | GPU kernel matches CPU reference | 8 | exhaustive |
+| KANI-QK_NOR-009 | Per-head independence | 8 | exhaustive |
 
 ## QA Gate
 

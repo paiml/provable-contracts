@@ -123,4 +123,15 @@ vs baseline (3 independent calls):
 | KANI-QKV-001 | Fused matches separate QKV | 32 | exhaustive |
 | KANI-QKV-002 | Shared Q8_1 matches separate quantization (PMAT-054A) | 32 | exhaustive |
 | KANI-QKV-003 | Output dimension correct | 32 | exhaustive |
+| KANI-FUSED_-004 | Weight concatenation preserves values | 8 | exhaustive |
+| KANI-FUSED_-005 | Bias concatenation preserves values | 8 | exhaustive |
+| KANI-FUSED_-006 | Single matvec call | 8 | exhaustive |
+
+## QA Gate
+
+**fused-qkv-projection-v1 Contract** (F-FQPV-001)
+
+Quality gate for Fused QKV projection — concatenated weight matrix for single
+
+**Checks:** validation, falsification
 

@@ -98,6 +98,10 @@ L_m = (1/n) * sum L(y_i, F_m(x_i))
 |----|------------|-------|----------|
 | KANI-GBM-001 | GBM-INV-001 | 8 | stub_float |
 | KANI-GBM-002 | GBM-BND-001 | 8 | stub_float |
+| KANI-GBM_V1-003 | Predictions binary | 8 | exhaustive |
+| KANI-GBM_V1-004 | Predictions deterministic | 8 | exhaustive |
+| KANI-GBM_V1-005 | Ensemble output finite | 8 | exhaustive |
+| KANI-GBM_V1-006 | Training loss non-increasing | 8 | exhaustive |
 
 ## QA Gate
 

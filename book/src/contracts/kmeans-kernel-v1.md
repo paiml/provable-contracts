@@ -98,6 +98,11 @@ $$
 |----|------------|-------|----------|
 | KANI-KM-001 | KM-INV-001 | 4 | stub_float |
 | KANI-KM-002 | KM-BND-001 | 4 | stub_float |
+| KANI-KMEANS-003 | Nearest centroid assignment | 8 | exhaustive |
+| KANI-KMEANS-004 | Objective non-increasing | 8 | exhaustive |
+| KANI-KMEANS-005 | Objective non-negative | 8 | exhaustive |
+| KANI-KMEANS-006 | Valid cluster indices | 8 | exhaustive |
+| KANI-KMEANS-007 | SIMD matches scalar within ULP | 8 | exhaustive |
 
 ## QA Gate
 

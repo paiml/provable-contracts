@@ -105,6 +105,13 @@ $$
 |----|------------|-------|----------|
 | KANI-RM-001 | 1 | 4 | stub_float |
 | KANI-RM-002 | 2 | 4 | stub_float |
+| KANI-METRIC-003 | R² upper bound | 8 | stub_float |
+| KANI-METRIC-004 | MSE non-negativity | 8 | exhaustive |
+| KANI-METRIC-005 | MAE-RMSE ordering (Jensen's inequality) | 8 | exhaustive |
+| KANI-METRIC-006 | Perfect prediction identity | 8 | exhaustive |
+| KANI-METRIC-007 | MSE symmetry | 8 | exhaustive |
+| KANI-METRIC-008 | MAE non-negativity | 8 | exhaustive |
+| KANI-METRIC-009 | RMSE non-negativity | 8 | exhaustive |
 
 ## QA Gate
 

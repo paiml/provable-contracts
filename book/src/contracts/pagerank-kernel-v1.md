@@ -84,6 +84,11 @@ $$
 |----|------------|-------|----------|
 | KANI-PR-001 | PR-INV-001 | 4 | stub_float |
 | KANI-PR-002 | PR-BND-001 | 4 | stub_float |
+| KANI-PAGERA-003 | Probability distribution | 8 | exhaustive |
+| KANI-PAGERA-004 | Convergence | 8 | exhaustive |
+| KANI-PAGERA-005 | Scores non-negative | 8 | exhaustive |
+| KANI-PAGERA-006 | Normalization preserved per iteration | 8 | exhaustive |
+| KANI-PAGERA-007 | SIMD matches scalar within ULP | 8 | exhaustive |
 
 ## QA Gate
 

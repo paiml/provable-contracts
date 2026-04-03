@@ -9,6 +9,13 @@ IEEE 754 half-precision (F16) to single-precision (F32) conversion invariants
 - IEEE 754-2008 — Binary floating-point arithmetic
 - Qwen2.5-Coder Showcase Spec §11.5 — F16 passthrough
 
+## Dependency Graph
+
+```mermaid
+graph LR
+    fp8_interchange_v1["fp8-interchange-v1"] --> f16_conversion_v1["f16-conversion-v1"]
+```
+
 ## Equations
 
 ### f16_to_f32_bias
@@ -65,6 +72,10 @@ f32_to_f16(f16_to_f32(h)) == h
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-F16-001 | F16-INV-001 | 5 | bounded_int |
+| KANI-F16_CO-002 | Bias trick correctness | 8 | exhaustive |
+| KANI-F16_CO-003 | Roundtrip identity | 8 | exhaustive |
+| KANI-F16_CO-004 | Sign preservation | 8 | exhaustive |
+| KANI-F16_CO-005 | SIMD conversion equivalence | 8 | exhaustive |
 
 ## QA Gate
 

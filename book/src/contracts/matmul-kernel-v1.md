@@ -88,6 +88,11 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-MM-001 | MM-INV-001 | 8 | exhaustive |
+| KANI-MATMUL-002 | Output shape correctness | 8 | exhaustive |
+| KANI-MATMUL-003 | Matmul associativity | 8 | exhaustive |
+| KANI-MATMUL-004 | Matmul distributes | 8 | exhaustive |
+| KANI-MATMUL-005 | SIMD matches scalar | 8 | exhaustive |
+| KANI-MATMUL-006 | Quantized error bounded | 8 | stub_float |
 
 ## QA Gate
 

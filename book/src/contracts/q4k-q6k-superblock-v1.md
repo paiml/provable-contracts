@@ -105,6 +105,13 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-QS-001 | QS-INV-001 | 1 | exhaustive |
+| KANI-Q4K_Q6-002 | Q4K superblock size | 8 | exhaustive |
+| KANI-Q4K_Q6-003 | Q6K superblock size | 8 | exhaustive |
+| KANI-Q4K_Q6-004 | Total bytes monotonic | 8 | exhaustive |
+| KANI-Q4K_Q6-005 | Dequant produces finite | 8 | exhaustive |
+| KANI-Q4K_Q6-006 | Offset vanishing | 8 | exhaustive |
+| KANI-Q4K_Q6-007 | bsum weight independence | 8 | stub_float |
+| KANI-Q4K_Q6-008 | SIMD dequant equivalence | 8 | exhaustive |
 
 ## QA Gate
 

@@ -64,6 +64,10 @@ $$
 |----|------------|-------|----------|
 | KANI-BA-001 | BA-INV-001 | 8 | stub_float |
 | KANI-BA-002 | BA-INV-002 | 8 | stub_float |
+| KANI-BIAS_A-003 | Shape preservation | 8 | exhaustive |
+| KANI-BIAS_A-004 | Zero-bias identity | 8 | exhaustive |
+| KANI-BIAS_A-005 | Additivity | 8 | exhaustive |
+| KANI-BIAS_A-006 | SIMD matches scalar | 8 | exhaustive |
 
 ## QA Gate
 

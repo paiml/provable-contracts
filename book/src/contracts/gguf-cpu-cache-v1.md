@@ -58,6 +58,7 @@ Speedup ratio = (n+1)/2
 | KANI-CC-002 | KV cache reduces work from O(n^2) to O(n) | 8 | bounded_int |
 | KANI-CC-003 | GGUF CPU throughput matches APR CPU | 4 | bounded_int |
 | KANI-CC-004 | No regression in generation quality | 8 | stub_float |
+| KANI-GGUF_C-005 | KV cache reduces work from O(n²) to O(n) | 8 | exhaustive |
 
 ## QA Gate
 

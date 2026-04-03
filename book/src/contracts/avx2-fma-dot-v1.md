@@ -85,4 +85,16 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | avx2-fma-dot-v1-kani-001 | SIMD matches scalar | 8 | bounded_int |
+| KANI-AVX2_F-002 | Zero-allocation | 8 | exhaustive |
+| KANI-AVX2_F-003 | Commutativity | 8 | exhaustive |
+| KANI-AVX2_F-004 | Self-dot non-negative | 8 | exhaustive |
+| KANI-AVX2_F-005 | Empty input returns zero | 8 | exhaustive |
+
+## QA Gate
+
+**avx2-fma-dot-v1 Contract** (F-AFDV-001)
+
+Quality gate for AVX2+FMA dot product — zero-alloc, fused multiply-add for de
+
+**Checks:** validation, falsification
 

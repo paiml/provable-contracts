@@ -53,6 +53,8 @@ $$
 | 4 | bound | Output is convex combination of V | $min(V) <= output_i <= max(V) per head$ |
 | 5 | invariant | KV head broadcasting correctness | `Q heads [g*r..(g+1)*r] share K_g, V_g where r = num_heads/num_kv_heads` |
 | 6 | equivalence | SIMD matches scalar within ULP |  |
+| 7 | equivalence | GPU PTX matches CPU within cosine >= 0.98 | $cosine(gqa_ptx(Q,K,V), gqa_cpu(Q,K,V)) >= 0.98$ |
+| 8 | invariant | GPU head mapping for non-power-of-2 ratios | `kv_head_idx(q) == q * num_kv_heads / num_heads for all q in [0..num_heads)` |
 
 ## Kernel Phases
 
@@ -79,6 +81,9 @@ $$
 | FALSIFY-GQ-004 | Head divisibility | num_heads % num_kv_heads == 0 enforced at construction | Missing divisibility check |
 | FALSIFY-GQ-005 | SIMD equivalence | \|gqa_avx2(Q,K,V) - gqa_scalar(Q,K,V)\| < 8 ULP | SIMD matmul accumulation order differs |
 | FALSIFY-GQ-006 | Boundary - single KV head (MQA) | GQA(kv_heads=1) broadcasts single KV to all query heads | Multi-query degenerate case not handled |
+| FALSIFY-GQ-007 | GPU parity - non-power-of-2 head ratio | cosine(gqa_gpu, gqa_cpu) >= 0.98 for heads=28, kv=4 (ratio=7) | GPU PTX kernel computes wrong function for this head configuration |
+| FALSIFY-GQ-008 | GPU parity - power-of-2 head ratio | cosine(gqa_gpu, gqa_cpu) >= 0.98 for heads=32, kv=8 (ratio=4) | GPU PTX kernel fails even for power-of-2 ratios |
+| FALSIFY-GQ-009 | GPU head mapping correctness | kv_head_idx(q) == q * num_kv_heads / num_heads for all q | PTX integer division produces wrong kv_head_idx on target GPU |
 
 ## Kani Harnesses
 
@@ -87,6 +92,14 @@ $$
 | KANI-GQ-001 | GQ-INV-001 | 4 | stub_float |
 | KANI-GQ-002 | GQ-EQV-001 | 4 | stub_float |
 | KANI-GQ-003 | GQ-BND-001 | 4 | stub_float |
+| KANI-GQA_KE-004 | GQA refines standard MHA — accepts same Q/K/V shapes, produces compatible output | 8 | exhaustive |
+| KANI-GQA_KE-005 | Attention weight normalization | 8 | exhaustive |
+| KANI-GQA_KE-006 | GQA degenerates to MHA | 8 | exhaustive |
+| KANI-GQA_KE-007 | Output is convex combination of V | 8 | exhaustive |
+| KANI-GQA_KE-008 | KV head broadcasting correctness | 8 | exhaustive |
+| KANI-GQA_KE-009 | SIMD matches scalar within ULP | 8 | exhaustive |
+| KANI-GQA_KE-010 | GPU PTX matches CPU within cosine >= 0.98 | 8 | exhaustive |
+| KANI-GQA_KE-011 | GPU head mapping for non-power-of-2 ratios | 8 | exhaustive |
 
 ## QA Gate
 
@@ -96,5 +109,5 @@ Grouped query attention with KV broadcasting quality gate
 
 **Checks:** weight_normalization, mha_equivalence, convex_bound, simd_equivalence
 
-**Pass criteria:** All 6 falsification tests pass + Kani harnesses verify
+**Pass criteria:** All 9 falsification tests pass + Kani harnesses verify
 

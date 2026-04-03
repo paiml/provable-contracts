@@ -149,6 +149,13 @@ $$
 |----|------------|-------|----------|
 | KANI-INF-001 | INF-INV-001 | 4 | bounded_int |
 | KANI-INF-002 | INF-INV-002 | 48 | exhaustive |
+| KANI-INFERE-003 | Prefill output shape | 8 | exhaustive |
+| KANI-INFERE-004 | Decode step output shape | 8 | exhaustive |
+| KANI-INFERE-005 | Residual dimension preservation | 8 | exhaustive |
+| KANI-INFERE-006 | Residual is pure addition | 8 | exhaustive |
+| KANI-INFERE-007 | Layer schedule partition | 8 | exhaustive |
+| KANI-INFERE-008 | KV cache monotonically growing | 8 | exhaustive |
+| KANI-INFERE-009 | All activations finite | 8 | exhaustive |
 
 ## QA Gate
 

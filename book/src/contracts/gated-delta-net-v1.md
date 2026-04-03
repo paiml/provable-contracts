@@ -131,6 +131,11 @@ $$
 |----|------------|-------|----------|
 | KANI-GDN-001 | GDN-BND-001 | 8 | stub_float |
 | KANI-GDN-002 | GDN-INV-002 | 4 | bounded_int |
+| KANI-GATED_-003 | Decay in unit interval | 8 | exhaustive |
+| KANI-GATED_-004 | State shape preserved | 8 | exhaustive |
+| KANI-GATED_-005 | Causal conv1d | 8 | exhaustive |
+| KANI-GATED_-006 | L2 norm preserves direction | 8 | exhaustive |
+| KANI-GATED_-007 | SIMD matches scalar within ULP | 8 | exhaustive |
 
 ## QA Gate
 

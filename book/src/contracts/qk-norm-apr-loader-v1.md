@@ -60,6 +60,8 @@ load(arch, layer_n) = try_f32(hf_name) ∨ try_f32(gguf_name)
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | qk-norm-apr-loader-v1-kani-001 | Weight shape matches head_dim | 8 | bounded_int |
+| KANI-QK_NOR-002 | Non-regression for non-QK-norm models | 8 | exhaustive |
+| KANI-QK_NOR-003 | APR loader matches SafeTensors loader | 8 | exhaustive |
 
 ## QA Gate
 

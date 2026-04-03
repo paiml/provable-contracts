@@ -97,6 +97,10 @@ $$
 |----|------------|-------|----------|
 | KANI-DRIFT-001 | DRIFT-BND-001 | 8 | stub_float |
 | KANI-DRIFT-002 | DRIFT-INV-001 | 8 | stub_float |
+| KANI-DRIFT_-003 | Drift score non-negative | 8 | exhaustive |
+| KANI-DRIFT_-004 | DriftStatus transitions correct | 8 | exhaustive |
+| KANI-DRIFT_-005 | min_samples respected | 8 | exhaustive |
+| KANI-DRIFT_-006 | Identical distributions yield NoDrift | 8 | exhaustive |
 
 ## QA Gate
 

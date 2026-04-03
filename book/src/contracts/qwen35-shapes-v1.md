@@ -114,6 +114,13 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-Q35-001 | Q35-INV-001 | 1 | exhaustive |
+| KANI-QWEN35-002 | Q projection shape | 8 | exhaustive |
+| KANI-QWEN35-003 | KV projection shape | 8 | exhaustive |
+| KANI-QWEN35-004 | SwiGLU expansion ratio | 8 | exhaustive |
+| KANI-QWEN35-005 | O projection transpose | 8 | exhaustive |
+| KANI-QWEN35-006 | RoPE frequency vector length | 8 | exhaustive |
+| KANI-QWEN35-007 | RoPE frequency decreasing | 8 | exhaustive |
+| KANI-QWEN35-008 | SIMD shape equivalence | 8 | exhaustive |
 
 ## QA Gate
 

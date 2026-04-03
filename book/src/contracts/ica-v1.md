@@ -78,6 +78,9 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-ICA-001 | ICA-INV-001 | 8 | stub_float |
+| KANI-ICA_V1-002 | Output shape | 8 | exhaustive |
+| KANI-ICA_V1-003 | Deterministic output | 8 | exhaustive |
+| KANI-ICA_V1-004 | Component count | 8 | exhaustive |
 
 ## QA Gate
 

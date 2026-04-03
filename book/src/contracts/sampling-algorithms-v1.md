@@ -18,6 +18,7 @@ Sampling algorithm invariants for autoregressive generation
 ```mermaid
 graph LR
     sampling_algorithms_v1["sampling-algorithms-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
+    speculative_decoding_v1["speculative-decoding-v1"] --> sampling_algorithms_v1["sampling-algorithms-v1"]
 ```
 
 ## Equations
@@ -100,6 +101,11 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-SA-001 | SA-EQ-001 | 8 | bounded_int |
+| KANI-SAMPLI-002 | Greedy = argmax | 8 | exhaustive |
+| KANI-SAMPLI-003 | Top-K cardinality | 8 | exhaustive |
+| KANI-SAMPLI-004 | Top-P cumulative | 8 | exhaustive |
+| KANI-SAMPLI-005 | Temperature identity | 8 | exhaustive |
+| KANI-SAMPLI-006 | SIMD sampling equivalence | 8 | exhaustive |
 
 ## QA Gate
 

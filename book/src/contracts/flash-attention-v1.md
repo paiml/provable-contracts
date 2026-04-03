@@ -18,6 +18,7 @@ Flash Attention — IO-aware exact attention with tiling
 ```mermaid
 graph LR
     flash_attention_v1["flash-attention-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
+    paged_attention_v1["paged-attention-v1"] --> flash_attention_v1["flash-attention-v1"]
 ```
 
 ## Equations
@@ -76,6 +77,10 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-FA-001 | FA-EQ-001 | 4 | stub_float |
+| KANI-FLASH_-002 | Matches standard attention | 8 | exhaustive |
+| KANI-FLASH_-003 | Online softmax correctness | 8 | exhaustive |
+| KANI-FLASH_-004 | Tile coverage | 8 | exhaustive |
+| KANI-FLASH_-005 | Attention weight conservation | 8 | exhaustive |
 
 ## QA Gate
 

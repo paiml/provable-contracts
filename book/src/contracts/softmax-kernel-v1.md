@@ -17,6 +17,7 @@ graph LR
     attention_scaling_v1["attention-scaling-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
     bidirectional_attention_v1["bidirectional-attention-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
     cross_entropy_kernel_v1["cross-entropy-kernel-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
+    dpo_loss_v1["dpo-loss-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
     flash_attention_v1["flash-attention-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
     gqa_kernel_v1["gqa-kernel-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
     inference_pipeline_v1["inference-pipeline-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
@@ -92,6 +93,15 @@ $$
 | KANI-SM-001 | SM-INV-001 | 8 | stub_float |
 | KANI-SM-002 | SM-INV-002 | 8 | stub_float |
 | KANI-SM-003 | SM-BND-001 | 8 | stub_float |
+| KANI-SOFTMA-004 | Input vector is finite and non-empty | 8 | exhaustive |
+| KANI-SOFTMA-005 | Output is a valid probability distribution | 8 | exhaustive |
+| KANI-SOFTMA-006 | Only output buffer is modified; input vector unchanged | 8 | exhaustive |
+| KANI-SOFTMA-007 | Output sums to 1 | 8 | stub_float |
+| KANI-SOFTMA-008 | All outputs strictly positive | 8 | exhaustive |
+| KANI-SOFTMA-009 | Each output bounded in (0,1) | 8 | stub_float |
+| KANI-SOFTMA-010 | Order preservation | 8 | exhaustive |
+| KANI-SOFTMA-011 | SIMD matches scalar within ULP | 8 | exhaustive |
+| KANI-SOFTMA-012 | Translation invariance | 8 | exhaustive |
 
 ## QA Gate
 

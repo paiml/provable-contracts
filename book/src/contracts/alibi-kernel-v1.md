@@ -86,6 +86,11 @@ $$
 |----|------------|-------|----------|
 | KANI-AL-001 | AL-BND-001 | 8 | stub_float |
 | KANI-AL-002 | AL-BND-002 | 8 | stub_float |
+| KANI-ALIBI_-003 | Negative bias | 8 | exhaustive |
+| KANI-ALIBI_-004 | Slope positivity | 8 | exhaustive |
+| KANI-ALIBI_-005 | Causal consistency | 8 | exhaustive |
+| KANI-ALIBI_-006 | Head-monotonic slopes | 8 | exhaustive |
+| KANI-ALIBI_-007 | SIMD matches scalar within ULP | 8 | exhaustive |
 
 ## QA Gate
 

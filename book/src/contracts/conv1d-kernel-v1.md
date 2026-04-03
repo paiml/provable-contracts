@@ -75,6 +75,11 @@ $$
 |----|------------|-------|----------|
 | KANI-CV-001 | CV-INV-001 | 8 | exhaustive |
 | KANI-CV-002 | CV-LIN-001 | 4 | stub_float |
+| KANI-CONV1D-003 | Output shape correctness | 8 | exhaustive |
+| KANI-CONV1D-004 | Convolution linearity | 8 | exhaustive |
+| KANI-CONV1D-005 | Direct conv matches im2col+GEMM | 8 | exhaustive |
+| KANI-CONV1D-006 | Output bounded by input and kernel | 8 | stub_float |
+| KANI-CONV1D-007 | SIMD matches scalar within ULP | 8 | exhaustive |
 
 ## QA Gate
 

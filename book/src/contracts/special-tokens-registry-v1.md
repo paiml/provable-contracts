@@ -46,3 +46,20 @@ $$
 | FALSIFY-STOK-001 | EOS bounds | All families have eos_token_id < vocab_size | EOS ID exceeds vocab — will cause index-out-of-bounds in embedding lookup |
 | FALSIFY-STOK-002 | Architecture coverage | Every architecture_mapping value resolves to a defined family | Unknown family in mapping — will cause lookup miss at runtime |
 
+## Kani Harnesses
+
+| ID | Obligation | Bound | Strategy |
+|----|------------|-------|----------|
+| KANI-SPECIA-001 | EOS token ID within vocab for every family | 8 | exhaustive |
+| KANI-SPECIA-002 | BOS token ID within vocab when not null | 8 | exhaustive |
+| KANI-SPECIA-003 | PAD token ID within vocab when not null | 8 | exhaustive |
+| KANI-SPECIA-004 | Architecture mapping covers all families | 8 | exhaustive |
+
+## QA Gate
+
+**special-tokens-registry-v1 Contract** (F-STRV-001)
+
+Quality gate for Canonical EOS/BOS/PAD token IDs per model family
+
+**Checks:** validation, falsification
+

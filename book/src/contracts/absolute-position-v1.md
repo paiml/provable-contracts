@@ -64,6 +64,10 @@ $$
 |----|------------|-------|----------|
 | KANI-AP-001 | AP-INV-001 | 4 | stub_float |
 | KANI-AP-002 | AP-INV-002 | 8 | stub_float |
+| KANI-ABSOLU-003 | Shape preservation | 8 | exhaustive |
+| KANI-ABSOLU-004 | Additive identity | 8 | exhaustive |
+| KANI-ABSOLU-005 | Max position bound | 8 | stub_float |
+| KANI-ABSOLU-006 | Finite output | 8 | exhaustive |
 
 ## QA Gate
 

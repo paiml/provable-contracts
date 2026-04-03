@@ -95,6 +95,10 @@ $$
 |----|------------|-------|----------|
 | KANI-SVM-001 | SVM-BND-001 | 8 | stub_float |
 | KANI-SVM-002 | SVM-INV-001 | 8 | stub_float |
+| KANI-SVM_V1-003 | Hinge loss non-negative | 8 | exhaustive |
+| KANI-SVM_V1-004 | Binary prediction | 8 | exhaustive |
+| KANI-SVM_V1-005 | Prediction deterministic | 8 | exhaustive |
+| KANI-SVM_V1-006 | Separable data perfect accuracy | 8 | exhaustive |
 
 ## QA Gate
 

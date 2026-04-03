@@ -93,6 +93,11 @@ $$
 |----|------------|-------|----------|
 | KANI-GE-001 | GE-BND-001 | 8 | stub_float |
 | KANI-GE-002 | GE-APX-001 | 8 | stub_float |
+| KANI-GELU_K-003 | Non-negativity for positive inputs | 8 | exhaustive |
+| KANI-GELU_K-004 | Monotonically increasing for positive inputs | 8 | exhaustive |
+| KANI-GELU_K-005 | Odd-function symmetry around origin | 8 | exhaustive |
+| KANI-GELU_K-006 | SIMD matches scalar within ULP | 8 | exhaustive |
+| KANI-GELU_K-007 | Tanh approximation accuracy | 8 | exhaustive |
 
 ## QA Gate
 

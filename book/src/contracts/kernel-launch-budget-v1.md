@@ -77,6 +77,10 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-KL-001 | KL-INV-001 | 8 | bounded_int |
+| KANI-KERNEL-002 | Per-token formula | 8 | exhaustive |
+| KANI-KERNEL-003 | Decomposition sum | 8 | stub_float |
+| KANI-KERNEL-004 | Launch count monotonic | 8 | exhaustive |
+| KANI-KERNEL-005 | SIMD kernel equivalence | 8 | exhaustive |
 
 ## QA Gate
 

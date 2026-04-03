@@ -133,6 +133,13 @@ $$
 |----|------------|-------|----------|
 | KANI-EMB-001 | EMB-BND-001 | 8 | bounded_int |
 | KANI-EMB-002 | EMB-INV-001 | 4 | stub_float |
+| KANI-EMBEDD-003 | Embedding lookup shape | 8 | exhaustive |
+| KANI-EMBEDD-004 | Unembedding output shape | 8 | exhaustive |
+| KANI-EMBEDD-005 | Tied weight identity | 8 | exhaustive |
+| KANI-EMBEDD-006 | Token ID bounds | 8 | stub_float |
+| KANI-EMBEDD-007 | Embedding non-degeneracy | 8 | exhaustive |
+| KANI-EMBEDD-008 | Temperature identity | 8 | exhaustive |
+| KANI-EMBEDD-009 | Temperature scaling effect | 8 | exhaustive |
 
 ## QA Gate
 

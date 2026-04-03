@@ -110,6 +110,11 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-PG-001 | PG-INV-001 | 4 | bounded_int |
+| KANI-PERFOR-002 | Ollama grade exhaustive | 8 | exhaustive |
+| KANI-PERFOR-003 | Ollama grade monotonic | 8 | exhaustive |
+| KANI-PERFOR-004 | Efficiency grade monotonic | 8 | exhaustive |
+| KANI-PERFOR-005 | Concrete ceiling bound | 8 | stub_float |
+| KANI-PERFOR-006 | SIMD grading equivalence | 8 | exhaustive |
 
 ## QA Gate
 

@@ -96,6 +96,12 @@ $$
 |----|------------|-------|----------|
 | KANI-ACT-001 | ACT-INV-001 | 32 | exhaustive |
 | KANI-ACT-002 | ACT-MON-001 | 32 | exhaustive |
+| KANI-ACTIVA-003 | GELU at zero | 8 | exhaustive |
+| KANI-ACTIVA-004 | GELU approximation error | 8 | exhaustive |
+| KANI-ACTIVA-005 | SiLU at zero | 8 | exhaustive |
+| KANI-ACTIVA-006 | ReLU monotonic | 8 | exhaustive |
+| KANI-ACTIVA-007 | ReLU non-negative | 8 | exhaustive |
+| KANI-ACTIVA-008 | SIMD matches scalar | 8 | exhaustive |
 
 ## QA Gate
 

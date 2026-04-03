@@ -148,6 +148,14 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-QM3-001 | QM3-INV-001 | 1 | exhaustive |
+| KANI-QWEN3M-002 | Q projection shape | 8 | exhaustive |
+| KANI-QWEN3M-003 | KV projection shape | 8 | exhaustive |
+| KANI-QWEN3M-004 | GQA divisibility | 8 | exhaustive |
+| KANI-QWEN3M-005 | MoE expert shape | 8 | exhaustive |
+| KANI-QWEN3M-006 | MoE router top-k | 8 | exhaustive |
+| KANI-QWEN3M-007 | O projection transpose | 8 | exhaustive |
+| KANI-QWEN3M-008 | RoPE frequency decreasing | 8 | exhaustive |
+| KANI-QWEN3M-009 | SIMD shape equivalence | 8 | exhaustive |
 
 ## QA Gate
 

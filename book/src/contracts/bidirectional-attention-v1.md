@@ -67,3 +67,11 @@ $$
 | KANI-BIATT-003 | Weight normalization | 4 | stub_float |
 | KANI-BIATT-004 | No causal mask applied | 4 | stub_float |
 
+## QA Gate
+
+**bidirectional-attention-v1 Contract** (F-BAV-001)
+
+Quality gate for Bidirectional (encoder) attention -- full attention without 
+
+**Checks:** validation, falsification
+

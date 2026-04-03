@@ -83,6 +83,10 @@ $$
 |----|------------|-------|----------|
 | KANI-PCA-001 | PCA-INV-001 | 8 | stub_float |
 | KANI-PCA-002 | PCA-BND-001 | 8 | stub_float |
+| KANI-PCA_V1-003 | Dimensionality reduction | 8 | exhaustive |
+| KANI-PCA_V1-004 | Explained variance bounded | 8 | stub_float |
+| KANI-PCA_V1-005 | Explained variance sums to 1 | 8 | stub_float |
+| KANI-PCA_V1-006 | Perfect reconstruction at full rank | 8 | exhaustive |
 
 ## QA Gate
 

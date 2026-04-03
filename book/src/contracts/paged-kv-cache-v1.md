@@ -21,6 +21,7 @@ graph LR
     paged_kv_cache_v1["paged-kv-cache-v1"] --> kv_cache_sizing_v1["kv-cache-sizing-v1"]
     paged_kv_cache_v1["paged-kv-cache-v1"] --> kv_cache_equivalence_v1["kv-cache-equivalence-v1"]
     continuous_batching_v1["continuous-batching-v1"] --> paged_kv_cache_v1["paged-kv-cache-v1"]
+    paged_attention_v1["paged-attention-v1"] --> paged_kv_cache_v1["paged-kv-cache-v1"]
 ```
 
 ## Equations
@@ -143,6 +144,13 @@ $$
 | KANI-PKV-001 | PKV-INV-001 | 8 | bounded_int |
 | KANI-PKV-002 | PKV-INV-002 | 256 | bounded_int |
 | KANI-PKV-003 | PKV-INV-003 | 16 | bounded_int |
+| KANI-PAGED_-004 | Slot mapping bijectivity | 8 | exhaustive |
+| KANI-PAGED_-005 | Paged/contiguous attention equivalence | 8 | exhaustive |
+| KANI-PAGED_-006 | Block allocation monotonic in seq_len | 8 | exhaustive |
+| KANI-PAGED_-007 | Block waste bounded | 8 | stub_float |
+| KANI-PAGED_-008 | No duplicate blocks within request | 8 | exhaustive |
+| KANI-PAGED_-009 | Graph-compatible fixed shape | 8 | exhaustive |
+| KANI-PAGED_-010 | Block pool conservation | 8 | exhaustive |
 
 ## QA Gate
 

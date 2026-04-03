@@ -143,6 +143,13 @@ $$
 |----|------------|-------|----------|
 | KANI-ASCL-001 | ASCL-BND-001 | 8 | stub_float |
 | KANI-ASCL-002 | ASCL-INV-001 | 16 | stub_float |
+| KANI-ATTENT-003 | Score shape correctness | 8 | exhaustive |
+| KANI-ATTENT-004 | Variance preservation | 8 | exhaustive |
+| KANI-ATTENT-005 | Score bound with QK-norm | 8 | stub_float |
+| KANI-ATTENT-006 | Attention entropy non-negative | 8 | exhaustive |
+| KANI-ATTENT-007 | Attention entropy upper bound | 8 | stub_float |
+| KANI-ATTENT-008 | Max-subtraction equivalence | 8 | exhaustive |
+| KANI-ATTENT-009 | Scaling prevents saturation | 8 | exhaustive |
 
 ## QA Gate
 

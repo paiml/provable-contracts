@@ -2,156 +2,144 @@
 
 **Version:** 1.0.0
 
-Speculative decoding with early-exit drafting — use shallow layers as draft model, verify in one batched full-depth pass (Leviathan et al. 2023, adapted for Whisper)
+Speculative decoding — draft model generates candidate tokens, target model verifies in a single batched pass. Acceptance criterion preserves exact output distribution.
 
 ## References
 
-- Leviathan, Kalman & Matias (2023) Fast Inference from Transformers via Speculative Decoding
+- Leviathan, Kalman & Matias (2023) Fast Inference from Transformers via Speculative Decoding. ICML.
 - Chen, Borgeaud et al. (2023) Accelerating Large Language Model Decoding with Speculative Sampling
-- Radford et al. (2023) Robust Speech Recognition via Large-Scale Weak Supervision (Whisper)
+- Stern, Shazeer et al. (2018) Blockwise Parallel Decoding for Deep Autoregressive Models
 
 ## Dependencies
 
-- [online-softmax-v1.yaml](online-softmax-v1.yaml.md)
-- [attention-kernel-v1.yaml](attention-kernel-v1.yaml.md)
+- [online-softmax-v1](online-softmax-v1.md)
+- [attention-kernel-v1](attention-kernel-v1.md)
+- [sampling-algorithms-v1](sampling-algorithms-v1.md)
 
 ## Dependency Graph
 
 ```mermaid
 graph LR
-    speculative_decoding_v1["speculative-decoding-v1"] --> online_softmax_v1.yaml["online-softmax-v1.yaml"]
-    speculative_decoding_v1["speculative-decoding-v1"] --> attention_kernel_v1.yaml["attention-kernel-v1.yaml"]
+    speculative_decoding_v1["speculative-decoding-v1"] --> online_softmax_v1["online-softmax-v1"]
+    speculative_decoding_v1["speculative-decoding-v1"] --> attention_kernel_v1["attention-kernel-v1"]
+    speculative_decoding_v1["speculative-decoding-v1"] --> sampling_algorithms_v1["sampling-algorithms-v1"]
 ```
 
 ## Equations
 
-### acceptance
+### acceptance_probability
 
-```
-Accept longest matching prefix plus one bonus token:
-  n_match = max { n : y_draft[i] == y_verify[i] for all i in [0, n) }
-  accepted_tokens = y_verify[0..n_match]  ∪  { y_verify[n_match] }
-  num_accepted = n_match + 1
-Cases:
-  - All K match: accept K draft tokens + 1 bonus = K+1 tokens total
-  - First mismatch at i=0: reject all drafts, accept y_verify[0] = 1 token
-  - Mismatch at i=j (0 < j < K): accept j draft tokens + y_verify[j] bonus = j+1 tokens
+$$
+Acceptance probability for token x at position t:
+  P(accept) = min(1, q(x) / p(x))
+where:
+  q(x) = target model probability for token x
+  p(x) = draft model probability for token x
+This is the standard rejection-sampling acceptance criterion
+from Leviathan et al. (2023) Algorithm 1.
 
-```
+$$
 
-**Domain:** $y_draft \in V^K, y_verify \in V^K$
+**Domain:** $q(x) \in (0, 1], p(x) \in (0, 1] — both valid probabilities$
 
-**Codomain:** $num_accepted \in {1, 2, ..., K+1}$
-
-**Invariants:**
-
-- $num_accepted \geq 1 (at least the bonus token is always accepted)$
-- $All accepted tokens are from y_verify (never from y_draft alone)$
-- $Accepted prefix is consistent with full-model greedy decode$
-
-### batched_verify
-
-```
-Full-depth batched verification of K draft tokens:
-  X = [x_{t_0}, x_{t_0+1}, ..., x_{t_0+K-1}]  (K token embeddings, causal-masked)
-  for l in 0..N_layers:
-    X = DecoderLayer_l(X, encoder_out)          (batched, causal attention)
-  y_verify[t_0..t_0+K-1] = argmax(LMHead(LayerNorm(X)), dim=-1)
-Cost: 1 forward pass through all N_layers with batch size K.
-
-```
-
-**Domain:** $X \in \mathbb{R}^{K×d_model}, encoder_out \in \mathbb{R}^{S×d_model}$
-
-**Codomain:** $y_verify \in V^K$
+**Codomain:** $P(accept) \in (0, 1]$
 
 **Invariants:**
 
-- $Verify uses all N_layers (no layer skipping)$
-- $Causal mask ensures position i attends only to positions \leq i$
-- $y_verify[i] is identical to sequential greedy decode at position t_0+i given same prefix$
+- $P(accept) \in [0, 1] — valid probability$
+- $P(accept) = 1 when q(x) >= p(x) — draft underestimates always accepted$
+- $P(accept) = q(x)/p(x) when q(x) < p(x) — proportional rejection$
 
-### draft_decode
-
-```
-Early-exit draft using layers 0..D (D < N_layers):
-  For t in [t_0, t_0+1, ..., t_0+K-1]:
-    h_t = Embedding(y_{t-1}) + PositionalEncoding(t)
-    for l in 0..D:
-      h_t = DecoderLayer_l(h_t, encoder_out)
-    y_draft[t] = argmax(LMHead(LayerNorm(h_t)))
-Where D = 2, N_layers = 4, K = draft speculation length.
+### output_equivalence
 
 ```
+Output distribution equivalence:
+  P_speculative(x_1, ..., x_n) = P_autoregressive(x_1, ..., x_n)
+For each position, the marginal distribution of the accepted token
+equals the target model distribution q(x), regardless of draft quality.
+This holds because rejection sampling with acceptance ratio min(1, q/p)
+and rejection resample from max(0, q-p) yields exact q distribution.
 
-**Domain:** $y_{t-1} \in V (vocabulary), encoder_out \in \mathbb{R}^{S×d_model}, D \in {1,..,N_layers-1}, K \geq 1$
+```
 
-**Codomain:** $y_draft \in V^K$
+**Domain:** $x_i \in V (vocabulary), sequence of any length$
+
+**Codomain:** $probability distribution over V^n$
 
 **Invariants:**
 
-- $D < N_layers (draft uses strict subset of layers)$
-- $K \geq 1 (at least one candidate token drafted)$
-- $Draft and full model share identical layer weights for layers 0..D$
+- `Speculative output distribution == autoregressive output distribution (exact)`
+- $Property holds for any draft model quality (even random draft)$
+- $Expected speedup increases with draft-target agreement but correctness is unconditional$
 
-### speedup_condition
+### token_acceptance
 
-```
-Speculative decoding is faster when:
-  E[num_accepted] * cost_full_sequential > cost_draft_K + cost_verify_batch
-Where:
-  cost_draft_K   = K * (D / N_layers) * cost_full_sequential   (K sequential shallow passes)
-  cost_verify_batch ≈ cost_full_sequential * β(K)               (batched, β ≈ 1..2 for small K)
-Simplifying, speedup > 1 when:
-  E[num_accepted] > K * (D / N_layers) + β(K)
-For D=2, N=4, K=5, β≈1.2: need E[num_accepted] > 5*(2/4) + 1.2 = 3.7 tokens/step.
+$$
+Token acceptance via uniform sampling:
+  Draw u ~ Uniform(0, 1)
+  Accept token x if u < P(accept) = min(1, q(x)/p(x))
+  On rejection at position t, resample from adjusted distribution:
+    r(x) = normalize(max(0, q(x) - p(x)))
 
-```
+$$
 
-**Domain:** $K \geq 1, D < N_layers, \beta \geq 1$
+**Domain:** $u \in [0, 1], q(x) \in (0, 1], p(x) \in (0, 1]$
 
-**Codomain:** $speedup \in \mathbb{R}+$
+**Codomain:** $accept \in {true, false}$
 
 **Invariants:**
 
-- $E[num_accepted] \geq 1 guarantees worst-case is bounded$
-- `Speedup increases with acceptance rate α = P(draft == verify)`
-- $For \alpha > D/N_layers, speculative decoding is always beneficial$
+- $Acceptance is a Bernoulli trial with parameter min(1, q/p)$
+- $Adjusted distribution r(x) is a valid probability distribution (sums to 1)$
+- $Rejection sampling preserves correctness — accepted tokens follow q(x)$
 
 ## Proof Obligations
 
 | # | Type | Property | Formal |
 |---|------|----------|--------|
-| 1 | equivalence | Output tokens identical to non-speculative greedy decode | `speculative_decode(x) == greedy_decode(x) token-by-token for all inputs x` |
-| 2 | invariant | Acceptance count lower bound | $num_accepted \geq 1 for every draft-verify step$ |
-| 3 | invariant | Draft uses strict subset of layers | $draft_layers ⊂ full_layers, \|draft_layers\| = D < N_layers$ |
-| 4 | invariant | Verify uses all layers | $\|verify_layers\| = N_layers, verify_layers = {0, 1, ..., N_layers-1}$ |
-| 5 | invariant | Bonus token always accepted | `y_output includes y_verify[n_match] even when n_match = 0` |
-| 6 | monotonicity | Acceptance rate monotonicity with draft quality | `If P_A(draft == verify) > P_B(draft == verify) then E_A[num_accepted] > E_B[num_accepted]` |
-| 7 | invariant | Weight sharing between draft and verify | `draft.layer[l].params == verify.layer[l].params for all l in 0..D` |
+| 1 | equivalence | Output distribution matches standard autoregressive | `P_spec(x_1..x_n) = P_auto(x_1..x_n) for all sequences and all draft models` |
+| 2 | bound | Acceptance rate lower bound | $P(accept) >= 0 for all token probabilities q, p > 0$ |
+| 3 | bound | Acceptance rate upper bound | $P(accept) <= 1 for all token probabilities q, p > 0$ |
+| 4 | invariant | Adjusted distribution validity | $sum(max(0, q(x) - p(x))) > 0 when rejection occurs, and normalize(max(0, q-p)) sums to 1$ |
+| 5 | monotonicity | Acceptance rate increases with draft quality | $E[accepted_tokens] increases as KL(p \|\| q) decreases$ |
 
 ## Kernel Phases
 
-1. **draft_speculation**: Run K sequential forward passes through layers 0..D to produce K candidate tokens — *Each draft token uses only the first D layers; autoregressive dependency on previous draft tokens*
-2. **batched_verification**: Run one batched forward pass through all N_layers with K positions, causal-masked — *Produces K logits identical to K sequential full-model passes given the same prefix*
-3. **prefix_acceptance**: Compare draft vs verify tokens, find longest matching prefix, emit prefix + bonus — *num_accepted = (longest matching prefix length) + 1, always ≥ 1*
-4. **state_advance**: Advance KV cache by num_accepted positions, set next input to last accepted token — *KV cache contains exactly the accepted prefix; no speculative state leaks into cache*
+1. **draft_generation**: Draft model autoregressively generates K candidate tokens with probabilities p(x) — *Each p(x_t) is a valid probability distribution over vocabulary V*
+2. **target_verification**: Target model computes q(x) for all K positions in a single batched forward pass — *Batched verification produces identical logits to sequential autoregressive decoding*
+3. **acceptance_sampling**: For each position t=1..K, accept token if u_t < min(1, q(x_t)/p(x_t)) — *First rejection at position j means positions 1..j-1 accepted, position j resampled from max(0, q-p)*
+4. **token_emission**: Emit accepted tokens plus one resampled or bonus token — *At least 1 token emitted per step; at most K+1 tokens emitted*
 
 ## Falsification Tests
 
 | ID | Rule | Prediction | If Fails |
 |----|------|------------|----------|
-| FALSIFY-SPEC-001 | Output equivalence with greedy decode | speculative_decode(x) == greedy_decode(x) for all test inputs | Acceptance logic admits tokens not produced by full-model verify, or bonus token selection is incorrect |
-| FALSIFY-SPEC-002 | Acceptance rate > 1.0 on typical English text | E[num_accepted] > 1.0 averaged over ≥100 English speech segments | Draft model (layers 0-1) has zero predictive power; early-exit representation is degenerate |
-| FALSIFY-SPEC-003 | Single-token sequences handled correctly | Speculative decode produces correct output for sequences of length 1 (e.g., <\|endoftext\|> immediately) | Edge case in acceptance loop when all drafts rejected or sequence terminates before K tokens |
-| FALSIFY-SPEC-004 | Draft-verify dimension consistency | LMHead(LayerNorm(h)) produces identical logit shape for D-layer and N-layer outputs | Layer norm or LM head expects full-depth residual stream statistics; early-exit hidden states have incompatible scale |
-| FALSIFY-SPEC-005 | KV cache consistency after partial acceptance | After accepting n < K tokens, KV cache length == prefix_len + n and contains no speculative entries | Cache rollback logic retains speculative KV entries, corrupting subsequent decode steps |
-| FALSIFY-SPEC-006 | Full-match bonus token correctness | When all K drafts match, the (K+1)-th bonus token equals greedy_decode at position t_0+K | Bonus token generated from stale logits or wrong position index |
-| FALSIFY-SPEC-007 | Weight sharing between draft and verify | Property holds under boundary conditions | Edge case violation in Weight sharing between draft and verify |
+| FALSIFY-SD-001 | Output distribution equivalence | Over 10000 samples, KL divergence between speculative and autoregressive output < 0.01 | Acceptance criterion does not correctly implement rejection sampling; adjusted distribution r(x) miscalculated |
+| FALSIFY-SD-002 | Acceptance probability bounds | min(1, q(x)/p(x)) ∈ [0, 1] for all valid probability pairs | Division by zero when p(x) = 0 or numerical overflow for extreme q/p ratios |
+| FALSIFY-SD-003 | Adjusted distribution validity | sum(max(0, q(x) - p(x))) > 0 whenever a rejection occurs, and normalized distribution sums to 1 | q(x) <= p(x) for all x simultaneously (impossible when both are valid distributions), or normalization error |
+| FALSIFY-SD-004 | At least one token per step | Speculative decoding emits >= 1 token per draft-verify cycle | Edge case where all K drafts rejected and bonus token not emitted |
+| FALSIFY-SD-005 | Deterministic acceptance given fixed randomness | Given same u_t seeds, acceptance decisions are reproducible | Non-determinism from floating-point ordering or uninitialized state |
 
 ## Kani Harnesses
 
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
-| speculative-decoding-v1-kani-001 | Output tokens identical to non-speculative greedy decode | 8 | bounded_int |
+| KANI-SD-001 | Acceptance rate bounds | 16 | bounded_int |
+| KANI-SD-002 | Token emission lower bound | 8 | bounded_int |
+| KANI-SD-003 | Adjusted distribution non-negative | 8 | bounded_int |
+| KANI-SPECUL-004 | Output distribution matches standard autoregressive | 8 | exhaustive |
+| KANI-SPECUL-005 | Acceptance rate lower bound | 8 | stub_float |
+| KANI-SPECUL-006 | Acceptance rate upper bound | 8 | stub_float |
+| KANI-SPECUL-007 | Adjusted distribution validity | 8 | exhaustive |
+| KANI-SPECUL-008 | Acceptance rate increases with draft quality | 8 | exhaustive |
+
+## QA Gate
+
+**Speculative Decoding Contract** (F-SD-001)
+
+Rejection-sampling speculative decoding preserves exact target distribution
+
+**Checks:** output_equivalence, acceptance_bounds, adjusted_distribution, min_token_emission
+
+**Pass criteria:** All 5 falsification tests pass + 3 Kani harnesses verify
 

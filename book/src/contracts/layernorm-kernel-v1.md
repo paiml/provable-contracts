@@ -94,6 +94,12 @@ $$
 | KANI-LN-001 | LN-INV-001 | 8 | stub_float |
 | KANI-LN-002 | LN-INV-002 | 8 | stub_float |
 | KANI-LN-003 | LN-BND-001 | 8 | stub_float |
+| KANI-LAYERN-004 | Centering | 8 | exhaustive |
+| KANI-LAYERN-005 | Standardization | 8 | exhaustive |
+| KANI-LAYERN-006 | Denominator strictly positive | 8 | exhaustive |
+| KANI-LAYERN-007 | SIMD matches scalar within ULP | 8 | exhaustive |
+| KANI-LAYERN-008 | Idempotent under identity affine | 8 | exhaustive |
+| KANI-LAYERN-009 | Shift invariance | 8 | exhaustive |
 
 ## QA Gate
 

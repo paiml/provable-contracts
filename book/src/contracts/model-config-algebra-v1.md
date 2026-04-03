@@ -117,6 +117,12 @@ d_ff > hidden_dim ∧ num_kv_heads <= num_heads ∧ max_position > 0
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-MCA-001 | MCA-INV-001 | 4 | bounded_int |
+| KANI-MODEL_-002 | Divisibility constraints | 8 | exhaustive |
+| KANI-MODEL_-003 | Dimension bounds | 8 | stub_float |
+| KANI-MODEL_-004 | Parameter ordering | 8 | exhaustive |
+| KANI-MODEL_-005 | Non-degeneracy | 8 | exhaustive |
+| KANI-MODEL_-006 | Cross-parameter constraints | 8 | exhaustive |
+| KANI-MODEL_-007 | SIMD config equivalence | 8 | exhaustive |
 
 ## QA Gate
 

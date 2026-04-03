@@ -100,6 +100,12 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-KCE-001 | KCE-INV-001 | 4 | bounded_int |
+| KANI-KV_CAC-002 | Cache append modifies only new entries; existing KV pairs unchanged | 8 | exhaustive |
+| KANI-KV_CAC-003 | Cache length increases by exactly the number of new tokens | 8 | exhaustive |
+| KANI-KV_CAC-004 | Prefill/incremental equivalence | 8 | exhaustive |
+| KANI-KV_CAC-005 | Page shape formula | 8 | exhaustive |
+| KANI-KV_CAC-006 | Batched/serial equivalence | 8 | exhaustive |
+| KANI-KV_CAC-007 | Fused kernel equivalence | 8 | exhaustive |
 
 ## QA Gate
 

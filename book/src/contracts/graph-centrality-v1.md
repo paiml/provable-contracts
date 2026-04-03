@@ -143,6 +143,14 @@ $$
 | KANI-GC-001 | 1 | 4 | exhaustive |
 | KANI-GC-002 | 2 | 4 | exhaustive |
 | KANI-GC-003 | 6 | 4 | exhaustive |
+| KANI-GRAPH_-004 | Degree centrality bounded | 8 | stub_float |
+| KANI-GRAPH_-005 | Betweenness non-negative | 8 | exhaustive |
+| KANI-GRAPH_-006 | Closeness positive for connected | 8 | exhaustive |
+| KANI-GRAPH_-007 | Eigenvector non-negativity | 8 | exhaustive |
+| KANI-GRAPH_-008 | Katz strictly positive | 8 | exhaustive |
+| KANI-GRAPH_-009 | Harmonic centrality bounded | 8 | stub_float |
+| KANI-GRAPH_-010 | Star graph maximum | 8 | exhaustive |
+| KANI-GRAPH_-011 | Complete graph symmetry | 8 | exhaustive |
 
 ## QA Gate
 

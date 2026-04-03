@@ -84,6 +84,11 @@ $$
 |----|------------|-------|----------|
 | KANI-NB-001 | NB-INV-001 | 8 | stub_float |
 | KANI-NB-002 | NB-BND-001 | 8 | stub_float |
+| KANI-NAIVE_-003 | Prior sums to 1 | 8 | stub_float |
+| KANI-NAIVE_-004 | Prior bounded | 8 | stub_float |
+| KANI-NAIVE_-005 | Posterior probability valid | 8 | exhaustive |
+| KANI-NAIVE_-006 | Prediction deterministic | 8 | exhaustive |
+| KANI-NAIVE_-007 | Fit-predict class range | 8 | exhaustive |
 
 ## QA Gate
 

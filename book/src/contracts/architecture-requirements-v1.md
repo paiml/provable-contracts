@@ -133,6 +133,13 @@ required(arch) = base_roles ∪ (qk_norm_roles if has_qk_norm) ∪ (bias_roles i
 | KANI-ARCH-001 | ARCH-INV-001 | 4 | exhaustive |
 | KANI-ARCH-002 | ARCH-INV-002 | 4 | exhaustive |
 | KANI-ARCH-003 | ARCH-MONO-001 | 4 | exhaustive |
+| KANI-ARCHIT-004 | Base roles always required | 8 | exhaustive |
+| KANI-ARCHIT-005 | Constraint matrix exhaustive | 8 | exhaustive |
+| KANI-ARCHIT-006 | Role count correctness | 8 | exhaustive |
+| KANI-ARCHIT-007 | Weight completeness implies correct forward pass | 8 | exhaustive |
+| KANI-ARCHIT-008 | Incomplete weights detected before forward pass | 8 | exhaustive |
+| KANI-ARCHIT-009 | YAML matches Rust implementation | 8 | exhaustive |
+| KANI-ARCHIT-010 | Adding features only adds roles | 8 | exhaustive |
 
 ## QA Gate
 

@@ -62,3 +62,11 @@ $$
 | KANI-POS-002 | Deterministic lookup | 8 | stub_float |
 | KANI-POS-003 | Output dimension | 16 | bounded_int |
 
+## QA Gate
+
+**learned-position-embedding-v1 Contract** (F-LPEV-001)
+
+Quality gate for Learned absolute position embeddings (RoBERTa-style)
+
+**Checks:** validation, falsification
+

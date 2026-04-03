@@ -20,8 +20,10 @@ graph LR
     bidirectional_attention_v1["bidirectional-attention-v1"] --> attention_kernel_v1["attention-kernel-v1"]
     gqa_kernel_v1["gqa-kernel-v1"] --> attention_kernel_v1["attention-kernel-v1"]
     inference_pipeline_v1["inference-pipeline-v1"] --> attention_kernel_v1["attention-kernel-v1"]
+    paged_attention_v1["paged-attention-v1"] --> attention_kernel_v1["attention-kernel-v1"]
     qwen35_hybrid_forward_v1["qwen35-hybrid-forward-v1"] --> attention_kernel_v1["attention-kernel-v1"]
     sliding_window_attention_v1["sliding-window-attention-v1"] --> attention_kernel_v1["attention-kernel-v1"]
+    speculative_decoding_v1["speculative-decoding-v1"] --> attention_kernel_v1["attention-kernel-v1"]
 ```
 
 ## Equations
@@ -82,6 +84,11 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-ATT-001 | ATT-INV-001 | 4 | stub_float |
+| KANI-ATTENT-002 | Attention weights normalize | 8 | exhaustive |
+| KANI-ATTENT-003 | Attention weights in (0,1) | 8 | exhaustive |
+| KANI-ATTENT-004 | Output bounded by V | 8 | stub_float |
+| KANI-ATTENT-005 | SIMD matches scalar | 8 | exhaustive |
+| KANI-ATTENT-006 | Scaling factor | 8 | exhaustive |
 
 ## QA Gate
 

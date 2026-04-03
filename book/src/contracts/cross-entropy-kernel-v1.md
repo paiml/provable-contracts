@@ -19,6 +19,7 @@ Cross-entropy kernel — log-sum-exp stable cross-entropy loss
 graph LR
     cross_entropy_kernel_v1["cross-entropy-kernel-v1"] --> softmax_kernel_v1["softmax-kernel-v1"]
     classification_finetune_v1["classification-finetune-v1"] --> cross_entropy_kernel_v1["cross-entropy-kernel-v1"]
+    dpo_loss_v1["dpo-loss-v1"] --> cross_entropy_kernel_v1["cross-entropy-kernel-v1"]
     linear_probe_classifier_v1["linear-probe-classifier-v1"] --> cross_entropy_kernel_v1["cross-entropy-kernel-v1"]
 ```
 
@@ -99,6 +100,11 @@ log_softmax(x)_i = x_i - max(x) - log(sum(exp(x_j - max(x))))
 | KANI-CE-001 | CE-INV-001 | 4 | stub_float |
 | KANI-CE-002 | CE-BND-001 | 8 | stub_float |
 | KANI-CE-003 | CE-BND-002 | 4 | stub_float |
+| KANI-CROSS_-004 | Non-negativity | 8 | exhaustive |
+| KANI-CROSS_-005 | Log-softmax bounded above by zero | 8 | stub_float |
+| KANI-CROSS_-006 | LogSoftmax + NLL equals CrossEntropy | 8 | exhaustive |
+| KANI-CROSS_-007 | Finite output for finite inputs | 8 | exhaustive |
+| KANI-CROSS_-008 | SIMD matches scalar within ULP | 8 | exhaustive |
 
 ## QA Gate
 

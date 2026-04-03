@@ -158,6 +158,13 @@ sum_{r in scheduled} num_new_tokens(r) <= max_batch_tokens
 | KANI-CB-001 | CB-INV-001 | 8 | bounded_int |
 | KANI-CB-002 | CB-INV-002 | 32 | bounded_int |
 | KANI-CB-003 | CB-INV-003 | 16 | bounded_int |
+| KANI-CONTIN-004 | Token budget respected | 8 | exhaustive |
+| KANI-CONTIN-005 | Computed tokens monotonic | 8 | exhaustive |
+| KANI-CONTIN-006 | Chunked prefill equivalence | 8 | exhaustive |
+| KANI-CONTIN-007 | Decode degradation bounded | 8 | stub_float |
+| KANI-CONTIN-008 | No starvation | 8 | exhaustive |
+| KANI-CONTIN-009 | Correctness under batching | 8 | exhaustive |
+| KANI-CONTIN-010 | No empty outputs | 8 | exhaustive |
 
 ## QA Gate
 

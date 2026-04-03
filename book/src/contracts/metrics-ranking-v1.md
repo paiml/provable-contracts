@@ -97,6 +97,10 @@ RR = 1 / rank_of_first_relevant_item, or 0 if none relevant
 |----|------------|-------|----------|
 | KANI-RANK-001 | RANK-BND-001 | 8 | stub_float |
 | KANI-RANK-002 | RANK-INV-001 | 8 | stub_float |
+| KANI-METRIC-003 | All metrics in [0, 1] | 8 | exhaustive |
+| KANI-METRIC-004 | NDCG perfect ranking | 8 | exhaustive |
+| KANI-METRIC-005 | hit@k binary | 8 | exhaustive |
+| KANI-METRIC-006 | MRR bounded | 8 | stub_float |
 
 ## QA Gate
 

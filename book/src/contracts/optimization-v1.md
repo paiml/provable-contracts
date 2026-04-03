@@ -81,6 +81,9 @@ $$
 |----|------------|-------|----------|
 | KANI-OPT-001 | OPT-INV-001 | 8 | stub_float |
 | KANI-OPT-002 | OPT-BND-001 | 8 | stub_float |
+| KANI-OPTIMI-003 | Monotone function decrease | 8 | exhaustive |
+| KANI-OPTIMI-004 | Finite iterates | 8 | exhaustive |
+| KANI-OPTIMI-005 | Positive step size | 8 | exhaustive |
 
 ## QA Gate
 

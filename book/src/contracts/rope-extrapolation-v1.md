@@ -140,6 +140,14 @@ $$
 |----|------------|-------|----------|
 | KANI-REXT-001 | REXT-INV-001 | 64 | bounded_int |
 | KANI-REXT-002 | REXT-BND-001 | 32 | exhaustive |
+| KANI-ROPE_E-003 | Base frequencies positive and decreasing | 8 | exhaustive |
+| KANI-ROPE_E-004 | NTK identity at original length | 8 | exhaustive |
+| KANI-ROPE_E-005 | NTK base grows with target length | 8 | exhaustive |
+| KANI-ROPE_E-006 | Linear interpolation preserves ratios | 8 | exhaustive |
+| KANI-ROPE_E-007 | YaRN ramp bounded [0,1] | 8 | stub_float |
+| KANI-ROPE_E-008 | YaRN ramp non-decreasing | 8 | exhaustive |
+| KANI-ROPE_E-009 | Rotation matrix orthogonality | 8 | exhaustive |
+| KANI-ROPE_E-010 | Rotation at position 0 is identity | 8 | exhaustive |
 
 ## QA Gate
 

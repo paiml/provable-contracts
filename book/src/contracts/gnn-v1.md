@@ -103,6 +103,11 @@ $$
 | KANI-GNN-001 | GNN-INV-001 | 8 | stub_float |
 | KANI-GNN-002 | GNN-BND-001 | 8 | stub_float |
 | KANI-GNN-003 | GNN-BND-002 | 8 | stub_float |
+| KANI-GNN_V1-004 | GCN preserves node count | 8 | exhaustive |
+| KANI-GNN_V1-005 | Message passing preserves node count | 8 | exhaustive |
+| KANI-GNN_V1-006 | Global mean pool output is finite | 8 | exhaustive |
+| KANI-GNN_V1-007 | Global max pool bounded by node features | 8 | stub_float |
+| KANI-GNN_V1-008 | Pooling output dimension matches feature dimension | 8 | exhaustive |
 
 ## QA Gate
 

@@ -101,6 +101,11 @@ $$
 |----|------------|-------|----------|
 | KANI-CMA-001 | CMA-BND-001 | 4 | stub_float |
 | KANI-CMA-002 | CMA-INV-001 | 8 | stub_float |
+| KANI-CMA_ES-003 | Step size positive | 8 | exhaustive |
+| KANI-CMA_ES-004 | Covariance positive definite | 8 | exhaustive |
+| KANI-CMA_ES-005 | Weights sum to 1 | 8 | stub_float |
+| KANI-CMA_ES-006 | Covariance symmetry | 8 | exhaustive |
+| KANI-CMA_ES-007 | SIMD matches scalar within ULP | 8 | exhaustive |
 
 ## QA Gate
 

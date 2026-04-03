@@ -67,3 +67,11 @@ $$
 | KANI-PROBE-003 | Embedding determinism | 4 | stub_float |
 | KANI-PROBE-004 | Trainable parameter count | 4 | bounded_int |
 
+## QA Gate
+
+**linear-probe-classifier-v1 Contract** (F-LPCV-001)
+
+Quality gate for Linear probe classifier -- frozen encoder + trained linear h
+
+**Checks:** validation, falsification
+

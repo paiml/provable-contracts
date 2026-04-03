@@ -96,6 +96,10 @@ $$
 |----|------------|-------|----------|
 | KANI-ARIMA-001 | ARIMA-INV-001 | 8 | stub_float |
 | KANI-ARIMA-002 | ARIMA-BND-001 | 8 | stub_float |
+| KANI-ARIMA_-003 | Forecast length equals n_periods | 8 | exhaustive |
+| KANI-ARIMA_-004 | All forecasts finite | 8 | exhaustive |
+| KANI-ARIMA_-005 | Differencing reduces order | 8 | exhaustive |
+| KANI-ARIMA_-006 | Forecast deterministic | 8 | exhaustive |
 
 ## QA Gate
 

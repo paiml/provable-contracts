@@ -133,6 +133,17 @@ theta_t = theta_{t-1} - lr * (m_hat_t / (sqrt(v_hat_t) + eps) + lambda * theta_{
 | KANI-AW-001 | AW-INV-001 | 4 | stub_float |
 | KANI-AW-002 | AW-BND-001 | 8 | stub_float |
 | KANI-AW-003 | AW-BND-002 | 4 | stub_float |
+| KANI-ADAMW_-004 | Hyperparameters valid, inputs finite | 8 | exhaustive |
+| KANI-ADAMW_-005 | Updated weights finite, moments non-negative | 8 | exhaustive |
+| KANI-ADAMW_-006 | Only theta, m, v are modified; gradients and hyperparams unchanged | 8 | exhaustive |
+| KANI-ADAMW_-007 | Second moment remains non-negative across all training steps | 8 | exhaustive |
+| KANI-ADAMW_-008 | Training step counter advances | 8 | exhaustive |
+| KANI-ADAMW_-009 | Moments are exponential moving averages of old values | 8 | exhaustive |
+| KANI-ADAMW_-010 | Decoupled weight decay | 8 | exhaustive |
+| KANI-ADAMW_-011 | Second moment non-negative | 8 | exhaustive |
+| KANI-ADAMW_-012 | Bias-corrected moments finite | 8 | exhaustive |
+| KANI-ADAMW_-013 | Bias correction factor | 8 | exhaustive |
+| KANI-ADAMW_-014 | SIMD matches scalar within ULP | 8 | exhaustive |
 
 ## QA Gate
 

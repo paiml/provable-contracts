@@ -100,6 +100,11 @@ R² = 1 - SS_res/SS_tot
 |----|------------|-------|----------|
 | KANI-LM-001 | LM-BND-001 | 8 | stub_float |
 | KANI-LM-002 | LM-BND-002 | 8 | stub_float |
+| KANI-LINEAR-003 | OLS training R² non-negative | 8 | exhaustive |
+| KANI-LINEAR-004 | Prediction deterministic | 8 | exhaustive |
+| KANI-LINEAR-005 | Logistic probability bounded | 8 | stub_float |
+| KANI-LINEAR-006 | Logistic probabilities sum to 1 | 8 | stub_float |
+| KANI-LINEAR-007 | Perfect fit on collinear data | 8 | exhaustive |
 
 ## QA Gate
 

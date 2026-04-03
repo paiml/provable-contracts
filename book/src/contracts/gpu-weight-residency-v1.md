@@ -76,6 +76,7 @@ $$
 | 2 | bound | GPU throughput reaches target | $tok/s(apr GPU) \geq 180 on RTX 4090 with Qwen2.5-1.5B Q4K$ |
 | 3 | invariant | Zero PCIe transfers during inference | $cudaMemcpy count during forward() = 0 for weight tensors$ |
 | 4 | equivalence | Output parity with CPU path | `argmax(logits_gpu) == argmax(logits_cpu) for greedy decoding` |
+| 5 | invariant | PMAT-394: Grace Blackwell unified memory — cuMemAllocManaged eager, not lazy | $cuMemAllocManaged on CUDA 13.0/GB10 allocates physical pages immediately (Xid 31 on OOM)$ |
 
 ## Falsification Tests
 
@@ -85,6 +86,7 @@ $$
 | FALSIFY-GWR-002 | Throughput target | apr GPU ≥ 180 tok/s on Qwen2.5-1.5B Q4K (RTX 4090) | PCIe overhead or kernel launch overhead exceeds budget |
 | FALSIFY-GWR-003 | No per-inference transfers | nsys trace shows 0 cudaMemcpyHtoD during steady-state inference | Weights being re-uploaded per request |
 | FALSIFY-GWR-004 | Output parity | GPU output matches CPU output within tolerance | VRAM layout corruption or precision drift |
+| FALSIFY-GWR-005 | Grace Blackwell unified memory | cuMemAllocManaged uses eager allocation, not lazy | Lazy allocation causes page faults during inference |
 
 ## Kani Harnesses
 
@@ -103,5 +105,5 @@ Persistent VRAM weight storage for inference throughput
 
 **Checks:** weight_residency, throughput_target, no_pcie_transfers, output_parity
 
-**Pass criteria:** All 4 falsification tests pass + throughput ≥ 180 tok/s
+**Pass criteria:** All 5 falsification tests pass + throughput ≥ 180 tok/s
 

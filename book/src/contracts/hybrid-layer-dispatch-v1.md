@@ -126,6 +126,12 @@ $$
 |----|------------|-------|----------|
 | KANI-HL-001 | HL-INV-001 | 8 | bounded_int |
 | KANI-HL-002 | HL-INV-005 | 16 | bounded_int |
+| KANI-HYBRID-003 | Exhaustive partition | 8 | exhaustive |
+| KANI-HYBRID-004 | Matrix associativity | 8 | exhaustive |
+| KANI-HYBRID-005 | Head grouping exact | 8 | exhaustive |
+| KANI-HYBRID-006 | Residual shape preservation | 8 | exhaustive |
+| KANI-HYBRID-007 | Conv1d causal output length | 8 | exhaustive |
+| KANI-HYBRID-008 | SIMD linear attention equivalence | 8 | exhaustive |
 
 ## QA Gate
 

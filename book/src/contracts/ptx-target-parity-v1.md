@@ -12,6 +12,13 @@ PTX target must match device compute capability — no hardcoded SM targets in r
 - realizar GpuProfile (src/cuda/gpu_profile.rs) — sm_target from compute_capability()
 - CUDA PTX ISA — .target directive must be <= device SM version for JIT compilation
 
+## Dependency Graph
+
+```mermaid
+graph LR
+    gpu_multi_backend_parity_v1["gpu-multi-backend-parity-v1"] --> ptx_target_parity_v1["ptx-target-parity-v1"]
+```
+
 ## Equations
 
 ### jit_compilation_success
@@ -84,6 +91,10 @@ ptx_target == device_compute_capability
 |----|------------|-------|----------|
 | KANI-PTP-001 | PTP-INV-001 | 8 | bounded_int |
 | KANI-PTP-002 | PTP-INV-002 | 4 | exhaustive |
+| KANI-PTX_TA-003 | Target parity | 8 | exhaustive |
+| KANI-PTX_TA-004 | No hardcoded emit_ptx in executor | 8 | exhaustive |
+| KANI-PTX_TA-005 | CudaKernels constructed with device target | 8 | exhaustive |
+| KANI-PTX_TA-006 | JIT success for all kernels | 8 | exhaustive |
 
 ## QA Gate
 

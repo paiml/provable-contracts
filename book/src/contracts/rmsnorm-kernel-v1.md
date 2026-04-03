@@ -81,6 +81,14 @@ $$
 |----|------------|-------|----------|
 | KANI-RN-001 | RN-INV-001 | 16 | exhaustive |
 | KANI-RN-002 | RN-BND-001 | 16 | exhaustive |
+| KANI-RMSNOR-003 | Input and weight vectors finite, same length, epsilon positive | 8 | exhaustive |
+| KANI-RMSNOR-004 | Output same length as input, all elements finite | 8 | exhaustive |
+| KANI-RMSNOR-005 | Input vector, weight vector, and epsilon unchanged | 8 | exhaustive |
+| KANI-RMSNOR-006 | Output is finite | 8 | exhaustive |
+| KANI-RMSNOR-007 | Scale invariance | 8 | exhaustive |
+| KANI-RMSNOR-008 | RMS denominator is positive | 8 | exhaustive |
+| KANI-RMSNOR-009 | SIMD matches scalar within ULP | 8 | exhaustive |
+| KANI-RMSNOR-010 | Normalized RMS ≈ 1 | 8 | exhaustive |
 
 ## QA Gate
 

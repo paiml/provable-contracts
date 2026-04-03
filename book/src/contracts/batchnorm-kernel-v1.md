@@ -98,6 +98,11 @@ $$
 |----|------------|-------|----------|
 | KANI-BN-001 | BN-BND-001 | 8 | stub_float |
 | KANI-BN-002 | BN-INV-003 | 4 | stub_float |
+| KANI-BATCHN-003 | Training output standardized | 8 | exhaustive |
+| KANI-BATCHN-004 | Denominator strictly positive | 8 | exhaustive |
+| KANI-BATCHN-005 | Running variance non-negative | 8 | exhaustive |
+| KANI-BATCHN-006 | Eval mode uses running stats | 8 | exhaustive |
+| KANI-BATCHN-007 | SIMD matches scalar within ULP | 8 | exhaustive |
 
 ## QA Gate
 

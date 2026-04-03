@@ -18,6 +18,7 @@ Online softmax — single-pass max+sum via running normalizer (Milakov & Gimelsh
 ```mermaid
 graph LR
     online_softmax_v1["online-softmax-v1"] --> softmax_kernel_v1.yaml["softmax-kernel-v1.yaml"]
+    speculative_decoding_v1["speculative-decoding-v1"] --> online_softmax_v1["online-softmax-v1"]
 ```
 
 ## Equations
@@ -93,4 +94,21 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | online-softmax-v1-kani-001 | Online matches standard softmax | 8 | bounded_int |
+| KANI-ONLINE-002 | Running max tracks true max of elements seen | 8 | exhaustive |
+| KANI-ONLINE-003 | Running sum_exp is correct partial sum | 8 | stub_float |
+| KANI-ONLINE-004 | Remaining elements decreases each iteration | 8 | exhaustive |
+| KANI-ONLINE-005 | Normalizer update preserves equivalence to full recomputation | 8 | exhaustive |
+| KANI-ONLINE-006 | Output sums to 1 | 8 | stub_float |
+| KANI-ONLINE-007 | All outputs strictly positive | 8 | exhaustive |
+| KANI-ONLINE-008 | Order preservation | 8 | exhaustive |
+| KANI-ONLINE-009 | Shift invariance | 8 | exhaustive |
+| KANI-ONLINE-010 | Two-pass (not three) | 8 | exhaustive |
+
+## QA Gate
+
+**online-softmax-v1 Contract** (F-OSV-001)
+
+Quality gate for Online softmax — single-pass max+sum via running normalizer 
+
+**Checks:** validation, falsification
 

@@ -98,6 +98,10 @@ $$
 |----|------------|-------|----------|
 | KANI-GLM-001 | GLM-INV-001 | 8 | stub_float |
 | KANI-GLM-002 | GLM-BND-001 | 8 | stub_float |
+| KANI-GLM_V1-003 | Link function invertible | 8 | exhaustive |
+| KANI-GLM_V1-004 | Predicted mean in valid range | 8 | exhaustive |
+| KANI-GLM_V1-005 | IRLS convergence | 8 | exhaustive |
+| KANI-GLM_V1-006 | Predictions finite | 8 | exhaustive |
 
 ## QA Gate
 

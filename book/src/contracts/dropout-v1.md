@@ -80,6 +80,10 @@ $$
 |----|------------|-------|----------|
 | KANI-DO-001 | DO-INV-001 | 8 | stub_float |
 | KANI-DO-002 | DO-BND-001 | 4 | stub_float |
+| KANI-DROPOU-003 | Eval mode is identity | 8 | exhaustive |
+| KANI-DROPOU-004 | Train mode is unbiased | 8 | exhaustive |
+| KANI-DROPOU-005 | Output shape preserved | 8 | exhaustive |
+| KANI-DROPOU-006 | Drop probability in valid range | 8 | exhaustive |
 
 ## QA Gate
 

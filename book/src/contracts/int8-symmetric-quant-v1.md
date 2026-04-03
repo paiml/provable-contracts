@@ -18,6 +18,7 @@ INT8 symmetric per-row weight quantization for transformer inference — absmax 
 ```mermaid
 graph LR
     int8_symmetric_quant_v1["int8-symmetric-quant-v1"] --> matmul_kernel_v1.yaml["matmul-kernel-v1.yaml"]
+    fp8_interchange_v1["fp8-interchange-v1"] --> int8_symmetric_quant_v1["int8-symmetric-quant-v1"]
 ```
 
 ## Equations
@@ -105,4 +106,16 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | int8-symmetric-quant-v1-kani-001 | INT8 matvec approximates fp16 matvec | 8 | bounded_int |
+| KANI-INT8_S-002 | Compression ratio: 1 byte per weight | 8 | exhaustive |
+| KANI-INT8_S-003 | Scale positivity for non-zero rows | 8 | exhaustive |
+| KANI-INT8_S-004 | Quantized range | 8 | exhaustive |
+| KANI-INT8_S-005 | Zero-row invariant | 8 | exhaustive |
+
+## QA Gate
+
+**int8-symmetric-quant-v1 Contract** (F-ISQV-001)
+
+Quality gate for INT8 symmetric per-row weight quantization for transformer i
+
+**Checks:** validation, falsification
 

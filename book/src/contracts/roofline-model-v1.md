@@ -92,6 +92,11 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-RM-001 | RM-BND-001 | 4 | bounded_int |
+| KANI-ROOFLI-002 | Ceilings positive | 8 | exhaustive |
+| KANI-ROOFLI-003 | Memory-bound classification | 8 | stub_float |
+| KANI-ROOFLI-004 | Throughput bounded | 8 | stub_float |
+| KANI-ROOFLI-005 | Model bytes monotonic | 8 | exhaustive |
+| KANI-ROOFLI-006 | SIMD roofline equivalence | 8 | exhaustive |
 
 ## QA Gate
 

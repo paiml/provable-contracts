@@ -85,3 +85,11 @@ $$
 | KANI-ENC-003 | Reference parity | 4 | stub_float |
 | KANI-ENC-004 | CLS pooling correctness | 4 | stub_float |
 
+## QA Gate
+
+**encoder-forward-v1 Contract** (F-EFV-001)
+
+Quality gate for Encoder forward pass -- full pipeline from tokens to [CLS] e
+
+**Checks:** validation, falsification
+

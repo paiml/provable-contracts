@@ -103,6 +103,11 @@ u(p) = 1 - max_i(p_i)
 | KANI-AL-001 | AL-BND-001 | 8 | stub_float |
 | KANI-AL-002 | AL-BND-002 | 8 | stub_float |
 | KANI-AL-003 | AL-BND-003 | 8 | stub_float |
+| KANI-ACTIVE-004 | Uncertainty score in [0, 1] | 8 | exhaustive |
+| KANI-ACTIVE-005 | Margin score in [0, 1] | 8 | exhaustive |
+| KANI-ACTIVE-006 | Entropy is non-negative | 8 | exhaustive |
+| KANI-ACTIVE-007 | Vote entropy is non-negative | 8 | exhaustive |
+| KANI-ACTIVE-008 | Higher uncertainty selects more ambiguous samples | 8 | exhaustive |
 
 ## QA Gate
 

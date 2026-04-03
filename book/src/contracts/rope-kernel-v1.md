@@ -75,6 +75,13 @@ RoPE(x, m)_{2k} = x_{2k}·cos(mθ_k) - x_{2k+1}·sin(mθ_k), RoPE(x, m)_{2k+1} =
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-RP-001 | RP-INV-001 | 4 | stub_float |
+| KANI-ROPE_K-002 | Input dimension is even, position non-negative | 8 | exhaustive |
+| KANI-ROPE_K-003 | Output has same dimension as input, all elements finite | 8 | exhaustive |
+| KANI-ROPE_K-004 | Input vector and position unchanged | 8 | exhaustive |
+| KANI-ROPE_K-005 | Norm preservation | 8 | exhaustive |
+| KANI-ROPE_K-006 | Relative position encoding | 8 | exhaustive |
+| KANI-ROPE_K-007 | SIMD matches scalar | 8 | exhaustive |
+| KANI-ROPE_K-008 | Output bounded by input norm | 8 | stub_float |
 
 ## QA Gate
 

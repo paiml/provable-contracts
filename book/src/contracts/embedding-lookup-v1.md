@@ -72,6 +72,10 @@ $$
 |----|------------|-------|----------|
 | KANI-EM-001 | EM-SHP-001 | 4 | stub_float |
 | KANI-EM-002 | EM-SAF-001 | 4 | stub_float |
+| KANI-EMBEDD-003 | Output shape correctness | 8 | exhaustive |
+| KANI-EMBEDD-004 | Out-of-bounds panic freedom | 8 | stub_float |
+| KANI-EMBEDD-005 | Deterministic output | 8 | exhaustive |
+| KANI-EMBEDD-006 | Finite output | 8 | exhaustive |
 
 ## QA Gate
 

@@ -64,6 +64,10 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-SE-001 | SE-BND-001 | 4 | bounded_int |
+| KANI-SHANNO-002 | Range bound | 8 | stub_float |
+| KANI-SHANNO-003 | Constant input zero entropy | 8 | exhaustive |
+| KANI-SHANNO-004 | Uniform entropy monotonic | 8 | exhaustive |
+| KANI-SHANNO-005 | SIMD entropy equivalence | 8 | exhaustive |
 
 ## QA Gate
 

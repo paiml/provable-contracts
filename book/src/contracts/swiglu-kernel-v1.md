@@ -98,6 +98,10 @@ $$
 | KANI-SG-001 | SG-INV-001 | 4 | stub_float |
 | KANI-SG-002 | SG-EQV-001 | 4 | stub_float |
 | KANI-SG-003 | SG-BND-001 | 8 | stub_float |
+| KANI-SWIGLU-004 | Zero preservation | 8 | exhaustive |
+| KANI-SWIGLU-005 | Fused matches unfused | 8 | exhaustive |
+| KANI-SWIGLU-006 | Gate output bounded below | 8 | stub_float |
+| KANI-SWIGLU-007 | SIMD matches scalar within ULP | 8 | exhaustive |
 
 ## QA Gate
 

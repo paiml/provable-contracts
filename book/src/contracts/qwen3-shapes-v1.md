@@ -134,6 +134,15 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-QW3-001 | QW3-INV-001 | 1 | exhaustive |
+| KANI-QWEN3_-002 | Q projection shape | 8 | exhaustive |
+| KANI-QWEN3_-003 | KV projection shape | 8 | exhaustive |
+| KANI-QWEN3_-004 | GQA divisibility | 8 | exhaustive |
+| KANI-QWEN3_-005 | SwiGLU expansion ratio | 8 | exhaustive |
+| KANI-QWEN3_-006 | O projection transpose | 8 | exhaustive |
+| KANI-QWEN3_-007 | RoPE frequency vector length | 8 | exhaustive |
+| KANI-QWEN3_-008 | RoPE frequency decreasing | 8 | exhaustive |
+| KANI-QWEN3_-009 | Head dimension consistency | 8 | exhaustive |
+| KANI-QWEN3_-010 | SIMD shape equivalence | 8 | exhaustive |
 
 ## QA Gate
 

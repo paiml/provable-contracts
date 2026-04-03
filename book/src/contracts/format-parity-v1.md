@@ -90,6 +90,11 @@ swap(swap(shape)) == shape
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-FP-001 | FP-INV-001 | 4 | bounded_int |
+| KANI-FORMAT-002 | Transpose involution | 8 | exhaustive |
+| KANI-FORMAT-003 | Element count preserved | 8 | exhaustive |
+| KANI-FORMAT-004 | 1D no transpose | 8 | exhaustive |
+| KANI-FORMAT-005 | Roundtrip equivalence | 8 | exhaustive |
+| KANI-FORMAT-006 | SIMD format equivalence | 8 | exhaustive |
 
 ## QA Gate
 

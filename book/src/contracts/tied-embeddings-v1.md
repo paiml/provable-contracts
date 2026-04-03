@@ -64,6 +64,10 @@ $$
 |----|------------|-------|----------|
 | KANI-TE-001 | TE-SHP-001 | 4 | stub_float |
 | KANI-TE-002 | TE-EQV-001 | 4 | stub_float |
+| KANI-TIED_E-003 | Output shape correctness | 8 | exhaustive |
+| KANI-TIED_E-004 | Equivalence to separate matmul | 8 | exhaustive |
+| KANI-TIED_E-005 | No extra parameters | 8 | exhaustive |
+| KANI-TIED_E-006 | Finite output | 8 | exhaustive |
 
 ## QA Gate
 

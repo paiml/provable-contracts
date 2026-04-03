@@ -104,6 +104,13 @@ $$
 |----|------------|-------|----------|
 | KANI-DT-001 | DT-BND-001 | 8 | stub_float |
 | KANI-DT-002 | DT-BND-002 | 8 | stub_float |
+| KANI-DECISI-003 | Gini bounded | 8 | stub_float |
+| KANI-DECISI-004 | Gini pure node | 8 | exhaustive |
+| KANI-DECISI-005 | Gini split reduction | 8 | exhaustive |
+| KANI-DECISI-006 | MSE non-negative | 8 | exhaustive |
+| KANI-DECISI-007 | MSE zero for constant | 8 | exhaustive |
+| KANI-DECISI-008 | Prediction deterministic | 8 | exhaustive |
+| KANI-DECISI-009 | Fit-predict consistency | 8 | exhaustive |
 
 ## QA Gate
 

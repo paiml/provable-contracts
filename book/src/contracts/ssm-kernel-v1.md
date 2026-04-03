@@ -98,6 +98,11 @@ $$
 |----|------------|-------|----------|
 | KANI-SSM-001 | SSM-INV-001 | 4 | stub_float |
 | KANI-SSM-002 | SSM-BND-001 | 8 | stub_float |
+| KANI-SSM_KE-003 | Causality | 8 | exhaustive |
+| KANI-SSM_KE-004 | Softplus positivity | 8 | exhaustive |
+| KANI-SSM_KE-005 | Scan linearity | 8 | exhaustive |
+| KANI-SSM_KE-006 | Parallel scan matches sequential scan | 8 | exhaustive |
+| KANI-SSM_KE-007 | SIMD matches scalar within ULP | 8 | exhaustive |
 
 ## QA Gate
 

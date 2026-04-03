@@ -138,6 +138,12 @@ $$
 |----|------------|-------|----------|
 | KANI-LF-001 | 1 | 4 | stub_float |
 | KANI-LF-002 | 2 | 4 | stub_float |
+| KANI-LOSS_F-003 | All losses non-negative | 8 | exhaustive |
+| KANI-LOSS_F-004 | Zero loss at perfect prediction | 8 | exhaustive |
+| KANI-LOSS_F-005 | BCE monotonicity | 8 | exhaustive |
+| KANI-LOSS_F-006 | Huber smoothness | 8 | exhaustive |
+| KANI-LOSS_F-007 | L1 symmetry | 8 | exhaustive |
+| KANI-LOSS_F-008 | NLL lower bound | 8 | stub_float |
 
 ## QA Gate
 

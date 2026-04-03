@@ -80,6 +80,11 @@ $$
 |----|------------|-------|----------|
 | KANI-LP-001 | LP-SHP-001 | 4 | stub_float |
 | KANI-LP-002 | LP-LIN-001 | 4 | stub_float |
+| KANI-LINEAR-003 | Output shape correctness | 8 | exhaustive |
+| KANI-LINEAR-004 | Homogeneity without bias | 8 | exhaustive |
+| KANI-LINEAR-005 | Bias additivity | 8 | exhaustive |
+| KANI-LINEAR-006 | Zero input produces bias | 8 | exhaustive |
+| KANI-LINEAR-007 | SIMD matches scalar within ULP | 8 | exhaustive |
 
 ## QA Gate
 

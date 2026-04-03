@@ -148,6 +148,13 @@ block_l(x) = ffn_sublayer(attn_or_gdn_sublayer_l(x))
 |----|------------|-------|----------|
 | KANI-QHF-001 | QHF-INV-001 | 4 | bounded_int |
 | KANI-QHF-002 | QHF-INV-002 | 48 | exhaustive |
+| KANI-QWEN35-003 | Attention sublayer shape preservation | 8 | exhaustive |
+| KANI-QWEN35-004 | GDN sublayer shape preservation | 8 | exhaustive |
+| KANI-QWEN35-005 | FFN sublayer shape preservation | 8 | exhaustive |
+| KANI-QWEN35-006 | Block outputs from exactly one attention type | 8 | exhaustive |
+| KANI-QWEN35-007 | Activation magnitude bounded | 8 | stub_float |
+| KANI-QWEN35-008 | RMSNorm precedes each sublayer | 8 | exhaustive |
+| KANI-QWEN35-009 | Residual identity component | 8 | exhaustive |
 
 ## QA Gate
 

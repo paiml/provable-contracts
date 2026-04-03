@@ -19,6 +19,7 @@ Validates CodeBERT (RoBERTa) tokenizer quality on shell script constructs
 ```mermaid
 graph LR
     codebert_tokenizer_validation_v1["codebert-tokenizer-validation-v1"] --> tokenizer_loading_v1["tokenizer-loading-v1"]
+    bpe_tokenization_v1["bpe-tokenization-v1"] --> codebert_tokenizer_validation_v1["codebert-tokenizer-validation-v1"]
     classifier_pipeline_v1["classifier-pipeline-v1"] --> codebert_tokenizer_validation_v1["codebert-tokenizer-validation-v1"]
     conversation_generation_v1["conversation-generation-v1"] --> codebert_tokenizer_validation_v1["codebert-tokenizer-validation-v1"]
 ```
@@ -42,6 +43,13 @@ $$
 - $No construct produces > 20 tokens$
 - $Tokenization is deterministic$
 
+## Proof Obligations
+
+| # | Type | Property | Formal |
+|---|------|----------|--------|
+| 1 | invariant | Vocab size = 50265 | $Vocab size = 50265$ |
+| 2 | invariant | Every non-empty input produces at least 1 token | $Every non-empty input produces at least 1 token$ |
+
 ## Falsification Tests
 
 | ID | Rule | Prediction | If Fails |
@@ -51,6 +59,13 @@ $$
 | FALSIFY-CTOK-003 | F-CTOK-003 (Construct preservation) | >= 70% of constructs tokenize acceptably | RoBERTa tokenizer too fragmented for shell — use fallback options |
 | FALSIFY-CTOK-004 | F-CTOK-004 (Token explosion) | No construct produces > 20 tokens | Pathological tokenization — may need custom pre-tokenizer |
 | FALSIFY-CTOK-005 | F-CTOK-005 (Determinism) | Repeated tokenization of same input is bit-identical | HashMap ordering leak in BPE merge — critical bug |
+
+## Kani Harnesses
+
+| ID | Obligation | Bound | Strategy |
+|----|------------|-------|----------|
+| KANI-CODEBE-001 | Vocab size = 50265 | 8 | exhaustive |
+| KANI-CODEBE-002 | Every non-empty input produces at least 1 token | 8 | exhaustive |
 
 ## QA Gate
 

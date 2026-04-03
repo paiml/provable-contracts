@@ -117,6 +117,12 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-LA-001 | LA-INV-001 | 4 | bounded_int |
+| KANI-LORA_A-002 | Task vector roundtrip | 8 | exhaustive |
+| KANI-LORA_A-003 | Eckart-Young bound | 8 | stub_float |
+| KANI-LORA_A-004 | LoRA shape compatibility | 8 | exhaustive |
+| KANI-LORA_A-005 | DARE unbiasedness | 8 | exhaustive |
+| KANI-LORA_A-006 | Shape preservation | 8 | exhaustive |
+| KANI-LORA_A-007 | SIMD LoRA equivalence | 8 | exhaustive |
 
 ## QA Gate
 

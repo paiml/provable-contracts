@@ -198,6 +198,20 @@ coverage = sum(brick_total_ns) / wall_clock_ns
 |----|------------|-------|----------|
 | KANI-GDP-001 | GDP-INV-001 | 4 | bounded_int |
 | KANI-GDP-002 | GDP-INV-003 | 2 | exhaustive |
+| KANI-GPU_DE-003 | Wall coverage threshold | 8 | exhaustive |
+| KANI-GPU_DE-004 | Coverage upper bound | 8 | stub_float |
+| KANI-GPU_DE-005 | Graph disable for profiling | 8 | exhaustive |
+| KANI-GPU_DE-006 | LmHead call count | 8 | exhaustive |
+| KANI-GPU_DE-007 | Layer brick call count | 8 | exhaustive |
+| KANI-GPU_DE-008 | Brick ordering respects complexity | 8 | exhaustive |
+| KANI-GPU_DE-009 | Immediate sync detectable | 8 | exhaustive |
+| KANI-GPU_DE-010 | Deferred sync ceiling | 8 | exhaustive |
+| KANI-GPU_DE-011 | Report fidelity — actual_us matches profiler | 8 | exhaustive |
+| KANI-GPU_DE-012 | Report fidelity — score computed not hardcoded | 8 | exhaustive |
+| KANI-GPU_DE-013 | Report completeness — no truncation | 8 | exhaustive |
+| KANI-GPU_DE-014 | Report completeness — falsification accounting | 8 | exhaustive |
+| KANI-GPU_DE-015 | Report denominator — decoded tokens from LmHead | 8 | exhaustive |
+| KANI-GPU_DE-016 | Report metadata — no hardcoded nonzero constants | 8 | exhaustive |
 
 ## QA Gate
 

@@ -110,6 +110,12 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-TI-001 | TI-INV-001 | 4 | bounded_int |
+| KANI-TENSOR-002 | Tensor count formula | 8 | exhaustive |
+| KANI-TENSOR-003 | Architecture delta linear | 8 | exhaustive |
+| KANI-TENSOR-004 | Parameter decomposition exact | 8 | exhaustive |
+| KANI-TENSOR-005 | Tied embedding count | 8 | exhaustive |
+| KANI-TENSOR-006 | Quantization byte ordering | 8 | exhaustive |
+| KANI-TENSOR-007 | SIMD inventory equivalence | 8 | exhaustive |
 
 ## QA Gate
 

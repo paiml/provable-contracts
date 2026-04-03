@@ -97,6 +97,10 @@ $$
 |----|------------|-------|----------|
 | KANI-BAYES-001 | BAYES-INV-001 | 8 | stub_float |
 | KANI-BAYES-002 | BAYES-INV-002 | 8 | stub_float |
+| KANI-BAYESI-003 | Posterior parameters positive | 8 | exhaustive |
+| KANI-BAYESI-004 | Predictions finite | 8 | exhaustive |
+| KANI-BAYESI-005 | Prediction deterministic | 8 | exhaustive |
+| KANI-BAYESI-006 | Conjugacy preserved | 8 | exhaustive |
 
 ## QA Gate
 

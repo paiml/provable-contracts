@@ -90,6 +90,11 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-QO-001 | QO-MON-001 | 4 | bounded_int |
+| KANI-QUANTI-002 | Size ordering strict | 8 | exhaustive |
+| KANI-QUANTI-003 | Alpha scaling correctness | 8 | exhaustive |
+| KANI-QUANTI-004 | Dropout expectation | 8 | exhaustive |
+| KANI-QUANTI-005 | Concrete Qwen3.5 sizes | 8 | exhaustive |
+| KANI-QUANTI-006 | SIMD quantization equivalence | 8 | exhaustive |
 
 ## QA Gate
 

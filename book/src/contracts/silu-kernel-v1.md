@@ -91,6 +91,11 @@ $$
 | KANI-SI-001 | SI-INV-001 | 1 | stub_float |
 | KANI-SI-002 | SI-BND-001 | 8 | stub_float |
 | KANI-SI-003 | SI-MON-001 | 8 | stub_float |
+| KANI-SILU_K-004 | Zero preservation | 8 | exhaustive |
+| KANI-SILU_K-005 | Global lower bound | 8 | stub_float |
+| KANI-SILU_K-006 | Monotonic for positive inputs | 8 | exhaustive |
+| KANI-SILU_K-007 | SIMD matches scalar within ULP | 8 | exhaustive |
+| KANI-SILU_K-008 | Asymptotic linearity | 8 | exhaustive |
 
 ## QA Gate
 

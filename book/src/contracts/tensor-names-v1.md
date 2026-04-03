@@ -50,6 +50,15 @@ resolve(source, arch, role) =
 - $Bare name (without 'model.' prefix) tried as last resort$
 - $Error message lists all attempted names for diagnostics$
 
+## Proof Obligations
+
+| # | Type | Property | Formal |
+|---|------|----------|--------|
+| 1 | invariant | Architecture-specific names tried before fallbacks | $Architecture-specific names tried before fallbacks$ |
+| 2 | invariant | Bare name (without 'model.' prefix) tried as last resort | $Bare name (without 'model.' prefix) tried as last resort$ |
+| 3 | invariant | Unknown architecture defaults to llama (safest default) | $Unknown architecture defaults to llama (safest default)$ |
+| 4 | invariant | Case-sensitive matching on HF class names | $Case-sensitive matching on HF class names$ |
+
 ## Falsification Tests
 
 | ID | Rule | Prediction | If Fails |
@@ -75,4 +84,21 @@ resolve(source, arch, role) =
 | FALSIFY-TNAME-007 | Fused QKV resolution for GPT-2/GPT-NeoX | fused_templates("gpt2", FusedQkv) returns non-empty list, while q_proj_weight templates for gpt2 returns empty list.
  | GPT-2 will try to load separate Q/K/V tensors that don't exist.
  |
+
+## Kani Harnesses
+
+| ID | Obligation | Bound | Strategy |
+|----|------------|-------|----------|
+| KANI-TENSOR-001 | Architecture-specific names tried before fallbacks | 8 | exhaustive |
+| KANI-TENSOR-002 | Bare name (without 'model.' prefix) tried as last resort | 8 | exhaustive |
+| KANI-TENSOR-003 | Unknown architecture defaults to llama (safest default) | 8 | exhaustive |
+| KANI-TENSOR-004 | Case-sensitive matching on HF class names | 8 | exhaustive |
+
+## QA Gate
+
+**tensor-names-v1 Contract** (F-TNV-001)
+
+Quality gate for Architecture-specific tensor name resolution — source of tru
+
+**Checks:** validation, falsification
 

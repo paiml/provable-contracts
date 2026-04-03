@@ -10,6 +10,14 @@ Pipeline shape flow — tensor shape transformations through transformer layers
 - Ainslie et al. (2023) GQA: Training Generalized Multi-Query
 - Shazeer (2020) GLU Variants Improve Transformer — SwiGLU FFN
 
+## Dependency Graph
+
+```mermaid
+graph LR
+    gguf_format_safety_v1["gguf-format-safety-v1"] --> tensor_shape_flow_v1["tensor-shape-flow-v1"]
+    safetensors_format_safety_v1["safetensors-format-safety-v1"] --> tensor_shape_flow_v1["tensor-shape-flow-v1"]
+```
+
 ## Equations
 
 ### gqa_grouping
@@ -104,6 +112,12 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-TSF-001 | TSF-INV-001 | 4 | bounded_int |
+| KANI-TENSOR-002 | QKV shape compatibility | 8 | exhaustive |
+| KANI-TENSOR-003 | GQA grouping exact | 8 | exhaustive |
+| KANI-TENSOR-004 | Residual shape preservation | 8 | exhaustive |
+| KANI-TENSOR-005 | SwiGLU intermediate shape | 8 | exhaustive |
+| KANI-TENSOR-006 | LM head output shape | 8 | exhaustive |
+| KANI-TENSOR-007 | SIMD shape equivalence | 8 | exhaustive |
 
 ## QA Gate
 

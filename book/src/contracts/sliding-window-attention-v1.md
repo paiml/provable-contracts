@@ -125,6 +125,13 @@ $$
 |----|------------|-------|----------|
 | KANI-SWA-001 | SWA-INV-001 | 16 | bounded_int |
 | KANI-SWA-002 | SWA-BND-001 | 16 | exhaustive |
+| KANI-SLIDIN-003 | Diagonal always attended | 8 | exhaustive |
+| KANI-SLIDIN-004 | Causal constraint | 8 | exhaustive |
+| KANI-SLIDIN-005 | Attention count bounded by window | 8 | stub_float |
+| KANI-SLIDIN-006 | Effective context non-decreasing | 8 | exhaustive |
+| KANI-SLIDIN-007 | Sparsity zero for dense case | 8 | exhaustive |
+| KANI-SLIDIN-008 | Receptive field grows with layers | 8 | exhaustive |
+| KANI-SLIDIN-009 | Attention weight normalization within window | 8 | exhaustive |
 
 ## QA Gate
 

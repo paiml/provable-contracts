@@ -9,6 +9,14 @@ Validated tensor type invariants (embedding density, NaN/Inf rejection, L2 norm)
 - PMAT-235 Compile-time Poka-Yoke
 - Qwen2.5-Coder Showcase Spec §15.3
 
+## Dependency Graph
+
+```mermaid
+graph LR
+    gguf_format_safety_v1["gguf-format-safety-v1"] --> validated_tensor_v1["validated-tensor-v1"]
+    safetensors_format_safety_v1["safetensors-format-safety-v1"] --> validated_tensor_v1["validated-tensor-v1"]
+```
+
 ## Equations
 
 ### density_gate
@@ -74,6 +82,10 @@ count(isnan(E)) == 0 AND count(isinf(E)) == 0
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-VT-001 | VT-INV-001 | 4 | bounded_int |
+| KANI-VALIDA-002 | Density gate | 8 | exhaustive |
+| KANI-VALIDA-003 | NaN/Inf rejection | 8 | exhaustive |
+| KANI-VALIDA-004 | L2 norm non-degeneracy | 8 | exhaustive |
+| KANI-VALIDA-005 | SIMD validation equivalence | 8 | exhaustive |
 
 ## QA Gate
 

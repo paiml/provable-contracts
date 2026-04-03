@@ -69,7 +69,6 @@ $$
 | 3 | bound | MinMaxScaler bounded | $X_scaled \in [min, max] for training data$ |
 | 4 | invariant | MinMaxScaler extremes | $scaled(x_min) = min, scaled(x_max) = max$ |
 | 5 | invariant | StandardScaler inverse | $inverse_transform(transform(X)) \approx X$ |
-| 6 | invariant | MinMaxScaler inverse | $inverse_transform(transform(X)) \approx X$ |
 
 ## Falsification Tests
 
@@ -88,6 +87,12 @@ $$
 |----|------------|-------|----------|
 | KANI-PP-001 | PP-INV-001 | 8 | stub_float |
 | KANI-PP-002 | PP-BND-001 | 8 | stub_float |
+| KANI-PREPRO-003 | StandardScaler zero mean | 8 | exhaustive |
+| KANI-PREPRO-004 | StandardScaler unit variance | 8 | exhaustive |
+| KANI-PREPRO-005 | MinMaxScaler bounded | 8 | stub_float |
+| KANI-PREPRO-006 | MinMaxScaler extremes | 8 | exhaustive |
+| KANI-PREPRO-007 | StandardScaler inverse | 8 | exhaustive |
+| KANI-PREPRO-008 | MinMaxScaler inverse | 8 | exhaustive |
 
 ## QA Gate
 

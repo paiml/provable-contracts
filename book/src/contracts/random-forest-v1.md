@@ -98,6 +98,10 @@ y_hat_i = majority_vote(h_1(x_i), ..., h_B(x_i)) for classification
 |----|------------|-------|----------|
 | KANI-RF-001 | RF-INV-001 | 8 | stub_float |
 | KANI-RF-002 | RF-INV-002 | 8 | stub_float |
+| KANI-RANDOM-003 | Predictions in label range | 8 | exhaustive |
+| KANI-RANDOM-004 | Deterministic with same seed | 8 | exhaustive |
+| KANI-RANDOM-005 | Ensemble size respected | 8 | exhaustive |
+| KANI-RANDOM-006 | Prediction length matches input | 8 | exhaustive |
 
 ## QA Gate
 

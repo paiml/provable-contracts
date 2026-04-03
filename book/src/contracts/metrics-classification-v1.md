@@ -124,6 +124,14 @@ $$
 |----|------------|-------|----------|
 | KANI-CM-001 | 1 | 4 | exhaustive |
 | KANI-CM-002 | 2 | 4 | exhaustive |
+| KANI-METRIC-003 | Accuracy bounded | 8 | stub_float |
+| KANI-METRIC-004 | Precision bounded | 8 | stub_float |
+| KANI-METRIC-005 | Recall bounded | 8 | stub_float |
+| KANI-METRIC-006 | F1 bounded | 8 | stub_float |
+| KANI-METRIC-007 | F1 harmonic mean property | 8 | exhaustive |
+| KANI-METRIC-008 | Confusion matrix row sums | 8 | stub_float |
+| KANI-METRIC-009 | Perfect classification identity | 8 | exhaustive |
+| KANI-METRIC-010 | Micro-average identity | 8 | exhaustive |
 
 ## QA Gate
 

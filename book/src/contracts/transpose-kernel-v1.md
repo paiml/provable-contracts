@@ -68,6 +68,11 @@ $$
 |----|------------|-------|----------|
 | KANI-TP-001 | TP-INV-001 | 16 | exhaustive |
 | KANI-TP-002 | TP-IDEMP-001 | 8 | bounded_int |
+| KANI-TRANSP-003 | Shape correctness | 8 | exhaustive |
+| KANI-TRANSP-004 | Involution (self-inverse) | 8 | exhaustive |
+| KANI-TRANSP-005 | AVX2 matches scalar | 8 | exhaustive |
+| KANI-TRANSP-006 | Element correctness | 8 | exhaustive |
+| KANI-TRANSP-007 | All elements transposed | 8 | exhaustive |
 
 ## QA Gate
 

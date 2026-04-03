@@ -118,6 +118,11 @@ $$
 | KANI-FT-001 | FT-INV-001 | 4 | bounded_int |
 | KANI-FT-002 | FT-INV-002 | 4 | bounded_int |
 | KANI-FT-003 | FT-INV-003 | 4 | bounded_int |
+| KANI-CLASSI-004 | Logit shape matches num_classes | 8 | exhaustive |
+| KANI-CLASSI-005 | Label index in bounds | 8 | stub_float |
+| KANI-CLASSI-006 | Classifier weight shape | 8 | exhaustive |
+| KANI-CLASSI-007 | Softmax sum to one | 8 | stub_float |
+| KANI-CLASSI-008 | NaN/Inf rejection | 8 | exhaustive |
 
 ## QA Gate
 

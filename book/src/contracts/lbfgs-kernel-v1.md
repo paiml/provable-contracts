@@ -98,6 +98,11 @@ $$
 |----|------------|-------|----------|
 | KANI-LB-001 | LB-INV-001 | 4 | stub_float |
 | KANI-LB-002 | LB-BND-001 | 8 | exhaustive |
+| KANI-LBFGS_-003 | Descent direction | 8 | exhaustive |
+| KANI-LBFGS_-004 | Curvature condition | 8 | exhaustive |
+| KANI-LBFGS_-005 | History buffer bounded | 8 | stub_float |
+| KANI-LBFGS_-006 | Objective decrease | 8 | exhaustive |
+| KANI-LBFGS_-007 | SIMD matches scalar within ULP | 8 | exhaustive |
 
 ## QA Gate
 

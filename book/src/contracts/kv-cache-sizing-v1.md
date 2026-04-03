@@ -118,6 +118,12 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-KV-001 | KV-INV-001 | 4 | bounded_int |
+| KANI-KV_CAC-002 | Per-token KV bytes | 8 | exhaustive |
+| KANI-KV_CAC-003 | KV total monotonic in sequence length | 8 | exhaustive |
+| KANI-KV_CAC-004 | Hybrid KV layers bounded | 8 | stub_float |
+| KANI-KV_CAC-005 | Bias absence | 8 | exhaustive |
+| KANI-KV_CAC-006 | Zero input identity | 8 | exhaustive |
+| KANI-KV_CAC-007 | SIMD KV equivalence | 8 | exhaustive |
 
 ## QA Gate
 

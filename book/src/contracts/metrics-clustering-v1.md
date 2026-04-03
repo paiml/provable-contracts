@@ -86,6 +86,11 @@ $$
 |----|------------|-------|----------|
 | KANI-CL-001 | 1 | 4 | stub_float |
 | KANI-CL-002 | 2 | 4 | stub_float |
+| KANI-METRIC-003 | Silhouette score bounded | 8 | stub_float |
+| KANI-METRIC-004 | Inertia non-negative | 8 | exhaustive |
+| KANI-METRIC-005 | Silhouette degenerate case | 8 | exhaustive |
+| KANI-METRIC-006 | Inertia zero at centroids | 8 | exhaustive |
+| KANI-METRIC-007 | Per-point silhouette bounded | 8 | stub_float |
 
 ## QA Gate
 

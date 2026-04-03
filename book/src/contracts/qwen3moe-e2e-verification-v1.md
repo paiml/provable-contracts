@@ -167,6 +167,13 @@ $$
 |----|------------|-------|----------|
 | KANI-QM3E-001 | QM3E-INV-001 | 1 | exhaustive |
 | KANI-QM3E-002 | QM3E-ORD-001 | 4 | bounded_int |
+| KANI-QWEN3M-003 | Total parameter count matches architecture | 8 | exhaustive |
+| KANI-QWEN3M-004 | Active parameter count matches designation | 8 | exhaustive |
+| KANI-QWEN3M-005 | FLOPs bounded by 2A | 8 | stub_float |
+| KANI-QWEN3M-006 | Quantization memory ordering | 8 | exhaustive |
+| KANI-QWEN3M-007 | Throughput increases with bandwidth | 8 | exhaustive |
+| KANI-QWEN3M-008 | Compositional proof structure | 8 | exhaustive |
+| KANI-QWEN3M-009 | End-to-end shape: tokens in -> logits out | 8 | exhaustive |
 
 ## QA Gate
 

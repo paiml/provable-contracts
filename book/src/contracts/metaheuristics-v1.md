@@ -105,6 +105,11 @@ $$
 | KANI-MH-001 | MH-INV-001 | 8 | stub_float |
 | KANI-MH-002 | MH-BND-001 | 8 | stub_float |
 | KANI-MH-003 | MH-BND-002 | 8 | stub_float |
+| KANI-METAHE-004 | Best objective non-increasing across iterations | 8 | exhaustive |
+| KANI-METAHE-005 | SA best improves or stays same | 8 | exhaustive |
+| KANI-METAHE-006 | GA best improves or stays same | 8 | exhaustive |
+| KANI-METAHE-007 | PSO best improves or stays same | 8 | exhaustive |
+| KANI-METAHE-008 | SA acceptance probability in (0, 1] | 8 | exhaustive |
 
 ## QA Gate
 

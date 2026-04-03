@@ -147,4 +147,16 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | batched-beam-search-v1-kani-001 | Batched projection matches sequential projection | 8 | bounded_int |
+| KANI-BATCHE-002 | Beam selection consistency | 8 | exhaustive |
+| KANI-BATCHE-003 | Dimension correctness | 8 | exhaustive |
+| KANI-BATCHE-004 | Score ordering | 8 | exhaustive |
+| KANI-BATCHE-005 | Beam search termination | 8 | exhaustive |
+
+## QA Gate
+
+**batched-beam-search-v1 Contract** (F-BBSV-001)
+
+Quality gate for Batched beam search — convert N sequential matvecs into one 
+
+**Checks:** validation, falsification
 

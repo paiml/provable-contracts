@@ -148,6 +148,13 @@ $$
 |----|------------|-------|----------|
 | KANI-QW2E-001 | QW2E-INV-001 | 1 | exhaustive |
 | KANI-QW2E-002 | QW2E-ORD-001 | 4 | bounded_int |
+| KANI-QWEN2_-003 | Parameter count matches architecture | 8 | exhaustive |
+| KANI-QWEN2_-004 | FLOPs bounded by 2P | 8 | stub_float |
+| KANI-QWEN2_-005 | Quantization memory ordering | 8 | exhaustive |
+| KANI-QWEN2_-006 | Throughput increases with bandwidth | 8 | exhaustive |
+| KANI-QWEN2_-007 | Verification coverage at 100% | 8 | exhaustive |
+| KANI-QWEN2_-008 | Compositional proof structure | 8 | exhaustive |
+| KANI-QWEN2_-009 | End-to-end shape: tokens in -> logits out | 8 | exhaustive |
 
 ## QA Gate
 

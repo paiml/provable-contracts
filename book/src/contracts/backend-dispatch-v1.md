@@ -9,6 +9,13 @@ Backend dispatch thresholds, garbage oracle, and BPE roundtrip
 - Qwen2.5-Coder Showcase Spec — backend dispatch
 - Qwen3 Performance Parity Spec — QK norm score bound
 
+## Dependency Graph
+
+```mermaid
+graph LR
+    gpu_multi_backend_parity_v1["gpu-multi-backend-parity-v1"] --> backend_dispatch_v1["backend-dispatch-v1"]
+```
+
 ## Equations
 
 ### garbage_oracle
@@ -86,6 +93,11 @@ $$
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-BD-001 | BD-MON-001 | 4 | bounded_int |
+| KANI-BACKEN-002 | GPU threshold monotonic | 8 | exhaustive |
+| KANI-BACKEN-003 | Garbage oracle detects repetition | 8 | exhaustive |
+| KANI-BACKEN-004 | QK norm score bound | 8 | stub_float |
+| KANI-BACKEN-005 | BPE roundtrip | 8 | exhaustive |
+| KANI-BACKEN-006 | SIMD dispatch equivalence | 8 | exhaustive |
 
 ## QA Gate
 

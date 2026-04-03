@@ -101,6 +101,10 @@ Operations per super-block:
 | ID | Obligation | Bound | Strategy |
 |----|------------|-------|----------|
 | KANI-AQ-001 | AQ-EQV-001 | 8 | stub_float |
+| KANI-CPU_Q4-002 | Q8_K quantization preserves dot product accuracy | 8 | exhaustive |
+| KANI-CPU_Q4-003 | CPU throughput reaches llama.cpp parity | 8 | exhaustive |
+| KANI-CPU_Q4-004 | Phase 1 quantization is amortized | 8 | exhaustive |
+| KANI-CPU_Q4-005 | SIMD kernel equivalence | 8 | exhaustive |
 
 ## QA Gate
 
