@@ -22,7 +22,7 @@ bindings:
 - contract: type-preservation-v1.yaml
   equation: type_map
   function: TypeMapper::map_type
-  module_path: depyler_core::type_mapper
+  module_path: depyler_analysis::type_mapper
   status: implemented
   notes: Core Python-to-Rust type mapping function
 - contract: type-preservation-v1.yaml
@@ -76,27 +76,25 @@ bindings:
 - contract: memory-safety-v1.yaml
   equation: escape_analysis
   function: EscapeAnalysis::analyze_function
-  module_path: depyler_core::escape_analysis
+  module_path: depyler_analysis::escape_analysis
   status: implemented
   notes: Interprocedural escape analysis for use-after-move detection
 - contract: memory-safety-v1.yaml
   equation: ownership_invariant
   function: BorrowingContext::get_pattern
-  module_path: depyler_core::borrowing
+  module_path: depyler_analysis::borrowing
   status: implemented
   notes: Determines Owned/Borrowed/MutableBorrow for each parameter
+  # REMOVED: LifetimeInference::infer does not exist.
+  # Replaced with LifetimeInference::analyze_function which is the actual API.
 - contract: memory-safety-v1.yaml
   equation: lifetime_safety
-  function: LifetimeInference::infer
-  module_path: depyler_core::lifetime_analysis
+  function: LifetimeInference::analyze_function
+  module_path: depyler_analysis::lifetime_analysis
   status: implemented
-  notes: Infers lifetime parameters for safe reference generation
-- contract: memory-safety-v1.yaml
-  equation: use_after_move
-  function: EscapeAnalysis::detect_use_after_move
-  module_path: depyler_core::escape_analysis
-  status: implemented
-  notes: Detects variables used after being moved, inserts strategic clones
+  notes: Analyzes function for lifetime parameters for safe reference generation
+  # REMOVED: EscapeAnalysis::detect_use_after_move does not exist as a separate function.
+  # Use-after-move detection is handled within EscapeAnalysis::analyze_function above.
 - contract: memory-safety-v1.yaml
   equation: bounds_safety
   function: ExprConverter::convert
@@ -118,25 +116,17 @@ bindings:
 - contract: cli-transpile-v1.yaml
   equation: exit_code_dispatch
   function: main
-  module_path: depyler::cli
+  module_path: depyler::main
   status: pending
   notes: CLI entry point — exit code dispatch for transpile subcommand
-- contract: cli-transpile-v1.yaml
-  equation: output_validity
-  function: write_output
-  module_path: depyler::cli::transpile
-  status: pending
-  notes: Validates generated Rust is syn-parseable before writing to output
-- contract: cli-transpile-v1.yaml
-  equation: input_validation
-  function: validate_input
-  module_path: depyler::cli::transpile
-  status: pending
-  notes: Validates source file exists, is UTF-8, and parses as Python
+  # REMOVED: write_output does not exist as a standalone function.
+  # Output writing is handled inline within transpile_file.
+  # REMOVED: validate_input does not exist as a standalone function.
+  # Input validation is handled inline within transpile_file.
 - contract: cli-transpile-v1.yaml
   equation: transpilation_determinism
   function: transpile_file
-  module_path: depyler::cli::transpile
+  module_path: depyler_corpus::transpiler
   status: pending
   notes: End-to-end transpilation must be deterministic (same input, same output)
 critical_path:

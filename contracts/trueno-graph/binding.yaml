@@ -7,10 +7,10 @@ bindings:
 - contract: pagerank-kernel-v1.yaml
   equation: pagerank
   function: pagerank
-  module_path: trueno_graph::src::algorithms::pagerank::pagerank
+  module_path: trueno_graph::algorithms::pagerank
   status: implemented
 - contract: configuration-v1.yaml
   equation: bfs
   function: bfs
-  module_path: trueno_graph::src::algorithms::traversal::bfs
+  module_path: trueno_graph::algorithms::traversal
   status: implemented

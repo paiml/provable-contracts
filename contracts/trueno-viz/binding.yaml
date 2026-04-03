@@ -2,7 +2,6 @@ version: 1.0.0
 target_crate: trueno-viz
 critical_path:
 - render
-- layout
 - draw
 - draw_line
 - draw_rect
@@ -10,100 +9,40 @@ bindings:
 - contract: display-format-v1.yaml
   equation: render
   function: render
-  module_path: trueno_viz::src::output::terminal::render
-  status: implemented
-- contract: tensor-layout-v1.yaml
-  equation: layout
-  function: layout
-  module_path: trueno_viz::crates::ttop::src::analyzers::treemap::layout
+  module_path: trueno_viz::output::terminal::render
   status: implemented
 - contract: classifier-pipeline-v1.yaml
   equation: draw
   function: draw_line
-  module_path: trueno_viz::src::render::primitives::draw_line
+  module_path: trueno_viz::render::primitives::draw_line
   status: implemented
 - contract: classifier-pipeline-v1.yaml
   equation: draw
   function: draw_line_aa
-  module_path: trueno_viz::src::render::primitives::draw_line_aa
+  module_path: trueno_viz::render::primitives::draw_line_aa
   status: implemented
 - contract: bidirectional-attention-v1.yaml
   equation: draw
   function: draw_rect
-  module_path: trueno_viz::src::render::primitives::draw_rect
+  module_path: trueno_viz::render::primitives::draw_rect
   status: implemented
 - contract: bidirectional-attention-v1.yaml
   equation: draw
   function: draw_rect_outline
-  module_path: trueno_viz::src::render::primitives::draw_rect_outline
+  module_path: trueno_viz::render::primitives::draw_rect_outline
   status: implemented
 - contract: display-format-v1.yaml
   equation: draw
   function: draw_circle
-  module_path: trueno_viz::src::render::primitives::draw_circle
+  module_path: trueno_viz::render::primitives::draw_circle
   status: implemented
 - contract: display-format-v1.yaml
   equation: draw
   function: draw_circle_outline
-  module_path: trueno_viz::src::render::primitives::draw_circle_outline
+  module_path: trueno_viz::render::primitives::draw_circle_outline
   status: implemented
 - contract: apr-checkpoint-v1.yaml
   equation: draw
   function: draw_point
-  module_path: trueno_viz::src::render::primitives::draw_point
-  status: implemented
-- contract: display-format-v1.yaml
-  equation: draw
-  function: draw_disk
-  module_path: trueno_viz::crates::ttop::src::panels::disk_network::draw_disk
-  status: implemented
-- contract: display-format-v1.yaml
-  equation: draw
-  function: draw_network
-  module_path: trueno_viz::crates::ttop::src::panels::disk_network::draw_network
-  status: implemented
-- contract: display-format-v1.yaml
-  equation: draw
-  function: draw_files
-  module_path: trueno_viz::crates::ttop::src::panels::files::draw_files
-  status: implemented
-- contract: display-format-v1.yaml
-  equation: draw
-  function: draw_psi
-  module_path: trueno_viz::crates::ttop::src::panels::system_process::draw_psi
-  status: implemented
-- contract: display-format-v1.yaml
-  equation: draw
-  function: draw_system
-  module_path: trueno_viz::crates::ttop::src::panels::system_process::draw_system
-  status: implemented
-- contract: preprocessing-normalization-v1.yaml
-  equation: draw
-  function: draw_process
-  module_path: trueno_viz::crates::ttop::src::panels::process_views::draw_process
-  status: implemented
-- contract: display-format-v1.yaml
-  equation: draw
-  function: draw_gpu
-  module_path: trueno_viz::crates::ttop::src::panels::gpu_sensors::draw_gpu
-  status: implemented
-- contract: display-format-v1.yaml
-  equation: draw
-  function: draw_battery
-  module_path: trueno_viz::crates::ttop::src::panels::gpu_sensors::draw_battery
-  status: implemented
-- contract: display-format-v1.yaml
-  equation: draw
-  function: draw_sensors
-  module_path: trueno_viz::crates::ttop::src::panels::gpu_sensors::draw_sensors
-  status: implemented
-- contract: display-format-v1.yaml
-  equation: draw
-  function: draw_sensors_compact
-  module_path: trueno_viz::crates::ttop::src::panels::gpu_sensors::draw_sensors_compact
-  status: implemented
-- contract: display-format-v1.yaml
-  equation: draw
-  function: draw_connections
-  module_path: trueno_viz::crates::ttop::src::panels::connections::draw_connections
+  module_path: trueno_viz::render::primitives::draw_point
   status: implemented
