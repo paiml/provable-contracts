@@ -221,22 +221,22 @@ proof_obligations:
     ensure checked only at Complete,
     invariant checked at Start AND Checkpoint AND Complete
   applies_to: all
-- type: idempotent
+- type: idempotency
   property: Checkpoint is idempotent
   formal: checkpoint(item, contract) = checkpoint(item, contract) (no side effects)
   applies_to: all
-- type: monotone
+- type: monotonicity
   property: Profile composition is monotonic
   formal: claims(rust) superset claims(universal), claims(pmat) superset claims(rust)
   applies_to: all
-- type: accountability
+- type: precondition
   property: Override requires ticket
   formal: override(claim, None) -> AccountabilityError
   applies_to: all
 falsification_tests:
 - id: FALSIFY-WDB-001
-  rule: Planned to Completed skip
-  prediction: Planned->Completed transition returns LifecycleError
+  rule: Work lifecycle valid transitions
+  prediction: Planned->Completed transition returns LifecycleError (no skip)
   test: Create work item in Planned, attempt direct transition to Completed
   if_fails: Transition validation missing adjacency check
 - id: FALSIFY-WDB-002
@@ -245,7 +245,7 @@ falsification_tests:
   test: Create claim, falsify it, attempt Complete without override
   if_fails: Falsification check not wired to lifecycle
 - id: FALSIFY-WDB-003
-  rule: Profile score bounded
+  rule: Contract profile score bounded
   prediction: Extreme inputs produce score in [0.0, 1.0]
   test: Create work item with all-zero and all-max metrics
   if_fails: Score overflow or division by zero
@@ -255,13 +255,13 @@ falsification_tests:
   test: Set max_retries=3, fail 4 times, verify escalation
   if_fails: Retry counter not decrementing or not checked
 - id: FALSIFY-WDB-005
-  rule: Claim determinism
+  rule: Falsifiable claim determinism
   prediction: Same test evidence produces same verdict twice
   test: Run claim twice with fixed inputs, compare verdicts
   if_fails: Non-deterministic state in claim evaluation
 - id: FALSIFY-WDB-006
-  rule: Terminal state finality
-  prediction: Completed work item cannot transition to any state
+  rule: Work lifecycle valid transitions
+  prediction: Completed work item cannot transition to any state (terminal finality)
   test: Create Completed item, attempt all 6 transitions
   if_fails: Terminal check missing for Completed state
 - id: FALSIFY-WDB-007
@@ -270,20 +270,25 @@ falsification_tests:
   test: Run pmat work complete with --override-claims but no --ticket
   if_fails: Override accountability not enforced
 - id: FALSIFY-WDB-008
-  rule: Checkpoint idempotency
+  rule: Checkpoint is idempotent
   prediction: Two consecutive checkpoints produce identical reports
   test: Run checkpoint twice without code changes, diff reports
   if_fails: Checkpoint has side effects or non-deterministic metric collection
 - id: FALSIFY-WDB-009
-  rule: Meyer triad phase isolation
+  rule: Meyer triad phase correctness
   prediction: require clauses NOT checked at checkpoint (only at start)
   test: Start work, modify precondition state, run checkpoint - require not re-checked
   if_fails: Phase isolation violated, require clauses leaking into checkpoint
 - id: FALSIFY-WDB-010
-  rule: Profile composition monotonicity
+  rule: Profile composition is monotonic
   prediction: pmat profile claims are strict superset of rust profile claims
   test: Generate both profiles, verify set inclusion
   if_fails: Profile composition breaks monotonicity
+- id: FALSIFY-WDB-011
+  rule: Profile weights sum to unity
+  prediction: contract_quality.score = active_claims / applicable_claims exactly
+  test: Create contract with 10/10 claims verified, verify score = 1.0
+  if_fails: Score calculation arithmetic error
 kani_harnesses:
 - id: KANI-WDB-001
   obligation: Work lifecycle valid transitions
@@ -310,11 +315,11 @@ kani_harnesses:
   strategy: exhaustive
   harness: verify_rescue_bounded
 - id: KANI-WDB-005
-  obligation: Profile claims monotonic
-  property: claims(pmat) superset claims(rust) superset claims(universal)
+  obligation: Profile weights sum to unity
+  property: active_claims / applicable_claims = score
   bound: 8
-  strategy: exhaustive
-  harness: verify_profile_monotonicity
+  strategy: stub_float
+  harness: verify_weight_unity
 - id: KANI-WDB-006
   obligation: Falsified blocks completion
   property: falsified AND NOT overridden -> Error
@@ -328,11 +333,23 @@ kani_harnesses:
   strategy: exhaustive
   harness: verify_override_accountability
 - id: KANI-WDB-008
-  obligation: Checkpoint idempotency
+  obligation: Checkpoint is idempotent
   property: checkpoint(x) = checkpoint(x)
   bound: 4
   strategy: exhaustive
   harness: verify_checkpoint_idempotent
+- id: KANI-WDB-009
+  obligation: Meyer triad phase correctness
+  property: require at Start only, ensure at Complete only, invariant at all
+  bound: 8
+  strategy: exhaustive
+  harness: verify_meyer_triad_phases
+- id: KANI-WDB-010
+  obligation: Profile composition is monotonic
+  property: claims(pmat) superset claims(rust) superset claims(universal)
+  bound: 8
+  strategy: exhaustive
+  harness: verify_profile_monotonicity
 qa_gate:
   id: F-WDB-001
   name: work-dbc-v2 Contract
