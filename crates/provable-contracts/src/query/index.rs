@@ -447,7 +447,10 @@ mod tests {
         let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
         let index = ContractIndex::build_from_directory(&dir).unwrap();
         let scores = index.pagerank(20, 0.85);
-        assert_eq!(scores.len(), index.entries.len());
+        // scores is a HashMap keyed by stem — duplicate stems collapse to one entry
+        let unique_stems: std::collections::HashSet<_> =
+            index.entries.iter().map(|e| &e.stem).collect();
+        assert_eq!(scores.len(), unique_stems.len());
         // All scores should be positive
         for s in scores.values() {
             assert!(*s > 0.0, "PageRank should be positive");

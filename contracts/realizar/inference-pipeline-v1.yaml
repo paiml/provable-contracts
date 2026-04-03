@@ -6,6 +6,9 @@ metadata:
   references:
   - 'Vaswani et al. (2017) Attention Is All You Need'
   - 'Dao et al. (2022) FlashAttention: Fast and Memory-Efficient Exact Attention'
+  depends_on:
+  - softmax-kernel-v1
+  - attention-kernel-v1
 equations:
   prefill_phase:
     formula: KV[0..n] = Attention(Embed(tokens[0..n])) for all layers

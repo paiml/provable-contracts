@@ -87,102 +87,102 @@ equations:
 
 falsification_tests:
   - id: F-TSP-001
-    claim: Wall coverage >= 90% (phases account for step time)
+    rule: Wall coverage
+    prediction: Wall coverage >= 90% (phases account for step time)
     test: >
       Run 10-step training with BrickProfiler enabled (PerLayer sync).
       sum(all phase times) / wall_clock_step_time >= 0.90.
-    status: PENDING
     if_fails: Missing instrumentation in some phase — identify unaccounted time
 
   - id: F-TSP-002
-    claim: Per-layer timing sums to phase total
+    rule: Per-layer accounting
+    prediction: Per-layer timing sums to phase total within 5%
     test: >
       sum(layer_forward[0..27]) + norm_lm == forward_total (within 5%).
       sum(layer_backward[0..27]) + lm_bwd + norm_bwd + embed_bwd == backward_total (within 5%).
-    status: PENDING
     if_fails: BrickProfiler begin/end mismatch or missing instrumentation
 
   - id: F-TSP-003
-    claim: Memory BW is the training bottleneck (not compute)
+    rule: Memory BW bottleneck
+    prediction: Memory BW is the training bottleneck (not compute)
     test: >
       Run with FP32 weights: measured step_time should be >= 7.2ms (memory BW floor).
       Run with FP16 weights: step_time should decrease proportionally (~2x less data).
       Run with NF4 packed: step_time should decrease further (~4x less data).
       If step_time does NOT decrease with smaller weights, bottleneck is NOT memory BW.
-    status: PENDING
     if_fails: >
       Bottleneck is compute (GPU utilization > 50%) or kernel launch overhead
       or CPU-side work (embedding, optimizer). Profile per-phase to identify.
 
   - id: F-TSP-004
-    claim: FP16 GEMM enables tensor cores (>= 2x compute vs FP32)
+    rule: FP16 tensor core activation
+    prediction: FP16 GEMM enables tensor cores (>= 2x compute vs FP32)
     test: >
       Compare forward time: FP16_GEMM=1 vs FP16_GEMM=0 on same model.
       FP16 forward should be >= 1.5x faster if tensor cores engaged.
-    status: PENDING
     if_fails: cuBLAS not selecting tensor core algorithm — check CUBLAS_MATH mode
 
   - id: F-TSP-005
-    claim: Fused NF4 kernels reduce memory traffic
+    rule: Fused NF4 memory reduction
+    prediction: Fused NF4 kernels reduce memory traffic
     test: >
       Compare step with NF4_FUSED_GEMM=1 (Gate+Up fused) vs separate.
       Fused should show lower memory_bytes_transferred and faster FFN phase.
-    status: PENDING
     if_fails: Fused kernel not activated or regression in fused path
 
   - id: F-TSP-006
-    claim: NF4 tensor core GEMM >= 5x compute vs naive NF4
+    rule: NF4 tensor core speedup
+    prediction: NF4 tensor core GEMM >= 5x compute vs naive NF4
     test: >
       Compare NF4_TC_GEMM=1 vs NF4_FUSED_GEMM=1 forward time.
       Tensor core path should be >= 5x faster on GEMM-dominated layers.
-    status: PENDING
     if_fails: >
       Memory BW still bottleneck (dequant SHMEM bandwidth), or WMMA
       tiles not fully utilized (occupancy issue)
 
   - id: F-TSP-007
-    claim: CUDA graph eliminates kernel launch overhead
+    rule: CUDA graph launch elimination
+    prediction: CUDA graph eliminates kernel launch overhead
     test: >
       Compare CUDA_GRAPH=1 vs CUDA_GRAPH=0 on same model.
       With ~1288 launches at 5us each = 6.4ms. Graph should save this.
-    status: PENDING
     if_fails: Graph capture failed or not replaying (check entrenar log)
 
   - id: F-TSP-008
-    claim: Backward is >= 2x forward time (gradient compute + weight update)
+    rule: Backward-forward ratio
+    prediction: Backward is >= 2x forward time (gradient compute + weight update)
     test: >
       backward_total / forward_total should be in [1.5, 3.0].
       If < 1.5: backward may be incomplete (NaN skip, missing layers).
       If > 3.0: backward has pathological overhead (D2H sync, recompute).
-    status: PENDING
     if_fails: Investigate NaN backward skips or incomplete backward path
 
   - id: F-TSP-009
-    claim: Optimizer is < 10% of step time
+    rule: Optimizer overhead
+    prediction: Optimizer is < 10% of step time
     test: optimizer_time / step_time < 0.10
-    status: PENDING
     if_fails: CPU optimizer bottleneck — consider GPU-resident optimizer
 
   - id: F-TSP-010
-    claim: D2H/H2D transfers are < 15% of step time
+    rule: Transfer overhead
+    prediction: D2H/H2D transfers are < 15% of step time
     test: (h2d_time + d2h_time) / step_time < 0.15
-    status: PENDING
     if_fails: PCIe transfer bottleneck — need to eliminate remaining D2H/H2D
 
   - id: F-TSP-011
-    claim: Reproducibility — CV < 10% across 5 runs
+    rule: Reproducibility
+    prediction: CV < 10% across 5 identical training runs
     test: >
       Run 5 identical training sessions (locked clocks, seed=42).
       Coefficient of variation of per-step time < 0.10.
-    status: PENDING
     if_fails: Clock instability, thermal throttling, or background processes
 
   - id: F-TSP-012
-    claim: BrickProfiler overhead < 3% of step time
+    rule: Profiler overhead
+    prediction: BrickProfiler overhead < 3% of step time
     test: >
       Compare step time with profiler enabled (PerLayer sync) vs disabled.
       Overhead = (profiled - unprofiled) / unprofiled < 0.03.
-    status: PENDING
     if_fails: Sync mode too aggressive — use Deferred mode for production
 
 proof_obligations:
@@ -210,6 +210,38 @@ proof_obligations:
     property: Profiler overhead
     formal: (profiled_step - unprofiled_step) / unprofiled_step < 0.03
     applies_to: all
+
+kani_harnesses:
+  - id: KANI-TSP-001
+    obligation: Wall coverage threshold
+    property: Wall coverage threshold
+    bound: 8
+    strategy: stub_float
+  - id: KANI-TSP-002
+    obligation: Coverage upper bound
+    property: Coverage upper bound
+    bound: 8
+    strategy: stub_float
+  - id: KANI-TSP-003
+    obligation: Backward >= forward time
+    property: Backward >= forward time
+    bound: 8
+    strategy: stub_float
+  - id: KANI-TSP-004
+    obligation: Layer count matches model
+    property: Layer count matches model
+    bound: 8
+    strategy: exhaustive
+  - id: KANI-TSP-005
+    obligation: Memory BW floor
+    property: Memory BW floor
+    bound: 8
+    strategy: stub_float
+  - id: KANI-TSP-006
+    obligation: Profiler overhead
+    property: Profiler overhead
+    bound: 8
+    strategy: stub_float
 
 implementation_requirements:
   entrenar_changes:

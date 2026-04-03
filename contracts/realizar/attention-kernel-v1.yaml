@@ -6,6 +6,8 @@ metadata:
   references:
   - 'Vaswani et al. (2017) Attention Is All You Need'
   - 'Su et al. (2021) RoFormer: Enhanced Transformer with Rotary Position Embedding'
+  depends_on:
+  - softmax-kernel-v1
 equations:
   scaled_dot_product:
     formula: Attention(Q, K, V) = softmax(Q K^T / √d_k) V
