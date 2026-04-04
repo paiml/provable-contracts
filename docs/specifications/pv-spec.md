@@ -1,4 +1,4 @@
-# pv — Provable Contracts Specification v2.5.0
+# pv — Provable Contracts Specification v2.6.0
 
 **Papers to Math to Contracts in Code.**
 
@@ -130,18 +130,19 @@ provable-contracts/
 
 | Metric | Value | Verified |
 |---|---|---|
-| YAML contracts (total files) | 204+ | `find contracts/ -name '*.yaml' ! -name 'binding.yaml' \| wc -l` |
-| Parseable scored contracts | 271 | `pv coverage` (excludes kaizen/, legacy/, pipelines/) |
-| Equations | 896 | `pv coverage contracts/` (recursive, v2.5.0) |
-| Proof obligations | 1241 | `pv coverage contracts/` (recursive, v2.5.0) |
-| Falsification tests | 1365 | `pv coverage contracts/` (recursive, v2.5.0) |
-| Kani harnesses (YAML-defined) | 1355 | `pv coverage contracts/` (recursive, v2.5.0) |
-| **Real bindings (with module_path)** | **660+** | Ghost bindings stripped 2026-03-28 |
-| Binding repos with entries | 35 directories | `ls contracts/*/binding.yaml` |
+| YAML contracts (total files) | 324 | `find contracts/ -name '*.yaml' ! -name 'binding.yaml' \| wc -l` |
+| Parseable scored contracts | 271+ | `pv coverage` (excludes kaizen/, legacy/, pipelines/) |
+| Equations | 896+ | `pv coverage contracts/` (recursive) |
+| Proof obligations | 1241+ | `pv coverage contracts/` (recursive) |
+| Falsification tests | 1365+ | `pv coverage contracts/` (recursive) |
+| Kani harnesses (YAML-defined) | 1355+ | `pv coverage contracts/` (recursive) |
+| **Real bindings (with module_path)** | **958** | `grep -r '^- contract:' contracts/*/binding.yaml` |
+| Binding repos with entries | 41 directories | `ls contracts/*/binding.yaml` |
+| Kaizen-scanned repos | 40 | `pv kaizen` (requires sibling source directory or `source_dir`) |
 | Proof obligation types | 26 (19 property + 7 Eiffel DbC) | schema/types.rs |
 | CLI commands | 34 | `pv --help` (includes `pv pipeline`) |
-| Repos with build.rs enforcement | 7/33 | aprender, trueno, entrenar, realizar, forjar, ruchy, simular |
-| Repos with trait tests | 11/33 | manual audit 2026-03-28 |
+| Repos with build.rs enforcement | 7/40 | aprender, trueno, entrenar, realizar, forjar, ruchy, simular |
+| Repos with trait tests | 11/40 | manual audit 2026-03-28 |
 | `#[contract]` proc-macro annotations | 18 | forjar: 4, paiml-mcp-agent-toolkit: 11, batuta: 3 |
 | Stack LoC governed | ~6.4M Rust | — |
 
@@ -155,6 +156,14 @@ provable-contracts/
 > **v2.3.0 Correction (2026-03-28):** `pv coverage` recursion bug fixed —
 > previously only scanned top-level contracts/ (131 files), now recurses
 > into subdirectories (165 parseable contracts). Totals updated accordingly.
+>
+> **v2.6.0 Update (2026-04-04):** Fleet expanded from 25→40 repos via
+> `source_dir` binding.yaml field. Real binding entries grew to 958 (from
+> 660) with 6 new apr-cli bindings and 4 new binding stubs. kaizen now
+> resolves name-mismatched repos (pmat → paiml-mcp-agent-toolkit,
+> pmcp → rust-mcp-sdk). PV-AUD-003 reduced to 0. pmat infrastructure
+> contracts at 0 lint warnings (51/51 equations with pre+postconditions).
+> Work-DBC lifecycle state machine falsified and fixed in pmat implementation.
 
 ---
 
@@ -2805,11 +2814,11 @@ This section will be falsified by:
 
 ### Motivation
 
-v2.4.0 produces 540 domain-specific assertions across 170+ contracts,
-but only 27 call sites exist across 25 repos. Fleet enforcement score
-is ~1.5%. The bottleneck is not contract quality — it's call site
+v2.4.0 produced 540 domain-specific assertions across 170+ contracts,
+but only 27 call sites existed across 25 repos. Fleet enforcement score
+was ~1.5%. The bottleneck was not contract quality — it was call site
 injection. Manual dogfooding (switching to each repo, regenerating,
-fixing compilation) takes hours per cycle.
+fixing compilation) took hours per cycle.
 
 **Kaizen** (改善, continuous improvement) automates this: a single
 command measures, regenerates, injects, validates, and reports across
@@ -2817,24 +2826,51 @@ the entire sovereign stack.
 
 ### The Fleet
 
-The PAIML sovereign stack comprises 25 Rust crates with contract bindings:
+The PAIML sovereign stack comprises 40 Rust crates with contract bindings
+(41 binding directories, 40 with resolvable sibling source):
 
 | Repo | Domain | Binding Count |
 |------|--------|---------------|
-| aprender | ML inference | 284 |
-| entrenar | ML training | 88 |
-| trueno | SIMD tensor ops | 22 |
-| realizar | quantization | 23 |
-| alimentar | serving/plugins | 16 |
+| aprender | ML inference + apr-cli | 284 |
+| realizar | quantization + GPU | 100 |
+| entrenar | ML training | 50 |
+| trueno | SIMD tensor ops | 38 |
+| decy | code analysis | 31 |
+| rurl | HTTP client | 24 |
+| duende | daemon orchestration | 23 |
+| pmcp | MCP protocol SDK | 23 |
+| batuta | agent orchestration | 20 |
+| ruchy | bytecode VM | 20 |
+| simular | simulation framework | 20 |
+| renacer | golden tracing | 20 |
+| trueno-rag | RAG pipeline | 20 |
+| trueno-zram | ZRAM compression | 20 |
+| presentar | TUI framework | 20 |
+| depyler | Python→Rust transpiler | 18 |
+| bashrs | shell/Make linting | 16 |
 | forjar | secret management | 13 |
-| trueno-rag | RAG pipeline | 12 |
-| ruchy | bytecode VM | 18 |
-| batuta | code analysis | 15 |
-| depyler | Python→Rust transpiler | 11 |
-| 15 others | various | ~120 |
+| rmedia | media processing | 13 |
+| pmat | quality analysis (CLI) | 12 |
+| probar | property testing | 13 |
+| 19 others | various | ~160 |
 
 Each repo follows the sibling-path convention:
 `CARGO_MANIFEST_DIR/../provable-contracts/contracts/<crate>/binding.yaml`
+
+**v2.6.0 addition:** The `source_dir` field in binding.yaml allows repos
+whose contract directory name differs from the source directory name:
+
+```yaml
+# contracts/pmat/binding.yaml
+version: 1.0.0
+target_crate: pmat
+source_dir: paiml-mcp-agent-toolkit  # resolves to ../paiml-mcp-agent-toolkit/
+bindings: [...]
+```
+
+When present, `source_dir` takes priority over the direct name match.
+This enables pmat (source in `paiml-mcp-agent-toolkit/`) and pmcp
+(source in `rust-mcp-sdk/`) to participate in kaizen fleet scans.
 
 ### The Kaizen Loop
 
@@ -2880,22 +2916,21 @@ For each modified repo:
 ```
 Fleet Enforcement Report
 ========================
-  Repos:          25
-  Total bindings: 612
-  Call sites:     27 → 340 (+313)
-  Penetration:    4.4% → 55.6%
+  Repos:              40
+  Total bindings:     678
+  Call sites:         424
+  Penetration:        62.5%
 
-  E0 (generic):   33 → 33
-  E1 (domain):    500 → 500
-  E2 (pre+post):  7 → 42
+  E0 (generic):       54
+  E1 (domain pre):    137
+  E2 (pre + post):    233
 
-  Quality score:  0.34 → 0.52
-  Enforcement:    0.015 → 0.289
+  Assertions:         14,436
+  Enforcement:        0.4527 (Grade B)
 
-  Per-repo:
-    aprender     284 bindings  12→156 sites  E1  0.004→0.275
-    entrenar      88 bindings   4→48  sites  E1  0.002→0.273
-    ...
+  Tiered:
+    Kernel (4 repos):  Grade F — 34/283 sites, E2 44%, pen 12.0%
+    Tool (36 repos):   Grade A — 390/395 sites, pen 98.7%
 ```
 
 ### Injection Strategy
@@ -2953,7 +2988,7 @@ contracts with real invariants (finiteness, shape, bounds). Quality
 metric: `penetration × quality` where E0=0.1, E1=0.5, E2=1.0.
 Target: Grade A (score >= 0.60, E2 >= 60%).
 
-**Tool tier** (21 other repos): Infrastructure wiring. E0 is acceptable
+**Tool tier** (36 other repos): Infrastructure wiring. E0 is acceptable
 because tool functions pass strings/structs, not numeric slices.
 Target: Grade A (penetration >= 90%).
 
@@ -2966,39 +3001,50 @@ Target: Grade A (penetration >= 90%).
 | v2.4.1 | D (0.178) | — | — | `/kaizen` fleet sweep |
 | v2.4.2 | C (0.258) | — | — | Postconditions + E1 classifier |
 | v2.4.3 | C (0.374) | B (0.43) | B (86%) | YAML rewrite + tiered grading |
-| **v2.4.4** | **B (0.590)** | **A** | **A (93%)** | **realizar 74 new sites, E0→E1 fleet-wide, YAML equation fixes** |
+| v2.4.4 | B (0.590) | A | A (93%) | realizar 74 new sites, E0→E1 fleet-wide |
+| **v2.6.0** | **B (0.453)** | **F (12%)** | **A (98.7%)** | **40-repo fleet (+15), source_dir, postconditions, DBC lifecycle** |
 | v3.0.0 | A (0.65) | A (0.80) | A (95%) | E2 for remaining P1/P2 contracts |
 
-**v2.4.4 measured state (2026-03-30):**
+> **Note:** v2.6.0 fleet score dropped from v2.4.4's 0.590 because the
+> fleet expanded from 25→40 repos. The 15 new repos (including pmat, pmcp,
+> probar, rurl, duende, and others) mostly have bindings but few call sites
+> yet, diluting the penetration rate. Tool tier remains Grade A (98.7%).
+> Kernel tier dropped to F because realized/aprender call site injection
+> from v2.4.4 was not persisted in the new repo checkouts.
+
+**v2.6.0 measured state (2026-04-04):**
 
 ```
-Fleet: 25 repos, 523 bindings, 514 call sites
-Penetration: 98.3%
-Fleet enforcement: 0.5895 (Grade B)
+Fleet: 40 repos, 678 bindings, 424 call sites
+Penetration: 62.5%
+Fleet enforcement: 0.4527 (Grade B)
 
-Kernel (4 repos): Grade A — 251/239 sites, E2 53%, pen 105%
-Tool (21 repos):  Grade A — 263/284 sites, pen 93%
+Kernel (4 repos): Grade F — 34/283 sites, E2 44%, pen 12.0%
+Tool (36 repos):  Grade A — 390/395 sites, pen 98.7%
 
-E0 (generic):     48 call sites
-E1 (domain pre): 325 call sites
-E2 (pre+post):   141 call sites
-Assertions:      11,429
+E0 (generic):      54 call sites
+E1 (domain pre):  137 call sites
+E2 (pre+post):    233 call sites
+Assertions:       14,436
 
-Grade A repos (6): alimentar, aprender, entrenar, realizar, trueno, trueno-rag
-Grade B repos (8): bashrs, decy, forjar, pacha, presentar, renacer, rmedia,
-                   ruchy, simular, trueno-zram
-Grade F repos (4): batuta, certeza, repartir, apr-model-qa-playbook
+Grade A repos (17): alimentar, bashrs, batuta, certeza, decy, depyler,
+                    forjar, pacha, pepita, presentar, renacer, repartir,
+                    rmedia, ruchy, simular, trueno-viz, trueno-zram
+Grade C repos (1):  trueno
+Grade F repos (15): aprender, apr-model-qa-playbook, copia, duende,
+                    entrenar, faro, pmat, pmcp, probar, pzsh, rclean,
+                    realizar, rurl, verificar, zenith
 ```
 
-**Key improvements v2.4.3→v2.4.4:**
-- realizar: C→A (48→122 sites, 22→70 E2, +74 new call sites)
-- decy: D→B (21 E0→21 E1, YAML precondition fix)
-- presentar: D→B (20 E0→20 E1, added `render` equation to YAML)
-- rmedia: D→B (13 E0→13 E1, regenerated stale macros)
-- depyler: D→C (11 E0→0 E0, YAML precondition fix)
-- Fleet E0: 109→48 (-61), E1: 238→325 (+87), E2: 93→141 (+48)
-- Feature-gated test discovery: `#[cfg(feature = "gpu")]` tests
-  downgraded from Error to Warning in `pv lint`
+**Key improvements v2.4.4→v2.6.0:**
+- Fleet expanded 25→40 repos via source_dir binding.yaml feature
+- pmat now in kaizen (12 bindings, 11 E0 sites) via source_dir → paiml-mcp-agent-toolkit
+- pmcp now in kaizen (23 bindings) via source_dir → rust-mcp-sdk
+- 4 new binding stubs: cohete, manzana, nviwatch, promogen
+- PV-AUD-003 eliminated: 3 entrenar contracts gained proof_obligations + falsification tests
+- pmat infrastructure contracts: 8 postconditions added, 0 lint warnings (was 8)
+- apr-cli-v1 score: D→C (0.55→0.75) with 6 new bindings to aprender registry
+- 146 book pages regenerated
 
 ### CLI Reference
 
@@ -3017,7 +3063,7 @@ OPTIONS:
 
 **Output includes:**
 - Fleet-wide enforcement score with letter grade
-- Tiered breakdown: kernel (4 repos) vs tool (21 repos) with separate grades
+- Tiered breakdown: kernel (4 repos) vs tool (36 repos) with separate grades
 - Per-repo table with bindings, sites, E0/E1/E2, and letter grade
 - Workspace subcrate scanning (scans `crates/*/src/` in addition to `src/`)
 
@@ -3052,7 +3098,17 @@ OPTIONS:
 
 > Sub-specification: [sub/pmat-infrastructure-contracts.md](sub/pmat-infrastructure-contracts.md)
 
-Nine contracts covering CLI/HTTP interface, MCP protocol, Graph/Index, concurrency safety, tracing/observability, memory management, state machines, configuration schema, and compression roundtrip. Brings pmat from 4 to 13 contracts.
+Fifteen contracts covering CLI/HTTP interface, MCP protocol, Graph/Index,
+concurrency safety, tracing/observability, memory management, state machines,
+configuration schema, compression roundtrip, TDG scoring, composite scoring,
+context generation, comply-check, work-DBC lifecycle, and work-DBC claims.
+All 51 equations have preconditions AND postconditions (0 lint warnings).
+pmat binding registry has 12 bindings, 4 implemented (tdg, comply, score, context).
+
+**v2.6.0 addition:** pmat work lifecycle state machine is now enforced in code:
+`ItemStatus::can_transition_to()` validates the adjacency matrix from
+work-dbc-v1.yaml. Planned→Completed is blocked (must go through InProgress).
+Require clauses are evaluated at `pmat work start` (Meyer triad §Start phase).
 
 ---
 
