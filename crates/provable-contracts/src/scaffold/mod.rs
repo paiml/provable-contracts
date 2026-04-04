@@ -99,7 +99,8 @@ pub fn generate_standalone_trait(contract: &Contract, stem: &str) -> String {
     out.push_str(&format!("pub trait {trait_name} {{\n"));
 
     // One method per equation
-    for (name, eq) in &contract.equations {
+    let eq_count = contract.equations.len();
+    for (i, (name, eq)) in contract.equations.iter().enumerate() {
         out.push_str(&format!("    /// `{name}`: {}\n", eq.formula));
         if let Some(ref domain) = eq.domain {
             out.push_str(&format!("    /// Domain: {domain}\n"));
@@ -113,7 +114,11 @@ pub fn generate_standalone_trait(contract: &Contract, stem: &str) -> String {
         // Use equation name as method name, sanitized
         let method_name = name.replace('-', "_").to_lowercase();
         let params = domain_to_params(eq.domain.as_deref());
-        out.push_str(&format!("    fn {method_name}({params}) -> Vec<f32>;\n\n"));
+        out.push_str(&format!("    fn {method_name}({params}) -> Vec<f32>;\n"));
+        // Blank line between methods, but not after the last one
+        if i + 1 < eq_count {
+            out.push('\n');
+        }
     }
 
     out.push_str("}\n");

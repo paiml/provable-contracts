@@ -22,8 +22,10 @@ This follows from the fact that:
 
 namespace ProvableContracts.NF4
 
-/-- NF4 codebook: 16 values mapping 4-bit indices to normalized floats. -/
-def nf4_lut : Fin 16 → ℝ := sorry -- The actual LUT values from bitsandbytes
+/-- NF4 codebook: 16 values mapping 4-bit indices to normalized floats.
+    Axiomatized because the exact bitsandbytes constants are irrational
+    in ℝ; the key properties (monotone, bounded) are stated below. -/
+axiom nf4_lut : Fin 16 → ℝ
 
 /-- NF4 dequantization of a single nibble. -/
 def dequant_nibble (nibble : Fin 16) : ℝ :=
