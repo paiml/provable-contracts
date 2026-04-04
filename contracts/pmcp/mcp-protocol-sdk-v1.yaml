@@ -261,16 +261,25 @@ proof_obligations:
   formal: >-
     for-all e in Error: JSONRPCError.message.contains(e.to_string())
   applies_to: error_code_mapping
+  lean:
+    theorem: Theorems.ErrorCodeMapping
+    status: sorry
 - type: ordering
   property: Batch response ordering matches request ordering
   formal: >-
     for-all i in 0..n: batch_responses[i].id == batch_requests[i].id
   applies_to: batch_request_ordering
+  lean:
+    theorem: Theorems.BatchRequestOrdering
+    status: sorry
 - type: bound
   property: Payload limits enforced before handler dispatch
   formal: >-
     len(tool_args) > max_tool_args_bytes => handler never invoked
   applies_to: payload_limits
+  lean:
+    theorem: Theorems.PayloadLimits
+    status: sorry
 
 falsification_tests:
 - id: FALSIFY-PMCP-001

@@ -197,7 +197,7 @@ proof_obligations:
     forall s : {Completed, Cancelled}, no outgoing edge from s.
   applies_to: all
   lean:
-    theorem: Theorems.Unknown
+    theorem: Theorems.WorkLifecycle
     status: sorry
 - type: determinism
   property: Falsifiable claim determinism
@@ -243,7 +243,7 @@ proof_obligations:
     invariant checked at Start AND Checkpoint AND Complete
   applies_to: all
   lean:
-    theorem: Theorems.Unknown
+    theorem: Theorems.MeyerTriadPhaseCorrectness
     status: sorry
 - type: idempotency
   property: Checkpoint is idempotent
