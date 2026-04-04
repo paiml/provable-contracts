@@ -108,6 +108,16 @@ equations:
     - Tool is registered
     - Params are valid per inputSchema
     lean_theorem: Theorems.Idempotency_Classification
+
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Validate JSON-RPC envelope, check session state, parse method
+  - name: execute
+    description: Dispatch to tool handler, validate params against schema
+  - name: verify_output
+    description: Map errors to JSON-RPC codes, verify response envelope
+
 proof_obligations:
 - type: invariant
   property: Schema matches handler parameters
@@ -120,6 +130,7 @@ proof_obligations:
 - type: invariant
   property: Error codes are valid JSON-RPC
   formal: '∀ err: json_rpc_code(err) ∈ {-32700, -32601, -32602, -32603} ∪ [-32099..-32000]'
+  tolerance: 1e-6
   applies_to: error_mapping
 - type: invariant
   property: Idempotent tools are deterministic

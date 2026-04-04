@@ -96,10 +96,20 @@ equations:
     - special tokens appear exactly once
     lean_theorem: Theorems.PreprocessingIdempotency
 
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Validate data file exists, check format and encoding
+  - name: execute
+    description: Load, split, preprocess, and stream data batches
+  - name: verify_output
+    description: Verify sample conservation, split disjointness, and batch completeness
+
 proof_obligations:
 - type: conservation
   property: Split preserves all samples
   formal: "len(Train) + len(Val) + len(Test) == N, no duplicates"
+  tolerance: 1e-6
   applies_to: data_split_determinism
   lean:
     theorem: Theorems.DataSplitDeterminism
@@ -168,23 +178,29 @@ kani_harnesses:
   strategy: bounded_int
   harness: verify_split_conservation
 - id: KANI-DATA-002
-  obligation: DataLoader yields all samples
+  obligation: DataLoader yields all samples exactly once
   property: sum(batch.len()) == N
   bound: 16
   strategy: bounded_int
   harness: verify_dataloader_conservation
 - id: KANI-DATA-003
-  obligation: Preprocessing idempotent
+  obligation: Preprocessing is idempotent for special tokens
   property: special_tokens counted once
   bound: 8
   strategy: exhaustive
   harness: verify_preprocessing_idempotent
 - id: KANI-DATA-004
-  obligation: Split determinism
+  obligation: Split with same seed is deterministic
   property: same seed same result
   bound: 8
   strategy: exhaustive
   harness: verify_split_deterministic
+- id: KANI-DATA-005
+  obligation: Validation is read-only
+  property: hash(file_before) == hash(file_after) for validate(file)
+  bound: 8
+  strategy: exhaustive
+  harness: verify_validation_readonly
 
 qa_gate:
   id: F-DATA-GATE

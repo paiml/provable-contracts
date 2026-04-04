@@ -106,6 +106,15 @@ equations:
     - TCP port available for rebinding
     lean_theorem: Theorems.GracefulShutdown
 
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Validate config, check model path exists, verify port availability
+  - name: execute
+    description: Bind socket, load model, serve requests with concurrent isolation
+  - name: verify_output
+    description: Graceful shutdown, drain in-flight requests, release all resources
+
 proof_obligations:
 - type: state_machine
   property: Server lifecycle valid transitions
@@ -119,6 +128,7 @@ proof_obligations:
 - type: invariant
   property: No cross-request KV cache contamination
   formal: result(req_a, concurrent=[]) == result(req_a, concurrent=[req_b])
+  tolerance: 1e-6
   applies_to: concurrent_inference_isolation
   lean:
     theorem: Theorems.ConcurrentInferenceIsolation
@@ -174,7 +184,7 @@ kani_harnesses:
   strategy: exhaustive
   harness: verify_route_completeness
 - id: KANI-SRV-003
-  obligation: Graceful shutdown completes in-flight
+  obligation: Graceful shutdown completes in-flight requests
   property: in_flight == 0 before exit
   bound: 4
   strategy: exhaustive

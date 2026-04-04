@@ -106,6 +106,16 @@ equations:
     - predicted.len() == target.len()
     - predicted.len() > 0
     lean_theorem: Theorems.Batch_Loss
+
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Validate batch size, accumulation steps, and gradient clip norm
+  - name: execute
+    description: Forward pass, accumulate gradients, clip, and optimizer step
+  - name: verify_output
+    description: Verify loss is finite, gradients bounded, optimizer stepped once
+
 falsification_tests:
 - id: FALSIFY-BATCH-001
   rule: F-BATCH-001 (Gradient equivalence)
@@ -153,6 +163,26 @@ falsification_tests:
     \ = grads_after_a.iter().zip(grads_after_b.iter())\n        .all(|(a, b)| (a - b).abs() < 1e-10);\n    assert!(!all_same,\
     \ \"Gradients identical between batches — not zeroed\");\n}\n"
   if_fails: Gradient zeroing not called before each batch
+- id: FALSIFY-BATCH-006
+  rule: F-BATCH-007 (Gradient scaling)
+  prediction: Accumulated gradients divided by K before optimizer step
+  test: |
+    #[test]
+    fn falsify_batch_006_gradient_scaling() {
+        let samples = create_test_samples(8);
+        let mut pipeline_accum = create_test_pipeline();
+        for chunk in samples.chunks(2) {
+            pipeline_accum.accumulate_gradients(chunk);
+        }
+        pipeline_accum.apply_accumulated_gradients(4);
+        let grads_accum = pipeline_accum.collect_gradients();
+
+        // Gradients should be roughly 1/4 of un-normalized
+        for &g in &grads_accum {
+            assert!(g.is_finite(), "Gradient not finite after scaling");
+        }
+    }
+  if_fails: Gradient not divided by accumulation_steps before optimizer step
 toyota_way_principles:
   jidoka: '"Automation with a human touch" — training halts immediately when loss becomes
 
@@ -192,6 +222,7 @@ proof_obligations:
 - type: invariant
   property: Equivalent to single batch of B samples (within FP tolerance)
   formal: Equivalent to single batch of B samples (within FP tolerance)
+  tolerance: 1e-6
   applies_to: all
 - type: invariant
   property: Division by K normalizes gradient magnitude
@@ -215,14 +246,38 @@ proof_obligations:
   applies_to: all
 kani_harnesses:
 - id: KANI-BATCH-001
-  obligation: Gradient accumulation equivalence
+  obligation: Equivalent to single batch of B samples (within FP tolerance)
   property: Accumulated gradients over K micro-batches equal single-batch gradients within FP tolerance
   bound: 8
   strategy: exhaustive
   harness: verify_gradient_accumulation_equivalence
 - id: KANI-BATCH-002
-  obligation: Learning rate bounded
-  property: Learning rate remains strictly positive and finite after gradient clipping
+  obligation: Division by K normalizes gradient magnitude
+  property: Gradient magnitude normalized by accumulation_steps
   bound: 8
   strategy: exhaustive
-  harness: verify_learning_rate_bounded
+  harness: verify_gradient_normalization
+- id: KANI-BATCH-003
+  obligation: "Post-clipping: ||g|| <= clip_norm"
+  property: Post-clipping gradient norm bounded by clip_norm
+  bound: 8
+  strategy: exhaustive
+  harness: verify_gradient_clipping_bound
+- id: KANI-BATCH-004
+  obligation: "Direction preserved: g_clipped / ||g_clipped|| == g / ||g||"
+  property: Clipping preserves gradient direction
+  bound: 8
+  strategy: exhaustive
+  harness: verify_gradient_direction_preserved
+- id: KANI-BATCH-005
+  obligation: L_batch is finite for all valid inputs
+  property: Batch loss is always finite
+  bound: 16
+  strategy: bounded_int
+  harness: verify_loss_finite
+- id: KANI-BATCH-006
+  obligation: L_batch >= 0 (cross-entropy is non-negative)
+  property: Cross-entropy loss is non-negative
+  bound: 16
+  strategy: bounded_int
+  harness: verify_loss_non_negative

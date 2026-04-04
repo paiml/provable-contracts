@@ -213,6 +213,16 @@ equations:
     - cpu_logits.len() == gpu_logits.len()
     - cpu_logits.len() > 0
     lean_theorem: Theorems.CosineParityGate
+
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Verify CPU and GPU output vectors have matching dimensions
+  - name: execute
+    description: Compute per-layer parity check with tolerance-aware comparison
+  - name: verify_output
+    description: Report first divergence point with values, apply cosine parity gate
+
 proof_obligations:
 - type: invariant
   property: GPU/CPU output dimension equality
@@ -221,6 +231,7 @@ proof_obligations:
 - type: postcondition
   property: Cosine parity gate bounded
   formal: -1.0 <= cosine_similarity(cpu, gpu) <= 1.0
+  tolerance: 1e-6
   applies_to: all
 - type: postcondition
   property: Divergence detection — first failure reported
@@ -228,17 +239,23 @@ proof_obligations:
   applies_to: all
 kani_harnesses:
 - id: KANI-PARITY-001
-  obligation: Cosine parity gate bounded
-  property: -1.0 <= cosine_similarity <= 1.0
-  bound: 16
-  strategy: stub_float
-  harness: verify_cosine_similarity_bounded
-- id: KANI-PARITY-002
   obligation: GPU/CPU output dimension equality
   property: CPU and GPU vectors have same length at each step
   bound: 8
   strategy: exhaustive
   harness: verify_output_dimension_equality
+- id: KANI-PARITY-002
+  obligation: Cosine parity gate bounded
+  property: -1.0 <= cosine_similarity <= 1.0
+  bound: 16
+  strategy: stub_float
+  harness: verify_cosine_similarity_bounded
+- id: KANI-PARITY-003
+  obligation: "Divergence detection \u2014 first failure reported"
+  property: First failing step index reported on divergence
+  bound: 8
+  strategy: exhaustive
+  harness: verify_divergence_first_failure
 qa_gate:
   id: F-LPV-001
   name: layer-parity-v1 Contract

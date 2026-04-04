@@ -118,6 +118,16 @@ equations:
     - "Timed-out requests return 408 or 504 with JSON error envelope"
     - "Model state is unchanged after timeout (no partial mutation)"
     lean_theorem: Theorems.Timeout_Honoring
+
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Parse HTTP request, validate JSON body against endpoint schema
+  - name: execute
+    description: Route to handler, process inference, stream response
+  - name: verify_output
+    description: Verify JSON envelope, CORS headers, SSE framing, timeout cleanup
+
 proof_obligations:
 - type: invariant
   property: Error responses always have JSON envelope
@@ -143,6 +153,7 @@ proof_obligations:
 - type: invariant
   property: Timeout does not corrupt model state
   formal: '∀ timeout: model.state_after == model.state_before'
+  tolerance: 1e-6
   applies_to: timeout_honoring
   lean:
     theorem: Theorems.TimeoutHonoring

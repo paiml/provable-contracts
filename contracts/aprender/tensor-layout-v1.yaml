@@ -706,6 +706,16 @@ equations:
     preconditions:
     - WeightQuantType is non-empty enum
     lean_theorem: Theorems.QuantDispatchExhaustiveness
+
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Validate tensor data length, check for NaN/Inf, enforce density thresholds
+  - name: execute
+    description: Transpose shapes, dispatch to correct quantization kernel
+  - name: verify_output
+    description: Verify output shape, density, and format-specific invariants
+
 proof_obligations:
 - type: invariant
   property: Validated tensor rejects NaN and Inf
@@ -718,6 +728,7 @@ proof_obligations:
 - type: postcondition
   property: Density enforcement
   formal: for ValidatedEmbedding, zero_pct(data) < 50%; for ValidatedWeight, zero_pct(data) < 80%
+  tolerance: 1e-6
   applies_to: all
 - type: invariant
   property: Quant dispatch exhaustiveness — no catch-all
@@ -736,6 +747,18 @@ kani_harnesses:
   bound: 8
   strategy: exhaustive
   harness: verify_transpose_shape_swap
+- id: KANI-LAYOUT-003
+  obligation: Density enforcement
+  property: "zero_pct < threshold for ValidatedEmbedding and ValidatedWeight"
+  bound: 8
+  strategy: exhaustive
+  harness: verify_density_enforcement
+- id: KANI-LAYOUT-004
+  obligation: "Quant dispatch exhaustiveness \u2014 no catch-all"
+  property: WeightQuantType match has zero wildcard arms
+  bound: 8
+  strategy: exhaustive
+  harness: verify_quant_dispatch_exhaustive
 qa_gate:
   id: F-TLV-001
   name: tensor-layout-v1 Contract

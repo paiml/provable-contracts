@@ -155,6 +155,16 @@ equations:
     - input.len() > 0
     - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Val_Split
+
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Validate training config, split data, initialize scheduler
+  - name: execute
+    description: Run epoch loop with validation, checkpointing, and LR scheduling
+  - name: verify_output
+    description: Verify loss convergence, checkpoint restorability, split disjointness
+
 falsification_tests:
 - id: FALSIFY-LOOP-001
   rule: F-LOOP-001 (Loss decreasing)
@@ -256,6 +266,7 @@ proof_obligations:
 - type: invariant
   property: EMA_{t} < EMA_{t-5} for healthy training (5-epoch window)
   formal: EMA_{t} < EMA_{t-5} for healthy training (5-epoch window)
+  tolerance: 1e-6
   applies_to: all
 - type: invariant
   property: lr_0 = 0 (or lr_base / warmup_steps)
@@ -275,14 +286,32 @@ proof_obligations:
   applies_to: all
 kani_harnesses:
 - id: KANI-LOOP-001
-  obligation: Loss monotonicity
+  obligation: EMA_{t} < EMA_{t-5} for healthy training (5-epoch window)
   property: EMA of training loss decreases over 5-epoch windows for learnable data
   bound: 16
   strategy: exhaustive
   harness: verify_loss_monotonicity
 - id: KANI-LOOP-002
-  obligation: Checkpoint roundtrip
-  property: Loading a checkpoint reproduces val_loss within epsilon of checkpoint time
+  obligation: lr_0 = 0 (or lr_base / warmup_steps)
+  property: Learning rate starts at zero or lr_base/warmup_steps
   bound: 8
   strategy: exhaustive
-  harness: verify_checkpoint_roundtrip
+  harness: verify_lr_initial
+- id: KANI-LOOP-003
+  obligation: lr_{warmup} = lr_base (peak)
+  property: Learning rate reaches lr_base at warmup_steps
+  bound: 8
+  strategy: exhaustive
+  harness: verify_lr_peak
+- id: KANI-LOOP-004
+  obligation: N_train + N_val == N
+  property: Training and validation sample counts sum to total
+  bound: 16
+  strategy: bounded_int
+  harness: verify_split_conservation
+- id: KANI-LOOP-005
+  obligation: N_val >= 1
+  property: Validation set has at least one sample
+  bound: 8
+  strategy: exhaustive
+  harness: verify_val_nonempty

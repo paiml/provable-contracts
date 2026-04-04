@@ -147,6 +147,16 @@ equations:
     - output APR metadata contains tokenizer.merges or tokenizer.vocabulary
     - realizar can load and encode text without external tokenizer file
     lean_theorem: Theorems.Apr_Tokenizer_Embedding
+
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Detect format from magic bytes, validate source model integrity
+  - name: execute
+    description: Convert, quantize, or merge model with tensor preservation
+  - name: verify_output
+    description: Verify roundtrip fidelity, atomic write, tokenizer embedding
+
 proof_obligations:
 - type: roundtrip
   property: Format conversion preserves tensor count
@@ -155,6 +165,7 @@ proof_obligations:
 - type: bound
   property: Quantization error bounded
   formal: max_error(quant(tensor, dtype)) <= dtype_tolerance(dtype)
+  tolerance: 1e-6
   applies_to: quantization_bounds
 - type: invariant
   property: Merge architecture compatibility

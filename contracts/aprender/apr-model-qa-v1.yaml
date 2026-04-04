@@ -121,6 +121,15 @@ equations:
     - report.pass == report.failures.is_empty()
     lean_theorem: Theorems.ProbarPropertyTests
 
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Validate model path, load configuration, initialize QA gates
+  - name: execute
+    description: Run check stages, QA gates, lint rules, and property tests
+  - name: verify_output
+    description: Aggregate results, compute scores, generate reports
+
 proof_obligations:
 - type: invariant
   property: Check is read-only
@@ -132,6 +141,7 @@ proof_obligations:
 - type: postcondition
   property: QA gate composition is correct
   formal: report.score == passed_count / enabled_count
+  tolerance: 1e-6
   applies_to: qa_gate_composition
   lean:
     theorem: Theorems.QaGateComposition
@@ -199,25 +209,37 @@ falsification_tests:
 
 kani_harnesses:
 - id: KANI-QA-001
-  obligation: QA gate composition
+  obligation: Check is read-only
+  property: hash(file_before) == hash(file_after) for check(file)
+  bound: 8
+  strategy: exhaustive
+  harness: verify_check_readonly
+- id: KANI-QA-002
+  obligation: QA gate composition is correct
   property: score == passed / enabled
   bound: 8
   strategy: exhaustive
   harness: verify_qa_score
-- id: KANI-QA-002
+- id: KANI-QA-003
   obligation: Check is deterministic
   property: check(path) == check(path)
   bound: 4
   strategy: exhaustive
   harness: verify_check_deterministic
-- id: KANI-QA-003
-  obligation: Lint deduplication
+- id: KANI-QA-004
+  obligation: Canary baseline is immutable
+  property: baseline_after == baseline_before for canary(model, baseline)
+  bound: 4
+  strategy: exhaustive
+  harness: verify_canary_baseline_immutable
+- id: KANI-QA-005
+  obligation: Lint findings are deduplicated
   property: no duplicate (rule, location) pairs
   bound: 16
   strategy: exhaustive
   harness: verify_lint_dedup
-- id: KANI-QA-004
-  obligation: Probar completeness
+- id: KANI-QA-006
+  obligation: Probar tests all requested properties
   property: tested == requested
   bound: 8
   strategy: exhaustive

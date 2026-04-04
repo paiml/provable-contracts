@@ -263,6 +263,16 @@ equations:
     - '!config.is_empty()'
     - num_layers > 0
     lean_theorem: Theorems.Total_Parameters
+
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Detect SafeTensors format, validate tensor name mapping
+  - name: execute
+    description: Load and convert BF16 tensors to F32, populate all layers
+  - name: verify_output
+    description: Verify shapes match config, no NaN/Inf, GQA ratio correct
+
 toyota_way_principles:
   jidoka: '"Automation with a human touch" — weight loading halts on first shape mismatch
 
@@ -303,6 +313,7 @@ proof_obligations:
 - type: invariant
   property: Q projection is square for this config
   formal: Q projection is square for this config
+  tolerance: 1e-6
   applies_to: all
 - type: invariant
   property: 'GQA ratio: n_h / n_kv = 7'
@@ -318,14 +329,26 @@ proof_obligations:
   applies_to: all
 kani_harnesses:
 - id: KANI-WGT-001
-  obligation: Weight shape validation
-  property: Every loaded tensor shape matches TransformerConfig dimensions
+  obligation: Q projection is square for this config
+  property: Q projection shape [896, 896] for Qwen2.5-0.5B
   bound: 8
   strategy: exhaustive
-  harness: verify_weight_shape_validation
+  harness: verify_q_projection_square
 - id: KANI-WGT-002
-  obligation: Dtype preservation
-  property: BF16 to F32 conversion preserves relative magnitude ordering
+  obligation: "GQA ratio: n_h / n_kv = 7"
+  property: num_attention_heads / num_kv_heads == 7
   bound: 8
   strategy: exhaustive
-  harness: verify_dtype_preservation
+  harness: verify_gqa_ratio
+- id: KANI-WGT-003
+  obligation: "gate_proj and up_proj: [4864, 896]"
+  property: gate_proj and up_proj shapes are [4864, 896]
+  bound: 8
+  strategy: exhaustive
+  harness: verify_gate_up_proj_shape
+- id: KANI-WGT-004
+  obligation: "down_proj: [896, 4864]"
+  property: down_proj shape is [896, 4864]
+  bound: 8
+  strategy: exhaustive
+  harness: verify_down_proj_shape

@@ -150,6 +150,16 @@ equations:
     preconditions:
     - Input files exist and are readable
     lean_theorem: Theorems.Idempotent_Inspection
+
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Parse CLI arguments via clap, validate subcommand and flags
+  - name: execute
+    description: Dispatch to command handler, format output per --json/--yaml/--csv
+  - name: verify_output
+    description: Map result to exit code, verify output format fidelity
+
 proof_obligations:
 - type: invariant
   property: Every Commands variant has a dispatch handler
@@ -162,6 +172,7 @@ proof_obligations:
 - type: invariant
   property: JSON output is always parseable
   formal: '∀ r: serde_json::from_str(format(r, "json")).is_ok()'
+  tolerance: 1e-6
   applies_to: output_format_fidelity
 - type: invariant
   property: Inspection commands have no side effects

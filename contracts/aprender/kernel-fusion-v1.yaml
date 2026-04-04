@@ -193,10 +193,21 @@ equations:
     - benchmark.unfused_tok_s > 0
     - benchmark.fused_tok_s > 0
     lean_theorem: Theorems.FusionPerformance
+
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Verify kernel registry completeness, check call sites exist
+  - name: execute
+    description: Dispatch to fused or unfused kernel based on decision status
+  - name: verify_output
+    description: Verify benchmark data completeness for BLOCKED entries
+
 proof_obligations:
 - type: invariant
   property: Registry completeness — no orphaned kernels
   formal: for all K in fused_kernels, exists E in fusion_decisions where E.kernels.fused == K
+  tolerance: 1e-6
   applies_to: all
 - type: postcondition
   property: ACTIVE entry call site validity
@@ -224,13 +235,19 @@ falsification_tests:
   if_fails: Performance threshold not enforced or gate bypassed
 kani_harnesses:
 - id: KANI-FUSION-001
-  obligation: Registry completeness
+  obligation: Registry completeness — no orphaned kernels
   property: Every fused kernel has a contract entry
   bound: 8
   strategy: exhaustive
   harness: verify_registry_completeness
 - id: KANI-FUSION-002
-  obligation: BLOCKED benchmark completeness
+  obligation: ACTIVE entry call site validity
+  property: All ACTIVE entries have valid call sites
+  bound: 8
+  strategy: exhaustive
+  harness: verify_active_call_sites
+- id: KANI-FUSION-003
+  obligation: BLOCKED entries have complete benchmarks
   property: All BLOCKED entries have non-null benchmark measurements
   bound: 8
   strategy: exhaustive

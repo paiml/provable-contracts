@@ -147,6 +147,15 @@ equations:
     - actual_size != expected_size => Err with both sizes
     lean_theorem: Theorems.TruncationDetection
 
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Detect format via magic bytes, validate header integrity
+  - name: execute
+    description: Enforce provenance, strict validation, dtype coercion
+  - name: verify_output
+    description: Verify truncation detection, shape preservation, read-only invariants
+
 proof_obligations:
 - type: invariant
   property: Magic byte detection never panics
@@ -158,6 +167,7 @@ proof_obligations:
 - type: bound
   property: Header allocation is bounded
   formal: "alloc_size(header) <= file_size + OVERHEAD_CAP"
+  tolerance: 1e-6
   applies_to: header_integrity
   lean:
     theorem: Theorems.HeaderIntegrity
@@ -259,13 +269,13 @@ kani_harnesses:
   strategy: exhaustive
   harness: verify_truncation_detected
 - id: KANI-FMT-005
-  obligation: Provenance enforcement
+  obligation: Provenance blocks when enforced and missing
   property: "enforce && !hash => Err"
   bound: 4
   strategy: exhaustive
   harness: verify_provenance_enforcement
 - id: KANI-FMT-006
-  obligation: Strict validation read-only
+  obligation: Strict validation is read-only
   property: no model mutation
   bound: 4
   strategy: exhaustive

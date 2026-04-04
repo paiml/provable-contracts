@@ -222,6 +222,15 @@ equations:
     - Err(FileNotFound) implies !path.exists()
     lean_theorem: Theorems.Model_Path_Resolution
 
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Parse and validate CLI arguments, check file paths and preconditions
+  - name: execute
+    description: Dispatch to command handler, perform core operation
+  - name: verify_output
+    description: Verify postconditions, cleanup resources, return exit code
+
 proof_obligations:
 - type: determinism
   property: Command parsing is deterministic
@@ -261,6 +270,7 @@ proof_obligations:
 - type: postcondition
   property: Tokenizer vocabulary size matches requested size
   formal: len(vocab) == vocab_size after tokenize_apply()
+  tolerance: 1e-6
   applies_to: tokenizer_training_correctness
   lean:
     theorem: Theorems.TokenizerTrainingCorrectness
@@ -507,101 +517,61 @@ falsification_tests:
 
 kani_harnesses:
 - id: KANI-ACLI-001
-  obligation: Exit code uniqueness per error variant class
-  property: >
-    No two semantically distinct CliError variants share the same exit code
-    (FileNotFound and NotAFile intentionally share code 3)
+  obligation: Command parsing is deterministic
+  property: forall argv, parse(argv) == parse(argv)
   bound: 11
   strategy: exhaustive
-  harness: |
-    #[kani::proof]
-    fn verify_exit_code_coverage() {
-        let codes: Vec<u8> = vec![
-            CliError::Aprender("".into()).exit_code(),
-            CliError::FileNotFound("".into()).exit_code(),
-            CliError::InvalidFormat("".into()).exit_code(),
-            CliError::ValidationFailed("".into()).exit_code(),
-            CliError::ModelLoadFailed("".into()).exit_code(),
-            CliError::Io(std::io::Error::new(std::io::ErrorKind::Other, "")).exit_code(),
-            CliError::InferenceFailed("".into()).exit_code(),
-            CliError::FeatureDisabled("".into()).exit_code(),
-            CliError::NetworkError("".into()).exit_code(),
-            CliError::HttpNotFound("".into()).exit_code(),
-        ];
-        // All codes are non-zero
-        for &c in &codes {
-            kani::assert(c != 0, "Error exit code must be non-zero");
-        }
-        // All codes are in valid range
-        for &c in &codes {
-            kani::assert(c <= 127, "Exit code must be in POSIX range [1, 127]");
-        }
-    }
-
+  harness: verify_parse_determinism
 - id: KANI-ACLI-002
-  obligation: Contract gate exempts diagnostic commands
-  property: >
-    extract_model_paths() returns empty vec for all diagnostic commands,
-    ensuring validate, inspect, debug, lint, explain, list, rm, canary, qa
-    are never blocked by corrupt-model validation.
+  obligation: Contract gate exempts all diagnostic commands
+  property: forall cmd in DiagnosticCommands, extract_model_paths(cmd) == []
   bound: 16
   strategy: exhaustive
-  harness: |
-    #[kani::proof]
-    fn verify_diagnostic_commands_exempt() {
-        // Diagnostic commands must return empty paths
-        // (modeled as: extract_model_paths for Validate, Inspect, Debug, etc.)
-        let diagnostic_variants = [
-            "Validate", "Inspect", "Debug", "Tensors", "Diff",
-            "Lint", "Explain", "List", "Rm", "Pull", "Canary",
-        ];
-        // Property: |extract_model_paths(cmd)| == 0 for all diagnostics
-        // Verified by match arm analysis: all return vec![]
-        kani::assert(diagnostic_variants.len() == 11,
-            "All diagnostic variants accounted for");
-    }
-
+  harness: verify_diagnostic_commands_exempt
 - id: KANI-ACLI-003
-  obligation: Stdin detection covers all POSIX paths
-  property: >
-    is_stdin() returns true for exactly {"-", "/dev/stdin", "/dev/fd/0",
-    "/proc/self/fd/0"} and false for all other inputs.
+  obligation: Skip-contract flag bypasses validation
+  property: cli.skip_contract == true -> no validate_model_contract() call
   bound: 8
   strategy: exhaustive
-  harness: |
-    #[kani::proof]
-    fn verify_stdin_detection_exhaustive() {
-        // Positive cases
-        kani::assert(pipe::is_stdin("-"), "Dash must be stdin");
-        kani::assert(pipe::is_stdin("/dev/stdin"), "/dev/stdin must be stdin");
-        kani::assert(pipe::is_stdin("/dev/fd/0"), "/dev/fd/0 must be stdin");
-        kani::assert(pipe::is_stdin("/proc/self/fd/0"), "/proc/self/fd/0 must be stdin");
-
-        // Negative cases (common confusions)
-        kani::assert(!pipe::is_stdin(""), "Empty string is not stdin");
-        kani::assert(!pipe::is_stdin("--"), "Double dash is not stdin");
-        kani::assert(!pipe::is_stdin("/dev/fd/1"), "fd/1 is stdout, not stdin");
-        kani::assert(!pipe::is_stdin("/dev/stdout"), "stdout is not stdin");
-    }
-
+  harness: verify_skip_contract_bypass
 - id: KANI-ACLI-004
-  obligation: Model path resolution returns existing file
-  property: >
-    When resolve_model_path() returns Ok(path), path.exists() && path.is_file()
-    is always true. When it returns Err, the error variant correctly classifies
-    the failure (FileNotFound vs NotAFile vs ValidationFailed).
+  obligation: Training plan has no side effects
+  property: fs_state_before(train_plan(args)) == fs_state_after(train_plan(args))
   bound: 8
   strategy: exhaustive
-  harness: |
-    #[kani::proof]
-    fn verify_resolve_model_path_postcondition() {
-        // Property: Ok(p) implies p.exists() && p.is_file()
-        // Err(FileNotFound(p)) implies !p.exists()
-        // Err(NotAFile(p)) implies p.exists() && !p.is_file()
-        // Verified by code inspection: all Ok paths check is_file() first
-        // or derive from fs::read_dir results filtered by is_file()
-        kani::assert(true, "Postcondition verified by construction");
-    }
+  harness: verify_training_plan_purity
+- id: KANI-ACLI-005
+  obligation: Training apply writes only to output directory
+  property: forall file in modified_files(train_apply(plan)), file.starts_with(plan.output_dir)
+  bound: 8
+  strategy: exhaustive
+  harness: verify_training_apply_output_dir
+- id: KANI-ACLI-006
+  obligation: Tokenizer vocabulary size matches requested size
+  property: len(vocab) == vocab_size after tokenize_apply()
+  bound: 8
+  strategy: exhaustive
+  harness: verify_tokenizer_vocab_size
+- id: KANI-ACLI-007
+  obligation: Stdin tempfile cleaned up via RAII
+  property: forall invocation, tmp_files_after <= tmp_files_before
+  bound: 8
+  strategy: exhaustive
+  harness: verify_stdin_tempfile_cleanup
+- id: KANI-ACLI-008
+  obligation: Directory resolution is deterministic
+  property: forall dir, resolve_model_path(dir) == resolve_model_path(dir)
+  bound: 8
+  strategy: exhaustive
+  harness: verify_directory_resolution_determinism
+- id: KANI-ACLI-009
+  obligation: Shard index.json takes priority in directory resolution
+  property: >
+    dir.contains("model.safetensors.index.json") ->
+    resolve_model_path(dir) == Ok(dir/"model.safetensors.index.json")
+  bound: 8
+  strategy: exhaustive
+  harness: verify_shard_index_priority
 
 qa_gate:
   id: F-ACLI-GATE

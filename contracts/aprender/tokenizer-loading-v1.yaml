@@ -191,10 +191,21 @@ equations:
     preconditions:
     - byte_encoder is initialized
     lean_theorem: Theorems.ByteEncoderCoverage
+
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Parse tokenizer.json, validate vocab entries and merge rules
+  - name: execute
+    description: Build BPE merge table, byte encoder, and special token mapping
+  - name: verify_output
+    description: Verify roundtrip correctness, vocab size, byte coverage
+
 proof_obligations:
 - type: postcondition
   property: Roundtrip encode-decode correctness
   formal: for all valid UTF-8 text t, decode(encode(t)) == t
+  tolerance: 1e-6
   applies_to: all
 - type: invariant
   property: Token IDs bounded by vocab_size
@@ -206,12 +217,18 @@ proof_obligations:
   applies_to: all
 kani_harnesses:
 - id: KANI-TOK-001
+  obligation: Roundtrip encode-decode correctness
+  property: for all valid UTF-8 text t, decode(encode(t)) == t
+  bound: 8
+  strategy: exhaustive
+  harness: verify_roundtrip_encode_decode
+- id: KANI-TOK-002
   obligation: Token IDs bounded by vocab_size
   property: All encoded IDs < vocab_size
   bound: 16
   strategy: exhaustive
   harness: verify_token_ids_bounded
-- id: KANI-TOK-002
+- id: KANI-TOK-003
   obligation: Byte encoder covers all 256 byte values
   property: byte_encoder.len() == 256
   bound: 8

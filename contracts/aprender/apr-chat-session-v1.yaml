@@ -101,6 +101,15 @@ equations:
     - "load: session.history == saved session.history"
     lean_theorem: Theorems.SessionPersistence
 
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Validate model loaded, parse chat config and template format
+  - name: execute
+    description: Run chat loop with KV-cache management and template application
+  - name: verify_output
+    description: Verify session persistence roundtrip, cleanup KV-cache on exit
+
 proof_obligations:
 - type: state_machine
   property: Chat session follows valid transitions
@@ -119,6 +128,7 @@ proof_obligations:
 - type: bound
   property: KV-cache bounded by max context
   formal: cache.len() <= max_context_length after every operation
+  tolerance: 1e-6
   applies_to: kv_cache_management
   lean:
     theorem: Theorems.KvCacheManagement
@@ -168,35 +178,35 @@ falsification_tests:
 
 kani_harnesses:
 - id: KANI-CHAT-001
-  obligation: KV-cache bounded
-  property: cache.len() <= max_context
-  bound: 16
-  strategy: bounded_int
-  harness: verify_kv_cache_bounded
+  obligation: Chat session follows valid transitions
+  property: valid transitions only
+  bound: 8
+  strategy: exhaustive
+  harness: verify_chat_state_machine
 - id: KANI-CHAT-002
-  obligation: Template application idempotent
+  obligation: Template application is idempotent
   property: markers appear exactly once
   bound: 8
   strategy: exhaustive
   harness: verify_template_idempotent
 - id: KANI-CHAT-003
-  obligation: Session roundtrip
+  obligation: KV-cache bounded by max context
+  property: cache.len() <= max_context
+  bound: 16
+  strategy: bounded_int
+  harness: verify_kv_cache_bounded
+- id: KANI-CHAT-004
+  obligation: Session save/load roundtrip
   property: load(save(s)).history == s.history
   bound: 4
   strategy: exhaustive
   harness: verify_session_roundtrip
-- id: KANI-CHAT-004
-  obligation: History append-only
+- id: KANI-CHAT-005
+  obligation: History is append-only
   property: history[0..n] immutable
   bound: 8
   strategy: exhaustive
   harness: verify_history_append_only
-- id: KANI-CHAT-005
-  obligation: Chat session state machine
-  property: valid transitions only
-  bound: 8
-  strategy: exhaustive
-  harness: verify_chat_state_machine
 
 qa_gate:
   id: F-CHAT-GATE

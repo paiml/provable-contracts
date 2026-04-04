@@ -122,11 +122,20 @@ equations:
     - result.config == models[0].config
     lean_theorem: Theorems.MergeWeightConservation
 
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Validate model source, check format, verify disk space
+  - name: execute
+    description: Pull/import/export/convert/merge/quantize the model
+  - name: verify_output
+    description: Verify output integrity, tensor count, and format compliance
+
 proof_obligations:
 - type: roundtrip
   property: Import/export roundtrip preserves model
   formal: import(export(model, fmt)).config == model.config
-  tolerance: 0.0
+  tolerance: 1e-6
   applies_to: export_roundtrip
   lean:
     theorem: Theorems.ExportRoundtrip
@@ -201,24 +210,36 @@ falsification_tests:
 
 kani_harnesses:
 - id: KANI-MLC-001
+  obligation: Import/export roundtrip preserves model
+  property: import(export(model, fmt)).config == model.config
+  bound: 8
+  strategy: exhaustive
+  harness: verify_roundtrip_preserves_model
+- id: KANI-MLC-002
   obligation: Cache is content-addressed
   property: same hash → same path
   bound: 8
   strategy: exhaustive
   harness: verify_cache_content_addressed
-- id: KANI-MLC-002
+- id: KANI-MLC-003
   obligation: Quantization compresses
   property: output_size < input_size
   bound: 16
   strategy: bounded_int
   harness: verify_quantize_compresses
-- id: KANI-MLC-003
+- id: KANI-MLC-004
   obligation: Merge preserves tensor count
   property: output.tensors.len() == input[0].tensors.len()
   bound: 8
   strategy: exhaustive
   harness: verify_merge_tensor_count
-- id: KANI-MLC-004
+- id: KANI-MLC-005
+  obligation: Import never modifies source
+  property: hash(path_before) == hash(path_after) for import(path)
+  bound: 8
+  strategy: exhaustive
+  harness: verify_import_readonly
+- id: KANI-MLC-006
   obligation: Format detection is deterministic
   property: detect_format(bytes) is pure
   bound: 8

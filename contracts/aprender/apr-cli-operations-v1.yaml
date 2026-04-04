@@ -145,6 +145,16 @@ equations:
     postconditions:
     - decode(result) == text
     lean_theorem: Theorems.Tokenizer_Consistency
+
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Validate command arguments, model path, and resource availability
+  - name: execute
+    description: Dispatch to command handler, perform operation with progress reporting
+  - name: verify_output
+    description: Verify postconditions, release resources, return result
+
 proof_obligations:
 - type: invariant
   property: ReadOnly commands have no side effects
@@ -191,6 +201,7 @@ proof_obligations:
 - type: bound
   property: Token count bounded by input length
   formal: encode(text).len() <= text.len() * MAX_EXPANSION_RATIO
+  tolerance: 1e-6
   applies_to: tokenizer_consistency
   lean:
     theorem: Theorems.TokenizerConsistencyBound

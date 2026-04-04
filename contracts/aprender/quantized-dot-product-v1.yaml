@@ -302,6 +302,7 @@ proof_obligations:
 - type: postcondition
   property: SIMD-scalar numerical equivalence
   formal: for all formats F and data D, |simd_F(D) - scalar_F(D)| <= ULP_TOLERANCE_F * f32::EPSILON
+  tolerance: 1e-6
   applies_to: all
 - type: invariant
   property: Format isolation — cross-format dispatch produces garbage
@@ -320,8 +321,14 @@ kani_harnesses:
   strategy: stub_float
   harness: verify_simd_scalar_equivalence
 - id: KANI-QDOT-002
-  obligation: Format isolation
+  obligation: "Format isolation \u2014 cross-format dispatch produces garbage"
   property: Cross-format dispatch produces divergent output
   bound: 8
   strategy: exhaustive
   harness: verify_format_isolation
+- id: KANI-QDOT-003
+  obligation: Bsum precomputation equivalence
+  property: precompute_bsums(act) == inline_bsums(act) (exact integer equality)
+  bound: 8
+  strategy: exhaustive
+  harness: verify_bsum_precomputation
