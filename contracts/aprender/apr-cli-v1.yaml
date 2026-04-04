@@ -227,22 +227,37 @@ proof_obligations:
   property: Command parsing is deterministic
   formal: forall argv, parse(argv) == parse(argv)
   applies_to: command_parse_determinism
+  lean:
+    theorem: Theorems.CommandParseDeterminism
+    status: stub
 - type: completeness
   property: Contract gate exempts all diagnostic commands
   formal: forall cmd in DiagnosticCommands, extract_model_paths(cmd) == []
   applies_to: contract_gate_enforcement
+  lean:
+    theorem: Theorems.ContractGateEnforcement
+    status: stub
 - type: invariant
   property: Skip-contract flag bypasses validation
   formal: cli.skip_contract == true -> no validate_model_contract() call
   applies_to: contract_gate_enforcement
+  lean:
+    theorem: Theorems.ContractGateEnforcementSkip
+    status: stub
 - type: invariant
   property: Training plan has no side effects
   formal: fs_state_before(train_plan(args)) == fs_state_after(train_plan(args))
   applies_to: training_plan_apply_semantics
+  lean:
+    theorem: Theorems.TrainingPlanApplySemantics
+    status: stub
 - type: postcondition
   property: Training apply writes only to output directory
   formal: forall file in modified_files(train_apply(plan)), file.starts_with(plan.output_dir)
   applies_to: training_plan_apply_semantics
+  lean:
+    theorem: Theorems.TrainingApplyOutputDir
+    status: stub
 - type: postcondition
   property: Tokenizer vocabulary size matches requested size
   formal: len(vocab) == vocab_size after tokenize_apply()

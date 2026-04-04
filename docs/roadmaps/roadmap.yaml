@@ -2316,3 +2316,19 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-486
+  github_issue: null
+  item_type: task
+  title: 'New task: PMAT-486'
+  status: inprogress
+  priority: medium
+  assigned_to: null
+  created: 2026-04-04T06:30:40.990434556+00:00
+  updated: 2026-04-04T06:30:40.990434556+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
