@@ -196,27 +196,45 @@ proof_obligations:
     Planned->Completed not in adjacency_set.
     forall s : {Completed, Cancelled}, no outgoing edge from s.
   applies_to: all
+  lean:
+    theorem: Theorems.Unknown
+    status: sorry
 - type: determinism
   property: Falsifiable claim determinism
   formal: forall c e, evaluate(c, e) = evaluate(c, e) (same evidence -> same verdict)
   applies_to: all
+  lean:
+    theorem: Theorems.FalsifiableClaimDeterminism
+    status: sorry
 - type: bound
   property: Contract profile score bounded
   formal: 0.0 <= score <= 1.0 for all profiles
   applies_to: all
+  lean:
+    theorem: Theorems.ContractProfileScoreBounded
+    status: sorry
 - type: postcondition
   property: Falsified blocks completion
   formal: any_falsified(claims) AND NOT overridden -> completion returns Error
   applies_to: all
+  lean:
+    theorem: Theorems.FalsifiedBlocksCompletion
+    status: sorry
   requires: claim.falsification_method is executable
 - type: termination
   property: Rescue retry bounded
   formal: retries <= max_retries, after max_retries either Escalate or Abandon
   applies_to: all
+  lean:
+    theorem: Theorems.RescueRetryBounded
+    status: sorry
 - type: conservation
   property: Profile weights sum to unity
   formal: active_claims / applicable_claims = contract_quality.score
   applies_to: all
+  lean:
+    theorem: Theorems.ProfileWeightsSumToUnity
+    status: sorry
 - type: invariant
   property: Meyer triad phase correctness
   formal: >
@@ -224,18 +242,30 @@ proof_obligations:
     ensure checked only at Complete,
     invariant checked at Start AND Checkpoint AND Complete
   applies_to: all
+  lean:
+    theorem: Theorems.Unknown
+    status: sorry
 - type: idempotency
   property: Checkpoint is idempotent
   formal: checkpoint(item, contract) = checkpoint(item, contract) (no side effects)
   applies_to: all
+  lean:
+    theorem: Theorems.CheckpointIsIdempotent
+    status: sorry
 - type: monotonicity
   property: Profile composition is monotonic
   formal: claims(rust) superset claims(universal), claims(pmat) superset claims(rust)
   applies_to: all
+  lean:
+    theorem: Theorems.ProfileCompositionIsMonotonic
+    status: sorry
 - type: precondition
   property: Override requires ticket
   formal: override(claim, None) -> AccountabilityError
   applies_to: all
+  lean:
+    theorem: Theorems.OverrideRequiresTicket
+    status: sorry
 falsification_tests:
 - id: FALSIFY-WDB-001
   rule: Work lifecycle valid transitions
