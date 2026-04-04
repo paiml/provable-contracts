@@ -227,23 +227,35 @@ proof_obligations:
     for-all req in ClientRequest: !stateless_mode && !initialized =>
     handle_request_internal returns error(-32002)
   applies_to: session_lifecycle
+  lean:
+    theorem: Theorems.SessionLifecycle
+    status: sorry
 - type: completeness
   property: Tool dispatch covers all registered tools
   formal: >-
     for-all name in tool_infos.keys(): tools.contains_key(name) &&
     for-all name in tools.keys(): tool_infos.contains_key(name)
   applies_to: tool_dispatch_integrity
+  lean:
+    theorem: Theorems.ToolDispatchIntegrity
+    status: sorry
 - type: determinism
   property: Protocol version negotiation is deterministic
   formal: >-
     negotiate_protocol_version(v) always returns the same result for the same v
   applies_to: protocol_version_negotiation
+  lean:
+    theorem: Theorems.ProtocolVersionNegotiation
+    status: sorry
 - type: invariant
   property: Closed transport rejects operations
   formal: >-
     after close(): send() returns Err(ConnectionClosed) &&
     receive() returns Err(ConnectionClosed)
   applies_to: transport_abstraction
+  lean:
+    theorem: Theorems.TransportAbstraction
+    status: sorry
 - type: conservation
   property: Error information preserved across mapping
   formal: >-
