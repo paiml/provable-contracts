@@ -2029,6 +2029,68 @@ bindings:
   function: run_property_tests
   status: implemented
   notes: Softmax sum, attention non-neg, embedding norm, shape match properties
+# === Format Safety (apr-format-safety-v1) ===
+- contract: apr-format-safety-v1.yaml
+  equation: magic_byte_validation
+  module_path: aprender::gguf::reader
+  function: detect_format
+  status: implemented
+  notes: GGUF/SafeTensors/APR magic byte prefix detection, panic-free on truncated input
+- contract: apr-format-safety-v1.yaml
+  equation: header_integrity
+  module_path: aprender::gguf::reader
+  function: validate_header
+  status: implemented
+  notes: Bounded allocation, no OOM from crafted tensor_count
+- contract: apr-format-safety-v1.yaml
+  equation: provenance_enforcement
+  module_path: apr_cli::commands::import
+  function: enforce_provenance_check
+  status: implemented
+  notes: --enforce-provenance flag gates base_model_hash verification
+- contract: apr-format-safety-v1.yaml
+  equation: strict_import_validation
+  module_path: apr_cli::commands::import
+  function: strict_validate
+  status: implemented
+  notes: NaN/Inf scan, shape match, dtype consistency when --strict
+- contract: apr-format-safety-v1.yaml
+  equation: dtype_coercion_safety
+  module_path: aprender::tensor::convert
+  function: coerce_dtype
+  status: implemented
+  notes: F32->F16 clamp, F32->Q4_0 blockwise, widening lossless
+- contract: apr-format-safety-v1.yaml
+  equation: truncation_detection
+  module_path: aprender::gguf::reader
+  function: detect_truncation
+  status: implemented
+  notes: Compares actual vs expected file size from header
+# === Chat Session (apr-chat-session-v1) ===
+- contract: apr-chat-session-v1.yaml
+  equation: session_state_machine
+  module_path: apr_cli::commands::chat
+  function: chat_loop
+  status: implemented
+  notes: Init->WaitInput->Generating->WaitInput->Exit state machine
+- contract: apr-chat-session-v1.yaml
+  equation: chat_template_application
+  module_path: apr_cli::commands::chat
+  function: apply_template
+  status: implemented
+  notes: ChatML, Llama, Alpaca template formats
+- contract: apr-chat-session-v1.yaml
+  equation: kv_cache_management
+  module_path: aprender::inference::kv_cache
+  function: manage_kv_cache
+  status: implemented
+  notes: Sliding window truncation at max_context
+- contract: apr-chat-session-v1.yaml
+  equation: session_persistence
+  module_path: apr_cli::commands::chat_session
+  function: save_session
+  status: implemented
+  notes: JSON serialization, KV-cache not persisted (rebuilt from history)
 critical_path:
 - softmax
 - rmsnorm
@@ -2065,3 +2127,9 @@ critical_path:
 - data_validation
 - model_integrity_check
 - qa_gate_composition
+- magic_byte_validation
+- header_integrity
+- provenance_enforcement
+- dtype_coercion_safety
+- session_state_machine
+- kv_cache_management
