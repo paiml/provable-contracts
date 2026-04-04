@@ -2029,6 +2029,49 @@ bindings:
   function: run_property_tests
   status: implemented
   notes: Softmax sum, attention non-neg, embedding norm, shape match properties
+# === Architecture Schema (apr-architecture-schema-v1) ===
+- contract: apr-architecture-schema-v1.yaml
+  equation: architecture_config_invariants
+  module_path: aprender::format::gguf::api
+  function: GgufModelConfig::validate
+  status: implemented
+  notes: Validates hidden_size/num_heads divisibility, GQA ratio, MoE fields
+- contract: apr-architecture-schema-v1.yaml
+  equation: attention_tensor_shapes
+  module_path: apr_cli::commands::check
+  function: check_attention_shapes
+  status: implemented
+  notes: Validates Q/K/V/O projection shapes per layer against config
+- contract: apr-architecture-schema-v1.yaml
+  equation: ffn_tensor_shapes
+  module_path: apr_cli::commands::check
+  function: check_ffn_shapes
+  status: implemented
+  notes: Validates gate/up/down shapes, SwiGLU and MoE variants
+- contract: apr-architecture-schema-v1.yaml
+  equation: normalization_tensor_shapes
+  module_path: apr_cli::commands::check
+  function: check_norm_tensors
+  status: implemented
+  notes: Validates 2 norm tensors per layer + final_norm
+- contract: apr-architecture-schema-v1.yaml
+  equation: embedding_tensor_shapes
+  module_path: apr_cli::commands::check
+  function: check_embedding_shapes
+  status: implemented
+  notes: Validates token embedding shape, lm_head or tied embeddings
+- contract: apr-architecture-schema-v1.yaml
+  equation: rope_position_encoding
+  module_path: aprender::nn::rope
+  function: RotaryPositionEmbedding::validate_config
+  status: implemented
+  notes: RoPE theta, type (NORM vs NEOX), frequency vector length
+- contract: apr-architecture-schema-v1.yaml
+  equation: total_tensor_count
+  module_path: apr_cli::commands::check
+  function: check_tensor_count
+  status: implemented
+  notes: Expected count formula with +/-5 tolerance for metadata tensors
 # === Format Safety (apr-format-safety-v1) ===
 - contract: apr-format-safety-v1.yaml
   equation: magic_byte_validation
