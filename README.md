@@ -438,6 +438,10 @@ See [`docs/specifications/sub/eiffel-dbc.md`](docs/specifications/sub/eiffel-dbc
 4. Run coverage: `make coverage`
 5. Submit a pull request
 
+## Cookbook
+
+See [provable-contracts-cookbook](https://github.com/paiml/provable-contracts-cookbook) for examples and recipes.
+
 ## License
 
 MIT
