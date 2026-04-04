@@ -100,6 +100,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore] // Requires git repo — skipped in container CI
     fn changed_contracts_from_head() {
         // HEAD~0..HEAD should produce empty or small set
         let result = changed_contracts(&contracts_dir(), "HEAD");
@@ -144,6 +145,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore] // Requires git repo — skipped in container CI
     fn changed_contracts_with_range() {
         // Use a wide range to guarantee files are returned, exercising the filter closures.
         // On shallow clones (CI), HEAD~50 may not exist — skip gracefully.
@@ -170,6 +172,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore] // Requires git repo — skipped in container CI
     fn find_repo_root_works() {
         let root = find_repo_root(&contracts_dir());
         assert!(root.is_ok());

@@ -938,9 +938,9 @@ falsification_tests: []
             strategy: MatchStrategy::NameMatch,
         };
         let cloned = binding.clone();
-        assert_eq!(cloned.confidence, 0.9);
+        assert!((cloned.confidence - 0.9_f64).abs() < f64::EPSILON);
         // Debug should not panic
-        let debug = format!("{:?}", cloned);
+        let debug = format!("{cloned:?}");
         assert!(!debug.is_empty());
     }
 
@@ -960,7 +960,7 @@ falsification_tests: []
         };
         let cloned = suggestion.clone();
         assert_eq!(cloned.suggested_tier, 2);
-        let debug = format!("{:?}", cloned);
+        let debug = format!("{cloned:?}");
         assert!(debug.contains("my_func"));
     }
 

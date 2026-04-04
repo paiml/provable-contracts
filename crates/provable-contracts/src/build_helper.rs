@@ -383,7 +383,7 @@ bindings:
         .to_string()
     }
 
-    /// Binding YAML with a not_implemented binding.
+    /// Binding YAML with a `not_implemented` binding.
     fn yaml_with_not_implemented() -> String {
         r#"
 version: "1.0.0"
@@ -420,7 +420,7 @@ bindings:
         .to_string()
     }
 
-    /// Binding YAML with mixed statuses (implemented + partial + not_implemented + pending).
+    /// Binding YAML with mixed statuses (implemented + partial + `not_implemented` + pending).
     fn yaml_mixed() -> String {
         r#"
 version: "1.0.0"

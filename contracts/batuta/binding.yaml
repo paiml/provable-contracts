@@ -244,3 +244,73 @@ bindings:
   module_path: batuta::src::cli::oracle::rag_index::check_freshness
   status: pending
   notes: Stale index warns but proceeds, missing index triggers auto-build
+# --- HTTP API contracts (2026-04-04, PMAT-189) ---
+- contract: http-api-v1.yaml
+  equation: body_schema_compliance
+  function: build_openai_body
+  module_path: batuta::src::agent::driver::apr_serve::build_openai_body
+  status: implemented
+  notes: AprServeDriver builds OpenAI-compatible JSON request bodies
+- contract: http-api-v1.yaml
+  equation: max_tokens_cap
+  function: build_openai_body
+  module_path: batuta::src::agent::driver::apr_serve::build_openai_body
+  status: implemented
+  notes: max_tokens capped at 1024 (PMAT-170)
+- contract: http-api-v1.yaml
+  equation: thinking_block_strip
+  function: strip_thinking_blocks
+  module_path: batuta::src::agent::driver::apr_serve::strip_thinking_blocks
+  status: implemented
+  notes: Removes <think>...</think> from Qwen3 responses (PMAT-180)
+# --- Session contracts (2026-04-04, PMAT-189) ---
+- contract: session-v1.yaml
+  equation: jsonl_roundtrip
+  function: append_messages
+  module_path: batuta::src::agent::session::append_messages
+  status: implemented
+  notes: JSONL append-only persistence
+- contract: session-v1.yaml
+  equation: manifest_serde
+  function: new
+  module_path: batuta::src::agent::session::Session::new
+  status: implemented
+  notes: Session manifest serialization
+- contract: session-v1.yaml
+  equation: age_filter
+  function: find_recent_for_cwd
+  module_path: batuta::src::agent::session::find_recent_for_cwd
+  status: implemented
+  notes: 24h age filter (PMAT-165)
+# --- Tokenizer contracts (2026-04-04, PMAT-189) ---
+- contract: tokenizer-v1.yaml
+  equation: deterministic_encode
+  function: encode
+  module_path: batuta::src::agent::driver::validate::tokenizer_encode
+  status: implemented
+  notes: Tokenizer used for context window management
+- contract: tokenizer-v1.yaml
+  equation: vocab_size_bound
+  function: encode
+  module_path: batuta::src::agent::driver::validate::tokenizer_encode
+  status: implemented
+  notes: Token IDs must be within vocabulary bounds
+# --- Model discovery contracts (2026-04-04, PMAT-188) ---
+- contract: apr-model-discovery-v1.yaml
+  equation: search_order
+  function: discover_model
+  module_path: batuta::src::agent::manifest::discover_model
+  status: implemented
+  notes: ~/.apr/models/ > ~/.cache/huggingface/ > ./models/
+- contract: apr-model-discovery-v1.yaml
+  equation: sort_priority
+  function: discover_model
+  module_path: batuta::src::agent::manifest::discover_model
+  status: implemented
+  notes: valid > mtime > APR (PMAT-185)
+- contract: apr-model-discovery-v1.yaml
+  equation: jidoka_validation
+  function: is_valid_model_file
+  module_path: batuta::src::agent::driver::validate::is_valid_model_file
+  status: implemented
+  notes: Invalid APR deprioritized behind valid GGUF (PMAT-150)

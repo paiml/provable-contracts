@@ -179,6 +179,7 @@ falsification_tests:
     assert_ne!(detect_format_from_name("Qwen2.5-Coder-1.5B"), TemplateFormat::Qwen3NoThink);
     assert_eq!(detect_format_from_name("Qwen2.5-Coder-1.5B"), TemplateFormat::ChatML);
   file: src/chat_template_helpers.rs
+  if_fails: Qwen3 model gets wrong chat template, enters thinking mode or wrong format
 
 - id: FALSIFY-CT-002
   rule: AppState architecture cache
@@ -188,6 +189,7 @@ falsification_tests:
     let state = AppState::with_quantized_model_and_vocab(model, vocab).unwrap();
     assert_eq!(state.model_architecture(), Some("qwen3".to_string()));
   file: src/api/mod_app_state_gpu.rs
+  if_fails: Architecture not cached, template auto-detection falls back to wrong default
 
 - id: FALSIFY-CT-003
   rule: Thinking block suppression
@@ -199,6 +201,7 @@ falsification_tests:
     assert_eq!(strip_thinking_blocks("clean text"), "clean text");
     assert!(!strip_thinking_blocks("<think>x</think>y</think>z").contains("</think>"));
   file: src/agent/driver/apr_serve.rs
+  if_fails: Think tags leak into user-visible output, corrupting responses
 
 - id: FALSIFY-CT-004
   rule: Template determinism
@@ -210,6 +213,7 @@ falsification_tests:
     let b = template.format_conversation(&messages).unwrap();
     assert_eq!(a, b);
   file: src/chat_template_qwen3_nothink.rs
+  if_fails: Non-deterministic prompts cause inconsistent model behavior
 
 - id: FALSIFY-CT-005
   rule: Template trait coverage
@@ -232,6 +236,7 @@ falsification_tests:
         let _ = t.special_tokens();
     }
   file: src/chat_template.rs
+  if_fails: Incomplete trait impl causes runtime panic on unsupported template method
 
 - id: FALSIFY-CT-006
   rule: Qwen3NoThink pre-fills empty thinking block
@@ -243,3 +248,4 @@ falsification_tests:
     assert!(output.contains("<think>\n</think>"), "must pre-fill empty thinking block");
     assert!(output.ends_with("<think>\n</think>\n"), "thinking block must be at end");
   file: src/chat_template_qwen3_nothink.rs
+  if_fails: Missing pre-filled think block causes model to generate thinking tokens

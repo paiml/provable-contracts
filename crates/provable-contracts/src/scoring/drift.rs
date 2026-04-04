@@ -101,6 +101,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore] // Requires git repo — skipped in container CI
     fn git_ts_for_real_contract() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../contracts/softmax-kernel-v1.yaml");

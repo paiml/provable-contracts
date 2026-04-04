@@ -14,6 +14,7 @@ use super::rules::RuleSeverity;
 use super::{GateDetail, GateResult};
 
 /// Gate 4: Source verification — do referenced test functions exist in source?
+#[allow(clippy::too_many_lines)]
 pub(crate) fn run_verify_gate(
     contracts: &[(String, Contract)],
     project_root: &Path,

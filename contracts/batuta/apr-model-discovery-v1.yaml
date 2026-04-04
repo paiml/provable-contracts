@@ -72,9 +72,9 @@ equations:
     domain: Model file path (.apr or .gguf)
     codomain: bool (valid for inference)
     invariants:
-    - APR without tokenizer → invalid (Jidoka: stop before REPL starts)
+    - "APR without tokenizer → invalid (Jidoka: stop before REPL starts)"
     - GGUF with wrong magic → invalid
-    - Validation reads only file header (≤64KB), not entire file
+    - "Validation reads only file header (≤64KB), not entire file"
     - Invalid models are deprioritized, not rejected (GGUF fallback)
     preconditions:
     - File exists and is readable
@@ -151,6 +151,7 @@ falsification_tests:
     - new.gguf (mtime = today, valid magic)
     Assert discover_model() returns new.gguf
   file: src/agent/manifest.rs
+  if_fails: Older APR shadows newer GGUF, user gets stale model
 
 - id: FALSIFY-DISC-002
   rule: Invalid APR deprioritized (Jidoka)
@@ -161,6 +162,7 @@ falsification_tests:
     - valid.gguf (correct magic bytes)
     Assert discover_model() returns valid.gguf
   file: src/agent/manifest.rs
+  if_fails: Broken APR selected, REPL crashes on missing tokenizer
 
 - id: FALSIFY-DISC-003
   rule: No model produces exit code 5
@@ -171,6 +173,7 @@ falsification_tests:
     Assert exit code == 5
     Assert stderr contains "apr pull"
   file: src/agent/code.rs
+  if_fails: Silent fallback to MockDriver when user expects real model
 
 - id: FALSIFY-DISC-004
   rule: Search order is ~/.apr/models first
@@ -179,9 +182,11 @@ falsification_tests:
     Place model.gguf in both ~/.apr/models/ and ./models/
     Assert discover_model() returns the ~/.apr/models/ one
   file: src/agent/manifest.rs
+  if_fails: Project-local model overrides user-installed model
 
 - id: FALSIFY-DISC-005
   rule: Architecture extracted from GGUF metadata
   prediction: model.config.architecture == "qwen3" for Qwen3 GGUF
   test: See realizar/src/api/tests/chat_template_contract.rs FALSIFY-CT-002
   file: src/api/mod_app_state_gpu.rs
+  if_fails: Architecture not extracted, chat template auto-detection fails

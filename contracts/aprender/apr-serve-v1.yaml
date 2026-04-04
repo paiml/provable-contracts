@@ -226,6 +226,31 @@ falsification_tests:
   prediction: Two concurrent requests produce same results as sequential
   test: Run 10 identical requests concurrently, assert all outputs identical
   if_fails: KV-cache shared between concurrent requests
+- id: FALSIFY-SRV-005
+  rule: Qwen3 architecture triggers NoThinkTemplate
+  prediction: Qwen3 GGUF model gets Qwen3NoThink template, not ChatML
+  test: |
+    #[test]
+    fn falsify_srv_005_qwen3_nothink_template() {
+        use realizar::chat_template::{detect_format_from_name, TemplateFormat};
+        // Architecture from GGUF metadata
+        assert_eq!(detect_format_from_name("qwen3"), TemplateFormat::Qwen3NoThink);
+        // Model filename patterns
+        assert_eq!(detect_format_from_name("Qwen3-1.7B-Q4_K_M"), TemplateFormat::Qwen3NoThink);
+        // Must NOT match Qwen2
+        assert_ne!(detect_format_from_name("qwen2"), TemplateFormat::Qwen3NoThink);
+    }
+  if_fails: Qwen3 gets ChatML template, enters thinking mode, loops on tokens
+- id: FALSIFY-SRV-006
+  rule: AppState caches GGUF architecture at construction
+  prediction: model_architecture() returns Some after with_quantized_model_and_vocab
+  test: See realizar/src/api/tests/chat_template_contract.rs FALSIFY-CT-002
+  if_fails: Architecture not cached, template detection falls back to wrong default
+- id: FALSIFY-SRV-007
+  rule: Chat template pre-fills empty thinking block for Qwen3
+  prediction: Qwen3NoThinkTemplate.format_conversation() output contains <think></think>
+  test: See realizar/src/chat_template_contract_tests.rs FALSIFY-CT-006
+  if_fails: Model enters thinking mode, wastes tokens on </think> loops
 
 kani_harnesses:
 - id: KANI-SRV-001
@@ -252,32 +277,6 @@ kani_harnesses:
   bound: 4
   strategy: exhaustive
   harness: verify_kv_isolation
-
-- id: FALSIFY-SRV-005
-  rule: Qwen3 architecture triggers NoThinkTemplate
-  prediction: Qwen3 GGUF model gets Qwen3NoThink template, not ChatML
-  test: |
-    #[test]
-    fn falsify_srv_005_qwen3_nothink_template() {
-        use realizar::chat_template::{detect_format_from_name, TemplateFormat};
-        // Architecture from GGUF metadata
-        assert_eq!(detect_format_from_name("qwen3"), TemplateFormat::Qwen3NoThink);
-        // Model filename patterns
-        assert_eq!(detect_format_from_name("Qwen3-1.7B-Q4_K_M"), TemplateFormat::Qwen3NoThink);
-        // Must NOT match Qwen2
-        assert_ne!(detect_format_from_name("qwen2"), TemplateFormat::Qwen3NoThink);
-    }
-  if_fails: Qwen3 gets ChatML template, enters thinking mode, loops on tokens
-- id: FALSIFY-SRV-006
-  rule: AppState caches GGUF architecture at construction
-  prediction: model_architecture() returns Some after with_quantized_model_and_vocab
-  test: See realizar/src/api/tests/chat_template_contract.rs FALSIFY-CT-002
-  if_fails: Architecture not cached, template detection falls back to wrong default
-- id: FALSIFY-SRV-007
-  rule: Chat template pre-fills empty thinking block for Qwen3
-  prediction: Qwen3NoThinkTemplate.format_conversation() output contains <think></think>
-  test: See realizar/src/chat_template_contract_tests.rs FALSIFY-CT-006
-  if_fails: Model enters thinking mode, wastes tokens on </think> loops
 
 qa_gate:
   id: F-SRV-GATE

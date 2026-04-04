@@ -404,9 +404,9 @@ mod tests {
             domain: None,
             codomain: None,
             invariants: vec![],
-            preconditions: pres.into_iter().map(|s| s.to_string()).collect(),
-            postconditions: posts.into_iter().map(|s| s.to_string()).collect(),
-            lean_theorem: lean_theorem.map(|s| s.to_string()),
+            preconditions: pres.into_iter().map(ToString::to_string).collect(),
+            postconditions: posts.into_iter().map(ToString::to_string).collect(),
+            lean_theorem: lean_theorem.map(ToString::to_string),
         }
     }
 
@@ -1356,7 +1356,7 @@ kani_harnesses: []
         assert_eq!(cloned.name, gc.name);
         assert_eq!(cloned.precondition_count, gc.precondition_count);
         // Debug derive
-        let dbg = format!("{:?}", gc);
+        let dbg = format!("{gc:?}");
         assert!(dbg.contains("GeneratedContract"));
     }
 

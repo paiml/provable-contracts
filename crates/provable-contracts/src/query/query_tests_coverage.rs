@@ -66,6 +66,7 @@
     }
 
     #[test]
+    #[ignore] // Requires git repo — skipped in container CI
     fn show_diff_enrichment() {
         let index = test_index();
         let params = QueryParams {

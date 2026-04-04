@@ -361,7 +361,7 @@ fn lean_theorem_names() -> &'static std::collections::HashSet<String> {
     })
 }
 
-/// Count Lean theorems for a contract by matching lean_theorem refs against
+/// Count Lean theorems for a contract by matching `lean_theorem` refs against
 /// sorry-free `.lean` files in the Theorems/ directory.
 fn count_lean_theorems_for_contract(contract: &Contract) -> u32 {
     let theorems = lean_theorem_names();

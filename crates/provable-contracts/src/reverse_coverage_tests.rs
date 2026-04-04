@@ -25,7 +25,7 @@ fn test_extract_feature_gate_not() {
 
 #[test]
 fn test_extract_feature_gate_no_feature() {
-    let gate = extract_feature_gate(r#"#[cfg(test)]"#);
+    let gate = extract_feature_gate(r"#[cfg(test)]");
     assert_eq!(gate, None);
 }
 
