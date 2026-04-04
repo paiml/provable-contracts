@@ -84,6 +84,51 @@ equations:
     - server still in Ready state after all requests complete
     lean_theorem: Theorems.ConcurrentInferenceIsolation
 
+  chat_template_dispatch:
+    formula: |
+      format_chat_messages(messages, model_hint) where
+        model_hint = state.model_architecture()
+        template = detect_format_from_name(model_hint)
+        prompt = template.format_conversation(messages)
+    domain: Chat completion request with messages array
+    codomain: Formatted prompt string with correct chat template
+    invariants:
+    - Qwen3 models ALWAYS use Qwen3NoThinkTemplate (PMAT-181, chat-template-v1)
+    - Architecture hint comes from GGUF metadata, NOT from request model name
+    - AppState.cached_architecture is populated at construction time
+    - Template includes correct special tokens for the model family
+    preconditions:
+    - state.model_architecture().is_some() (FALSIFY-CT-002)
+    - messages.len() > 0
+    postconditions:
+    - Prompt uses correct template format for the model architecture
+    - Qwen3 prompt ends with pre-filled empty thinking block
+    lean_theorem: Theorems.ChatTemplateDispatch
+    notes: |
+      PMAT-181/185 dogfood: AppState.cached_architecture was None for
+      GGUF models → wrong template → Qwen3 entered thinking mode →
+      </think> token loops. Fixed by caching architecture at construction.
+      Enforced by chat-template-v1.yaml FALSIFY-CT-002.
+
+  format_detection:
+    formula: |
+      detect_model_format(path) => GGUF | APR | SafeTensors
+      For GGUF: read magic bytes 0x47475546 ("GGUF")
+      For APR: read magic bytes + metadata header
+      Prefer APR over GGUF for same model (native format, row-major)
+    domain: Model file path
+    codomain: ModelFormat enum
+    invariants:
+    - Format detected from file content (magic bytes), not file extension
+    - Invalid magic bytes → clear error (not silent fallback)
+    - APR preferred over GGUF when both available (LAYOUT-002)
+    preconditions:
+    - File exists and is readable
+    postconditions:
+    - Correct format for valid model files
+    - Descriptive error for corrupt/unknown files
+    lean_theorem: Theorems.FormatDetection
+
   graceful_shutdown:
     formula: |
       shutdown(signal): Signal -> Result<(), ShutdownError>
@@ -147,6 +192,18 @@ proof_obligations:
   lean:
     theorem: Theorems.RequestRouting
     status: sorry
+- type: invariant
+  property: Qwen3 uses NoThinkTemplate via architecture dispatch
+  formal: 'model_architecture() == "qwen3" → template.format() == Qwen3NoThink'
+  applies_to: chat_template_dispatch
+- type: invariant
+  property: AppState caches architecture from GGUF at construction
+  formal: 'with_quantized_model_and_vocab(m, v).model_architecture().is_some()'
+  applies_to: chat_template_dispatch
+- type: invariant
+  property: Format detection uses magic bytes not extension
+  formal: 'detect(gguf_bytes_with_apr_extension) == GGUF'
+  applies_to: format_detection
 
 falsification_tests:
 - id: FALSIFY-SRV-001
@@ -196,11 +253,37 @@ kani_harnesses:
   strategy: exhaustive
   harness: verify_kv_isolation
 
+- id: FALSIFY-SRV-005
+  rule: Qwen3 architecture triggers NoThinkTemplate
+  prediction: Qwen3 GGUF model gets Qwen3NoThink template, not ChatML
+  test: |
+    #[test]
+    fn falsify_srv_005_qwen3_nothink_template() {
+        use realizar::chat_template::{detect_format_from_name, TemplateFormat};
+        // Architecture from GGUF metadata
+        assert_eq!(detect_format_from_name("qwen3"), TemplateFormat::Qwen3NoThink);
+        // Model filename patterns
+        assert_eq!(detect_format_from_name("Qwen3-1.7B-Q4_K_M"), TemplateFormat::Qwen3NoThink);
+        // Must NOT match Qwen2
+        assert_ne!(detect_format_from_name("qwen2"), TemplateFormat::Qwen3NoThink);
+    }
+  if_fails: Qwen3 gets ChatML template, enters thinking mode, loops on tokens
+- id: FALSIFY-SRV-006
+  rule: AppState caches GGUF architecture at construction
+  prediction: model_architecture() returns Some after with_quantized_model_and_vocab
+  test: See realizar/src/api/tests/chat_template_contract.rs FALSIFY-CT-002
+  if_fails: Architecture not cached, template detection falls back to wrong default
+- id: FALSIFY-SRV-007
+  rule: Chat template pre-fills empty thinking block for Qwen3
+  prediction: Qwen3NoThinkTemplate.format_conversation() output contains <think></think>
+  test: See realizar/src/chat_template_contract_tests.rs FALSIFY-CT-006
+  if_fails: Model enters thinking mode, wastes tokens on </think> loops
+
 qa_gate:
   id: F-SRV-GATE
   name: Serve Contract
-  description: Quality gate for inference server lifecycle
+  description: Quality gate for inference server lifecycle + chat template dispatch
   checks:
   - validation
   - falsification
-  pass_criteria: All 4 falsification tests pass
+  pass_criteria: All 7 falsification tests pass (4 original + 3 chat template)

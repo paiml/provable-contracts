@@ -62,13 +62,24 @@ cli_config:
   - probar
   - compare-hf
   - showcase
-  # Specialized (5)
+  # Specialized (7)
   - hex
   - cbtop
   - rosetta
   - oracle
   - decrypt
   - encrypt
+  - gpu
+  # Agent (1, feature-gated: code)
+  - code
+  # Extended (added PMAT-187)
+  - train
+  - tune
+  - monitor
+  - tools
+  - ls
+  - show
+  - view
   exit_codes:
     success: 0
     general_error: 1
@@ -137,6 +148,25 @@ equations:
     preconditions:
     - format ∈ {"json", "yaml", "csv", "text", "srt", "vtt"}
     lean_theorem: Theorems.Output_Format_Fidelity
+  feature_gated_dispatch:
+    formula: |
+      dispatch(Code { .. }) requires cfg(feature = "code")
+        => batuta::agent::code::cmd_code(model, project, resume, prompt, print, max_turns, manifest)
+      dispatch(Code { .. }) without feature "code"
+        => compile-time exclusion (variant absent from enum)
+    domain: Commands::Code variant (PMAT-182)
+    codomain: Result<(), CliError>
+    invariants:
+    - Code command dispatches to batuta::agent::code::cmd_code()
+    - Without "code" feature, Code variant does not exist in binary
+    - Error mapped via CliError::Aprender(e.to_string())
+    - code feature is in default features (always available in standard build)
+    preconditions:
+    - feature "code" enabled at compile time
+    - batuta crate available as dependency
+    postconditions:
+    - cmd_code() receives all CLI args faithfully (no dropped fields)
+    lean_theorem: Theorems.Feature_Gated_Dispatch
   idempotent_inspection:
     formula: |
       ∀ cmd ∈ {check, inspect, debug, validate, lint, explain, list}:
@@ -217,6 +247,43 @@ falsification_tests:
         assert_eq!(code, 3, "FileNotFound should return exit code 3, got {}", code);
     }
   if_fails: Exit code mapping incorrect — CliError::exit_code() not wired to process exit
+- id: FALSIFY-CLI-005
+  rule: Code subcommand dispatches to batuta (PMAT-182)
+  prediction: apr code --help returns 0 and shows "Sovereign AI coding assistant"
+  test: |
+    #[test]
+    fn falsify_cli_005_code_dispatch_wired() {
+        let output = std::process::Command::new("apr")
+            .args(&["code", "--help"])
+            .output()
+            .expect("Failed to run apr");
+        assert!(output.status.success(), "apr code --help should succeed");
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(stdout.contains("Sovereign AI"),
+            "apr code --help must mention 'Sovereign AI': {}", stdout);
+        assert!(stdout.contains("--model"),
+            "apr code must accept --model flag");
+        assert!(stdout.contains("--resume"),
+            "apr code must accept --resume flag");
+    }
+  if_fails: Code subcommand not wired in commands_enum.rs or dispatch.rs (PMAT-182)
+- id: FALSIFY-CLI-006
+  rule: Feature-gated code requires batuta dependency
+  prediction: Code variant exists only when code feature is enabled
+  test: |
+    #[test]
+    fn falsify_cli_006_code_feature_gate() {
+        // Compile-time check: this test only compiles with "code" feature
+        #[cfg(feature = "code")]
+        {
+            // Verify the type exists and can be referenced
+            let _: fn(Option<std::path::PathBuf>, std::path::PathBuf,
+                      Option<Option<String>>, Vec<String>, bool, u32,
+                      Option<std::path::PathBuf>) -> anyhow::Result<()>
+                = batuta::agent::code::cmd_code;
+        }
+    }
+  if_fails: batuta dependency missing or cmd_code function signature changed
 - id: FALSIFY-CLI-003
   rule: JSON output is always parseable
   prediction: --json flag produces valid JSON on stdout
