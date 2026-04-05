@@ -190,3 +190,9 @@ falsification_tests:
   test: See realizar/src/api/tests/chat_template_contract.rs FALSIFY-CT-002
   file: src/api/mod_app_state_gpu.rs
   if_fails: Architecture not extracted, chat template auto-detection fails
+kani_harnesses:
+- id: KANI-DISC-001
+  obligation: mtime beats format preference
+  property: Newer GGUF wins over older APR in sort
+  bound: 8
+  strategy: exhaustive

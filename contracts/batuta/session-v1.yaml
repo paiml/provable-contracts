@@ -176,3 +176,9 @@ qa_gate:
   - append_only
   pass_criteria: All 4 falsification tests pass
   falsification: Unit tests with temp directories
+kani_harnesses:
+- id: KANI-SESSION-001
+  obligation: Messages survive persist-resume
+  property: JSONL roundtrip preserves message count and content
+  bound: 8
+  strategy: exhaustive
