@@ -21,8 +21,12 @@ impl QueryResult {
     }
 
     pub(crate) fn to_markdown_item(&self) -> String {
+        use crate::schema::ContractKind;
         let mut out = format!("### {}. {}\n\n", self.rank, self.stem);
         out.push_str(&format!("- **Relevance:** {:.2}\n", self.relevance));
+        if self.kind != ContractKind::Kernel {
+            out.push_str(&format!("- **Kind:** {}\n", self.kind));
+        }
         if !self.equations.is_empty() {
             out.push_str(&format!("- **Equations:** {}\n", self.equations.join(", ")));
         }

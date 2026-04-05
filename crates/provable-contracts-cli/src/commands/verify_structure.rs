@@ -144,15 +144,14 @@ fn find_contract(dir: &Path, stem: &str) -> Option<std::path::PathBuf> {
     if direct.exists() {
         return Some(direct);
     }
-    // Search subdirectories
-    if let Ok(entries) = std::fs::read_dir(dir) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if path.is_dir() {
-                let sub = path.join(format!("{stem}.yaml"));
-                if sub.exists() {
-                    return Some(sub);
-                }
+    // Recursively search subdirectories so contracts nested deeper than one
+    // level (e.g. contracts/aprender/foo/bar-v1.yaml) are still located.
+    let entries = std::fs::read_dir(dir).ok()?;
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            if let Some(found) = find_contract(&path, stem) {
+                return Some(found);
             }
         }
     }
