@@ -302,6 +302,20 @@ bindings:
   signature: 'pub fn gemm_blis_parallel(m: usize, n: usize, k: usize, a: &[f32], b: &[f32], c: &mut [f32]) -> Result<(), TruenoError>'
   status: implemented
   notes: 'PMAT-037: 4-tier thread cap (2/4/phys÷2/all) based on FLOPs thresholds from cgp scaling measurements.'
+- contract: avx512-q4k-v1.yaml
+  equation: dequant
+  module_path: trueno::backends::q4k::gemv::avx512
+  function: matmul_q4k_f32_avx512
+  signature: 'pub(crate) unsafe fn matmul_q4k_f32_avx512(q4k_data: &[u8], input: &[f32], out_dim: usize, in_dim: usize) -> Vec<f32>'
+  status: implemented
+  notes: '16-wide AVX-512 dequant+FMA. +5-35% vs AVX2. Bottleneck: scalar header parsing per super-block.'
+- contract: avx512-q4k-v1.yaml
+  equation: dequant
+  module_path: trueno::backends::q4k::gemv::avx512
+  function: compute_chunk_q4k_avx512
+  signature: 'pub(crate) unsafe fn compute_chunk_q4k_avx512(...)'
+  status: implemented
+  notes: 'Parallel dispatch chunk processor for AVX-512 Q4K path.'
 critical_path:
 - softmax
 - matmul
@@ -313,3 +327,4 @@ critical_path:
 - arithmetic_intensity
 - gemm_blis_avx512_large
 - gemm_blis_parallel
+- matmul_q4k_f32_avx512
