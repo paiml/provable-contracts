@@ -249,3 +249,9 @@ falsification_tests:
     assert!(output.ends_with("<think>\n</think>\n"), "thinking block must be at end");
   file: src/chat_template_qwen3_nothink.rs
   if_fails: Missing pre-filled think block causes model to generate thinking tokens
+kani_harnesses:
+- id: KANI-CT-001
+  obligation: Qwen3 never gets ChatML template
+  property: detect_format_from_name returns Qwen3NoThink for qwen3 names
+  bound: 8
+  strategy: exhaustive

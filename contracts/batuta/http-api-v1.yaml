@@ -211,3 +211,9 @@ qa_gate:
   - response_schema
   pass_criteria: All 5 falsification tests pass
   falsification: Unit tests with mock HTTP bodies
+kani_harnesses:
+- id: KANI-HTTP-001
+  obligation: max_tokens never exceeds 1024
+  property: Request body max_tokens bounded at 1024
+  bound: 16
+  strategy: bounded_int

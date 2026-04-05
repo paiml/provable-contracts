@@ -169,6 +169,7 @@ falsification_tests:
     Load tokenizer behind Arc.
     Spawn 10 threads, each encoding "The quick brown fox".
     Collect all results. Assert all identical.
+  if_fails: Thread-unsafe tokenizer produces inconsistent results under concurrency
   file: src/agent/driver/validate.rs
 
 - id: FALSIFY-TOK-005
@@ -177,6 +178,7 @@ falsification_tests:
   test: |
     Load tokenizer. Encode "fn main() { println!(\"hello\"); }".
     Decode the tokens. Assert decoded contains "fn", "main", "println", "hello".
+  if_fails: Lossy encode-decode roundtrip corrupts token content
   file: src/agent/driver/validate.rs
 
 qa_gate:
@@ -191,3 +193,9 @@ qa_gate:
   - roundtrip
   pass_criteria: All 5 falsification tests pass
   falsification: Unit tests with embedded tokenizer from test models
+kani_harnesses:
+- id: KANI-TOK-001
+  obligation: Token IDs within vocabulary bounds
+  property: All token IDs strictly less than vocab_size
+  bound: 16
+  strategy: bounded_int
