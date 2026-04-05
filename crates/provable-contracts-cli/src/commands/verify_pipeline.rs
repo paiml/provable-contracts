@@ -272,7 +272,7 @@ fn load_contracts_recursive(
                 .unwrap_or("unknown")
                 .to_string();
             // Skip non-contract YAML (binding.yaml, playbook.schema.yaml, etc.)
-            if stem == "binding" || stem.contains("schema") || stem.contains("playbook") {
+            if stem == "binding" || stem == "playbook.schema" || stem.contains("playbook") {
                 continue;
             }
             match parse_contract(&path) {

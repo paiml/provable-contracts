@@ -7,43 +7,31 @@ use clap::Subcommand;
 pub enum Commands {
     /// Explain a contract in detail
     Explain {
-        /// Path to the contract YAML file
         contract: PathBuf,
-        /// Output format: text (default), markdown, or json
         #[arg(long, default_value = "text")]
         format: String,
-        /// Path to binding registry YAML (adds binding context)
         #[arg(long)]
         binding: Option<PathBuf>,
     },
     /// Validate a YAML kernel contract
-    Validate {
-        /// Path to the contract YAML file
-        contract: PathBuf,
-    },
+    Validate { contract: PathBuf },
     /// Generate Rust trait + test scaffolding from a contract
     Scaffold {
-        /// Path to the contract YAML file
         contract: PathBuf,
-        /// Generate standalone named trait for compiler enforcement (§23)
         #[arg(long)]
         r#trait: bool,
-        /// Output file (default: stdout)
         #[arg(short, long)]
         output: Option<PathBuf>,
     },
-    /// Extract kernel equations from `PyTorch` source into YAML
+    /// Extract kernel equations from PyTorch source into YAML
     #[command(name = "extract-pytorch")]
     ExtractPytorch {
-        /// `PyTorch` source target (`file.py::function_name`)
         target: String,
-        /// Output YAML file path
         #[arg(short, long)]
         output: Option<PathBuf>,
     },
-    /// Generate Rust `debug_assert`!() from YAML contracts
+    /// Generate Rust debug_assert!() from YAML contracts
     Codegen {
-        /// Directory containing contract YAML files
         #[arg(default_value = "contracts")]
         contract_dir: PathBuf,
         /// Output Rust file path
@@ -465,6 +453,15 @@ pub enum Commands {
         json: bool,
         #[arg(long)]
         min_score: Option<f64>,
+    },
+    /// Produce whole-model proof certificate (runs verify-pipeline + verify-structure)
+    Certify {
+        #[arg(default_value = "contracts")]
+        contract_dir: PathBuf,
+        #[arg(long)]
+        config: Option<PathBuf>,
+        #[arg(short, long)]
+        output: Option<PathBuf>,
     },
     /// Verify model architecture structure matches contracts
     #[command(name = "verify-structure")]

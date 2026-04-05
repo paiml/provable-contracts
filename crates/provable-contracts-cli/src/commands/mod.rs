@@ -1,5 +1,6 @@
 pub mod audit;
 pub mod book;
+pub mod certify;
 pub mod codegen;
 pub mod coq;
 pub mod coverage;
