@@ -69,11 +69,10 @@ jobs:
     if: always()
     steps:
       - run: |
-          for job in ci trait-staleness lean-proofs; do
-            result="${{ needs[job].result }}"
-            if [ "$result" != "success" ]; then
-              echo "FAILED: $job ($result)"
-              exit 1
-            fi
-          done
+          echo "ci: ${{ needs.ci.result }}"
+          echo "trait-staleness: ${{ needs.trait-staleness.result }}"
+          echo "lean-proofs: ${{ needs.lean-proofs.result }}"
+          [[ "${{ needs.ci.result }}" == "success" ]] || { echo "FAILED: ci (${{ needs.ci.result }})"; exit 1; }
+          [[ "${{ needs.trait-staleness.result }}" == "success" ]] || { echo "FAILED: trait-staleness (${{ needs.trait-staleness.result }})"; exit 1; }
+          [[ "${{ needs.lean-proofs.result }}" == "success" ]] || { echo "FAILED: lean-proofs (${{ needs.lean-proofs.result }})"; exit 1; }
           echo "All checks passed"
