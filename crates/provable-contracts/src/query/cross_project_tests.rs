@@ -74,6 +74,31 @@ fn has_sibling_repos() -> bool {
         .is_some_and(|p| p.join("aprender").exists())
 }
 
+/// Returns true if sibling repos have enough git history for commit-ref scanning.
+/// Shallow clones (`--depth 1`) have too few commits for KAIZEN/C-* pattern discovery.
+fn siblings_have_history() -> bool {
+    let root = repo_root();
+    let parent = match root.parent() {
+        Some(p) => p,
+        None => return false,
+    };
+    // Check a known sibling — if its log has < 10 commits, history is too shallow.
+    let output = std::process::Command::new("git")
+        .args(["rev-list", "--count", "HEAD"])
+        .current_dir(parent.join("aprender"))
+        .output();
+    match output {
+        Ok(o) if o.status.success() => {
+            let count: usize = String::from_utf8_lossy(&o.stdout)
+                .trim()
+                .parse()
+                .unwrap_or(0);
+            count >= 10
+        }
+        _ => false,
+    }
+}
+
 #[test]
 fn discover_real_sibling_projects() {
     if !has_sibling_repos() { return; }
@@ -165,6 +190,9 @@ fn cross_project_index_accessors() {
 #[test]
 fn commit_refs_discovered() {
     if !has_sibling_repos() { return; }
+    // Shallow clones (CI `--depth 1`) have too few commits for
+    // `git log` to find KAIZEN-NNN / C-*-NNN patterns.
+    if !siblings_have_history() { return; }
     let index = CrossProjectIndex::build(&repo_root());
     let total_commit_refs: usize = index.commit_refs.values().map(Vec::len).sum();
     assert!(
