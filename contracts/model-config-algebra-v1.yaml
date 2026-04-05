@@ -23,6 +23,12 @@ equations:
     - 'input.len() > 0'
     - hidden_size > 0
     lean_theorem: Theorems.Divisibility
+    guarantees:
+      constraints:
+      - "config.hidden_size % config.num_heads == 0"
+      - "config.num_heads % config.num_kv_heads == 0"
+      - "config.head_dim % 2 == 0"
+      - "config.head_dim == config.hidden_size / config.num_heads"
   bounds:
     formula: head_dim >= hidden_dim / num_heads ∧ d_ff > hidden_dim
     domain: all config parameters ∈ ℤ⁺
@@ -52,6 +58,12 @@ equations:
     - 'input.len() > 0'
     - num_layers > 0
     lean_theorem: Theorems.Non_Degeneracy
+    guarantees:
+      constraints:
+      - "config.hidden_size > 0"
+      - "config.num_layers > 0"
+      - "config.num_heads > 0"
+      - "config.vocab_size > 0"
   cross_constraint:
     formula: rope_theta > 0 ∧ rope_theta.is_finite() ∧ rms_norm_eps > 0 ∧ rms_norm_eps
       < 0.1
