@@ -1,7 +1,8 @@
 use std::path::Path;
 
 use provable_contracts::graph::{DependencyGraph, dependency_graph, graph_nodes};
-use provable_contracts::schema::{Contract, parse_contract};
+
+use crate::contract_walk::collect_contracts;
 
 /// Output format for the dependency graph rendering
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -34,7 +35,7 @@ impl GraphFormat {
 /// Load contracts from a directory and render their dependency graph
 pub fn run(contract_dir: &Path, format: GraphFormat) -> Result<(), Box<dyn std::error::Error>> {
     let mut contracts = Vec::new();
-    collect_recursive(contract_dir, &mut contracts);
+    collect_contracts(contract_dir, &mut contracts);
     contracts.sort_by(|a, b| a.0.cmp(&b.0));
 
     let refs: Vec<(String, &provable_contracts::schema::Contract)> =
@@ -208,31 +209,6 @@ fn render_mermaid(graph: &DependencyGraph) {
 /// Convert a contract stem to a valid Mermaid node ID (no hyphens).
 fn mermaid_id(stem: &str) -> String {
     stem.replace('-', "_")
-}
-
-/// Walk `dir` recursively and collect parseable `.yaml` contracts.
-fn collect_recursive(dir: &Path, out: &mut Vec<(String, Contract)>) {
-    let Ok(entries) = std::fs::read_dir(dir) else {
-        return;
-    };
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if path.is_dir() {
-            collect_recursive(&path, out);
-        } else if path.extension().and_then(|e| e.to_str()) == Some("yaml") {
-            let stem = path
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or("unknown")
-                .to_string();
-            if stem == "binding" || stem == "playbook.schema" || stem.contains("playbook") {
-                continue;
-            }
-            if let Ok(c) = parse_contract(&path) {
-                out.push((stem, c));
-            }
-        }
-    }
 }
 
 /// Check whether any other node in the graph depends on the given node

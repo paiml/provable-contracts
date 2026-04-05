@@ -6,6 +6,7 @@ use clap::Parser;
 
 mod cli;
 mod commands;
+mod contract_walk;
 
 use cli::Commands;
 

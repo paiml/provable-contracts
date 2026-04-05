@@ -10,13 +10,15 @@ use std::collections::BTreeMap;
 use std::path::Path;
 
 use provable_contracts::graph::dependency_graph;
-use provable_contracts::schema::{Contract, parse_contract};
+use provable_contracts::schema::Contract;
+
+use crate::contract_walk::collect_contracts;
 
 /// Run the verify-pipeline command.
 pub fn run(contract_dir: &Path, format: &str) -> Result<(), Box<dyn std::error::Error>> {
     // 1. Load all contracts
     let mut contracts = Vec::new();
-    load_contracts_recursive(contract_dir, &mut contracts)?;
+    collect_contracts(contract_dir, &mut contracts);
     contracts.sort_by(|a, b| a.0.cmp(&b.0));
 
     if contracts.is_empty() {
@@ -253,35 +255,6 @@ fn print_json(
     });
 
     println!("{}", serde_json::to_string_pretty(&report).unwrap());
-}
-
-fn load_contracts_recursive(
-    dir: &Path,
-    out: &mut Vec<(String, Contract)>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let entries = std::fs::read_dir(dir)?;
-    for entry in entries {
-        let entry = entry?;
-        let path = entry.path();
-        if path.is_dir() {
-            load_contracts_recursive(&path, out)?;
-        } else if path.extension().and_then(|e| e.to_str()) == Some("yaml") {
-            let stem = path
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or("unknown")
-                .to_string();
-            // Skip non-contract YAML (binding.yaml, playbook.schema.yaml, etc.)
-            if stem == "binding" || stem == "playbook.schema" || stem.contains("playbook") {
-                continue;
-            }
-            match parse_contract(&path) {
-                Ok(c) => out.push((stem, c)),
-                Err(_) => {} // silently skip unparseable files
-            }
-        }
-    }
-    Ok(())
 }
 
 #[cfg(test)]
