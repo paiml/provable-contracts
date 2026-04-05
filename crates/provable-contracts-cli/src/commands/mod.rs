@@ -31,3 +31,4 @@ pub mod tla;
 pub mod unlock;
 pub mod validate;
 pub mod verify_bindings;
+pub mod verify_pipeline;

@@ -304,6 +304,10 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
             output,
             crate_name,
         } => commands::verify_bindings::run(&binding, output.as_deref(), crate_name.as_deref()),
+        Commands::VerifyPipeline {
+            contract_dir,
+            format,
+        } => commands::verify_pipeline::run(&contract_dir, &format),
     }
 }
 

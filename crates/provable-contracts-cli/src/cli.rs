@@ -470,6 +470,16 @@ pub enum Commands {
         #[arg(long)]
         min_score: Option<f64>,
     },
+    /// Verify compositional shape flow across contract dependency graph
+    #[command(name = "verify-pipeline")]
+    VerifyPipeline {
+        /// Directory containing contract YAML files
+        #[arg(default_value = "contracts")]
+        contract_dir: PathBuf,
+        /// Output format: text (default) or json
+        #[arg(long, default_value = "text")]
+        format: String,
+    },
     /// Generate a Rust test that verifies all bound functions exist
     VerifyBindings {
         /// Path to binding.yaml
