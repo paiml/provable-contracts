@@ -103,6 +103,8 @@ fn emit_precondition_macro(
     rust.push_str(&format!("/// Preconditions for equation `{eq_name}`.\n"));
     if uses_domain {
         let pv = detect_primary_var(pres);
+        // Use _pv_ prefix to avoid macro hygiene issues in cross-crate builds
+        let safe_pv = format!("_pv_{pv}");
         rust.push_str(&format!(
             "/// Domain-specific. Call: `contract_pre_{macro_name}!(slice_expr)`\n"
         ));
@@ -110,13 +112,14 @@ fn emit_precondition_macro(
         // Zero-arg form: no-op (proc-macro compatibility)
         rust.push_str("    () => {{}};\n");
         rust.push_str("    ($input:expr) => {{\n");
-        rust.push_str(&format!("        let {pv} = &$input;\n"));
+        rust.push_str(&format!("        let {safe_pv} = &$input;\n"));
         for pre in pres {
             if has_unbound_vars(pre, &pv) {
                 continue;
             }
+            let mapped = pre.replace(&pv, &safe_pv);
             let esc = pre.replace('"', "\\\"");
-            rust.push_str(&format!("        debug_assert!({pre},\n            \"Contract {eq_name}: precondition violated — {esc}\");\n"));
+            rust.push_str(&format!("        debug_assert!({mapped},\n            \"Contract {eq_name}: precondition violated — {esc}\");\n"));
             count += 1;
         }
         rust.push_str("    }};\n}\n\n");
@@ -706,7 +709,7 @@ mod tests {
         let mut rust = String::new();
         let count = emit_precondition_macro(&mut rust, "EQ-DOM", "eq_dom", &pres);
         assert_eq!(count, 1);
-        assert!(rust.contains("let x = &$input;"));
+        assert!(rust.contains("let _pv_x = &$input;"));
         assert!(rust.contains("Domain-specific"));
         assert!(rust.contains("x.len() == 10"));
     }
@@ -727,7 +730,7 @@ mod tests {
         let mut rust = String::new();
         let count = emit_precondition_macro(&mut rust, "EQ-W", "eq_w", &pres);
         assert_eq!(count, 1);
-        assert!(rust.contains("let weight = &$input;"));
+        assert!(rust.contains("let _pv_weight = &$input;"));
     }
 
     #[test]
@@ -736,7 +739,7 @@ mod tests {
         let mut rust = String::new();
         let count = emit_precondition_macro(&mut rust, "EQ-F", "eq_f", &pres);
         assert_eq!(count, 1);
-        assert!(rust.contains("let freqs = &$input;"));
+        assert!(rust.contains("let _pv_freqs = &$input;"));
     }
 
     #[test]
@@ -745,7 +748,7 @@ mod tests {
         let mut rust = String::new();
         let count = emit_precondition_macro(&mut rust, "EQ-S", "eq_s", &pres);
         assert_eq!(count, 1);
-        assert!(rust.contains("let scale = &$input;"));
+        assert!(rust.contains("let _pv_scale = &$input;"));
     }
 
     #[test]
