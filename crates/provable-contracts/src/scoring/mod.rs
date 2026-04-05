@@ -54,10 +54,10 @@ pub fn score_contract_weighted(
     // reference documents) are data-only: they define lookup tables or
     // metadata, not executable functions. Give them full credit for
     // binding/lean so the composite reflects their declarative nature.
-    let (effective_binding, effective_lean) = if !contract.requires_proofs() {
-        (1.0, lean.max(0.5))
-    } else {
+    let (effective_binding, effective_lean) = if contract.requires_proofs() {
         (binding_cov, lean)
+    } else {
+        (1.0, lean.max(0.5))
     };
 
     let composite = spec_depth * w.spec_depth
