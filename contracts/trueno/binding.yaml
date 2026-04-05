@@ -274,6 +274,34 @@ bindings:
   status: implemented
   notes: 'PMAT-403: O(1) per-brick access via BrickId array index (PAR-200). Per-call
     avg respects kernel complexity (LmHead > Gate > RmsNorm).'
+- contract: avx512-blis-v1.yaml
+  equation: flops_per_tile
+  module_path: trueno::blis::compute
+  function: gemm_blis_avx512_large
+  signature: 'unsafe fn gemm_blis_avx512_large(m: usize, n: usize, k: usize, a: &[f32], b: &[f32], c: &mut [f32]) -> Result<(), TruenoError>'
+  status: implemented
+  notes: 'PMAT-037: AVX-512 8×16 microkernel with zmm registers. MR=8, NR=16. BlisProfiler NOT yet wired (C-AVX512-PROF-001 PENDING).'
+- contract: avx512-blis-v1.yaml
+  equation: peak_throughput
+  module_path: trueno::blis::compute
+  function: avx512_microkernel_8x16_rowmajor
+  signature: 'pub(super) unsafe fn avx512_microkernel_8x16_rowmajor(k: usize, a: *const f32, b: *const f32, c: *mut f32, ldc: usize)'
+  status: implemented
+  notes: '8 zmm accumulators, B as zmm load, A as scalar broadcast. 128 GFLOPS measured (98.5% of peak).'
+- contract: avx512-blis-v1.yaml
+  equation: flops_per_tile
+  module_path: trueno::blis::compute
+  function: pack_b_block_nr16
+  signature: 'pub(super) fn pack_b_block_nr16(b: &[f32], ldb: usize, pc: usize, jc: usize, kc: usize, nc: usize, packed: &mut [f32])'
+  status: implemented
+  notes: 'NR=16 B packing for AVX-512 zmm width. Zero-pads when nc < 16.'
+- contract: blis-thread-cap-v1.yaml
+  equation: amdahl_speedup
+  module_path: trueno::blis::parallel
+  function: gemm_blis_parallel
+  signature: 'pub fn gemm_blis_parallel(m: usize, n: usize, k: usize, a: &[f32], b: &[f32], c: &mut [f32]) -> Result<(), TruenoError>'
+  status: implemented
+  notes: 'PMAT-037: 4-tier thread cap (2/4/phys÷2/all) based on FLOPs thresholds from cgp scaling measurements.'
 critical_path:
 - softmax
 - matmul
@@ -283,3 +311,5 @@ critical_path:
 - PipelineCache
 - GemmBackward
 - arithmetic_intensity
+- gemm_blis_avx512_large
+- gemm_blis_parallel

@@ -1,0 +1,78 @@
+metadata:
+  version: 1.0.0
+  created: '2026-04-05'
+  author: PAIML Engineering
+  description: BLIS parallel GEMM thread cap policy — cache-topology-aware thread limiting
+  registry: true
+  references:
+  - 'PMAT-037: cgp profile scaling measurements on Threadripper 7960X'
+  - '[16] Hager & Wellein HPC (2010) — cache hierarchy performance modeling'
+  - 'Negative results: shared-B packing regressed, K-unrolling regressed'
+
+thread_cap_policy:
+- id: C-THREADCAP-001
+  name: 4-tier FLOPs-to-threads mapping
+  description: |
+    Thread count is capped based on problem size (FLOPs = M × N × K):
+      <64M FLOPs (≤256³):  cap at 2 (thread overhead dominates)
+      <512M FLOPs (≤512³): cap at 4 (L2 contention at higher counts)
+      <4B FLOPs (≤1024³):  cap at phys_cores/2 (single CCD L3 boundary)
+      ≥4B FLOPs:           cap at phys_cores (use all cores)
+    
+    cgp profile scaling evidence (Threadripper 7960X, 24C/48T):
+      256: peak at 2T (35 GFLOPS), regresses at 4T+
+      512: peak at 4T (176 GFLOPS), regresses at 8T
+      1024: peak at 12T (567 GFLOPS) with phys_cores/2=12
+  severity: P0
+  critical: true
+  verification: cgp profile scaling sweep at each size tier
+
+- id: C-THREADCAP-002
+  name: Sequential threshold at 8M FLOPs
+  description: |
+    Below 8M FLOPs (~200³), GEMM runs single-threaded.
+    Rayon dispatch costs ~3µs. For GEMM ≤128 (~4M FLOPs, ~35µs),
+    thread overhead dominates. GEMM 256+ (33M FLOPs, ~300µs) benefits.
+  severity: P1
+  critical: false
+
+- id: C-THREADCAP-003
+  name: HeijunkaScheduler caps to min(rayon_threads, max_threads)
+  description: |
+    HeijunkaScheduler::default() reads rayon::current_num_threads().
+    The cap applies as: scheduler.num_threads = scheduler.num_threads.min(max_threads).
+    This ensures the policy works regardless of RAYON_NUM_THREADS setting.
+  severity: P0
+  critical: true
+
+falsification_tests:
+- id: FT-THREADCAP-001
+  rule: phys_cores/2 outperforms phys_cores for 1024³ GEMM
+  prediction: 12T > 24T for 1024x1024 on Threadripper 7960X
+  test: cgp profile scaling --size 1024 (12T=567, 24T=523)
+  if_fails: Different cache topology (single-CCD CPU)
+
+- id: FT-THREADCAP-002
+  rule: Cap at 4 outperforms cap at 8 for 512³
+  prediction: 4T > 8T for 512x512
+  test: cgp profile scaling --size 512 (4T=176, 8T=173)
+  if_fails: L3 size increased or cache sharing changed
+
+equations:
+  amdahl_speedup:
+    formula: "speedup = 1 / ((1-p) + p/n)"
+    preconditions:
+    - "p = parallel fraction, n = thread count"
+
+  working_set:
+    formula: "ws = 3 × M × K × 4 bytes (A + B + C)"
+    preconditions:
+    - "f32 GEMM, row-major layout"
+
+qa_gate:
+  id: F-THREADCAP-001
+  name: blis-thread-cap-v1 Contract
+  description: Quality gate for BLIS parallel thread cap policy
+  checks:
+  - validation
+  - falsification
