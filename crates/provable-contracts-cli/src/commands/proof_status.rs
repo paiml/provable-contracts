@@ -54,6 +54,10 @@ pub fn run(
         }
         _ => {
             print!("{}", format_text(&report));
+            // Append kind breakdown when showing >1 contract.
+            if contracts.len() > 1 {
+                print_kind_breakdown(&contracts);
+            }
         }
     }
 
@@ -63,6 +67,23 @@ pub fn run(
     }
 
     Ok(())
+}
+
+fn print_kind_breakdown(contracts: &[(String, provable_contracts::schema::Contract)]) {
+    let mut counts = std::collections::BTreeMap::<ContractKind, usize>::new();
+    for (_, c) in contracts {
+        *counts.entry(c.kind()).or_insert(0) += 1;
+    }
+    // Only print if there's > 1 kind represented.
+    if counts.len() < 2 {
+        return;
+    }
+    println!();
+    print!("By kind:");
+    for (kind, count) in &counts {
+        print!("  {kind}={count}");
+    }
+    println!();
 }
 
 fn parse_kind(s: &str) -> Result<ContractKind, Box<dyn std::error::Error>> {

@@ -20,7 +20,9 @@ use serde::{Deserialize, Serialize};
 /// - `Schema`: a generic reference/schema document — exempt from provability,
 ///   validated only for `metadata.id`, `metadata.version`, `metadata.description`,
 ///   and `metadata.references`.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
+)]
 #[serde(rename_all = "kebab-case")]
 pub enum ContractKind {
     #[default]
