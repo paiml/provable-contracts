@@ -21,6 +21,11 @@ pub fn run(
     load_yaml_recursive(contract_dir, &mut contracts)?;
     contracts.sort_by(|a, b| a.0.cmp(&b.0));
 
+    if contracts.is_empty() {
+        eprintln!("No contracts found in {}", contract_dir.display());
+        return Ok(());
+    }
+
     // 1. Build dependency graph
     let refs: Vec<(String, &Contract)> = contracts.iter().map(|(s, c)| (s.clone(), c)).collect();
     let graph = dependency_graph(&refs);

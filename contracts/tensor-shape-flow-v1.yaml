@@ -20,9 +20,6 @@ equations:
     - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Qkv_Projection
     assumes:
-      shapes:
-        input: { dims: [batch, seq, config.hidden_size] }
-        w_q: { dims: [config.hidden_size, "config.num_heads * config.head_dim"] }
       constraints:
       - "config.hidden_size % config.num_heads == 0"
       from_contract: model-config-algebra-v1
@@ -44,9 +41,9 @@ equations:
     lean_theorem: Theorems.Gqa_Grouping
     assumes:
       shapes:
-        q: { dims: [batch, seq, "config.num_heads * config.head_dim"] }
-        k: { dims: [batch, seq, "config.num_kv_heads * config.head_dim"] }
-        v: { dims: [batch, seq, "config.num_kv_heads * config.head_dim"] }
+        q_output: { dims: [batch, seq, "config.num_heads * config.head_dim"] }
+        k_output: { dims: [batch, seq, "config.num_kv_heads * config.head_dim"] }
+        v_output: { dims: [batch, seq, "config.num_kv_heads * config.head_dim"] }
       constraints:
       - "config.num_heads % config.num_kv_heads == 0"
       from_contract: tensor-shape-flow-v1
@@ -67,7 +64,7 @@ equations:
     lean_theorem: Theorems.Swiglu_Shape
     assumes:
       shapes:
-        input: { dims: [batch, seq, config.hidden_size] }
+        output: { dims: [batch, seq, config.hidden_size] }
       constraints:
       - "config.intermediate_size > config.hidden_size"
       from_contract: tensor-shape-flow-v1
@@ -102,7 +99,7 @@ equations:
     lean_theorem: Theorems.Lm_Head
     assumes:
       shapes:
-        input: { dims: [batch, seq, config.hidden_size] }
+        output: { dims: [batch, seq, config.hidden_size] }
       from_contract: tensor-shape-flow-v1
       from_equation: residual
     guarantees:
