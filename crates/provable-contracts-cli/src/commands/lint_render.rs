@@ -129,6 +129,11 @@ pub fn gate_summary(detail: &GateDetail) -> String {
             coverage_pct,
             ..
         } => format!("{bound_fns}/{total_pub_fns} bound ({coverage_pct:.1}%)"),
+        GateDetail::Composition {
+            edges_checked,
+            edges_satisfied,
+            edges_broken,
+        } => format!("{edges_checked} edges, {edges_satisfied} satisfied, {edges_broken} broken"),
         GateDetail::Skipped { reason } => format!("skipped: {reason}"),
     }
 }

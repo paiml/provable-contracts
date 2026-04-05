@@ -9,6 +9,7 @@
 //! Spec: `docs/specifications/sub/lint.md`
 
 pub mod cache;
+mod composition_gate;
 pub mod config;
 pub mod diff;
 pub mod finding;
@@ -89,6 +90,12 @@ pub enum GateDetail {
         unbound_fns: usize,
         coverage_pct: f64,
         threshold_pct: f64,
+    },
+    #[serde(rename = "composition")]
+    Composition {
+        edges_checked: usize,
+        edges_satisfied: usize,
+        edges_broken: usize,
     },
     #[serde(rename = "skipped")]
     Skipped { reason: String },
@@ -236,6 +243,15 @@ pub fn run_lint(config: &LintConfig) -> LintReport {
         }
     } else {
         gates.push(skipped_gate("reverse-coverage", "validation failed"));
+    }
+
+    // Gate 8: composition (assumes/guarantees chain verification)
+    if validation_passed {
+        let (comp_result, mut comp_findings) = composition_gate::run_composition_gate(&contracts);
+        gates.push(comp_result);
+        all_findings.append(&mut comp_findings);
+    } else {
+        gates.push(skipped_gate("composition", "validation failed"));
     }
 
     all_findings.append(&mut validate_findings);

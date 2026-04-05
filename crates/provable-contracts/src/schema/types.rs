@@ -7,7 +7,7 @@ pub use super::composition::{ShapeContract, ShapeExpr};
 ///
 /// This is the root type for the contract schema defined in
 /// `docs/specifications/pv-spec.md` Section 3.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Contract {
     pub metadata: Metadata,
     /// Equations are optional — kaizen, pipeline, and registry contracts
@@ -74,7 +74,7 @@ impl Contract {
 }
 
 /// Contract metadata block.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Metadata {
     pub version: String,
     #[serde(default)]
@@ -153,7 +153,7 @@ pub struct Equation {
 /// 26 obligation types: 19 property types plus 7 Design by Contract
 /// types (`precondition`, `postcondition`, `frame`, `loop_invariant`,
 /// `loop_variant`, `old_state`, `subcontract`).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ProofObligation {
     #[serde(rename = "type")]
     pub obligation_type: ObligationType,
@@ -178,9 +178,10 @@ pub struct ProofObligation {
     pub parent_contract: Option<String>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ObligationType {
+    #[default]
     Invariant,
     Equivalence,
     Bound,
@@ -290,7 +291,7 @@ pub struct EnforcementRule {
 ///
 /// Each makes a falsifiable prediction about the implementation.
 /// If the prediction is wrong, the test identifies root cause.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct FalsificationTest {
     pub id: String,
     pub rule: String,
@@ -303,7 +304,7 @@ pub struct FalsificationTest {
 /// A Kani bounded model checking harness definition.
 ///
 /// Corresponds to Phase 6 (Verify) of the pipeline.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct KaniHarness {
     pub id: String,
     pub obligation: String,

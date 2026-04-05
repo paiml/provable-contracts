@@ -47,6 +47,21 @@ equations:
     - result.head_dim * result.num_heads == result.hidden_size
     - result.kv_group_size * result.num_kv_heads == result.num_heads
     lean_theorem: Theorems.ArchitectureConfigInvariants
+    assumes:
+      constraints:
+      - "config.hidden_size > 0"
+      - "config.num_layers > 0"
+      - "config.num_heads > 0"
+      - "config.vocab_size > 0"
+      from_contract: model-config-algebra-v1
+      from_equation: non_degeneracy
+    guarantees:
+      shapes:
+        validated_config:
+          dims: ["config.hidden_size", "config.num_layers", "config.num_heads", "config.vocab_size"]
+      constraints:
+      - "config.hidden_size % config.num_heads == 0"
+      - "config.num_heads % config.num_kv_heads == 0"
 
   attention_tensor_shapes:
     formula: |
@@ -70,6 +85,18 @@ equations:
     - all 4 projection tensors exist for each layer
     - shapes match config exactly
     lean_theorem: Theorems.AttentionTensorShapes
+    assumes:
+      constraints:
+      - "config.hidden_size % config.num_heads == 0"
+      - "config.num_heads % config.num_kv_heads == 0"
+      from_contract: apr-architecture-schema-v1
+      from_equation: architecture_config_invariants
+    guarantees:
+      shapes:
+        q_proj: { dims: [config.hidden_size, "config.num_heads * config.head_dim"] }
+        k_proj: { dims: [config.hidden_size, "config.num_kv_heads * config.head_dim"] }
+        v_proj: { dims: [config.hidden_size, "config.num_kv_heads * config.head_dim"] }
+        o_proj: { dims: ["config.num_heads * config.head_dim", config.hidden_size] }
 
   ffn_tensor_shapes:
     formula: |
@@ -93,6 +120,16 @@ equations:
     - standard FFN has 3 tensors (gate, up, down) OR 2 tensors (merged gate_up, down)
     - MoE FFN has 3 * num_experts tensors per layer
     lean_theorem: Theorems.FfnTensorShapes
+    assumes:
+      constraints:
+      - "config.intermediate_size > 0"
+      from_contract: apr-architecture-schema-v1
+      from_equation: architecture_config_invariants
+    guarantees:
+      shapes:
+        gate: { dims: [config.hidden_size, config.intermediate_size] }
+        up: { dims: [config.hidden_size, config.intermediate_size] }
+        down: { dims: [config.intermediate_size, config.hidden_size] }
 
   normalization_tensor_shapes:
     formula: |
@@ -113,6 +150,12 @@ equations:
     - norm_count_per_layer == 2
     - final_norm exists
     lean_theorem: Theorems.NormalizationTensorShapes
+    assumes:
+      from_contract: apr-architecture-schema-v1
+      from_equation: architecture_config_invariants
+    guarantees:
+      shapes:
+        norm_weight: { dims: [config.hidden_size] }
 
   embedding_tensor_shapes:
     formula: |
@@ -133,6 +176,13 @@ equations:
     - embedding_count >= 1 (token embedding)
     - lm_head_exists || tied_embeddings
     lean_theorem: Theorems.EmbeddingTensorShapes
+    assumes:
+      from_contract: apr-architecture-schema-v1
+      from_equation: architecture_config_invariants
+    guarantees:
+      shapes:
+        token_embedding: { dims: [config.vocab_size, config.hidden_size] }
+        lm_head: { dims: [config.hidden_size, config.vocab_size] }
 
   rope_position_encoding:
     formula: |
@@ -153,6 +203,17 @@ equations:
     - freq.len() == head_dim / 2
     - all freq values are finite and positive
     lean_theorem: Theorems.RopePositionEncoding
+    assumes:
+      constraints:
+      - "config.head_dim % 2 == 0"
+      from_contract: model-config-algebra-v1
+      from_equation: divisibility
+    guarantees:
+      shapes:
+        freq_vector: { dims: ["config.head_dim / 2"] }
+      constraints:
+      - "rope_theta > 0"
+      - "all freq values finite and positive"
 
   total_tensor_count:
     formula: |
@@ -172,6 +233,12 @@ equations:
     postconditions:
     - "abs(actual - expected) <= 5"
     lean_theorem: Theorems.TotalTensorCount
+    assumes:
+      from_contract: apr-architecture-schema-v1
+      from_equation: architecture_config_invariants
+    guarantees:
+      constraints:
+      - "abs(actual_tensor_count - expected_tensor_count) <= 5"
 
 kernel_structure:
   phases:

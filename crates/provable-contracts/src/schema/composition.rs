@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 /// mechanically verifiable edges in the dependency graph. The COMPOSITION-001
 /// lint gate unifies `guarantees.shapes` with downstream `assumes.shapes`
 /// to prove end-to-end pipeline shape consistency.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ShapeContract {
     /// Named shape bindings, e.g. `{"output": {"dims": ["batch", "seq", "config.hidden_size"]}}`.
     #[serde(default)]
