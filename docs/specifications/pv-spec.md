@@ -139,7 +139,7 @@ The `pv` binary provides 34 commands: `validate`, `scaffold`, `kani`,
 **Sub-spec**: [sub/library.md](sub/library.md)
 
 The `provable-contracts` crate exposes 35 public modules: `schema`
-(parse/validate), `scaffold`/`kani_gen`/`probar_gen`/`lean_gen` (codegen),
+(parse/validate), `scaffold`/`kani_gen`/`probar_gen`/`lean_gen`/`codegen` (code generation),
 `scoring` (5-dim contract + codebase), `query` (BM25 search), `binding`,
 `coverage`, `graph`, `diff`, `audit`, `proof_status`.
 
@@ -213,7 +213,7 @@ quality gates (SARIF, SonarQube), and gradual typing (Siek, Bader, Lehmann).
 
 Six-stage pipeline where each stage gates the next. Skip one → compile error.
 Equation (YAML) → Lean 4 proof (no sorry) → YAML validation (pv lint) →
-build.rs codegen (debug_assert from preconditions) → #[contract] macro
+build.rs codegen (debug_assert from preconditions/postconditions/invariants) → #[contract] macro
 (compile-time binding check) → test execution (falsification tests pass).
 
 ---

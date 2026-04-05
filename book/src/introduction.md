@@ -71,6 +71,10 @@ pub fn generate_contract_tests(contract: &Contract) -> TokenStream;
 pub fn generate_kani_harnesses(contract: &Contract) -> TokenStream;
 pub fn generate_probar_tests(contract: &Contract) -> TokenStream;
 
+// Codegen — Generate debug_assert!() from contracts
+pub fn generate_all(contract_dir: &Path) -> Vec<GeneratedContract>;
+pub fn write_rust_module(contracts: &[GeneratedContract], output: &Path) -> io::Result<()>;
+
 // Audit — Trace paper→code chain
 pub fn audit_contract(contract: &Contract) -> AuditReport;
 

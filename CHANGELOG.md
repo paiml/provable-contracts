@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-04-05
+
+### Added
+
+- `pv codegen` now generates `contract_inv_<name>!()` macros from equation invariants
+- `invariant_count` field on `GeneratedContract` for tracking invariant assertions
+- CLI codegen prints invariant count alongside preconditions/postconditions
+- Parent directory auto-creation for `pv codegen` default output path
+
+### Changed
+
+- Extracted codegen tests to `codegen_tests.rs` (codegen.rs: 1447 → 435 lines)
+- Invariant macros emit `debug_assert!()` for Rust-expression invariants only
+  (prose invariants are documented but skipped during codegen)
+
+
 ## [0.2.1] - 2026-03-31
 
 ### Added

@@ -51,6 +51,13 @@ CONTRACT_<STEM>_<EQ>_POST_COUNT=1
 CONTRACT_<STEM>_<EQ>_POST_0=ret.len() == logits.len()
 ```
 
+**Invariant assertions** (v0.2.2+):
+```
+CONTRACT_<STEM>_<EQ>_INV_COUNT=2
+CONTRACT_<STEM>_<EQ>_INV_0=result >= 0.0
+CONTRACT_<STEM>_<EQ>_INV_1=result.is_finite()
+```
+
 The `#[contract]` proc macro reads these at compile time and injects
 `debug_assert!()` calls. Variable names in YAML preconditions MUST match
 the function parameter names in source code.

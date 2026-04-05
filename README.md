@@ -86,7 +86,7 @@ proving.
 - **PyTorch Extraction** -- `pv extract-pytorch` infers pre/postconditions
   from PyTorch docstrings and generates YAML contract skeletons.
 - **Codegen** -- `pv codegen` generates `debug_assert!()` macros from
-  YAML preconditions/postconditions for compile-time enforcement.
+  YAML preconditions, postconditions, and invariants for compile-time enforcement.
 - **Kaizen Fleet Enforcement** -- `pv kaizen` measures, regenerates,
   injects, and validates contract enforcement across 25 sovereign stack
   repos. Tiered scoring (kernel/tool), A-F letter grades per-repo,
@@ -217,7 +217,7 @@ pv book contracts/ -o book/src/contracts/
 | `scaffold`         | Generate Rust trait definition + failing tests            |
 | `kani`             | Generate `#[kani::proof]` bounded model harnesses        |
 | `probar`           | Generate property-based tests from obligations           |
-| `codegen`          | Generate `debug_assert!()` from YAML pre/postconditions |
+| `codegen`          | Generate `debug_assert!()` from YAML pre/postconditions/invariants |
 | `extract-pytorch`  | Extract contracts from PyTorch source docstrings         |
 | `status`           | Display contract summary (equations, obligations)        |
 | `audit`            | Run traceability audit with optional binding check       |
