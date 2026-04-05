@@ -149,6 +149,9 @@ pub enum Commands {
         /// Show per-obligation verification table
         #[arg(long)]
         table: bool,
+        /// Filter: kernel|registry|model-family|pattern|schema
+        #[arg(long)]
+        kind: Option<String>,
     },
     /// Run all contract quality gates (validate + audit + score)
     Lint {
@@ -343,8 +346,8 @@ pub enum Commands {
         /// Filter by kernel equivalence class (A-E)
         #[arg(long, value_name = "CLASS")]
         class: Option<char>,
-        /// Filter by contract kind (kernel, registry, model-family, pattern, schema)
-        #[arg(long, value_name = "KIND")]
+        /// Filter: kernel|registry|model-family|pattern|schema
+        #[arg(long)]
         kind: Option<String>,
         /// Force rebuild of the contract index (ignore cache)
         #[arg(long)]
@@ -414,7 +417,6 @@ pub enum Commands {
     },
     /// Compute roofline ceilings from contract equations
     Roofline {
-        /// Directory containing contract YAML files (must have roofline-model-v1.yaml)
         #[arg(long, default_value = "contracts")]
         contract_dir: PathBuf,
         /// Total model parameters (e.g. 7000000000 for 7B)

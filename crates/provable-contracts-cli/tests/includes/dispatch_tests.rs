@@ -84,6 +84,7 @@ fn dispatch_proof_status() {
         binding: None,
         format: "text".to_string(),
         table: false,
+        kind: None,
     });
     assert!(result.is_ok());
 }
@@ -95,6 +96,7 @@ fn dispatch_proof_status_json() {
         binding: None,
         format: "json".to_string(),
         table: false,
+        kind: None,
     });
     assert!(result.is_ok());
 }
@@ -106,6 +108,7 @@ fn dispatch_proof_status_directory() {
         binding: None,
         format: "text".to_string(),
         table: false,
+        kind: None,
     });
     assert!(result.is_ok());
 }
@@ -119,6 +122,7 @@ fn dispatch_proof_status_with_binding() {
         binding: Some(binding),
         format: "json".to_string(),
         table: false,
+        kind: None,
     });
     assert!(result.is_ok());
 }
@@ -370,6 +374,7 @@ fn dispatch_proof_status_markdown() {
         binding: None,
         format: "markdown".to_string(),
         table: false,
+        kind: None,
     });
     assert!(result.is_ok());
 }

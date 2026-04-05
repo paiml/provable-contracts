@@ -155,15 +155,20 @@ pv lean-status contracts/softmax-kernel-v1.yaml
 
 ### pv proof-status
 
-Hierarchical proof level (L1-L5) report.
+Hierarchical proof level (L1-L5) report. Walks the contract directory
+recursively. Use `--kind` to narrow by contract kind.
 
 ```bash
 pv proof-status contracts/
 pv proof-status contracts/ --binding contracts/aprender/binding.yaml
 pv proof-status contracts/ --format json
+pv proof-status contracts/ --kind pattern
+pv proof-status contracts/ --kind registry --format json
 ```
 
 Shows kernel equivalence classes (A-E) when multiple contracts present.
+With `--kind pattern|registry|model-family|schema`, only the matching
+contracts are reported; totals reflect the filtered set.
 
 ### pv lint
 

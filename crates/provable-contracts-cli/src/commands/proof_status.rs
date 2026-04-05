@@ -3,7 +3,7 @@ use std::path::Path;
 use provable_contracts::binding::parse_binding;
 use provable_contracts::obligation_matrix::{format_obligation_table, obligation_matrix};
 use provable_contracts::proof_status::{format_text, proof_status_report};
-use provable_contracts::schema::parse_contract;
+use provable_contracts::schema::{ContractKind, parse_contract};
 
 use crate::contract_walk::collect_contracts;
 
@@ -12,11 +12,14 @@ pub fn run(
     binding_path: Option<&Path>,
     format: &str,
     table: bool,
+    kind_filter: Option<&str>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let binding = match binding_path {
         Some(bp) => Some(parse_binding(bp)?),
         None => None,
     };
+
+    let kind = kind_filter.map(parse_kind).transpose()?;
 
     // Collect contracts (single file or directory tree)
     let mut contracts = Vec::new();
@@ -30,6 +33,10 @@ pub fn run(
             .to_string();
         let c = parse_contract(path)?;
         contracts.push((stem, c));
+    }
+
+    if let Some(k) = kind {
+        contracts.retain(|(_, c)| c.kind() == k);
     }
 
     contracts.sort_by(|a, b| a.0.cmp(&b.0));
@@ -56,4 +63,19 @@ pub fn run(
     }
 
     Ok(())
+}
+
+fn parse_kind(s: &str) -> Result<ContractKind, Box<dyn std::error::Error>> {
+    match s.to_lowercase().as_str() {
+        "kernel" => Ok(ContractKind::Kernel),
+        "registry" => Ok(ContractKind::Registry),
+        "model-family" | "modelfamily" => Ok(ContractKind::ModelFamily),
+        "pattern" => Ok(ContractKind::Pattern),
+        "schema" => Ok(ContractKind::Schema),
+        other => Err(format!(
+            "invalid --kind value '{other}': expected one of \
+             kernel, registry, model-family, pattern, schema"
+        )
+        .into()),
+    }
 }
