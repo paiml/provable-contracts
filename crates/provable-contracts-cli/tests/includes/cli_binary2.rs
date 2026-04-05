@@ -303,3 +303,74 @@
             "lean-status should show coverage or indicate no lean metadata"
         );
     }
+
+    #[test]
+    fn pv_query_kind_pattern_finds_patterns() {
+        let output = Command::new(pv_bin())
+            .arg("query")
+            .arg("--contract-dir")
+            .arg(contracts_dir())
+            .arg("--rebuild-index")
+            .arg("--kind")
+            .arg("pattern")
+            .arg("--regex")
+            .arg(".")
+            .arg("--limit")
+            .arg("10")
+            .output()
+            .expect("failed to run pv");
+        assert!(
+            output.status.success(),
+            "stdout: {}\nstderr: {}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr),
+        );
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(
+            stdout.contains("[pattern]"),
+            "pattern results should carry the [pattern] kind tag"
+        );
+    }
+
+    #[test]
+    fn pv_query_kind_rejects_invalid() {
+        let output = Command::new(pv_bin())
+            .arg("query")
+            .arg("--contract-dir")
+            .arg(contracts_dir())
+            .arg("--kind")
+            .arg("bogus")
+            .arg("--regex")
+            .arg(".")
+            .output()
+            .expect("failed to run pv");
+        assert!(!output.status.success());
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            stderr.contains("invalid --kind value") || stderr.contains("kernel"),
+            "error should mention invalid value and valid list"
+        );
+    }
+
+    #[test]
+    fn pv_proof_status_kind_kernel_excludes_patterns() {
+        let output = Command::new(pv_bin())
+            .arg("proof-status")
+            .arg("--format")
+            .arg("text")
+            .arg("--kind")
+            .arg("kernel")
+            .arg(contracts_dir())
+            .output()
+            .expect("failed to run pv");
+        assert!(output.status.success());
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(
+            !stdout.contains("threading-safety-v1"),
+            "kernel filter should exclude pattern contracts"
+        );
+        assert!(
+            !stdout.contains("async-safety-v1"),
+            "kernel filter should exclude pattern contracts"
+        );
+    }
