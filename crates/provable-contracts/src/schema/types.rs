@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+pub use super::composition::{ShapeContract, ShapeExpr};
+
 /// A complete YAML kernel contract.
 ///
 /// This is the root type for the contract schema defined in
@@ -117,7 +119,7 @@ pub enum EnforcementLevel {
 }
 
 /// A mathematical equation extracted from a paper (Phase 1 output).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Equation {
     pub formula: String,
     #[serde(default)]
@@ -136,6 +138,14 @@ pub struct Equation {
     /// Example: "ProvableContracts.Theorems.Softmax.PartitionOfUnity"
     #[serde(default)]
     pub lean_theorem: Option<String>,
+    /// Compositional verification: what this equation requires from upstream.
+    /// References a guarantees block from another contract/equation.
+    #[serde(default)]
+    pub assumes: Option<ShapeContract>,
+    /// Compositional verification: what this equation provides to downstream.
+    /// Must be satisfiable by any downstream equation that assumes it.
+    #[serde(default)]
+    pub guarantees: Option<ShapeContract>,
 }
 
 /// A proof obligation derived from an equation.

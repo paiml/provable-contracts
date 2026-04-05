@@ -1,3 +1,4 @@
+pub mod composition;
 mod parser;
 mod types;
 mod validator;

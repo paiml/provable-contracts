@@ -19,6 +19,19 @@ equations:
     - input.len() > 0
     - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Qkv_Projection
+    assumes:
+      shapes:
+        input: { dims: [batch, seq, config.hidden_size] }
+        w_q: { dims: [config.hidden_size, "config.num_heads * config.head_dim"] }
+      constraints:
+      - "config.hidden_size % config.num_heads == 0"
+      from_contract: model-config-algebra-v1
+      from_equation: divisibility
+    guarantees:
+      shapes:
+        q_output: { dims: [batch, seq, "config.num_heads * config.head_dim"] }
+        k_output: { dims: [batch, seq, "config.num_kv_heads * config.head_dim"] }
+        v_output: { dims: [batch, seq, "config.num_kv_heads * config.head_dim"] }
   gqa_grouping:
     formula: group_size = n_h / n_kv (integer)
     domain: n_h, n_kv ∈ ℤ⁺, n_h % n_kv == 0
@@ -29,6 +42,18 @@ equations:
     - q.len() > 0
     - k.len() == v.len()
     lean_theorem: Theorems.Gqa_Grouping
+    assumes:
+      shapes:
+        q: { dims: [batch, seq, "config.num_heads * config.head_dim"] }
+        k: { dims: [batch, seq, "config.num_kv_heads * config.head_dim"] }
+        v: { dims: [batch, seq, "config.num_kv_heads * config.head_dim"] }
+      constraints:
+      - "config.num_heads % config.num_kv_heads == 0"
+      from_contract: tensor-shape-flow-v1
+      from_equation: qkv_projection
+    guarantees:
+      shapes:
+        attention_output: { dims: [batch, seq, config.hidden_size] }
   swiglu_shape:
     formula: gate[d_ff, h] × up[d_ff, h] → SiLU(gate·x) * (up·x) → down[h, d_ff] → [h]
     domain: x ∈ ℝ^h, gate ∈ ℝ^{d_ff×h}, up ∈ ℝ^{d_ff×h}, down ∈ ℝ^{h×d_ff}
@@ -40,6 +65,16 @@ equations:
     - input.len() > 0
     - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Swiglu_Shape
+    assumes:
+      shapes:
+        input: { dims: [batch, seq, config.hidden_size] }
+      constraints:
+      - "config.intermediate_size > config.hidden_size"
+      from_contract: tensor-shape-flow-v1
+      from_equation: residual
+    guarantees:
+      shapes:
+        output: { dims: [batch, seq, config.hidden_size] }
   residual:
     formula: y = x + sublayer(x)
     domain: x, sublayer(x) ∈ ℝ^h
@@ -49,6 +84,13 @@ equations:
     - input.len() > 0
     - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Residual
+    assumes:
+      shapes:
+        input: { dims: [batch, seq, config.hidden_size] }
+        sublayer_output: { dims: [batch, seq, config.hidden_size] }
+    guarantees:
+      shapes:
+        output: { dims: [batch, seq, config.hidden_size] }
   lm_head:
     formula: '[h] @ [V, h]^T → [V]'
     domain: x ∈ ℝ^h, W_lm ∈ ℝ^{V×h}
@@ -58,6 +100,14 @@ equations:
     - input.len() > 0
     - input.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Lm_Head
+    assumes:
+      shapes:
+        input: { dims: [batch, seq, config.hidden_size] }
+      from_contract: tensor-shape-flow-v1
+      from_equation: residual
+    guarantees:
+      shapes:
+        logits: { dims: [batch, seq, config.vocab_size] }
 proof_obligations:
 - type: invariant
   property: QKV shape compatibility
