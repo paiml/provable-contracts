@@ -343,7 +343,13 @@ pub fn explain_contract_json(
 }
 
 fn write_header(out: &mut String, contract: &Contract, stem: &str) {
-    let _ = writeln!(out, "{stem} (v{})", contract.metadata.version);
+    use crate::schema::ContractKind;
+    let kind_tag = if contract.kind() == ContractKind::Kernel {
+        String::new()
+    } else {
+        format!(" [{}]", contract.kind())
+    };
+    let _ = writeln!(out, "{stem} (v{}){kind_tag}", contract.metadata.version);
     let _ = writeln!(out, "{}", contract.metadata.description);
     let _ = writeln!(out);
 }
