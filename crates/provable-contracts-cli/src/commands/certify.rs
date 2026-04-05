@@ -10,6 +10,7 @@ use std::path::Path;
 
 use provable_contracts::graph::dependency_graph;
 use provable_contracts::schema::{Contract, parse_contract};
+use serde_json::Value;
 
 /// Run the certify command.
 pub fn run(
@@ -26,12 +27,61 @@ pub fn run(
         return Ok(());
     }
 
-    // 1. Build dependency graph
     let refs: Vec<(String, &Contract)> = contracts.iter().map(|(s, c)| (s.clone(), c)).collect();
     let graph = dependency_graph(&refs);
     let index: BTreeMap<&str, &Contract> = contracts.iter().map(|(s, c)| (s.as_str(), c)).collect();
 
-    // 2. Verify composition edges
+    let (edges_total, edges_satisfied, edge_details) = verify_composition_edges(&graph, &index);
+
+    let config_proof = config_json.and_then(|cfg| analyze_config(cfg).ok());
+
+    let composition_passed = edges_total > 0 && edges_satisfied == edges_total;
+    let config_passed = config_proof.as_ref().is_none_or(|p| {
+        p.get("all_checks_pass")
+            .and_then(Value::as_bool)
+            .unwrap_or(false)
+    });
+
+    let certificate = build_certificate(
+        &contracts,
+        &graph,
+        &index,
+        edges_total,
+        edges_satisfied,
+        &edge_details,
+        config_proof.as_ref(),
+        composition_passed,
+        config_passed,
+    );
+
+    let json_str = serde_json::to_string_pretty(&certificate)?;
+
+    if let Some(out_path) = output {
+        std::fs::write(out_path, &json_str)?;
+        println!("Certificate written to: {}", out_path.display());
+    } else {
+        println!("{json_str}");
+    }
+
+    print_summary(
+        composition_passed,
+        config_passed,
+        edges_satisfied,
+        edges_total,
+        config_proof.as_ref(),
+    );
+
+    if !composition_passed {
+        std::process::exit(1);
+    }
+
+    Ok(())
+}
+
+fn verify_composition_edges(
+    graph: &provable_contracts::graph::DependencyGraph,
+    index: &BTreeMap<&str, &Contract>,
+) -> (usize, usize, Vec<serde_json::Value>) {
     let mut edges_total = 0usize;
     let mut edges_satisfied = 0usize;
     let mut edge_details = Vec::new();
@@ -49,7 +99,7 @@ pub fn run(
             };
             edges_total += 1;
             let from_eq = assumes.from_equation.as_deref().unwrap_or("*");
-            let satisfied = check_edge(&index, from_contract, assumes.from_equation.as_deref());
+            let satisfied = check_edge(index, from_contract, assumes.from_equation.as_deref());
             if satisfied {
                 edges_satisfied += 1;
             }
@@ -61,7 +111,21 @@ pub fn run(
         }
     }
 
-    // 3. Count contracts with composition data
+    (edges_total, edges_satisfied, edge_details)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn build_certificate(
+    contracts: &[(String, Contract)],
+    graph: &provable_contracts::graph::DependencyGraph,
+    index: &BTreeMap<&str, &Contract>,
+    edges_total: usize,
+    edges_satisfied: usize,
+    edge_details: &[serde_json::Value],
+    config_proof: Option<&serde_json::Value>,
+    composition_passed: bool,
+    config_passed: bool,
+) -> serde_json::Value {
     let with_assumes = contracts
         .iter()
         .filter(|(_, c)| c.equations.values().any(|e| e.assumes.is_some()))
@@ -71,18 +135,7 @@ pub fn run(
         .filter(|(_, c)| c.equations.values().any(|e| e.guarantees.is_some()))
         .count();
 
-    // 4. Config analysis (if provided)
-    let config_proof = config_json.and_then(|cfg| analyze_config(cfg).ok());
-
-    // 5. Build certificate
-    let composition_passed = edges_total > 0 && edges_satisfied == edges_total;
-    let config_passed = config_proof.as_ref().map_or(true, |p| {
-        p.get("all_checks_pass")
-            .and_then(|v| v.as_bool())
-            .unwrap_or(false)
-    });
-
-    let certificate = serde_json::json!({
+    serde_json::json!({
         "version": "1.0.0",
         "tool": format!("pv certify v{}", env!("CARGO_PKG_VERSION")),
         "timestamp": chrono_free_timestamp(),
@@ -102,40 +155,34 @@ pub fn run(
         },
         "config_analysis": config_proof,
         "proofs": {
-            "format_safety": proof_status(&index, "safetensors-format-safety-v1"),
-            "config_algebra": proof_status(&index, "model-config-algebra-v1"),
-            "architecture_schema": proof_status(&index, "apr-architecture-schema-v1"),
-            "shape_pipeline": proof_status(&index, "tensor-shape-flow-v1"),
-            "tensor_names": proof_status(&index, "tensor-names-v1"),
+            "format_safety": proof_status(index, "safetensors-format-safety-v1"),
+            "config_algebra": proof_status(index, "model-config-algebra-v1"),
+            "architecture_schema": proof_status(index, "apr-architecture-schema-v1"),
+            "shape_pipeline": proof_status(index, "tensor-shape-flow-v1"),
+            "tensor_names": proof_status(index, "tensor-names-v1"),
         },
         "certificate_level": if composition_passed && config_passed { "L3" } else { "L2" },
         "passed": composition_passed && config_passed,
-    });
+    })
+}
 
-    let json_str = serde_json::to_string_pretty(&certificate)?;
-
-    // Output
-    if let Some(out_path) = output {
-        std::fs::write(out_path, &json_str)?;
-        println!("Certificate written to: {}", out_path.display());
-    } else {
-        println!("{json_str}");
-    }
-
-    // Summary to stderr
+fn print_summary(
+    composition_passed: bool,
+    config_passed: bool,
+    edges_satisfied: usize,
+    edges_total: usize,
+    config_proof: Option<&serde_json::Value>,
+) {
     let icon = if composition_passed && config_passed {
         "✓"
     } else {
         "✗"
     };
     eprintln!();
-    eprintln!(
-        "pv certify — {icon} {}/{} composition edges satisfied",
-        edges_satisfied, edges_total
-    );
-    if let Some(cfg) = &config_proof {
+    eprintln!("pv certify — {icon} {edges_satisfied}/{edges_total} composition edges satisfied",);
+    if let Some(cfg) = config_proof {
         if let Some(tensors) = cfg.get("expected_tensors") {
-            eprintln!("  Config: {} expected tensors", tensors);
+            eprintln!("  Config: {tensors} expected tensors");
         }
     }
     let level = if composition_passed && config_passed {
@@ -144,12 +191,6 @@ pub fn run(
         "L2"
     };
     eprintln!("  Certificate level: {level}");
-
-    if !composition_passed {
-        std::process::exit(1);
-    }
-
-    Ok(())
 }
 
 fn check_edge(
@@ -164,7 +205,7 @@ fn check_edge(
         upstream
             .equations
             .get(eq_name)
-            .map_or(false, |eq| eq.guarantees.is_some())
+            .is_some_and(|eq| eq.guarantees.is_some())
     } else {
         upstream
             .equations
@@ -205,32 +246,29 @@ fn proof_status(index: &BTreeMap<&str, &Contract>, stem: &str) -> serde_json::Va
     }
 }
 
-fn analyze_config(cfg_path: &Path) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+pub fn analyze_config(cfg_path: &Path) -> Result<serde_json::Value, Box<dyn std::error::Error>> {
     let content = std::fs::read_to_string(cfg_path)?;
     let json: serde_json::Value = serde_json::from_str(&content)?;
 
-    let h = json
-        .get("hidden_size")
-        .and_then(|v| v.as_u64())
-        .unwrap_or(0);
+    let h = json.get("hidden_size").and_then(Value::as_u64).unwrap_or(0);
     let l = json
         .get("num_hidden_layers")
-        .and_then(|v| v.as_u64())
+        .and_then(Value::as_u64)
         .unwrap_or(0);
     let nh = json
         .get("num_attention_heads")
-        .and_then(|v| v.as_u64())
+        .and_then(Value::as_u64)
         .unwrap_or(0);
     let nkv = json
         .get("num_key_value_heads")
-        .and_then(|v| v.as_u64())
+        .and_then(Value::as_u64)
         .unwrap_or(nh);
-    let v = json.get("vocab_size").and_then(|v| v.as_u64()).unwrap_or(0);
+    let v = json.get("vocab_size").and_then(Value::as_u64).unwrap_or(0);
 
     let head_dim = if nh > 0 { h / nh } else { 0 };
     let expected_tensors = if l > 0 { 1 + l * 9 + 2 } else { 0 };
 
-    let checks = vec![
+    let checks = [
         ("hidden_size > 0", h > 0),
         ("num_layers > 0", l > 0),
         ("num_heads > 0", nh > 0),

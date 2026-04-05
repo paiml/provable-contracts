@@ -23,14 +23,14 @@ pub enum Commands {
         #[arg(short, long)]
         output: Option<PathBuf>,
     },
-    /// Extract kernel equations from PyTorch source into YAML
+    /// Extract kernel equations from `PyTorch` source into YAML
     #[command(name = "extract-pytorch")]
     ExtractPytorch {
         target: String,
         #[arg(short, long)]
         output: Option<PathBuf>,
     },
-    /// Generate Rust debug_assert!() from YAML contracts
+    /// Generate Rust `debug_assert!()` from YAML contracts
     Codegen {
         #[arg(default_value = "contracts")]
         contract_dir: PathBuf,

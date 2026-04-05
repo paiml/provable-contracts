@@ -9,6 +9,8 @@
 
 use std::path::Path;
 
+use super::certify::analyze_config;
+
 /// Run the verify-structure command.
 pub fn run(
     contract_dir: &Path,
@@ -59,54 +61,7 @@ pub fn run(
     // Config analysis
     if let Some(cfg) = config_json {
         if cfg.exists() {
-            println!("Config: {}", cfg.display());
-            let content = std::fs::read_to_string(cfg)?;
-            // Extract key parameters
-            if let Ok(json) = serde_json::from_str::<serde_json::Value>(&content) {
-                let params = [
-                    "hidden_size",
-                    "num_hidden_layers",
-                    "num_attention_heads",
-                    "num_key_value_heads",
-                    "intermediate_size",
-                    "vocab_size",
-                ];
-                for param in &params {
-                    if let Some(val) = json.get(param) {
-                        println!("  {param}: {val}");
-                    }
-                }
-                println!();
-
-                // Compute expected tensor count
-                let hidden = json.get("hidden_size").and_then(|v| v.as_u64());
-                let layers = json.get("num_hidden_layers").and_then(|v| v.as_u64());
-                let heads = json.get("num_attention_heads").and_then(|v| v.as_u64());
-                let vocab = json.get("vocab_size").and_then(|v| v.as_u64());
-
-                if let (Some(h), Some(l), Some(nh), Some(v)) = (hidden, layers, heads, vocab) {
-                    let head_dim = h / nh;
-                    println!("Derived: head_dim = {h} / {nh} = {head_dim}");
-                    let expected = 1 + l * 9 + 2; // embed + layers*(4attn+3ffn+2norm) + final_norm + lm_head
-                    println!("Expected tensors (standard): {expected}");
-                    println!("  = 1 (embed) + {l} × 9 (per-layer) + 2 (final_norm + lm_head)");
-
-                    // Divisibility checks from model-config-algebra-v1
-                    let kv_heads = json
-                        .get("num_key_value_heads")
-                        .and_then(|v| v.as_u64())
-                        .unwrap_or(nh);
-                    println!();
-                    println!("Config algebra checks:");
-                    check("hidden_size % num_heads == 0", h % nh == 0);
-                    check("num_heads % num_kv_heads == 0", nh % kv_heads == 0);
-                    check("head_dim % 2 == 0 (RoPE)", head_dim % 2 == 0);
-                    check("hidden_size > 0", h > 0);
-                    check("num_layers > 0", l > 0);
-                    check("vocab_size > 0", v > 0);
-                    println!();
-                }
-            }
+            analyze_config(cfg)?;
         } else {
             println!("Config file not found: {}", cfg.display());
         }

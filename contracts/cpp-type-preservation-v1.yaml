@@ -118,6 +118,36 @@ kani_harnesses:
   strategy: bounded_int
   solver: cadical
   harness: verify_field_count_preservation
+- id: KANI-CPP-002
+  obligation: Constructor maps to new()
+  property: Class constructor transpiles to associated new() function
+  bound: 4
+  strategy: bounded_int
+- id: KANI-CPP-003
+  obligation: Destructor maps to Drop
+  property: Destructor transpiles to impl Drop for T
+  bound: 4
+  strategy: bounded_int
+- id: KANI-CPP-004
+  obligation: Namespace maps to mod
+  property: C++ namespace wraps its members in a Rust mod
+  bound: 4
+  strategy: bounded_int
+- id: KANI-CPP-005
+  obligation: operator+ maps to impl Add
+  property: Operator overload transpiles to the corresponding std::ops trait
+  bound: 4
+  strategy: bounded_int
+- id: KANI-CPP-006
+  obligation: Inheritance maps to composition + Deref
+  property: Single inheritance transpiles to field + impl Deref
+  bound: 4
+  strategy: bounded_int
+- id: KANI-CPP-007
+  obligation: Const reference maps to shared borrow
+  property: 'const T& transpiles to &T'
+  bound: 8
+  strategy: bounded_int
 qa_gate:
   id: F-CPP-001
   name: cpp-type-preservation-v1 Contract

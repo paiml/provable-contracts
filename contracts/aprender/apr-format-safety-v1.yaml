@@ -128,6 +128,68 @@ equations:
     - "widening => result values == input values"
     lean_theorem: Theorems.DtypeCoercionSafety
 
+  validate_exit_code_consistency:
+    formula: |
+      validate(model) -> (ValidationResult, ExitCode)
+        VALID: exit 0
+        INVALID: exit != 0
+        validate and check must agree on the result:
+          validate(m) == INVALID => check(m) reports failures
+          validate(m) == VALID => check(m) reports no failures
+    domain: Model file with valid format
+    codomain: (ValidationResult, ExitCode) where result and code are consistent
+    invariants:
+    - INVALID result always exits non-zero (GH-647)
+    - validate and check produce consistent verdicts (GH-648)
+    - "Not-implemented stages do not count as passing (GH-650)"
+    preconditions:
+    - model file exists
+    postconditions:
+    - result == INVALID => exit_code != 0
+    - validate(m).verdict == check(m).verdict
+    lean_theorem: Theorems.ValidateExitCodeConsistency
+
+  flag_integrity:
+    formula: |
+      read_flags(header): Header -> FormatFlags
+        encrypted = header.encryption_field != 0
+        compressed = header.compression_field != 0
+        signed = header.signature_field != empty
+      Flags must reflect actual file state:
+        !has_encryption_layer(file) => flags.encrypted == false
+    domain: Parsed model header
+    codomain: FormatFlags struct
+    invariants:
+    - Unencrypted files report encrypted=false (GH-653)
+    - Flag values derived from actual header fields, not defaults
+    - Inconsistent flags trigger warning (encrypted=true but no encryption layer)
+    preconditions:
+    - header parsed successfully
+    postconditions:
+    - flags.encrypted matches actual encryption state
+    - flags.compressed matches actual compression state
+    lean_theorem: Theorems.FlagIntegrity
+
+  metadata_completeness:
+    formula: |
+      inspect_metadata(model): Model -> MetadataMap
+        GGUF models have up to 26 standard metadata keys
+        inspect --json must expose ALL available keys
+        Keys: architecture, quantization_version, context_length,
+              embedding_length, block_count, attention.head_count,
+              attention.head_count_kv, vocab_size, ...
+    domain: Loaded model with parsed GGUF metadata
+    codomain: MetadataMap with all available keys
+    invariants:
+    - All metadata keys present in GGUF are exposed (not just 4) (GH-660)
+    - Missing keys are absent from output (not present with null/empty)
+    - JSON output matches human-readable output in content
+    preconditions:
+    - model is valid GGUF with parseable metadata
+    postconditions:
+    - output.keys.len() >= model.metadata.keys.len()
+    lean_theorem: Theorems.MetadataCompleteness
+
   truncation_detection:
     formula: |
       detect_truncation(file): Path -> Result<(), TruncationError>
@@ -200,6 +262,27 @@ proof_obligations:
   lean:
     theorem: Theorems.StrictImportValidation
     status: sorry
+- type: invariant
+  property: INVALID validation exits non-zero
+  formal: 'validate(m) == INVALID => exit_code != 0'
+  applies_to: validate_exit_code_consistency
+  lean:
+    theorem: Theorems.ValidateExitCodeConsistency
+    status: sorry
+- type: invariant
+  property: Unencrypted files report encrypted=false
+  formal: '!has_encryption_layer(f) => flags(f).encrypted == false'
+  applies_to: flag_integrity
+  lean:
+    theorem: Theorems.FlagIntegrity
+    status: sorry
+- type: postcondition
+  property: All GGUF metadata keys exposed
+  formal: 'inspect(m).keys.len() >= m.metadata.keys.len()'
+  applies_to: metadata_completeness
+  lean:
+    theorem: Theorems.MetadataCompleteness
+    status: sorry
 
 falsification_tests:
 - id: FALSIFY-FMT-001
@@ -242,6 +325,38 @@ falsification_tests:
   prediction: F32 value 100000.0 produces warning or error when coerced to F16
   test: Create tensor with F32::MAX, coerce to F16
   if_fails: Silent overflow to F16::INFINITY without warning
+- id: FALSIFY-FMT-009
+  rule: INVALID validation exits non-zero
+  prediction: apr validate on corrupt model exits != 0
+  test: |
+    #[test]
+    fn falsify_fmt_009_invalid_exits_nonzero() {
+        let tmp = std::env::temp_dir().join("fmt-test-corrupt.gguf");
+        std::fs::write(&tmp, b"GGUF\x03\x00\x00\x00GARBAGE_TENSOR_DATA").unwrap();
+        let output = std::process::Command::new("apr")
+            .args(&["validate", tmp.to_str().unwrap()])
+            .output()
+            .expect("Failed to run apr");
+        let code = output.status.code().unwrap_or(-1);
+        assert_ne!(code, 0,
+            "apr validate exits 0 on INVALID model — must exit non-zero (GH-647)");
+        std::fs::remove_file(&tmp).ok();
+    }
+  if_fails: validate reports INVALID but exits 0 (GH-647)
+- id: FALSIFY-FMT-010
+  rule: Unencrypted files report encrypted=false
+  prediction: apr debug on plain APR file shows encrypted=false
+  test: |
+    Create unencrypted APR file, run apr debug, parse flags.
+    encrypted, compressed, signed must all be false.
+  if_fails: Debug shows 'compressed, signed, encrypted' flags on unencrypted file (GH-653)
+- id: FALSIFY-FMT-011
+  rule: All GGUF metadata keys exposed
+  prediction: apr inspect --json exposes all 26 standard GGUF metadata keys
+  test: |
+    Load well-known GGUF model, count keys in inspect --json output.
+    Must expose >= 20 keys (not just 4).
+  if_fails: inspect --json exposes only 4 of 26 GGUF metadata keys (GH-660)
 
 kani_harnesses:
 - id: KANI-FMT-001
@@ -280,6 +395,24 @@ kani_harnesses:
   bound: 4
   strategy: exhaustive
   harness: verify_strict_readonly
+- id: KANI-FMT-007
+  obligation: INVALID validation exits non-zero
+  property: 'validate(m) == INVALID => exit != 0'
+  bound: 8
+  strategy: exhaustive
+  harness: verify_validate_exit_code
+- id: KANI-FMT-008
+  obligation: Unencrypted files report encrypted=false
+  property: 'no_encryption => flags.encrypted == false'
+  bound: 4
+  strategy: exhaustive
+  harness: verify_flag_integrity
+- id: KANI-FMT-009
+  obligation: All GGUF metadata keys exposed
+  property: 'inspect.keys.len() >= model.metadata.keys.len()'
+  bound: 8
+  strategy: bounded_int
+  harness: verify_metadata_completeness
 
 qa_gate:
   id: F-FMT-GATE
@@ -288,8 +421,8 @@ qa_gate:
   checks:
   - validation
   - falsification
-  pass_criteria: All 8 falsification tests pass
-  falsification: FALSIFY-FMT-001 through FALSIFY-FMT-008
+  pass_criteria: All 11 falsification tests pass
+  falsification: FALSIFY-FMT-001 through FALSIFY-FMT-011
 
 toyota_way_principles:
   jidoka: >

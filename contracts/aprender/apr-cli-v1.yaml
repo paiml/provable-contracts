@@ -194,6 +194,69 @@ equations:
     - No temporary files remain after command completes
     lean_theorem: Theorems.Pipe_Stdin_Support
 
+  exit_code_semantics:
+    formula: |
+      exit_code(result): Result<(), CliError> -> i32
+        Ok(()) -> 0
+        Err(InvalidArgument) -> 2 (POSIX convention)
+        Err(FileNotFound) -> 3
+        Err(InvalidFormat) -> 4
+        Err(ValidationFailed) -> 5
+        Err(NetworkError) -> 6
+        Err(InternalError) -> 1
+      Invariant: Err(_) -> exit_code != 0
+    domain: Command execution result
+    codomain: Process exit code (0-255)
+    invariants:
+    - Error results NEVER exit 0 (GH-647)
+    - Unrecognized arguments exit 2 (not 0) (GH-634)
+    - INVALID validation result exits non-zero
+    - Exit codes are stable (no version-to-version changes)
+    preconditions:
+    - result is a valid Result<(), CliError>
+    postconditions:
+    - Ok(()) → exit 0
+    - Err(_) → exit > 0
+    lean_theorem: Theorems.ExitCodeSemantics
+
+  tty_detection:
+    formula: |
+      should_color(stdout): StdoutLock -> bool
+        isatty(stdout) && !env("NO_COLOR").is_some() && !cli.no_color
+      format_output(data, is_tty): (Data, bool) -> String
+        if is_tty: include ANSI escape codes
+        else: plain text only
+    domain: stdout handle, environment variables, CLI flags
+    codomain: bool (whether to emit ANSI escapes)
+    invariants:
+    - Piped output never contains ANSI escape codes (GH-662)
+    - NO_COLOR env var disables all color output
+    - --no-color flag disables all color output
+    - Default is auto-detect based on isatty()
+    preconditions:
+    - stdout is a valid file descriptor
+    postconditions:
+    - piped output contains no \x1b[ sequences
+    lean_theorem: Theorems.TtyDetection
+
+  sigpipe_handling:
+    formula: |
+      handle_sigpipe(): setup at process start
+        signal(SIGPIPE, SIG_DFL)  // restore default (terminate silently)
+        OR: catch BrokenPipe in write, exit 141 (128 + SIGPIPE=13)
+      Never: panic!("Broken pipe")
+    domain: Process signal disposition
+    codomain: Clean process exit (code 0 or 141)
+    invariants:
+    - Writing to closed pipe does not panic (GH-667)
+    - Exit code is 0 or 141 (not 101 from panic)
+    - No stack trace printed on SIGPIPE
+    preconditions:
+    - stdout may be piped to process that has exited
+    postconditions:
+    - process exits cleanly (no panic output on stderr)
+    lean_theorem: Theorems.SigpipeHandling
+
   model_path_resolution:
     formula: |
       resolve_model_path(path): &Path -> Result<PathBuf, CliError>
@@ -297,6 +360,27 @@ proof_obligations:
   applies_to: model_path_resolution
   lean:
     theorem: Theorems.ModelPathResolutionShardPriority
+    status: sorry
+- type: invariant
+  property: Error results never exit 0
+  formal: 'forall e: CliError, exit_code(Err(e)) != 0'
+  applies_to: exit_code_semantics
+  lean:
+    theorem: Theorems.ExitCodeSemantics
+    status: sorry
+- type: invariant
+  property: Piped output contains no ANSI escapes
+  formal: '!isatty(stdout) => output.contains("\x1b[") == false'
+  applies_to: tty_detection
+  lean:
+    theorem: Theorems.TtyDetection
+    status: sorry
+- type: invariant
+  property: SIGPIPE does not cause panic
+  formal: 'write_to_closed_pipe() => exit(0 | 141), not panic'
+  applies_to: sigpipe_handling
+  lean:
+    theorem: Theorems.SigpipeHandling
     status: sorry
 
 falsification_tests:
@@ -483,6 +567,74 @@ falsification_tests:
     }
   if_fails: --skip-contract flag not checked before validate_model_contract() call
 
+- id: FALSIFY-ACLI-010
+  rule: Error results never exit 0
+  prediction: apr validate on INVALID model exits non-zero
+  test: |
+    #[test]
+    fn falsify_acli_010_error_exits_nonzero() {
+        let tmp = std::env::temp_dir().join("acli-test-invalid-model.gguf");
+        std::fs::write(&tmp, b"GGUF\x03\x00\x00\x00CORRUPT").unwrap();
+        let output = std::process::Command::new("apr")
+            .args(&["validate", tmp.to_str().unwrap()])
+            .output()
+            .expect("Failed to run apr");
+        let code = output.status.code().unwrap_or(-1);
+        assert_ne!(code, 0,
+            "apr validate exited 0 on INVALID model (GH-647)");
+        std::fs::remove_file(&tmp).ok();
+    }
+  if_fails: Validation reports INVALID but exits 0 (GH-647)
+
+- id: FALSIFY-ACLI-011
+  rule: Unrecognized arguments exit 2
+  prediction: apr --nonexistent-flag exits 2 (clap convention)
+  test: |
+    #[test]
+    fn falsify_acli_011_unrecognized_arg_exits_2() {
+        let output = std::process::Command::new("apr")
+            .args(&["--totally-bogus-flag"])
+            .output()
+            .expect("Failed to run apr");
+        let code = output.status.code().unwrap_or(-1);
+        assert_eq!(code, 2,
+            "Unrecognized argument exited {code}, expected 2 (GH-634)");
+    }
+  if_fails: Unrecognized arguments exit 0 instead of 2 (GH-634)
+
+- id: FALSIFY-ACLI-012
+  rule: Piped output contains no ANSI escapes
+  prediction: apr inspect model.gguf | cat produces no escape sequences
+  test: |
+    #[test]
+    fn falsify_acli_012_no_ansi_when_piped() {
+        let output = std::process::Command::new("apr")
+            .args(&["--help"])
+            .stdout(std::process::Stdio::piped())
+            .output()
+            .expect("Failed to run apr");
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        assert!(!stdout.contains("\x1b["),
+            "ANSI escapes in piped output (GH-662)");
+    }
+  if_fails: ANSI escape codes emitted regardless of TTY detection (GH-662)
+
+- id: FALSIFY-ACLI-013
+  rule: SIGPIPE does not panic
+  prediction: apr --help | head -1 exits cleanly (no panic trace)
+  test: |
+    #[test]
+    fn falsify_acli_013_sigpipe_no_panic() {
+        let output = std::process::Command::new("sh")
+            .args(&["-c", "apr --help | head -1"])
+            .output()
+            .expect("Failed to run sh");
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(!stderr.contains("panicked"),
+            "apr panicked on SIGPIPE (GH-667): {stderr}");
+    }
+  if_fails: apr panics with 'Broken pipe' when piped to head/less (GH-667)
+
 - id: FALSIFY-ACLI-009
   rule: Tokenizer vocabulary size matches requested size
   prediction: After tokenize apply with vocab_size=512, vocab.json has exactly 512 entries
@@ -564,6 +716,24 @@ kani_harnesses:
   bound: 8
   strategy: exhaustive
   harness: verify_directory_resolution_determinism
+- id: KANI-ACLI-010
+  obligation: Error results never exit 0
+  property: 'forall e: CliError, exit_code(Err(e)) != 0'
+  bound: 16
+  strategy: exhaustive
+  harness: verify_error_exits_nonzero
+- id: KANI-ACLI-011
+  obligation: Piped output contains no ANSI escapes
+  property: '!isatty => no \x1b['
+  bound: 8
+  strategy: bounded_int
+  harness: verify_no_ansi_when_piped
+- id: KANI-ACLI-012
+  obligation: SIGPIPE does not cause panic
+  property: write to closed pipe exits cleanly
+  bound: 4
+  strategy: exhaustive
+  harness: verify_sigpipe_no_panic
 - id: KANI-ACLI-009
   obligation: Shard index.json takes priority in directory resolution
   property: >
@@ -587,8 +757,8 @@ qa_gate:
   - tokenizer_training_correctness
   - pipe_stdin_support
   - model_path_resolution
-  pass_criteria: All 7 falsification tests pass
-  falsification: FALSIFY-ACLI-001 through FALSIFY-ACLI-007
+  pass_criteria: All 13 falsification tests pass
+  falsification: FALSIFY-ACLI-001 through FALSIFY-ACLI-013
 
 toyota_way_principles:
   jidoka: >

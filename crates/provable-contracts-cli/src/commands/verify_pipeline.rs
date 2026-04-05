@@ -15,7 +15,7 @@ use provable_contracts::schema::Contract;
 use crate::contract_walk::collect_contracts;
 
 /// Run the verify-pipeline command.
-pub fn run(contract_dir: &Path, format: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn run(contract_dir: &Path, format: &str) {
     // 1. Load all contracts
     let mut contracts = Vec::new();
     collect_contracts(contract_dir, &mut contracts);
@@ -23,7 +23,7 @@ pub fn run(contract_dir: &Path, format: &str) -> Result<(), Box<dyn std::error::
 
     if contracts.is_empty() {
         eprintln!("No contracts found in {}", contract_dir.display());
-        return Ok(());
+        return;
     }
 
     // 2. Build dependency graph + topological sort
@@ -41,16 +41,33 @@ pub fn run(contract_dir: &Path, format: &str) -> Result<(), Box<dyn std::error::
         std::process::exit(1);
     }
 
-    // 3. Build stem→contract index
+    // 3. Build stem→contract index and walk edges
     let index: BTreeMap<&str, &Contract> = contracts.iter().map(|(s, c)| (s.as_str(), c)).collect();
+    let (chains, edges_total, edges_satisfied, edges_broken) =
+        walk_composition_edges(&graph.topo_order, &index);
 
-    // 4. Walk in topological order, verify composition edges
+    // 4. Output
+    if format == "json" {
+        print_json(&chains, edges_total, edges_satisfied, &edges_broken, &graph);
+    } else {
+        print_text(&chains, edges_total, edges_satisfied, &edges_broken, &graph);
+    }
+
+    if !edges_broken.is_empty() {
+        std::process::exit(1);
+    }
+}
+
+fn walk_composition_edges<'a>(
+    topo_order: &[String],
+    index: &BTreeMap<&str, &'a Contract>,
+) -> (Vec<CompositionEdge>, usize, usize, Vec<CompositionEdge>) {
     let mut edges_total = 0usize;
     let mut edges_satisfied = 0usize;
     let mut edges_broken = Vec::new();
     let mut chains: Vec<CompositionEdge> = Vec::new();
 
-    for stem in &graph.topo_order {
+    for stem in topo_order {
         let Some(contract) = index.get(stem.as_str()) else {
             continue;
         };
@@ -115,7 +132,7 @@ pub fn run(contract_dir: &Path, format: &str) -> Result<(), Box<dyn std::error::
                 edges_satisfied += 1;
                 chains.push(e);
             } else {
-                // No specific equation — check any equation has guarantees
+                // No specific equation -- check any equation has guarantees
                 let has_guarantees = upstream_contract
                     .equations
                     .values()
@@ -133,17 +150,7 @@ pub fn run(contract_dir: &Path, format: &str) -> Result<(), Box<dyn std::error::
         }
     }
 
-    // 5. Output
-    match format {
-        "json" => print_json(&chains, edges_total, edges_satisfied, &edges_broken, &graph),
-        _ => print_text(&chains, edges_total, edges_satisfied, &edges_broken, &graph),
-    }
-
-    if !edges_broken.is_empty() {
-        std::process::exit(1);
-    }
-
-    Ok(())
+    (chains, edges_total, edges_satisfied, edges_broken)
 }
 
 #[derive(Debug, Clone)]
@@ -267,9 +274,8 @@ mod tests {
         if !dir.exists() {
             return; // skip in CI without contracts
         }
-        // Should not panic or error
-        let result = run(&dir, "text");
-        assert!(result.is_ok());
+        // Should not panic
+        run(&dir, "text");
     }
 
     #[test]
@@ -278,14 +284,12 @@ mod tests {
         if !dir.exists() {
             return;
         }
-        let result = run(&dir, "json");
-        assert!(result.is_ok());
+        run(&dir, "json");
     }
 
     #[test]
     fn verify_pipeline_empty_dir() {
         let tmp = tempfile::tempdir().unwrap();
-        let result = run(tmp.path(), "text");
-        assert!(result.is_ok());
+        run(tmp.path(), "text");
     }
 }

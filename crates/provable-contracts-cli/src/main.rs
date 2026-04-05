@@ -323,7 +323,10 @@ fn run_command(command: Commands) -> Result<(), Box<dyn std::error::Error>> {
         Commands::VerifyPipeline {
             contract_dir,
             format,
-        } => commands::verify_pipeline::run(&contract_dir, &format),
+        } => {
+            commands::verify_pipeline::run(&contract_dir, &format);
+            Ok(())
+        }
     }
 }
 

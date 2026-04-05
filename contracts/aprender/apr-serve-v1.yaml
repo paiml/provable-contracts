@@ -110,6 +110,118 @@ equations:
       </think> token loops. Fixed by caching architecture at construction.
       Enforced by chat-template-v1.yaml FALSIFY-CT-002.
 
+  error_sanitization:
+    formula: |
+      handle_error(err): HandlerError -> HttpResponse
+        response.body = {"error": {"message": sanitize(err), "type": err.kind(), "code": status}}
+        sanitize(err) strips:
+          - Internal stack traces
+          - Framework internals (axum/serde deserialization details)
+          - File system paths
+        sanitize(err) preserves:
+          - User-actionable message
+          - Request field that caused the error
+    domain: Any HandlerError from request processing
+    codomain: HttpResponse with sanitized JSON error body
+    invariants:
+    - Never leaks axum/serde/tower internals to client (GH-649)
+    - Error messages are human-readable and actionable
+    - HTTP status codes match error semantics (400, 404, 405, 500)
+    preconditions:
+    - err is a well-formed HandlerError
+    postconditions:
+    - "response body is valid JSON with error envelope (message, type, code)"
+    - "message does not contain 'serde', 'axum', 'tower', or stack frame patterns"
+    lean_theorem: Theorems.ErrorSanitization
+
+  cors_preflight:
+    formula: |
+      handle_options(request): HttpRequest -> HttpResponse
+        if request.method == OPTIONS:
+          response.status = 204
+          response.headers["Access-Control-Allow-Origin"] = origin_or_wildcard
+          response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+          response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        if --no-cors flag: skip CORS headers entirely
+    domain: HTTP OPTIONS request to any endpoint
+    codomain: 204 No Content with CORS headers
+    invariants:
+    - OPTIONS never returns 405 Method Not Allowed (GH-671)
+    - CORS headers present on all responses when enabled
+    - --no-cors disables all CORS headers
+    preconditions:
+    - server is in Ready state
+    postconditions:
+    - OPTIONS → 204 (not 405)
+    - response includes Access-Control-Allow-Origin header
+    lean_theorem: Theorems.CorsPreflight
+
+  unknown_route_json_404:
+    formula: |
+      route(request): HttpRequest -> HttpResponse
+        if path ∉ known_endpoints:
+          response.status = 404
+          response.body = {"error": {"message": "Not found", "type": "not_found", "code": 404}}
+          response.content_type = "application/json"
+        Never returns empty body for unknown routes
+    domain: HTTP request to unregistered path
+    codomain: 404 HttpResponse with JSON error envelope
+    invariants:
+    - Unknown routes always return JSON body (never empty) (GH-672)
+    - Content-Type is application/json
+    - Status code is 404 (not 500)
+    preconditions:
+    - server in Ready state
+    - request path ∉ known_endpoints
+    postconditions:
+    - response.status == 404
+    - response.body.len() > 0
+    - response.body parses as valid JSON with error envelope
+    lean_theorem: Theorems.UnknownRouteJson404
+
+  max_tokens_bound:
+    formula: |
+      validate_max_tokens(request): CompletionRequest -> Result<u32, ApiError>
+        max_tokens = min(request.max_tokens, model.context_length)
+        if request.max_tokens > model.context_length:
+          clamp and warn (not hang)
+        Generation loop: token_count <= max_tokens (hard bound)
+    domain: Completion request with max_tokens field
+    codomain: Clamped max_tokens value
+    invariants:
+    - Generation never exceeds max_tokens (no infinite loop) (GH-665)
+    - Large max_tokens clamped to model context length
+    - Zero max_tokens returns empty completion (not hang)
+    preconditions:
+    - request parsed successfully
+    - model loaded
+    postconditions:
+    - response.usage.completion_tokens <= max_tokens
+    - request completes in bounded time
+    lean_theorem: Theorems.MaxTokensBound
+
+  gpu_token_integrity:
+    formula: |
+      decode_token(logits, sampler): (Vec<f32>, Sampler) -> TokenId
+        token_id = sampler.sample(logits)
+        token_id < vocab_size
+        token_id != 0 unless EOS or padding
+      For batched decode:
+        each sequence gets independent logits (no cross-contamination)
+    domain: Logits vector from model forward pass
+    codomain: Valid token ID
+    invariants:
+    - Batched decode produces diverse tokens (not all token_id=0) (GH-659)
+    - Single-token completions produce valid UTF-8 (no mojibake) (GH-670)
+    - GPU and CPU decode produce equivalent token sequences
+    preconditions:
+    - logits.len() == vocab_size
+    - logits are finite (no NaN/Inf)
+    postconditions:
+    - token_id < vocab_size
+    - decoded text is valid UTF-8
+    lean_theorem: Theorems.GpuTokenIntegrity
+
   format_detection:
     formula: |
       detect_model_format(path) => GGUF | APR | SafeTensors
@@ -204,6 +316,41 @@ proof_obligations:
   property: Format detection uses magic bytes not extension
   formal: 'detect(gguf_bytes_with_apr_extension) == GGUF'
   applies_to: format_detection
+- type: postcondition
+  property: Error responses never leak framework internals
+  formal: '!response.body.contains("serde") && !response.body.contains("axum")'
+  applies_to: error_sanitization
+  lean:
+    theorem: Theorems.ErrorSanitization
+    status: sorry
+- type: postcondition
+  property: OPTIONS returns 204 with CORS headers
+  formal: 'OPTIONS /any -> 204, Access-Control-Allow-Origin present'
+  applies_to: cors_preflight
+  lean:
+    theorem: Theorems.CorsPreflight
+    status: sorry
+- type: postcondition
+  property: Unknown routes return JSON 404 (not empty body)
+  formal: 'GET /nonexistent -> 404, body.len() > 0, body is JSON'
+  applies_to: unknown_route_json_404
+  lean:
+    theorem: Theorems.UnknownRouteJson404
+    status: sorry
+- type: bound
+  property: Generation bounded by max_tokens
+  formal: 'response.usage.completion_tokens <= max_tokens'
+  applies_to: max_tokens_bound
+  lean:
+    theorem: Theorems.MaxTokensBound
+    status: sorry
+- type: invariant
+  property: GPU batched decode produces non-zero tokens
+  formal: 'batch_decode(prompts).all(|seq| !seq.tokens.all_zeros())'
+  applies_to: gpu_token_integrity
+  lean:
+    theorem: Theorems.GpuTokenIntegrity
+    status: sorry
 
 falsification_tests:
 - id: FALSIFY-SRV-001
@@ -251,6 +398,46 @@ falsification_tests:
   prediction: Qwen3NoThinkTemplate.format_conversation() output contains <think></think>
   test: See realizar/src/chat_template_contract_tests.rs FALSIFY-CT-006
   if_fails: Model enters thinking mode, wastes tokens on </think> loops
+- id: FALSIFY-SRV-008
+  rule: Error responses do not leak framework internals
+  prediction: Malformed JSON POST to /v1/completions returns sanitized error, not serde trace
+  test: |
+    curl -s -X POST http://localhost:8080/v1/completions \
+      -H "Content-Type: application/json" \
+      -d '{"invalid": true}' | jq .error.message
+    # Must NOT contain "serde", "axum", "Expected", "missing field"
+  if_fails: Axum serde deserialization error leaked verbatim to client (GH-649)
+- id: FALSIFY-SRV-009
+  rule: OPTIONS returns 204 (not 405)
+  prediction: OPTIONS /v1/completions returns 204 with CORS headers
+  test: |
+    status=$(curl -s -o /dev/null -w "%{http_code}" -X OPTIONS http://localhost:8080/v1/completions)
+    test "$status" = "204"
+  if_fails: Actix returns 405 Method Not Allowed for OPTIONS (GH-671)
+- id: FALSIFY-SRV-010
+  rule: Unknown routes return JSON 404 (not empty body)
+  prediction: GET /nonexistent returns 404 with JSON error envelope
+  test: |
+    response=$(curl -s -w "\n%{http_code}" http://localhost:8080/nonexistent)
+    body=$(echo "$response" | head -1)
+    code=$(echo "$response" | tail -1)
+    test "$code" = "404" && echo "$body" | jq .error.message > /dev/null
+  if_fails: Empty body returned for unknown routes (GH-672)
+- id: FALSIFY-SRV-011
+  rule: Large max_tokens does not hang
+  prediction: max_tokens=10000 completes within timeout (clamped to context length)
+  test: |
+    timeout 30 curl -s -X POST http://localhost:8080/v1/completions \
+      -H "Content-Type: application/json" \
+      -d '{"prompt":"Hello","max_tokens":10000}'
+  if_fails: Server hangs on large max_tokens (GH-665)
+- id: FALSIFY-SRV-012
+  rule: Batched GPU decode produces non-zero tokens
+  prediction: 4-prompt batch on GPU produces diverse tokens per sequence
+  test: |
+    # Each sequence should have non-zero token IDs in output
+    # All-zero tokens indicate broken batched KV-cache
+  if_fails: Batched decode generates all token_id=0 (GH-659)
 
 kani_harnesses:
 - id: KANI-SRV-001
@@ -277,6 +464,36 @@ kani_harnesses:
   bound: 4
   strategy: exhaustive
   harness: verify_kv_isolation
+- id: KANI-SRV-005
+  obligation: Error sanitization strips framework internals
+  property: response body never contains serde/axum strings
+  bound: 8
+  strategy: bounded_int
+  harness: verify_error_sanitization
+- id: KANI-SRV-006
+  obligation: OPTIONS returns 204 with CORS headers
+  property: OPTIONS method never returns 405
+  bound: 4
+  strategy: exhaustive
+  harness: verify_cors_preflight
+- id: KANI-SRV-007
+  obligation: Unknown routes return JSON 404
+  property: unknown path -> 404 with non-empty JSON body
+  bound: 8
+  strategy: bounded_int
+  harness: verify_unknown_route_404
+- id: KANI-SRV-008
+  obligation: Generation bounded by max_tokens
+  property: completion_tokens <= max_tokens
+  bound: 16
+  strategy: bounded_int
+  harness: verify_max_tokens_bound
+- id: KANI-SRV-009
+  obligation: GPU batched decode produces valid tokens
+  property: token_id < vocab_size and not all zeros
+  bound: 8
+  strategy: bounded_int
+  harness: verify_gpu_token_integrity
 
 qa_gate:
   id: F-SRV-GATE
@@ -285,4 +502,4 @@ qa_gate:
   checks:
   - validation
   - falsification
-  pass_criteria: All 7 falsification tests pass (4 original + 3 chat template)
+  pass_criteria: All 12 falsification tests pass (4 lifecycle + 3 chat template + 5 error/CORS/routing)

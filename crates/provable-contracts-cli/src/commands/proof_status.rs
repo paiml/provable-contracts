@@ -47,17 +47,14 @@ pub fn run(
     let include_classes = contracts.len() > 1;
     let report = proof_status_report(&refs, binding.as_ref(), include_classes);
 
-    match format {
-        "json" => {
-            let json = serde_json::to_string_pretty(&report)?;
-            println!("{json}");
-        }
-        _ => {
-            print!("{}", format_text(&report));
-            // Append kind breakdown when showing >1 contract.
-            if contracts.len() > 1 {
-                print_kind_breakdown(&contracts);
-            }
+    if format == "json" {
+        let json = serde_json::to_string_pretty(&report)?;
+        println!("{json}");
+    } else {
+        print!("{}", format_text(&report));
+        // Append kind breakdown when showing >1 contract.
+        if contracts.len() > 1 {
+            print_kind_breakdown(&contracts);
         }
     }
 
