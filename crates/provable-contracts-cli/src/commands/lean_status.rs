@@ -6,33 +6,11 @@ use provable_contracts::schema::parse_contract;
 pub fn run(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let reports = if path.is_dir() {
         let mut reports = Vec::new();
-        let mut entries: Vec<_> = std::fs::read_dir(path)?
-            .filter_map(Result::ok)
-            .filter(|e| {
-                e.path()
-                    .extension()
-                    .is_some_and(|ext| ext == "yaml" || ext == "yml")
-            })
-            .collect();
-        entries.sort_by_key(std::fs::DirEntry::path);
-        for entry in entries {
-            match parse_contract(&entry.path()) {
-                Ok(contract) => {
-                    let report = lean_status(&contract);
-                    if report.with_lean > 0 {
-                        reports.push(report);
-                    }
-                }
-                Err(e) => {
-                    eprintln!("warning: skipping {}: {e}", entry.path().display());
-                }
-            }
-        }
+        walk_contracts(path, &mut reports);
         reports
     } else {
         let contract = parse_contract(path)?;
-        let report = lean_status(&contract);
-        vec![report]
+        vec![lean_status(&contract)]
     };
 
     if reports.is_empty() {
@@ -42,4 +20,28 @@ pub fn run(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+fn walk_contracts(dir: &Path, out: &mut Vec<provable_contracts::lean_gen::LeanStatusReport>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    let mut paths: Vec<_> = entries.flatten().map(|e| e.path()).collect();
+    paths.sort();
+    for path in paths {
+        if path.is_dir() {
+            walk_contracts(&path, out);
+        } else if path.extension().and_then(|e| e.to_str()) == Some("yaml") {
+            let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+            if stem == "binding" || stem == "playbook.schema" || stem.contains("playbook") {
+                continue;
+            }
+            if let Ok(contract) = parse_contract(&path) {
+                let report = lean_status(&contract);
+                if report.with_lean > 0 {
+                    out.push(report);
+                }
+            }
+        }
+    }
 }
