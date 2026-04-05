@@ -32,3 +32,4 @@ pub mod unlock;
 pub mod validate;
 pub mod verify_bindings;
 pub mod verify_pipeline;
+pub mod verify_structure;

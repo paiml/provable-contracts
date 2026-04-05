@@ -131,17 +131,13 @@ pub enum Commands {
     },
     /// Display equations from a contract
     Equations {
-        /// Path to the contract YAML file
         contract: PathBuf,
-        /// Output format: text (default), latex, ptx, or asm
         #[arg(long, default_value = "text")]
         format: String,
     },
-    /// Generate Lean 4 definitions and theorem stubs from a contract
+    /// Generate Lean 4 definitions and theorem stubs
     Lean {
-        /// Path to the contract YAML file
         contract: PathBuf,
-        /// Output directory for generated Lean files
         #[arg(long)]
         output_dir: Option<PathBuf>,
     },
@@ -470,13 +466,21 @@ pub enum Commands {
         #[arg(long)]
         min_score: Option<f64>,
     },
+    /// Verify model architecture structure matches contracts
+    #[command(name = "verify-structure")]
+    VerifyStructure {
+        #[arg(default_value = "contracts")]
+        contract_dir: PathBuf,
+        #[arg(long)]
+        config: Option<PathBuf>,
+        #[arg(long)]
+        model: Option<PathBuf>,
+    },
     /// Verify compositional shape flow across contract dependency graph
     #[command(name = "verify-pipeline")]
     VerifyPipeline {
-        /// Directory containing contract YAML files
         #[arg(default_value = "contracts")]
         contract_dir: PathBuf,
-        /// Output format: text (default) or json
         #[arg(long, default_value = "text")]
         format: String,
     },

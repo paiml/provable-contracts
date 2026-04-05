@@ -283,3 +283,36 @@ fn load_contracts_recursive(
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn verify_pipeline_on_real_contracts() {
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
+        if !dir.exists() {
+            return; // skip in CI without contracts
+        }
+        // Should not panic or error
+        let result = run(&dir, "text");
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn verify_pipeline_json_on_real_contracts() {
+        let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts");
+        if !dir.exists() {
+            return;
+        }
+        let result = run(&dir, "json");
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn verify_pipeline_empty_dir() {
+        let tmp = tempfile::tempdir().unwrap();
+        let result = run(tmp.path(), "text");
+        assert!(result.is_ok());
+    }
+}

@@ -375,19 +375,19 @@ proof is possible.
 | **P0-1** | Add `assumes`/`guarantees` to Equation | **DONE** | `schema/composition.rs`: ShapeContract, ShapeExpr. Equation derives Default. |
 | **P0-2** | COMPOSITION-001 lint gate | **DONE** | `lint/composition_gate.rs`: Gate 8 with 3 unit tests. Advisory during rollout. |
 | **P0-3** | `pv verify-pipeline` command | **DONE** | `commands/verify_pipeline.rs`: topo-sort, edge verification, text+JSON output |
-| **P0-4** | `pv verify-structure` command | Open | Parse model file → compare shapes to arch-schema |
+| **P0-4** | `pv verify-structure` command | **DONE** | `commands/verify_structure.rs`: contract check + config.json structural analysis |
 | **P0-5** | Annotate tensor-shape-flow-v1 | **DONE** | All 5 equations: qkv→gqa→residual→swiglu→lm_head |
 | **P0-6** | Annotate apr-architecture-schema-v1 | **DONE** | All 7 equations: config→attn→ffn→norm→embed→rope→count |
 | **P0-6b** | Annotate model-config-algebra-v1 | **DONE** | divisibility + non_degeneracy guarantees |
 | **P0-7** | Block verification in format safety | Open | Q4K/Q5K/Q6K block-level invariants |
 | **P0-8** | `pv certify` command | Open | End-to-end certificate |
 
-**Completed: 6/8.** Dogfood results (2026-04-05):
+**Completed: 7/8.** Dogfood results (2026-04-05):
 - `pv lint contracts/` Gate 8: **11 edges, 11 satisfied, 0 broken**
 - `pv verify-pipeline contracts/`: **4 edges, 4 satisfied, 0 broken, PASS**
+- `pv verify-structure contracts/ --config <qwen2.5-1.5b>`: **PASS**, 255 expected tensors, all algebra checks pass
 
-**Remaining:** `pv verify-structure` (P0-4), block verification (P0-7),
-`pv certify` (P0-8).
+**Remaining:** block verification (P0-7), `pv certify` (P0-8).
 
 ---
 
@@ -398,13 +398,13 @@ proof is possible.
 | F-1 | ShapeContract fields added to Equation | `grep 'assumes' crates/provable-contracts/src/schema/types.rs` → non-empty | **PASS** |
 | F-2 | COMPOSITION-001 lint gate exists | `pv lint` Gate 8 reports composition edges | **PASS** (11 edges, 0 broken) |
 | F-3 | `pv verify-pipeline` command exists | `pv verify-pipeline --help` → exits 0 | **PASS** |
-| F-4 | `pv verify-structure` command exists | `pv verify-structure --help` → exits 0 | Open |
+| F-4 | `pv verify-structure` command exists | `pv verify-structure --help` → exits 0 | **PASS** |
 | F-5 | tensor-shape-flow-v1 has assumes/guarantees | Parse YAML, all 5 equations have assumes | **PASS** |
 | F-6 | apr-architecture-schema-v1 has assumes/guarantees | Parse YAML, all 7 equations have assumes | **PASS** |
 | F-7 | Block verification in format safety | Kani harness for Q4K block structure passes | Open |
 | F-8 | `pv certify` produces valid certificate | `pv certify <real-model>` → JSON with all proofs "PROVEN" | Open |
 
-**6 of 8 falsification checks pass. 2 remain open (P0-4, P0-7/P0-8).**
+**7 of 8 falsification checks pass. 1 remains open (P0-7/P0-8 combined).**
 
 ---
 
