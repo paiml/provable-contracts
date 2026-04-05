@@ -121,6 +121,7 @@ fn build_result(
         path: clean_path(&entry.path),
         relevance,
         description: entry.description.clone(),
+        kind: entry.kind,
         equations: entry.equations.clone(),
         obligation_count: entry.obligation_count,
         references: opt_vec(&entry.references, params.show_paper),
@@ -219,8 +220,16 @@ fn apply_filters(
                 && filter_min_level(entry, params.min_level.as_deref())
                 && filter_tier(entry, params.tier_filter)
                 && filter_class(entry, params.class_filter)
+                && filter_kind(entry, params.kind_filter)
         })
         .collect()
+}
+
+fn filter_kind(entry: &types::ContractEntry, kind: Option<crate::schema::ContractKind>) -> bool {
+    match kind {
+        Some(k) => entry.kind == k,
+        None => true,
+    }
 }
 
 fn filter_obligation(entry: &types::ContractEntry, obligation: Option<&String>) -> bool {

@@ -343,6 +343,9 @@ pub enum Commands {
         /// Filter by kernel equivalence class (A-E)
         #[arg(long, value_name = "CLASS")]
         class: Option<char>,
+        /// Filter by contract kind (kernel, registry, model-family, pattern, schema)
+        #[arg(long, value_name = "KIND")]
+        kind: Option<String>,
         /// Force rebuild of the contract index (ignore cache)
         #[arg(long)]
         rebuild_index: bool,

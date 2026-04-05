@@ -172,6 +172,13 @@ Filters are applied after search, before ranking.
 | `--rebuild-index` | Boolean | Force index rebuild | [IMPLEMENTED] |
 | `--tier <n>` | Enum | `--tier 1` | [IMPLEMENTED] |
 | `--class <A-E>` | Enum | `--class A` | [IMPLEMENTED] |
+| `--kind <kind>` | Enum | `--kind registry` | [IMPLEMENTED] |
+
+**`--kind <kernel\|registry\|model-family\|pattern\|schema>`** filters by
+`metadata.kind` (see §3 Contract Schema). Use to find all registries
+(`--kind registry`), all cross-cutting patterns (`--kind pattern`), or
+all architecture metadata schemas (`--kind model-family`). Non-kernel
+kinds are tagged in the result output as `[kind]` next to the stem.
 
 ---
 

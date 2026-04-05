@@ -308,7 +308,6 @@ fn build_entry(stem: String, path: String, contract: &Contract) -> ContractEntry
         .collect();
     let references = contract.metadata.references.clone();
     let depends_on = contract.metadata.depends_on.clone();
-
     let mut corpus_parts = vec![stem.clone(), contract.metadata.description.clone()];
     for (name, eq) in &contract.equations {
         corpus_parts.push(name.clone());
@@ -334,6 +333,7 @@ fn build_entry(stem: String, path: String, contract: &Contract) -> ContractEntry
         references,
         depends_on,
         is_registry: contract.is_registry(),
+        kind: contract.kind(),
         obligation_count: contract.proof_obligations.len(),
         falsification_count: contract.falsification_tests.len(),
         kani_count: contract.kani_harnesses.len(),

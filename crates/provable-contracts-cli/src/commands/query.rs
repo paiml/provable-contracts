@@ -3,6 +3,7 @@
 use std::path::Path;
 
 use provable_contracts::query::{self, ContractIndex, QueryParams, SearchMode};
+use provable_contracts::schema::ContractKind;
 
 /// All parameters needed to execute a query from the CLI.
 #[allow(clippy::struct_excessive_bools)]
@@ -35,6 +36,7 @@ pub struct QueryCliParams<'a> {
     pub include_project: Option<&'a Path>,
     pub tier: Option<u8>,
     pub class: Option<char>,
+    pub kind: Option<&'a str>,
     pub all_projects: bool,
     pub rebuild_index: bool,
     pub format: &'a str,
@@ -79,6 +81,7 @@ pub fn run(p: &QueryCliParams<'_>) -> Result<(), Box<dyn std::error::Error>> {
         include_project: p.include_project.map(|p| p.display().to_string()),
         tier_filter: p.tier,
         class_filter: p.class,
+        kind_filter: p.kind.map(parse_kind).transpose()?,
         all_projects: p.all_projects,
     };
 
@@ -95,4 +98,19 @@ pub fn run(p: &QueryCliParams<'_>) -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+fn parse_kind(s: &str) -> Result<ContractKind, Box<dyn std::error::Error>> {
+    match s.to_lowercase().as_str() {
+        "kernel" => Ok(ContractKind::Kernel),
+        "registry" => Ok(ContractKind::Registry),
+        "model-family" | "modelfamily" => Ok(ContractKind::ModelFamily),
+        "pattern" => Ok(ContractKind::Pattern),
+        "schema" => Ok(ContractKind::Schema),
+        other => Err(format!(
+            "invalid --kind value '{other}': expected one of \
+             kernel, registry, model-family, pattern, schema"
+        )
+        .into()),
+    }
 }

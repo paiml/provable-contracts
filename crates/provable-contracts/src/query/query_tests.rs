@@ -274,6 +274,87 @@
     }
 
     #[test]
+    fn kind_filter_narrows_to_registries() {
+        use crate::schema::ContractKind;
+        let index = test_index();
+        let all = QueryParams {
+            query: ".".to_string(),
+            mode: SearchMode::Regex,
+            limit: 1000,
+            ..Default::default()
+        };
+        let registries = QueryParams {
+            query: ".".to_string(),
+            mode: SearchMode::Regex,
+            limit: 1000,
+            kind_filter: Some(ContractKind::Registry),
+            ..Default::default()
+        };
+        let all_out = execute(&index, &all);
+        let registry_out = execute(&index, &registries);
+        assert!(registry_out.total_matches < all_out.total_matches);
+        assert!(
+            registry_out.total_matches > 0,
+            "contracts dir should contain at least one registry"
+        );
+        // Every returned result must be a registry.
+        for r in &registry_out.results {
+            assert_eq!(
+                r.kind,
+                ContractKind::Registry,
+                "{} returned by --kind registry should be Registry kind, got {:?}",
+                r.stem,
+                r.kind,
+            );
+        }
+    }
+
+    #[test]
+    fn kind_filter_pattern_finds_pattern_contracts() {
+        use crate::schema::ContractKind;
+        let index = test_index();
+        let patterns = QueryParams {
+            query: ".".to_string(),
+            mode: SearchMode::Regex,
+            limit: 100,
+            kind_filter: Some(ContractKind::Pattern),
+            ..Default::default()
+        };
+        let output = execute(&index, &patterns);
+        // Repo ships 4 pattern contracts under contracts/patterns/.
+        assert!(
+            output.total_matches >= 4,
+            "expected >= 4 pattern contracts, got {}",
+            output.total_matches,
+        );
+        for r in &output.results {
+            assert_eq!(r.kind, ContractKind::Pattern);
+        }
+    }
+
+    #[test]
+    fn kind_filter_kernel_excludes_registries() {
+        use crate::schema::ContractKind;
+        let index = test_index();
+        let kernels = QueryParams {
+            query: ".".to_string(),
+            mode: SearchMode::Regex,
+            limit: 1000,
+            kind_filter: Some(ContractKind::Kernel),
+            ..Default::default()
+        };
+        let output = execute(&index, &kernels);
+        for r in &output.results {
+            assert_ne!(
+                r.kind,
+                ContractKind::Registry,
+                "{} kernel result should not be a registry",
+                r.stem,
+            );
+        }
+    }
+
+    #[test]
     fn depended_by_filter() {
         let index = test_index();
         let params = QueryParams {

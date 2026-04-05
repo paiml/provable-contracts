@@ -2,6 +2,7 @@
     // Split from query_tests_coverage.rs to stay under 500 lines.
 
     use super::*;
+    use crate::schema::ContractKind;
 
     #[test]
     fn display_with_diff_and_bindings() {
@@ -10,6 +11,7 @@
             stem: "test-v1".to_string(),
             path: "test.yaml".to_string(),
             relevance: 0.9,
+            kind: ContractKind::default(),
             description: "test contract".to_string(),
             equations: vec!["eq1".to_string()],
             obligation_count: 3,
@@ -52,6 +54,7 @@
                 stem: "test-v1".to_string(),
                 path: "test.yaml".to_string(),
                 relevance: 0.9,
+            kind: ContractKind::default(),
                 description: "test".to_string(),
                 equations: vec![],
                 obligation_count: 1,
@@ -91,6 +94,7 @@
             stem: "test-v1".to_string(),
             path: "test.yaml".to_string(),
             relevance: 0.9,
+            kind: ContractKind::default(),
             description: "test".to_string(),
             equations: vec![],
             obligation_count: 3,
@@ -133,6 +137,7 @@
                 stem: "test-v1".to_string(),
                 path: "test.yaml".to_string(),
                 relevance: 0.9,
+            kind: ContractKind::default(),
                 description: "test".to_string(),
                 equations: vec![],
                 obligation_count: 1,
@@ -187,6 +192,7 @@
             stem: "t".to_string(),
             path: "t.yaml".to_string(),
             relevance: 0.5,
+            kind: ContractKind::default(),
             description: "t".to_string(),
             equations: vec![],
             obligation_count: 0,
@@ -217,6 +223,7 @@
                 stem: "test-v1".to_string(),
                 path: "test.yaml".to_string(),
                 relevance: 0.95,
+            kind: ContractKind::default(),
                 description: "full enrichment test".to_string(),
                 equations: vec!["eq1".to_string()],
                 obligation_count: 5,
@@ -295,6 +302,7 @@
             stem: "test-v1".to_string(),
             path: "test.yaml".to_string(),
             relevance: 0.9,
+            kind: ContractKind::default(),
             description: "test".to_string(),
             equations: vec!["eq1".to_string()],
             obligation_count: 3,

@@ -4,7 +4,6 @@ use crate::schema::{
     Contract, EnforcementLevel, Equation, FalsificationTest, KaniHarness, Metadata,
     VerificationSummary,
 };
-use std::collections::BTreeMap;
 
 /// Build a minimal contract with no equations, no tests, no harnesses.
 fn minimal_contract() -> Contract {

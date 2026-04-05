@@ -1,5 +1,6 @@
 //! Types for the contract query engine.
 
+use crate::schema::ContractKind;
 use serde::{Deserialize, Serialize};
 
 /// How to interpret the query string.
@@ -25,6 +26,8 @@ pub struct ContractEntry {
     pub references: Vec<String>,
     pub depends_on: Vec<String>,
     pub is_registry: bool,
+    #[serde(default)]
+    pub kind: ContractKind,
     pub obligation_count: usize,
     pub falsification_count: usize,
     pub kani_count: usize,
@@ -68,6 +71,8 @@ pub struct QueryParams {
     pub tier_filter: Option<u8>,
     /// Filter by kernel equivalence class (A-E).
     pub class_filter: Option<char>,
+    /// Filter by contract kind (kernel, registry, model-family, pattern, schema).
+    pub kind_filter: Option<ContractKind>,
 }
 
 impl Default for QueryParams {
@@ -100,6 +105,7 @@ impl Default for QueryParams {
             all_projects: false,
             tier_filter: None,
             class_filter: None,
+            kind_filter: None,
         }
     }
 }
@@ -112,6 +118,7 @@ pub struct QueryResult {
     pub path: String,
     pub relevance: f64,
     pub description: String,
+    pub kind: ContractKind,
     pub equations: Vec<String>,
     pub obligation_count: usize,
     pub references: Vec<String>,

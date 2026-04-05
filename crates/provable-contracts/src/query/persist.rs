@@ -146,6 +146,7 @@ mod tests {
                 references: vec![],
                 depends_on: vec![],
                 is_registry: false,
+                kind: crate::schema::ContractKind::default(),
                 obligation_count: 1,
                 falsification_count: 0,
                 kani_count: 0,

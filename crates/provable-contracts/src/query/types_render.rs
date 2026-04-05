@@ -57,10 +57,16 @@ impl QueryResult {
 
 impl std::fmt::Display for QueryResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use crate::schema::ContractKind;
+        let kind_tag = if self.kind == ContractKind::Kernel {
+            String::new()
+        } else {
+            format!(" [{}]", self.kind)
+        };
         writeln!(
             f,
-            "[{}] {} (relevance: {:.2})",
-            self.rank, self.stem, self.relevance
+            "[{}] {}{} (relevance: {:.2})",
+            self.rank, self.stem, kind_tag, self.relevance
         )?;
         writeln!(f, "    {}", self.description)?;
         if !self.equations.is_empty() {
