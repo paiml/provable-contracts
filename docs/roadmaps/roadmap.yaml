@@ -2352,11 +2352,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: Add ContractKind enum — first-class non-kernel YAML in contracts/
-  status: planned
+  status: inprogress
   priority: high
   assigned_to: null
   created: 2026-04-05T15:13:21Z
-  updated: 2026-04-05T15:13:21Z
+  updated: 2026-04-05T15:17:47.780331687+00:00
   spec: null
   acceptance_criteria:
   - Replaces metadata.registry bool with metadata.kind enum (Kernel/Registry/ModelFamily/Pattern/Schema). Non-kernel kinds exempt from PROVABILITY-001 and kernel lint gates. Unblocks aprender model-families/*.yaml.
