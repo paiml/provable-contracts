@@ -56,24 +56,48 @@ falsification_tests:
 - id: FALSIFY-BLIS-001
   rule: gemm_correctness
   prediction: gemm_blis matches gemm_reference for various sizes
+  if_fails: BLIS GEMM kernel has incorrect accumulation or tiling logic
 - id: FALSIFY-BLIS-002
   rule: gemm_correctness
   prediction: Non-aligned dimensions (e.g., 7x13x5) produce correct output
+  if_fails: BLIS kernel handles non-aligned tail elements incorrectly
 - id: FALSIFY-BLIS-003
   rule: elementwise_parity
   prediction: SiLU AVX2 matches scalar
+  if_fails: AVX2 SiLU approximation diverges from scalar reference
 - id: FALSIFY-BLIS-004
   rule: norm_correctness
   prediction: RMS norm output is finite and correct
+  if_fails: RMS norm kernel produces NaN or Inf for valid inputs
 - id: FALSIFY-BLIS-005
   rule: gemv_correctness
   prediction: GEMV matches scalar for non-aligned sizes
+  if_fails: GEMV kernel mishandles non-aligned tail elements
 - id: FALSIFY-BLIS-006
   rule: gemm_correctness
   prediction: gemm_direct_rowmajor matches reference
+  if_fails: Row-major GEMM kernel has incorrect stride or accumulation
 - id: FALSIFY-BLIS-007
   rule: elementwise_parity
   prediction: add_avx512 matches scalar
+  if_fails: AVX-512 add kernel diverges from scalar reference
 - id: FALSIFY-BLIS-008
   rule: norm_correctness
   prediction: layer_norm AVX2 matches scalar
+  if_fails: Layer norm AVX2 kernel diverges from scalar reference
+proof_obligations:
+- type: invariant
+  property: GEMM numerical correctness
+  formal: '∀ A,B,C: |gemm_blis(A,B) - gemm_ref(A,B)| < 1e-4'
+  applies_to: gemm_correctness
+- type: invariant
+  property: Elementwise parity
+  formal: '∀ x: |silu_avx2(x) - silu_scalar(x)| < 1e-5'
+  applies_to: elementwise_parity
+kani_harnesses:
+- id: KANI-BLIS-001
+  obligation: GEMM numerical correctness
+  property: output matches reference within tolerance
+  bound: 8
+  strategy: exhaustive
+  harness: verify_gemm_correctness

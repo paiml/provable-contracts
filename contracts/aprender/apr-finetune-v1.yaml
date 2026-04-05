@@ -1,0 +1,145 @@
+metadata:
+  version: 1.0.0
+  created: '2026-04-05'
+  author: PAIML Engineering
+  description: >
+    LoRA/QLoRA fine-tuning contract — adapter rank bounds, VRAM safety,
+    merge correctness, checkpoint roundtrip. Covers `apr finetune` and
+    `apr merge` in apr-cli via entrenar-lora.
+  references:
+  - 'apr-cli/src/commands/finetune.rs — run(), plan(), run_merge()'
+  - 'entrenar-lora/src/lib.rs — OptimalConfig, MemoryRequirement, MergeEngine'
+  - 'Hu et al. (2022). LoRA: Low-Rank Adaptation of Large Language Models'
+  depends_on:
+  - apr-cli-v1
+  - apr-model-lifecycle-v1
+
+equations:
+  rank_bounds_safety:
+    formula: |
+      validate_rank(user_rank, planner_rank): (u32, u32) -> Result<u32, Error>
+        Precondition: user_rank > 0
+        Invariant: user_rank <= base_hidden_dim / 8
+        Warning: user_rank > planner_rank (may exceed VRAM)
+    domain: User-supplied LoRA rank override, planner-estimated optimal rank
+    codomain: Result<validated_rank, RankBoundsError>
+    invariants:
+    - Rank must be positive (> 0)
+    - Rank must not exceed base_hidden_dim / 8 (capacity bound)
+    - Rank > planner estimate triggers VRAM re-check warning
+    preconditions:
+    - Model loaded with known hidden_dim
+    postconditions:
+    - Returned rank fits in adapter weight tensor dimensions
+    lean_theorem: Theorems.RankBoundsSafety
+
+  vram_feasibility:
+    formula: |
+      check_vram(config, available_vram_bytes): (FinetuneConfig, u64) -> Result<(), VramError>
+        memory_estimate = MemoryRequirement::estimate(config.rank, config.method, model_params)
+        if memory_estimate > available_vram_bytes: Err(VramExceeded)
+    domain: Fine-tune config with rank/method, available GPU VRAM
+    codomain: Result<(), VramError>
+    invariants:
+    - Memory estimate is monotonically increasing with rank
+    - QLoRA uses less VRAM than LoRA for same rank
+    - Estimate includes optimizer state + activations (not just weights)
+    preconditions:
+    - GPU detected and VRAM queryable
+    postconditions:
+    - Training will not OOM at estimated peak
+    lean_theorem: Theorems.VramFeasibility
+
+  alpha_rank_ratio:
+    formula: |
+      compute_alpha(rank): u32 -> f32
+        alpha = rank * 2.0  (default scaling)
+        effective_scale = alpha / rank  (always 2.0 by default)
+    domain: LoRA rank
+    codomain: LoRA alpha scaling factor
+    invariants:
+    - alpha > 0
+    - alpha / rank is constant for default config (scaling stability)
+    - User override of alpha must be positive
+    preconditions:
+    - rank > 0
+    postconditions:
+    - effective learning rate scales with alpha / rank
+    lean_theorem: Theorems.AlphaRankRatio
+
+  merge_tensor_shape:
+    formula: |
+      merge(base, lora_a, lora_b, alpha, rank): (Tensor, Tensor, Tensor, f32, u32) -> Tensor
+        Precondition: lora_a.shape == [rank, base.shape[1]]
+        Precondition: lora_b.shape == [base.shape[0], rank]
+        Result: base + (alpha / rank) * (lora_b @ lora_a)
+        Postcondition: result.shape == base.shape
+    domain: Base weight tensor, LoRA adapter A and B matrices, alpha, rank
+    codomain: Merged weight tensor with same shape as base
+    invariants:
+    - Output shape equals base shape (no dimension change)
+    - lora_a columns == base columns
+    - lora_b rows == base rows
+    - lora_a rows == lora_b columns == rank
+    preconditions:
+    - All tensors have valid finite values
+    postconditions:
+    - result == base when alpha == 0 (identity merge)
+    lean_theorem: Theorems.MergeTensorShape
+
+  checkpoint_metadata_roundtrip:
+    formula: |
+      roundtrip(config): FinetuneConfig -> FinetuneConfig
+        written = write_checkpoint(model, config)  # writes lora_rank, lora_alpha to APR metadata
+        loaded = read_checkpoint(written)           # reads lora_rank, lora_alpha
+        assert loaded.rank == config.rank
+        assert loaded.alpha == config.alpha
+    domain: Fine-tune config with rank, alpha, method
+    codomain: Same config after checkpoint save/load
+    invariants:
+    - Rank survives roundtrip exactly (integer, no float drift)
+    - Alpha survives roundtrip (f32 precision)
+    - Method type preserved
+    preconditions:
+    - Output directory is writable
+    postconditions:
+    - Checkpoint file exists with expected metadata keys
+    lean_theorem: Theorems.CheckpointRoundtrip
+
+falsification_tests:
+- id: FALSIFY-FT-001
+  rule: rank_bounds_safety
+  prediction: Rank 0 must be rejected
+  if_fails: Rank validation missing lower bound check
+- id: FALSIFY-FT-002
+  rule: alpha_rank_ratio
+  prediction: Default alpha == rank * 2.0
+  if_fails: Default alpha formula diverges from rank * 2.0 convention
+- id: FALSIFY-FT-003
+  rule: merge_tensor_shape
+  prediction: Output shape == base shape after merge
+  if_fails: LoRA merge produces mismatched tensor dimensions
+- id: FALSIFY-FT-004
+  rule: vram_feasibility
+  prediction: QLoRA estimate < LoRA estimate for same rank
+  if_fails: QLoRA VRAM estimator does not account for quantization savings
+- id: FALSIFY-FT-005
+  rule: checkpoint_metadata_roundtrip
+  prediction: Rank/alpha roundtrip through APR metadata
+  if_fails: APR metadata serialization loses rank or alpha precision
+proof_obligations:
+- type: invariant
+  property: Rank bounds safety
+  formal: '∀ rank: 1 <= rank <= hidden_dim'
+  applies_to: rank_bounds_safety
+- type: invariant
+  property: VRAM feasibility
+  formal: '∀ config: qlora_vram(config) < lora_vram(config)'
+  applies_to: vram_feasibility
+kani_harnesses:
+- id: KANI-FT-001
+  obligation: Rank bounds safety
+  property: rank within valid range
+  bound: 16
+  strategy: exhaustive
+  harness: verify_rank_bounds
