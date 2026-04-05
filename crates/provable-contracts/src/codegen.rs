@@ -388,11 +388,7 @@ mod tests {
             created: Some("2026-01-01".into()),
             author: Some("test".into()),
             description: "test".into(),
-            references: vec![],
-            depends_on: vec![],
-            registry: false,
-            enforcement_level: None,
-            locked_level: None,
+            ..Default::default()
         }
     }
 
@@ -410,6 +406,8 @@ mod tests {
             preconditions: pres.into_iter().map(ToString::to_string).collect(),
             postconditions: posts.into_iter().map(ToString::to_string).collect(),
             lean_theorem: lean_theorem.map(ToString::to_string),
+            assumes: None,
+            guarantees: None,
         }
     }
 

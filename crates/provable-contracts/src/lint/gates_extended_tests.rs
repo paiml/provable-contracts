@@ -11,26 +11,10 @@ fn minimal_contract() -> Contract {
     Contract {
         metadata: Metadata {
             version: "1".into(),
-            created: None,
-            author: None,
             description: "test contract".into(),
-            references: vec![],
-            depends_on: vec![],
-            registry: false,
-            enforcement_level: None,
-            locked_level: None,
+            ..Default::default()
         },
-        equations: BTreeMap::new(),
-        proof_obligations: vec![],
-        kernel_structure: None,
-        simd_dispatch: BTreeMap::new(),
-        enforcement: BTreeMap::new(),
-        falsification_tests: vec![],
-        kani_harnesses: vec![],
-        qa_gate: None,
-        verification_summary: None,
-        type_invariants: vec![],
-        coq_spec: None,
+        ..Default::default()
     }
 }
 
@@ -69,6 +53,8 @@ fn make_equation(
         preconditions: preconditions.into_iter().map(String::from).collect(),
         postconditions: postconditions.into_iter().map(String::from).collect(),
         lean_theorem: lean.map(String::from),
+        assumes: None,
+        guarantees: None,
     }
 }
 

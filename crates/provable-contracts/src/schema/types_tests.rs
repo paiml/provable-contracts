@@ -51,3 +51,71 @@ fn kani_strategy_display() {
     assert_eq!(KaniStrategy::Compositional.to_string(), "compositional");
     assert_eq!(KaniStrategy::BoundedInt.to_string(), "bounded_int");
 }
+
+#[test]
+fn contract_kind_display() {
+    assert_eq!(ContractKind::Kernel.to_string(), "kernel");
+    assert_eq!(ContractKind::Registry.to_string(), "registry");
+    assert_eq!(ContractKind::ModelFamily.to_string(), "model-family");
+    assert_eq!(ContractKind::Pattern.to_string(), "pattern");
+    assert_eq!(ContractKind::Schema.to_string(), "schema");
+}
+
+#[test]
+fn contract_kind_default_is_kernel() {
+    assert_eq!(ContractKind::default(), ContractKind::Kernel);
+}
+
+#[test]
+fn kernel_contract_requires_proofs() {
+    let mut c = Contract::default();
+    c.metadata.kind = ContractKind::Kernel;
+    assert!(c.requires_proofs());
+    assert_eq!(c.kind(), ContractKind::Kernel);
+    assert!(!c.is_registry());
+    // Provability violations: no proof_obligations, no falsification_tests,
+    // no kani_harnesses.
+    assert!(!c.provability_violations().is_empty());
+}
+
+#[test]
+fn non_kernel_kinds_exempt_from_provability() {
+    for kind in [
+        ContractKind::Registry,
+        ContractKind::ModelFamily,
+        ContractKind::Pattern,
+        ContractKind::Schema,
+    ] {
+        let mut c = Contract::default();
+        c.metadata.kind = kind;
+        assert!(
+            !c.requires_proofs(),
+            "kind {kind:?} should not require proofs",
+        );
+        assert!(
+            c.provability_violations().is_empty(),
+            "kind {kind:?} should have no provability violations",
+        );
+    }
+}
+
+#[test]
+fn legacy_registry_flag_maps_to_registry_kind() {
+    let mut c = Contract::default();
+    c.metadata.registry = true;
+    // kind remains Kernel (default), but is_registry() and kind() both
+    // reflect the legacy flag for back-compat.
+    assert!(c.is_registry());
+    assert_eq!(c.kind(), ContractKind::Registry);
+    assert!(!c.requires_proofs());
+    assert!(c.provability_violations().is_empty());
+}
+
+#[test]
+fn explicit_kind_overrides_default() {
+    let mut c = Contract::default();
+    c.metadata.kind = ContractKind::ModelFamily;
+    assert_eq!(c.kind(), ContractKind::ModelFamily);
+    // ModelFamily is not a registry
+    assert!(!c.is_registry());
+}

@@ -31,8 +31,13 @@ pub struct AuditReport {
 pub fn audit_contract(contract: &Contract) -> AuditReport {
     let mut violations = Vec::new();
 
-    // Check: contract has at least one falsification test
-    if contract.falsification_tests.is_empty() {
+    // Kernel-only audit checks: skip for registries, model-family schemas,
+    // pattern contracts, and reference documents that are exempt from
+    // the provability invariant.
+    let is_kernel_kind = contract.requires_proofs();
+
+    // Check: contract has at least one falsification test (kernel only)
+    if is_kernel_kind && contract.falsification_tests.is_empty() {
         violations.push(Violation {
             severity: Severity::Warning,
             rule: "AUDIT-001".to_string(),
@@ -68,8 +73,8 @@ pub fn audit_contract(contract: &Contract) -> AuditReport {
         }
     }
 
-    // Check: contract has proof obligations if it has equations
-    if !contract.equations.is_empty() && contract.proof_obligations.is_empty() {
+    // Check: contract has proof obligations if it has equations (kernel only)
+    if is_kernel_kind && !contract.equations.is_empty() && contract.proof_obligations.is_empty() {
         violations.push(Violation {
             severity: Severity::Warning,
             rule: "AUDIT-003".to_string(),

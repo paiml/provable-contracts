@@ -1,22 +1,39 @@
 use std::collections::HashSet;
 
 use crate::error::{Severity, Violation};
-use crate::schema::types::Contract;
+use crate::schema::types::{Contract, ContractKind};
 
 /// Validate a parsed contract for completeness and consistency.
 ///
 /// Returns a list of violations. If any violation has
 /// [`Severity::Error`], the contract is considered invalid.
+///
+/// Validation is kind-aware: non-kernel contracts (registries, model-family
+/// schemas, reference documents) are validated only for metadata consistency;
+/// the provability invariant, equations, and proof/kani/falsification checks
+/// only apply to `ContractKind::Kernel`.
 pub fn validate_contract(contract: &Contract) -> Vec<Violation> {
     let mut violations = Vec::new();
 
     validate_metadata(contract, &mut violations);
-    validate_equations(contract, &mut violations);
-    validate_provability_invariant(contract, &mut violations);
-    validate_proof_obligations(contract, &mut violations);
-    validate_falsification_tests(contract, &mut violations);
-    validate_kani_harnesses(contract, &mut violations);
-    validate_qa_gate(contract, &mut violations);
+
+    // Kernel-only checks: these enforce the provability invariant and
+    // require equations + proof obligations + tests + Kani harnesses.
+    if contract.kind() == ContractKind::Kernel && !contract.is_registry() {
+        validate_equations(contract, &mut violations);
+        validate_provability_invariant(contract, &mut violations);
+        validate_proof_obligations(contract, &mut violations);
+        validate_falsification_tests(contract, &mut violations);
+        validate_kani_harnesses(contract, &mut violations);
+        validate_qa_gate(contract, &mut violations);
+    } else {
+        // Non-kernel kinds (registry, model-family, schema): still validate
+        // any proof obligations/falsification/kani data that IS present, so
+        // mistakes are caught even on exempt contracts.
+        validate_proof_obligations(contract, &mut violations);
+        validate_falsification_tests(contract, &mut violations);
+        validate_kani_harnesses(contract, &mut violations);
+    }
 
     violations
 }

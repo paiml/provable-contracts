@@ -50,9 +50,11 @@ pub fn score_contract_weighted(
     let lean = compute_lean_coverage(contract, &mut probes);
     let binding_cov = compute_binding_coverage(contract, binding, stem, &mut probes);
 
-    // Registries (data-only contracts) get full credit for binding/lean since
-    // they define lookup tables, not executable functions.
-    let (effective_binding, effective_lean) = if contract.is_registry() {
+    // Non-kernel contracts (registries, model-family schemas, patterns,
+    // reference documents) are data-only: they define lookup tables or
+    // metadata, not executable functions. Give them full credit for
+    // binding/lean so the composite reflects their declarative nature.
+    let (effective_binding, effective_lean) = if !contract.requires_proofs() {
         (1.0, lean.max(0.5))
     } else {
         (binding_cov, lean)

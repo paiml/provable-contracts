@@ -174,8 +174,8 @@ pub(crate) fn run_enforce_gate(contracts: &[(String, Contract)]) -> (GateResult,
     let mut with_lean = 0usize;
 
     for (stem, contract) in contracts {
-        if contract.is_registry() {
-            continue;
+        if !contract.requires_proofs() {
+            continue; // non-kernel kinds exempt
         }
         for (eq_name, eq) in &contract.equations {
             total_eqs += 1;
@@ -290,8 +290,8 @@ pub(crate) fn run_enforcement_level_gate(
     let mut below = 0usize;
 
     for (stem, contract) in contracts {
-        if contract.is_registry() {
-            continue;
+        if !contract.requires_proofs() {
+            continue; // non-kernel kinds exempt
         }
         let declared = contract
             .metadata

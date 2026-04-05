@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 pub use super::composition::{ShapeContract, ShapeExpr};
+pub use super::kind::ContractKind;
 
 /// A complete YAML kernel contract.
 ///
@@ -40,16 +41,30 @@ pub struct Contract {
 }
 
 impl Contract {
-    /// Returns true if this is a data registry (exempt from provability invariant).
+    /// Back-compat: `metadata.registry: true` OR `metadata.kind: registry`.
     pub fn is_registry(&self) -> bool {
-        self.metadata.registry
+        self.metadata.registry || self.metadata.kind == ContractKind::Registry
+    }
+
+    /// The effective kind, honoring the legacy `registry: true` flag.
+    pub fn kind(&self) -> ContractKind {
+        if self.metadata.registry && self.metadata.kind == ContractKind::Kernel {
+            ContractKind::Registry
+        } else {
+            self.metadata.kind
+        }
+    }
+
+    /// True iff this contract must satisfy PROVABILITY-001 (kernel only).
+    pub fn requires_proofs(&self) -> bool {
+        self.kind() == ContractKind::Kernel
     }
 
     /// Enforce the provability invariant: kernel contracts MUST have
     /// `proof_obligations`, `falsification_tests`, and `kani_harnesses`.
     /// Returns a list of violations. Empty list = contract is valid.
     pub fn provability_violations(&self) -> Vec<String> {
-        if self.is_registry() {
+        if !self.requires_proofs() {
             return vec![];
         }
         let mut violations = Vec::new();
@@ -88,11 +103,12 @@ pub struct Metadata {
     /// Values are contract stems (e.g. "silu-kernel-v1").
     #[serde(default)]
     pub depends_on: Vec<String>,
-    /// Data registry contracts (lookup tables, enum definitions, config bounds)
-    /// are exempt from the provability invariant. All other contracts MUST have
-    /// `proof_obligations`, `falsification_tests`, and `kani_harnesses`.
+    /// Legacy registry flag — prefer `metadata.kind: registry` for new contracts.
     #[serde(default)]
     pub registry: bool,
+    /// Contract kind. Defaults to [`ContractKind::Kernel`].
+    #[serde(default)]
+    pub kind: ContractKind,
     /// Per-contract enforcement level (Section 17, Gap 1).
     /// `basic` → schema valid; `standard` → + falsification + kani;
     /// `strict` → + all bindings implemented; `proven` → + Lean 4 proved.

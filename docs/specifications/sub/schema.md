@@ -196,15 +196,28 @@ The `pv diff` command auto-detects the required bump type.
 
 ---
 
-## 6. Contract Classification
+## 6. Contract Classification — `metadata.kind`
 
-Every contract is either a **kernel contract** or a **data registry**.
+Every YAML file in `contracts/` declares a `kind`, which determines which
+validation rules apply. The default is `kernel` (unstated = kernel).
 
-A data registry declares `registry: true` in its metadata and encodes
-lookup tables, enum definitions, or configuration bounds — not computable
-kernels. Data registries are exempt from the provability chain.
+| `kind`         | Proofs? | Purpose                                          |
+|----------------|---------|--------------------------------------------------|
+| `kernel`       | required | mathematical kernel contract                    |
+| `registry`     | exempt  | lookup tables, enum definitions, config bounds  |
+| `model-family` | exempt  | architecture metadata, size variants, vendors   |
+| `pattern`      | exempt  | cross-cutting verification patterns             |
+| `schema`       | exempt  | generic reference/schema documents              |
 
-All other contracts are kernel contracts and MUST have the full chain:
+Non-kernel kinds are first-class pv artifacts: `pv query` finds them,
+they are scored, and they appear in composition chains when referenced
+via `depends_on`. They are exempt only from the provability invariant
+and kernel-specific lint gates.
+
+**Back-compat:** `metadata.registry: true` is equivalent to
+`metadata.kind: registry` and remains supported.
+
+Kernel contracts MUST have the full chain:
 
 ```
 equations → proof_obligations → falsification_tests → kani_harnesses
@@ -213,11 +226,27 @@ equations → proof_obligations → falsification_tests → kani_harnesses
 **Provability Invariant (enforced by `pv validate` and test suite):**
 
 ```
-∀ contract C where C.metadata.registry ≠ true:
+∀ contract C where C.kind = kernel:
   |C.proof_obligations| > 0                                    # MUST have obligations
   |C.kani_harnesses|   > 0                                    # MUST have Kani harnesses
   |C.falsification_tests| >= |C.proof_obligations|            # every obligation falsified
   ∀ h ∈ C.kani_harnesses: h.obligation ∈ C.proof_obligations  # harnesses trace to obligations
+```
+
+**Example `kind: model-family`:**
+
+```yaml
+metadata:
+  version: "1.0.0"
+  description: "Google BERT architecture family metadata"
+  kind: model-family
+  references:
+    - "https://arxiv.org/abs/1810.04805"
+# Custom top-level fields consumed by downstream crates
+family: bert
+architectures: [BertModel, BertForMaskedLM]
+size_variants:
+  base: { parameters: "110M", hidden_dim: 768 }
 ```
 
 **Known data registries:** `arch-constraints-v1`, `model-metadata-bounds-v1`,

@@ -266,6 +266,59 @@ falsification_tests: []
     }
 
     #[test]
+    fn parse_contract_with_kind_model_family() {
+        use crate::schema::types::ContractKind;
+
+        // A realistic aprender model-family YAML: metadata + custom
+        // top-level fields. No equations, no proof obligations — should
+        // parse and validate cleanly as kind: model-family.
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "Google BERT architecture family metadata"
+  kind: model-family
+  references:
+    - "https://arxiv.org/abs/1810.04805"
+    - "https://huggingface.co/google-bert"
+# Custom top-level fields ignored by the kernel schema,
+# consumed by the downstream crate that owns the file.
+family: bert
+display_name: "Google BERT"
+vendor: Google
+architectures:
+  - BertModel
+  - BertForMaskedLM
+size_variants:
+  base:
+    parameters: "110M"
+    hidden_dim: 768
+"#;
+        let contract = parse_contract_str(yaml).unwrap();
+        assert_eq!(contract.kind(), ContractKind::ModelFamily);
+        assert!(!contract.requires_proofs());
+        assert!(!contract.is_registry());
+        // Validates cleanly — no kernel-specific checks fire.
+        let violations = crate::schema::validate_contract(&contract);
+        let errors: Vec<_> = violations
+            .iter()
+            .filter(|v| v.severity == crate::error::Severity::Error)
+            .collect();
+        assert!(
+            errors.is_empty(),
+            "model-family YAML should validate with no errors, got: {errors:?}",
+        );
+    }
+
+    #[test]
+    fn parse_contract_defaults_to_kernel_kind() {
+        use crate::schema::types::ContractKind;
+
+        let contract = parse_contract_str(MINIMAL_CONTRACT).unwrap();
+        assert_eq!(contract.kind(), ContractKind::Kernel);
+        assert!(contract.requires_proofs());
+    }
+
+    #[test]
     fn parse_kani_strategies() {
         use crate::schema::types::KaniStrategy;
 

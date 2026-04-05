@@ -1,4 +1,4 @@
-# pv — Provable Contracts Specification v2.7.0
+# pv — Provable Contracts Specification v2.8.0
 
 **Papers to Math to Contracts in Code.**
 
@@ -92,6 +92,26 @@ Every YAML contract follows a fixed schema: `metadata`, `equations`,
 
 26 proof obligation types (19 property + 7 Eiffel DbC). Three expression
 languages: Rust expressions (default), regex patterns, refinement types.
+
+**Contract Kinds (`metadata.kind`).** Not every artifact in `contracts/` is
+a mathematical kernel. The `kind` field declares which validation rules
+apply — kernels get the full provability invariant; other kinds are
+first-class but exempt from kernel-specific checks.
+
+| Kind            | Provability | Typical use                                           |
+|-----------------|-------------|-------------------------------------------------------|
+| `kernel` (default) | required | mathematical kernel contract (softmax, attention, …) |
+| `registry`      | exempt      | lookup tables, enum definitions, config bounds       |
+| `model-family`  | exempt      | HuggingFace architecture metadata, size variants     |
+| `pattern`       | exempt      | cross-cutting verification patterns (threading, async) |
+| `schema`        | exempt      | generic reference/schema documents                   |
+
+Non-kernel kinds skip `PROVABILITY-001`, `SCHEMA-003` (empty equations),
+`AUDIT-001` (no falsification tests), and the `enforce` / `enforcement-level`
+lint gates. They still validate `metadata` (version + description + references)
+and any proof/kani/falsification data that IS present. The legacy
+`metadata.registry: true` flag is preserved for back-compat and maps to
+`kind: registry`.
 
 ---
 

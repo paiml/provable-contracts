@@ -150,7 +150,9 @@ fn compute_contract_coverage(contract_dir: &Path) -> CoverageResult {
         let Ok(contract) = provable_contracts::schema::parse_contract(path) else {
             continue;
         };
-        if contract.is_registry() {
+        // Coverage is a kernel-contract metric. Skip registries,
+        // model-family schemas, pattern contracts, and reference documents.
+        if !contract.requires_proofs() {
             continue;
         }
         total += 1;
