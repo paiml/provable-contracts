@@ -1,4 +1,4 @@
-# pv — Provable Contracts Specification v2.6.0
+# pv — Provable Contracts Specification v2.7.0
 
 **Papers to Math to Contracts in Code.**
 
