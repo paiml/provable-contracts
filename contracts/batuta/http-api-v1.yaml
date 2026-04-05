@@ -217,3 +217,23 @@ kani_harnesses:
   property: Request body max_tokens bounded at 1024
   bound: 16
   strategy: bounded_int
+- id: KANI-HTTP-002
+  obligation: build_openai_body produces valid OpenAI-compatible JSON
+  property: Body contains required OpenAI keys (messages, model, max_tokens)
+  bound: 8
+  strategy: bounded_int
+- id: KANI-HTTP-003
+  obligation: Tool definitions in body use tool_call format
+  property: Every registered tool renders with tool_call wrapping in the body
+  bound: 4
+  strategy: bounded_int
+- id: KANI-HTTP-004
+  obligation: strip_thinking_blocks removes all thinking content
+  property: Output contains no <think>...</think> substring after strip
+  bound: 32
+  strategy: bounded_int
+- id: KANI-HTTP-005
+  obligation: parse_response extracts content from OpenAI response JSON
+  property: Result mirrors choices[0].message.content exactly
+  bound: 16
+  strategy: bounded_int
