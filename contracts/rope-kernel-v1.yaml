@@ -20,6 +20,13 @@ equations:
     postconditions:
     - result.len() == x.len()
     - result.iter().all(|v| v.is_finite())
+    guarantees:
+      shapes:
+        output: { dims: ["x.len()"] }
+      constraints:
+      - "output.len() == x.len()"
+      - "norm(output) == norm(x)"
+      - "output is finite"
 proof_obligations:
 - type: precondition
   property: Input dimension is even, position non-negative

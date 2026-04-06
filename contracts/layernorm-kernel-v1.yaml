@@ -22,6 +22,12 @@ equations:
     postconditions:
     - result.len() == x.len()
     - result.iter().all(|v| v.is_finite())
+    guarantees:
+      shapes:
+        output: { dims: ["x.len()"] }
+      constraints:
+      - "output.len() == x.len()"
+      - "output is finite"
   statistics:
     formula: mu = (1/d) * sum(x_i), sigma^2 = (1/d) * sum((x_i - mu)^2)
     domain: x in R^d, d >= 1

@@ -2208,11 +2208,11 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Spec v2.4.0: real contract enforcement — preconditions, postconditions, per-binding assertions'
-  status: inprogress
+  status: completed
   priority: critical
   assigned_to: null
   created: 2026-03-29T07:22:12Z
-  updated: 2026-03-29T07:22:18.208827695+00:00
+  updated: 2026-04-06T07:19:53Z
   spec: null
   acceptance_criteria: []
   phases: []
