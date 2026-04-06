@@ -26,9 +26,17 @@ pub struct DriftResult {
 pub fn validate_heading_hierarchy(md: &str) -> Vec<DocViolation> {
     let mut violations = Vec::new();
     let mut headings: Vec<(usize, usize)> = Vec::new();
+    let mut in_fence = false;
 
     for (idx, line) in md.lines().enumerate() {
         let trimmed = line.trim_start();
+        if trimmed.starts_with("```") {
+            in_fence = !in_fence;
+            continue;
+        }
+        if in_fence {
+            continue;
+        }
         if !trimmed.starts_with('#') {
             continue;
         }
@@ -86,8 +94,17 @@ pub fn validate_heading_hierarchy(md: &str) -> Vec<DocViolation> {
 /// Validate `[text](url)` and `![alt](src)` links for empty URLs, `javascript:` scheme, and spaces.
 pub fn validate_links(md: &str) -> Vec<DocViolation> {
     let mut violations = Vec::new();
+    let mut in_fence = false;
 
     for (idx, line) in md.lines().enumerate() {
+        let trimmed_check = line.trim_start();
+        if trimmed_check.starts_with("```") {
+            in_fence = !in_fence;
+            continue;
+        }
+        if in_fence {
+            continue;
+        }
         let line_num = idx + 1;
         let bytes = line.as_bytes();
         let len = bytes.len();
@@ -142,16 +159,30 @@ pub fn validate_links(md: &str) -> Vec<DocViolation> {
 }
 
 /// Validate code fences — flags bare triple-backtick fences without a language tag.
+///
+/// Tracks open/close state so only opening fences (not closing fences) are
+/// checked for a language tag.
 pub fn validate_code_fences(md: &str) -> Vec<DocViolation> {
     let mut violations = Vec::new();
+    let mut in_fence = false;
+
     for (idx, line) in md.lines().enumerate() {
         let trimmed = line.trim();
-        if trimmed.starts_with("```") && trimmed[3..].trim().is_empty() {
-            violations.push(DocViolation {
-                line: idx + 1,
-                rule: "code-fence-language",
-                message: "code fence without language tag".into(),
-            });
+        if trimmed.starts_with("```") {
+            if in_fence {
+                // Closing fence — no language tag expected.
+                in_fence = false;
+            } else {
+                // Opening fence — check for language tag.
+                in_fence = true;
+                if trimmed[3..].trim().is_empty() {
+                    violations.push(DocViolation {
+                        line: idx + 1,
+                        rule: "code-fence-language",
+                        message: "code fence without language tag".into(),
+                    });
+                }
+            }
         }
     }
     violations
@@ -162,8 +193,19 @@ pub fn validate_tables(md: &str) -> Vec<DocViolation> {
     let mut violations = Vec::new();
     let lines: Vec<&str> = md.lines().collect();
     let mut i = 0;
+    let mut in_fence = false;
 
     while i < lines.len() {
+        let trimmed_check = lines[i].trim_start();
+        if trimmed_check.starts_with("```") {
+            in_fence = !in_fence;
+            i += 1;
+            continue;
+        }
+        if in_fence {
+            i += 1;
+            continue;
+        }
         let line = lines[i].trim();
         if !line.starts_with('|') {
             i += 1;
@@ -283,10 +325,18 @@ pub fn validate_svg(content: &str) -> Vec<DocViolation> {
 
 /// Check that each required section name appears as a heading. Returns missing names.
 pub fn validate_required_sections(md: &str, required: &[&str]) -> Vec<String> {
+    let mut in_fence = false;
     let headings: Vec<String> = md
         .lines()
         .filter_map(|line| {
             let trimmed = line.trim_start();
+            if trimmed.starts_with("```") {
+                in_fence = !in_fence;
+                return None;
+            }
+            if in_fence {
+                return None;
+            }
             if trimmed.starts_with('#') {
                 let text = trimmed.trim_start_matches('#').trim();
                 if !text.is_empty() {

@@ -190,14 +190,64 @@ fn image_link_validated() {
 fn code_fence_with_language() {
     let md = "```rust\nfn main() {}\n```\n";
     let violations = validate_code_fences(md);
-    // Opening fence has a language, closing fence is bare.
-    // The closing ``` is also bare but that's expected.
-    // We count both the opening and closing bare fences, which is
-    // acceptable since a tagged opening fence gets a tagged closing fence.
-    let openers: Vec<_> = violations.iter().filter(|v| v.line == 1).collect();
     assert!(
-        openers.is_empty(),
-        "tagged fence should not be flagged as opener"
+        violations.is_empty(),
+        "tagged opening fence should produce zero violations: {:?}",
+        violations
+    );
+}
+
+#[test]
+fn code_fence_closing_not_flagged() {
+    // Only opening fences need language tags; closing fences are always bare.
+    let md = "```rust\nfn main() {}\n```\n";
+    let violations = validate_code_fences(md);
+    assert!(violations.is_empty());
+}
+
+// =========================================================================
+// Fence-awareness: headings inside code blocks must be ignored
+// =========================================================================
+#[test]
+fn heading_inside_code_fence_ignored() {
+    let md = "# Title\n```bash\n# this is a comment, not a heading\n```\n## Section\n";
+    let violations = validate_heading_hierarchy(md);
+    assert!(
+        violations.is_empty(),
+        "hash-comments inside code fences must not be treated as headings: {:?}",
+        violations
+    );
+}
+
+#[test]
+fn link_inside_code_fence_ignored() {
+    let md = "# Title\n```markdown\n[text](javascript:evil)\n```\n";
+    let violations = validate_links(md);
+    assert!(
+        violations.is_empty(),
+        "links inside code fences must not be validated: {:?}",
+        violations
+    );
+}
+
+#[test]
+fn table_inside_code_fence_ignored() {
+    let md = "# Title\n```text\n| A | B |\n|---|\n| 1 | 2 | 3 |\n```\n";
+    let violations = validate_tables(md);
+    assert!(
+        violations.is_empty(),
+        "tables inside code fences must not be validated: {:?}",
+        violations
+    );
+}
+
+#[test]
+fn required_section_inside_fence_not_counted() {
+    let md = "# Project\n```bash\n# License\n```\n";
+    let missing = validate_required_sections(md, &["License"]);
+    assert!(
+        !missing.is_empty(),
+        "heading inside code fence must not satisfy required section check"
     );
 }
 

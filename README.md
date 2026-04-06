@@ -43,6 +43,7 @@ proving.
 - [Escape-Proof Enforcement](#escape-proof-enforcement)
 - [Proof Obligation Types](#proof-obligation-types)
 - [Documentation](#documentation)
+- [Document Integrity](#document-integrity)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -100,7 +101,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-provable-contracts = "0.2"
+provable-contracts = "0.3"
 ```
 
 ### CLI
@@ -248,7 +249,7 @@ pv book contracts/ -o book/src/contracts/
 
 ## Contract Registry
 
-171+ contract YAML files ship in `contracts/`, organized by seven tiers,
+295+ contract YAML files ship in `contracts/`, organized by seven tiers,
 five equivalence classes (A-E), and twenty-five per-crate directories.
 
 **Tier 1 -- Foundation Kernels**: softmax, rmsnorm, rope, gelu, silu,
@@ -429,6 +430,35 @@ See [`docs/specifications/sub/eiffel-dbc.md`](docs/specifications/sub/eiffel-dbc
   - [`sub/lint.md`](docs/specifications/sub/lint.md) -- Lint gates
 - **mdBook**: Run `mdbook serve` from the repository root, or build
   with `mdbook build`.
+
+## Document Integrity
+
+`pv` includes a document integrity validator that mathematically enforces
+structural invariants on Markdown, SVG, YAML, and media files.
+
+```rust
+use provable_contracts::doc_integrity::*;
+
+// Validate markdown structure
+let violations = validate_heading_hierarchy("# Title\n## Section\n");
+assert!(violations.is_empty());
+
+// Detect README drift
+let drift = detect_readme_drift(actual, generated);
+assert!(!drift.stale);
+
+// Validate SVG safety (no script injection)
+let violations = validate_svg(svg_content);
+assert!(violations.is_empty());
+```
+
+Enforced invariants (from `document-integrity-v1.yaml`):
+- **Heading hierarchy**: exactly one H1, no level skips (H1->H3 illegal)
+- **Link safety**: no `javascript:` URLs, no empty hrefs
+- **Code fences**: all fenced blocks must have language tags
+- **Table parity**: column count consistent across all rows
+- **SVG safety**: no `<script>`, `viewBox` present, valid namespace
+- **README drift**: byte-level comparison against canonical generation
 
 ## Contributing
 
