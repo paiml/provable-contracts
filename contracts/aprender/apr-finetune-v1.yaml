@@ -50,6 +50,20 @@ equations:
     - Training will not OOM at estimated peak
     lean_theorem: Theorems.VramFeasibility
 
+  vram_estimation_tolerance:
+    formula: |
+      |estimate(config) - actual_peak_vram| / actual_peak_vram < 0.20
+    domain: Fine-tune config
+    codomain: bool (estimate within 20% of actual)
+    tolerance: 0.20
+    invariants:
+    - VRAM estimate within 20% of actual peak during training
+    preconditions:
+    - GPU detected
+    postconditions:
+    - No OOM during training if estimate passes
+    lean_theorem: Theorems.VramEstimationTolerance
+
   alpha_rank_ratio:
     formula: |
       compute_alpha(rank): u32 -> f32
@@ -127,15 +141,65 @@ falsification_tests:
   rule: checkpoint_metadata_roundtrip
   prediction: Rank/alpha roundtrip through APR metadata
   if_fails: APR metadata serialization loses rank or alpha precision
+- id: FALSIFY-FT-006
+  rule: merge_tensor_shape identity
+  prediction: Merge with alpha=0.0 returns tensor identical to base
+  test: |
+    Construct base=[768,3072], lora_a=[rank,3072], lora_b=[768,rank].
+    Merge with alpha=0.0. Assert result == base element-wise.
+  if_fails: Identity merge path broken (alpha=0 still modifies weights)
+- id: FALSIFY-FT-007
+  rule: finetune plan is pure
+  prediction: apr finetune plan does not create output directory or allocate GPU
+  test: |
+    Run apr finetune plan --data /dev/null --rank 8.
+    Assert output directory does not exist after plan.
+  if_fails: Finetune plan eagerly creates directories before validation (GH-661)
 proof_obligations:
 - type: invariant
   property: Rank bounds safety
-  formal: '∀ rank: 1 <= rank <= hidden_dim'
+  formal: '∀ rank: 1 <= rank <= hidden_dim / 8'
   applies_to: rank_bounds_safety
+  lean:
+    theorem: Theorems.RankBoundsSafety
+    status: sorry
 - type: invariant
   property: VRAM feasibility
   formal: '∀ config: qlora_vram(config) < lora_vram(config)'
+  tolerance: 0.20
   applies_to: vram_feasibility
+  lean:
+    theorem: Theorems.VramFeasibility
+    status: sorry
+- type: invariant
+  property: Alpha-rank ratio constant under default config
+  formal: 'alpha / rank == 2.0 for default alpha'
+  applies_to: alpha_rank_ratio
+  lean:
+    theorem: Theorems.AlphaRankRatio
+    status: sorry
+- type: postcondition
+  property: Merge preserves base tensor shape
+  formal: 'merge(base, a, b, alpha, rank).shape == base.shape'
+  applies_to: merge_tensor_shape
+  lean:
+    theorem: Theorems.MergeTensorShape
+    status: sorry
+- type: postcondition
+  property: Checkpoint roundtrip preserves rank and alpha
+  formal: 'roundtrip(config).rank == config.rank'
+  applies_to: checkpoint_metadata_roundtrip
+  lean:
+    theorem: Theorems.CheckpointRoundtrip
+    status: sorry
+- type: postcondition
+  property: Identity merge when alpha is zero
+  formal: 'merge(base, a, b, 0.0, rank) == base'
+  applies_to: merge_tensor_shape
+- type: invariant
+  property: Finetune plan is pure (no side effects)
+  formal: 'finetune plan does not create files or allocate GPU'
+  applies_to: rank_bounds_safety
 kani_harnesses:
 - id: KANI-FT-001
   obligation: Rank bounds safety
@@ -143,3 +207,55 @@ kani_harnesses:
   bound: 16
   strategy: exhaustive
   harness: verify_rank_bounds
+- id: KANI-FT-002
+  obligation: VRAM feasibility
+  property: QLoRA estimate < LoRA estimate
+  bound: 8
+  strategy: bounded_int
+  harness: verify_vram_qlora_less_than_lora
+- id: KANI-FT-003
+  obligation: Alpha-rank ratio constant under default config
+  property: default alpha == rank * 2.0
+  bound: 16
+  strategy: bounded_int
+  harness: verify_alpha_ratio
+- id: KANI-FT-004
+  obligation: Merge preserves base tensor shape
+  property: result.shape == base.shape
+  bound: 8
+  strategy: bounded_int
+  harness: verify_merge_shape_preserved
+- id: KANI-FT-005
+  obligation: Checkpoint roundtrip preserves rank and alpha
+  property: rank/alpha survive save/load
+  bound: 4
+  strategy: exhaustive
+  harness: verify_checkpoint_roundtrip
+- id: KANI-FT-006
+  obligation: Identity merge when alpha is zero
+  property: alpha==0 => result == base
+  bound: 8
+  strategy: bounded_int
+  harness: verify_identity_merge
+- id: KANI-FT-007
+  obligation: Finetune plan is pure (no side effects)
+  property: plan creates no files and allocates no GPU
+  bound: 4
+  strategy: exhaustive
+  harness: verify_finetune_plan_purity
+kernel_structure:
+  phases:
+  - name: validate_input
+    description: Validate rank bounds, check VRAM feasibility, verify model compatibility
+  - name: execute
+    description: Run LoRA/QLoRA fine-tuning, save checkpoints with metadata
+  - name: verify_output
+    description: Verify merge shape preservation, checkpoint roundtrip integrity
+qa_gate:
+  id: F-FT-GATE
+  name: Fine-tuning Contract
+  description: Quality gate for LoRA/QLoRA fine-tuning and merge correctness
+  checks:
+  - validation
+  - falsification
+  pass_criteria: All 5 falsification tests pass

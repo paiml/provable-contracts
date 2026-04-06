@@ -215,6 +215,68 @@ equations:
       - "rope_theta > 0"
       - "all freq values finite and positive"
 
+  architecture_oracle_detection:
+    formula: |
+      detect_architecture(metadata): GgufMetadata -> ArchitectureFamily
+        Match on metadata.architecture key:
+          "llama" | "llama2" | "llama3" -> Llama
+          "qwen2" -> Qwen2
+          "qwen3" -> Qwen3
+          "phi" | "phi2" | "phi3" -> Phi
+          "gemma" | "gemma2" -> Gemma
+          "mistral" | "mixtral" -> Mistral
+          unknown -> Unknown(name)
+        After GGUF→APR import, architecture MUST be preserved
+    domain: GGUF model metadata
+    codomain: ArchitectureFamily enum
+    invariants:
+    - Architecture matches GGUF general.architecture key exactly (GH-652)
+    - APR import preserves architecture from original GGUF
+    - Qwen2 is never misidentified as Phi or vice versa
+    preconditions:
+    - metadata contains general.architecture key
+    postconditions:
+    - detected family matches GGUF metadata
+    lean_theorem: Theorems.ArchitectureOracleDetection
+
+  layer_count_consistency:
+    formula: |
+      count_layers(model): Model -> Result<usize, LayerError>
+        layer_count = max(layer_index(tensor.name) for tensor in model.tensors) + 1
+        assert layer_count == config.num_layers
+    domain: Loaded model with named tensors
+    codomain: Layer count derived from tensor names
+    invariants:
+    - Layer count derived from tensors matches config.num_layers (GH-656)
+    - APR format preserves layer count from original GGUF
+    - Layer indices are contiguous (0..num_layers-1)
+    preconditions:
+    - model has named tensors with layer indices
+    postconditions:
+    - reported layer count matches actual tensor layer count
+    lean_theorem: Theorems.LayerCountConsistency
+
+  tensor_name_recognition:
+    formula: |
+      explain_tensor(name): &str -> TensorRole
+        Known roles: q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj,
+                     down_proj, attn_norm, ffn_norm, token_embd, output
+        Patterns: "blk.{N}.attn_q" -> q_proj for layer N
+                  "blk.{N}.ffn_gate" -> gate_proj for layer N
+        Unknown: return Unknown(name) (not empty string)
+    domain: Tensor name string
+    codomain: TensorRole enum with layer index
+    invariants:
+    - All standard transformer tensor names recognized (not reported as unknown) (GH-635)
+    - Layer index parsed correctly from "blk.{N}" pattern
+    - k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj all recognized
+    preconditions:
+    - name is non-empty UTF-8 string
+    postconditions:
+    - standard tensor names return Known variant
+    - layer index is non-negative integer
+    lean_theorem: Theorems.TensorNameRecognition
+
   total_tensor_count:
     formula: |
       expected_tensors(config): Config -> usize
@@ -300,6 +362,27 @@ proof_obligations:
   lean:
     theorem: Theorems.RopePositionEncoding
     status: sorry
+- type: invariant
+  property: Architecture oracle matches GGUF metadata
+  formal: 'detect(m) == m.metadata.general.architecture'
+  applies_to: architecture_oracle_detection
+  lean:
+    theorem: Theorems.ArchitectureOracleDetection
+    status: sorry
+- type: invariant
+  property: Layer count matches config.num_layers
+  formal: 'count_layers(model) == config.num_layers'
+  applies_to: layer_count_consistency
+  lean:
+    theorem: Theorems.LayerCountConsistency
+    status: sorry
+- type: postcondition
+  property: Standard tensor names are recognized
+  formal: 'explain(q_proj) != Unknown'
+  applies_to: tensor_name_recognition
+  lean:
+    theorem: Theorems.TensorNameRecognition
+    status: sorry
 - type: bound
   property: Total tensor count within tolerance of expected
   formal: "abs(actual_tensors - expected_tensors(config)) <= 5"
@@ -344,6 +427,27 @@ falsification_tests:
   prediction: Config with rope_type=3 rejected
   test: Set invalid rope_type in GGUF metadata
   if_fails: Unknown rope_type silently defaults to 0
+- id: FALSIFY-ARCH-009
+  rule: Architecture oracle detection
+  prediction: Qwen2 GGUF identifies as Qwen2 after APR import (not Phi)
+  test: |
+    Import Qwen2 GGUF to APR, run apr oracle.
+    Assert detected architecture is "qwen2", not "phi".
+  if_fails: Oracle misidentifies Qwen2 as Phi after GGUF→APR import (GH-652)
+- id: FALSIFY-ARCH-010
+  rule: Layer count matches config
+  prediction: 28-layer model reports 28 layers in apr trace
+  test: |
+    Load Qwen2-7B (28 layers), run apr trace.
+    Assert reported layer count is 28 (not 1).
+  if_fails: apr trace shows 1 layer on APR file that has 28 layers (GH-656)
+- id: FALSIFY-ARCH-011
+  rule: Standard tensor names recognized
+  prediction: apr explain --tensor k_proj reports key projection (not unknown)
+  test: |
+    Run apr explain --tensor k_proj, v_proj, o_proj, gate_proj.
+    Assert all return recognized role descriptions.
+  if_fails: apr explain only recognizes q_proj, reports unknown for others (GH-635)
 - id: FALSIFY-ARCH-008
   rule: Total tensor count within tolerance
   prediction: Model missing 10 tensors fails check
@@ -400,6 +504,25 @@ kani_harnesses:
   strategy: bounded_int
   harness: verify_tensor_count_tolerance
 
+- id: KANI-ARCH-009
+  obligation: Architecture oracle matches GGUF metadata
+  property: detect(m) matches GGUF general.architecture
+  bound: 8
+  strategy: exhaustive
+  harness: verify_oracle_detection
+- id: KANI-ARCH-010
+  obligation: Layer count matches config.num_layers
+  property: tensor-derived layer count == config.num_layers
+  bound: 8
+  strategy: bounded_int
+  harness: verify_layer_count
+- id: KANI-ARCH-011
+  obligation: Standard tensor names are recognized
+  property: all standard names return Known variant
+  bound: 16
+  strategy: exhaustive
+  harness: verify_tensor_name_recognition
+
 qa_gate:
   id: F-ARCH-GATE
   name: Architecture Schema Contract
@@ -407,7 +530,7 @@ qa_gate:
   checks:
   - validation
   - falsification
-  pass_criteria: All 8 falsification tests pass
+  pass_criteria: All 11 falsification tests pass
 
 toyota_way_principles:
   jidoka: >

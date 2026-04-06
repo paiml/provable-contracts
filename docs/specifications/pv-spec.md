@@ -60,8 +60,8 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 
 Make the paper→code derivation chain explicit, auditable, and provable.
 295 scored YAML contracts (301 total by kind: 266 kernel, 31 registry, 4 pattern),
-1385 proof obligations, 1539 falsification tests, 1474 Kani harnesses, 34 Lean
-proofs, 1042 bindings across 40 repos governing ~6.4M Rust LoC.
+1393 proof obligations, 1544 falsification tests, 1483 Kani harnesses, 34 Lean
+proofs, 1046 bindings across 40 repos governing ~6.4M Rust LoC.
 
 Architecture: `crates/provable-contracts/` (library), `crates/provable-contracts-cli/`
 (CLI binary `pv`), `contracts/` (YAML registry), `crates/provable-contracts-macros/`
