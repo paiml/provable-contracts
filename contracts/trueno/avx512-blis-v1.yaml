@@ -91,26 +91,74 @@ falsification_tests:
 equations:
   flops_per_tile:
     formula: "FLOPs = 2 × MR × NR × KC = 2 × 8 × 16 × 256 = 65536"
+    domain: BLIS tile parameters (MR, NR, KC)
+    codomain: FLOPs per tile iteration
+    invariants:
+    - MR=8 rows fit 8 zmm accumulators
+    - NR=16 columns fit 1 zmm width (512-bit / 32-bit)
     preconditions:
     - "MR = 8, NR = 16, KC = 256"
-  
+    postconditions:
+    - "tile FLOPs == 65536"
+    lean_theorem: Theorems.FlopsPerTile
+
+  numerical_equivalence:
+    formula: |
+      forall A(M×K), B(K×N):
+        |gemm_avx512(A, B) - gemm_scalar(A, B)| < n * f32::EPSILON
+    domain: Two matrices A and B
+    codomain: Result matrix C
+    invariants:
+    - AVX-512 and scalar paths produce equivalent results
+    - FMA rounding may differ by 1 ULP per accumulation
+    preconditions:
+    - A and B have compatible dimensions
+    postconditions:
+    - max element-wise error < n * machine epsilon
+    tolerance: 1.0e-4
+    lean_theorem: Theorems.NumericalEquivalence
+
   peak_throughput:
     formula: "peak = 2 × FMA_ports × zmm_width × clock = 2 × 2 × 16 × freq"
+    domain: CPU microarchitecture parameters
+    codomain: Peak GFLOPS
     preconditions:
     - "Zen 4: 2 FMA ports, 16 SP per zmm"
     - "At 4.0 GHz sustained AVX-512: peak = 256 GFLOPS/core"
-    - "Measured: 128 GFLOPS/core (50% of peak — typical for BLIS)"
+    postconditions:
+    - "measured throughput > 40% of peak (no severe regression)"
+    lean_theorem: Theorems.PeakThroughput
 
 proof_obligations:
-- id: PO-AVX512-BLIS-001
-  name: Numerical equivalence with AVX2 path
-  property: |
-    For all A(M×K), B(K×N): gemm_blis_avx512_large(A, B) produces the
-    same result as gemm_blis_nr8_rowmajor_c(A, B) within f32 epsilon,
-    for all M, N, K including non-multiples of MR=8 and NR=16.
-  type: equivalence
-  severity: P0
-  status: specified
+- type: equivalence
+  property: AVX-512 matches scalar numerically
+  formal: '|avx512 - scalar| < n * eps per element'
+  tolerance: 1.0e-4
+  applies_to: numerical_equivalence
+  lean:
+    theorem: Theorems.NumericalEquivalence
+    status: sorry
+- type: bound
+  property: Throughput above 40% of peak
+  formal: 'measured GFLOPS > 0.4 * peak GFLOPS'
+  applies_to: peak_throughput
+  lean:
+    theorem: Theorems.PeakThroughput
+    status: sorry
+
+kani_harnesses:
+- id: KANI-AVX512-001
+  obligation: AVX-512 matches scalar numerically
+  property: '|avx512 - scalar| < epsilon'
+  bound: 8
+  strategy: bounded_int
+  harness: verify_avx512_scalar_parity
+- id: KANI-AVX512-002
+  obligation: Throughput above 40% of peak
+  property: 'gflops > 0.4 * peak'
+  bound: 4
+  strategy: bounded_int
+  harness: verify_throughput_bound
 
 qa_gate:
   id: F-AVX512-BLIS-001

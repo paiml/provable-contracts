@@ -22,10 +22,20 @@ equations:
       gemm_blis(m, n, k, a, b, c): (usize, usize, usize, &[f32], &[f32], &mut [f32]) -> Result
         Postcondition: c[i][j] = sum(a[i][p] * b[p][j]) for p in 0..k
         Must match scalar reference implementation within f32 epsilon
+    domain: Matrices A(m×k), B(k×n)
+    codomain: Matrix C(m×n)
     invariants:
     - Output matches gemm_reference within 1e-4 relative error
     - Works for all m,n,k > 0 including non-aligned dimensions
     - AVX2 and AVX-512 paths produce same result as scalar
+    preconditions:
+    - m > 0 && n > 0 && k > 0
+    - a.len() == m * k && b.len() == k * n
+    postconditions:
+    - c.len() == m * n
+    - "max |c[i][j] - reference[i][j]| < 1e-4"
+    tolerance: 1.0e-4
+    lean_theorem: Theorems.GemmCorrectness
 
   elementwise_parity:
     formula: |

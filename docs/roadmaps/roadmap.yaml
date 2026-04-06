@@ -2429,3 +2429,35 @@ roadmap:
   estimated_effort: null
   labels: []
   notes: null
+- id: PMAT-493
+  github_issue: null
+  item_type: task
+  title: 'Aprender CLI contract enforcement: close GH-674 ghost bindings + inject CLI call sites'
+  status: completed
+  priority: high
+  assigned_to: null
+  created: 2026-04-06T10:13:53Z
+  updated: 2026-04-06T10:17:55Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-494
+  github_issue: null
+  item_type: task
+  title: 'Trueno SIMD/PTX contract suite: NEON, parity matrix, PTX codegen, quant roundtrip, D→B upgrade'
+  status: inprogress
+  priority: critical
+  assigned_to: null
+  created: 2026-04-06T11:04:58Z
+  updated: 2026-04-06T11:05:03.896619233+00:00
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
