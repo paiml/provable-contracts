@@ -211,6 +211,52 @@ falsification_tests:
   test: |
     Check run, serve, bench all accept --backend.
   if_fails: Inconsistent flag naming across commands (GH-645)
+- id: FALSIFY-GPU-008
+  rule: run --gpu uses same CUDA Q4K path as serve --gpu
+  prediction: apr run --gpu tok/s within 2x of apr serve run --gpu tok/s
+  test: |
+    #[test]
+    fn falsify_gpu_008_run_serve_gpu_parity() {
+        // GH-698: run --gpu uses CPU F32 dequant (0.7 tok/s)
+        // while serve --gpu uses CUDA Q4K (273.8 tok/s) — 391x gap
+        let run_out = std::process::Command::new("apr")
+            .args(&["run", "model.apr", "--gpu", "--max-tokens", "16", "--json"])
+            .output().expect("Failed to run apr");
+        let serve_plan = std::process::Command::new("apr")
+            .args(&["serve", "plan", "model.apr", "--gpu", "--json"])
+            .output().expect("Failed to run apr serve plan");
+        // Both should report the same backend
+        if run_out.status.success() && serve_plan.status.success() {
+            let run_json: serde_json::Value =
+                serde_json::from_slice(&run_out.stdout).unwrap();
+            let plan_json: serde_json::Value =
+                serde_json::from_slice(&serve_plan.stdout).unwrap();
+            let run_gpu = run_json["used_gpu"].as_bool().unwrap_or(false);
+            let plan_gpu = plan_json["gpu"].as_bool().unwrap_or(false);
+            assert_eq!(run_gpu, plan_gpu,
+                "run --gpu and serve --gpu must use same GPU path");
+        }
+    }
+  if_fails: run --gpu silently falls back to CPU dequant while serve --gpu uses CUDA (GH-698, GH-573)
+- id: FALSIFY-GPU-009
+  rule: rosetta compare-inference must not exit 0 with 0 tokens
+  prediction: apr rosetta compare-inference exits non-zero when 0 tokens captured
+  test: |
+    #[test]
+    fn falsify_gpu_009_rosetta_zero_tokens() {
+        // GH-699/641: rosetta compare-inference captures 0 tokens and exits 0
+        let out = std::process::Command::new("apr")
+            .args(&["rosetta", "compare-inference", "/dev/null", "/dev/null"])
+            .output().expect("Failed to run apr");
+        if out.status.success() {
+            let stdout = String::from_utf8_lossy(&out.stdout);
+            // If 0 tokens captured, exit code must be non-zero
+            if stdout.contains("0 tokens") || stdout.contains("Tokens captured: 0") {
+                panic!("rosetta exits 0 with 0 tokens — silent failure (GH-699)");
+            }
+        }
+    }
+  if_fails: Silent failure — 0 tokens captured but exit code 0 (GH-699, GH-641)
 
 kani_harnesses:
 - id: KANI-GPU-001
