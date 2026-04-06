@@ -806,6 +806,51 @@ bindings:
   signature: 'pub(crate) fn run(file: &Path, port: u16, ...) -> Result<(), CliError>'
   status: implemented
   notes: Per-request KV cache, immutable model weights (Arc)
+# --- encoder-forward-v1 bindings (GH-326, BERT inference) ---
+- contract: ../encoder-forward-v1.yaml
+  equation: encoder_layer
+  module_path: aprender::models::bert
+  function: forward
+  signature: 'fn forward(&self, input: &Tensor) -> Tensor'
+  status: implemented
+  notes: "BERT encoder layer: LayerNorm(x + BiAttn(x)) → LayerNorm(h + FFN(h))"
+- contract: ../encoder-forward-v1.yaml
+  equation: cls_pooling
+  module_path: aprender::models::bert
+  function: cls_embedding
+  signature: 'fn cls_embedding(&self, encoder_output: &Tensor) -> Tensor'
+  status: implemented
+  notes: "CLS pooling: encoder_output[0] (first token embedding)"
+# --- format-parity-v1 bindings (model format conversion) ---
+- contract: ../format-parity-v1.yaml
+  equation: transpose_involution
+  module_path: aprender::format::layout
+  function: swap_axes
+  signature: 'fn swap_axes(tensor: &Tensor) -> Tensor'
+  status: implemented
+  notes: "swap(swap(shape)) == shape — transpose is its own inverse"
+- contract: ../format-parity-v1.yaml
+  equation: element_count
+  module_path: aprender::format::layout
+  function: validate_element_count
+  signature: 'fn validate_element_count(gguf_shape: &[usize], apr_shape: &[usize]) -> bool'
+  status: implemented
+  notes: product(gguf_shape) == product(apr_shape) across format conversion
+- contract: ../format-parity-v1.yaml
+  equation: name_bijection
+  module_path: aprender::format::converter
+  function: map_tensor_name
+  signature: 'fn map_tensor_name(name: &str, arch: Architecture) -> String'
+  status: implemented
+  notes: "Bijective tensor name mapping: GGUF ↔ APR ↔ SafeTensors"
+# --- bidirectional-attention-v1 bindings (BERT attention) ---
+- contract: ../bidirectional-attention-v1.yaml
+  equation: bidirectional_attention
+  module_path: aprender::nn::transformer
+  function: bidirectional_attention
+  signature: 'fn bidirectional_attention(q: &Tensor, k: &Tensor, v: &Tensor) -> Tensor'
+  status: implemented
+  notes: Full attention matrix (no causal mask) for BERT-class models
 critical_path:
 - softmax
 - rmsnorm
