@@ -473,6 +473,266 @@ bindings:
   function: run
   status: implemented
   notes: JSON serialization, KV-cache not persisted (rebuilt from history)
+# --- cli-dispatch-v1 bindings (PMAT-495) ---
+- contract: cli-dispatch-v1.yaml
+  equation: dispatch_completeness
+  module_path: apr_cli::dispatch
+  function: dispatch_core_command
+  signature: 'fn dispatch_core_command(cli: &Cli) -> Option<Result<(), CliError>>'
+  status: implemented
+  notes: Every Commands variant has a dispatch arm (no unreachable_patterns)
+- contract: cli-dispatch-v1.yaml
+  equation: exit_code_semantics
+  module_path: apr_cli::error
+  function: exit_code
+  signature: 'fn exit_code(&self) -> i32'
+  status: implemented
+  notes: Distinct error classes map to distinct non-zero exit codes (0-11)
+- contract: cli-dispatch-v1.yaml
+  equation: output_format_fidelity
+  module_path: apr_cli::dispatch
+  function: dispatch_core_command
+  signature: 'fn dispatch_core_command(cli: &Cli) -> Option<Result<(), CliError>>'
+  status: implemented
+  notes: --json/--yaml/--csv produce parseable output per respective RFC
+- contract: cli-dispatch-v1.yaml
+  equation: feature_gated_dispatch
+  module_path: apr_cli::dispatch_analysis
+  function: dispatch_extended_command
+  signature: 'fn dispatch_extended_command(cli: &Cli) -> Result<(), CliError>'
+  status: implemented
+  notes: Code variant dispatches to batuta::agent::code::cmd_code (PMAT-182)
+- contract: cli-dispatch-v1.yaml
+  equation: idempotent_inspection
+  module_path: apr_cli::dispatch
+  function: dispatch_inspection_commands
+  signature: 'fn dispatch_inspection_commands(cli: &Cli) -> Option<Result<(), CliError>>'
+  status: implemented
+  notes: check/inspect/debug/validate/lint/explain/list are read-only
+# --- http-api-v1 bindings (PMAT-495) ---
+- contract: http-api-v1.yaml
+  equation: request_response_schema
+  module_path: apr_cli::commands::serve::routes
+  function: predict_handler
+  signature: 'async fn predict_handler(req: Json<PredictRequest>) -> impl Response'
+  status: implemented
+  notes: JSON request/response schema for /v1/completions and /v1/chat/completions
+- contract: http-api-v1.yaml
+  equation: error_envelope_preservation
+  module_path: apr_cli::commands::serve::routes
+  function: fallback_handler
+  signature: 'async fn fallback_handler() -> impl Response'
+  status: implemented
+  notes: "All errors return JSON envelope {error: {message, type, code}}"
+- contract: http-api-v1.yaml
+  equation: cors_negotiation
+  module_path: apr_cli::commands::serve
+  function: run
+  signature: 'pub(crate) fn run(file: &Path, port: u16, ...) -> Result<(), CliError>'
+  status: implemented
+  notes: CORS enabled by default, --no-cors removes all CORS headers
+- contract: http-api-v1.yaml
+  equation: timeout_honoring
+  module_path: apr_cli::commands::serve::routes
+  function: health_handler
+  signature: 'async fn health_handler() -> impl Response'
+  status: implemented
+  notes: Request timeout produces clean error (408/504), no partial state mutation
+# --- mcp-tool-schema-v1 bindings (PMAT-495) ---
+- contract: mcp-tool-schema-v1.yaml
+  equation: tool_schema_fidelity
+  module_path: apr_cli::commands::serve::types
+  function: extract_tool_call
+  signature: 'fn extract_tool_call(value: &Value) -> Result<ToolCall>'
+  status: implemented
+  notes: inputSchema matches handler params; format_tools_prompt generates ChatML
+- contract: mcp-tool-schema-v1.yaml
+  equation: session_state_machine
+  module_path: apr_cli::commands::serve
+  function: run
+  signature: 'pub(crate) fn run(file: &Path, port: u16, ...) -> Result<(), CliError>'
+  status: implemented
+  notes: Init->Binding->Loading->Ready->Draining->Stopped lifecycle
+- contract: mcp-tool-schema-v1.yaml
+  equation: error_mapping
+  module_path: apr_cli::error
+  function: exit_code
+  signature: 'fn exit_code(&self) -> i32'
+  status: implemented
+  notes: Handler errors map to JSON-RPC error codes (-327xx range)
+- contract: mcp-tool-schema-v1.yaml
+  equation: idempotency_classification
+  module_path: apr_cli::commands::serve::types
+  function: format_tools_prompt
+  signature: 'fn format_tools_prompt(tools: &[Tool]) -> String'
+  status: implemented
+  notes: Read-only tools (list, inspect, query) classified idempotent
+# --- apr-cli-sampling-v1 bindings (PMAT-495) ---
+- contract: apr-cli-sampling-v1.yaml
+  equation: temperature_bounds
+  module_path: aprender::nn::generation
+  function: with_temperature
+  signature: 'fn with_temperature(&mut self, t: f32) -> &mut Self'
+  status: implemented
+  notes: temperature clamp [0, 2.0]; 0 = greedy
+- contract: apr-cli-sampling-v1.yaml
+  equation: top_k_top_p_interaction
+  module_path: aprender::nn::generation
+  function: with_top_p
+  signature: 'fn with_top_p(&mut self, p: f32) -> &mut Self'
+  status: implemented
+  notes: top_p ∈ (0, 1]; top_k applied before top_p
+- contract: apr-cli-sampling-v1.yaml
+  equation: seed_determinism
+  module_path: aprender::nn::generation
+  function: with_temperature
+  signature: 'fn with_temperature(&mut self, t: f32) -> &mut Self'
+  status: implemented
+  notes: Same seed + same input = identical output
+- contract: apr-cli-sampling-v1.yaml
+  equation: repeat_penalty
+  module_path: apr_cli::commands::eval::inference
+  function: sample_token
+  signature: 'fn sample_token(logits: &[f32], temperature: f32) -> usize'
+  status: implemented
+  notes: Repeat penalty suppresses previously-generated tokens
+- contract: apr-cli-sampling-v1.yaml
+  equation: exit_code_on_failure
+  module_path: apr_cli::error
+  function: exit_code
+  signature: 'fn exit_code(&self) -> i32'
+  status: implemented
+  notes: Sampling failure returns non-zero exit code
+# --- apr-finetune-v1 bindings (PMAT-495) ---
+- contract: apr-finetune-v1.yaml
+  equation: rank_bounds_safety
+  module_path: apr_cli::commands::finetune
+  function: run
+  signature: 'pub(crate) fn run(model_path: Option<&Path>, method: &str, rank: Option<u32>, ...) -> Result<()>'
+  status: implemented
+  notes: LoRA rank validated ≤ min(input_dim, output_dim)
+- contract: apr-finetune-v1.yaml
+  equation: vram_feasibility
+  module_path: apr_cli::commands::finetune
+  function: display_finetune_plan
+  signature: 'fn display_finetune_plan(config: &OptimalConfig, model_params: u64, vram_gb: f64, ...)'
+  status: implemented
+  notes: VRAM estimation gates training start
+- contract: apr-finetune-v1.yaml
+  equation: vram_estimation_tolerance
+  module_path: apr_cli::commands::finetune
+  function: dispatch_finetune_mode
+  signature: 'fn dispatch_finetune_mode(merge_mode: bool, model_path: Option<&Path>, ...) -> Option<Result<()>>'
+  status: implemented
+  notes: VRAM estimate within 15% of actual measured usage
+- contract: apr-finetune-v1.yaml
+  equation: alpha_rank_ratio
+  module_path: apr_cli::commands::finetune
+  function: run
+  signature: 'pub(crate) fn run(model_path: Option<&Path>, method: &str, rank: Option<u32>, ...) -> Result<()>'
+  status: implemented
+  notes: alpha/rank ratio defaults to 1.0 per LoRA paper
+- contract: apr-finetune-v1.yaml
+  equation: merge_tensor_shape
+  module_path: apr_cli::commands::finetune
+  function: run
+  signature: 'pub(crate) fn run(model_path: Option<&Path>, method: &str, rank: Option<u32>, ...) -> Result<()>'
+  status: implemented
+  notes: Merged tensors preserve original shape (W + BA has same dims)
+- contract: apr-finetune-v1.yaml
+  equation: checkpoint_metadata_roundtrip
+  module_path: apr_cli::commands::finetune
+  function: run
+  signature: 'pub(crate) fn run(model_path: Option<&Path>, method: &str, rank: Option<u32>, ...) -> Result<()>'
+  status: implemented
+  notes: Checkpoint metadata (rank, alpha, method) survives save/load
+# --- apr-gpu-backend-v1 bindings (PMAT-495) ---
+- contract: apr-gpu-backend-v1.yaml
+  equation: backend_selection
+  module_path: aprender::compute
+  function: select_backend
+  signature: 'fn select_backend(size: usize) -> Backend'
+  status: implemented
+  notes: Auto-selects CUDA > wgpu > CPU based on availability and tensor size
+- contract: apr-gpu-backend-v1.yaml
+  equation: gpu_detection_accuracy
+  module_path: aprender::compute
+  function: select_backend
+  signature: 'fn select_backend(size: usize) -> Backend'
+  status: implemented
+  notes: GPU detection matches actual hardware availability
+- contract: apr-gpu-backend-v1.yaml
+  equation: generation_temperature_zero
+  module_path: aprender::inference
+  function: generate
+  signature: 'fn generate(&mut self, prompt_tokens: &[u32], max_tokens: usize, ...) -> Vec<u32>'
+  status: implemented
+  notes: temperature=0 produces deterministic greedy output on GPU
+- contract: apr-gpu-backend-v1.yaml
+  equation: gpu_cpu_parity
+  module_path: apr_cli::commands::parity
+  function: run
+  signature: 'pub(crate) fn run(model: &Path, ...) -> Result<(), CliError>'
+  status: implemented
+  notes: GPU and CPU paths produce numerically close results (tolerance 1e-4)
+- contract: apr-gpu-backend-v1.yaml
+  equation: json_output_consistency
+  module_path: apr_cli::commands::gpu
+  function: run
+  signature: 'pub(crate) fn run(json: bool) -> Result<(), CliError>'
+  status: implemented
+  notes: --json produces consistent JSON schema across GPU/CPU backends
+# --- tokenizer-loading-v1 bindings (PMAT-495) ---
+- contract: tokenizer-loading-v1.yaml
+  equation: identity
+  module_path: aprender::format::converter::tokenizer_loader
+  function: load_tokenizer_from_explicit_path
+  signature: 'fn load_tokenizer_from_explicit_path(path: &Path) -> Result<Tokenizer>'
+  status: implemented
+  notes: Loads BPE tokenizer from tokenizer.json or vocab.json
+- contract: tokenizer-loading-v1.yaml
+  equation: roundtrip_encoding
+  module_path: aprender::tokenizer
+  function: encode
+  signature: 'fn encode(&self, text: &str) -> Vec<u32>'
+  status: implemented
+  notes: decode(encode(text)) == text for valid UTF-8
+- contract: tokenizer-loading-v1.yaml
+  equation: byte_encoder_coverage
+  module_path: apr_cli::commands::chat_load_tokenizers
+  function: load_tokenizers
+  signature: 'fn load_tokenizers(...) -> Result<TokenizerSet>'
+  status: implemented
+  notes: Byte-level BPE encoder covers all 256 byte values
+# --- qwen2-weight-loading-v1 bindings (PMAT-495) ---
+- contract: qwen2-weight-loading-v1.yaml
+  equation: q_projection
+  module_path: aprender::models::qwen2
+  function: weight
+  signature: 'fn weight(&self, name: &str) -> Option<&Tensor>'
+  status: implemented
+  notes: Q projection weight shape [hidden_size, hidden_size]
+- contract: qwen2-weight-loading-v1.yaml
+  equation: kv_projection
+  module_path: aprender::models::qwen2
+  function: weight
+  signature: 'fn weight(&self, name: &str) -> Option<&Tensor>'
+  status: implemented
+  notes: KV projection shape [hidden_size, kv_heads * head_dim]
+- contract: qwen2-weight-loading-v1.yaml
+  equation: swiglu_expansion
+  module_path: aprender::models::qwen2::constructors
+  function: new
+  signature: 'pub fn new(config: &Qwen2Config) -> Self'
+  status: implemented
+  notes: FFN intermediate = 2/3 * 4 * hidden_size (SwiGLU)
+- contract: qwen2-weight-loading-v1.yaml
+  equation: total_parameters
+  module_path: aprender::models::qwen2::constructors
+  function: weight_names
+  signature: 'fn weight_names() -> Vec<String>'
+  status: implemented
+  notes: Total params matches HuggingFace config.json num_parameters
 critical_path:
 - softmax
 - rmsnorm

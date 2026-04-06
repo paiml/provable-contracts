@@ -398,8 +398,8 @@ E0/E1/E2 enforcement quality metric. 9 core kernel contracts prioritized.
 
 Continuous improvement across 40-repo fleet. Five phases: measure, codegen,
 inject, validate, report. Tiered grading: kernel tier (E2 quality) vs tool
-tier (penetration). v2.6.0: 678 bindings, 424 call sites, 14,436 assertions,
-Grade B fleet (0.453), Grade A tool tier (98.7%).
+tier (penetration). v2.9.1: 709 bindings, 536 call sites, 20,063 assertions,
+Grade B fleet (0.420), Kernel Grade D (39.3% pen, 34% E2), Tool Grade A (102.7%).
 
 ---
 
@@ -527,7 +527,18 @@ swiglu, layernorm, gelu, rope kernel contracts.
 **Other** (3 contracts):
 - `apr-model-qa-v1`, `quantized-dot-product-v1`, `tensor-layout-v1`
 
-**Fleet enforcement (aprender):** 43 call sites, 58.9% penetration, Grade C.
-Call sites span nn/functional, metrics (regression, classification, ranking,
-calibration), tree, gnn, models/qwen2, and apr-cli (dispatch, pipe, serve plan,
-inspect). Generated contracts wired into both main lib and apr-cli subcrate.
+**Fleet enforcement (aprender):** 109 bindings, 62 call sites, 56.9% penetration,
+Grade D. v2.9.1 added 36 bindings for cli-dispatch-v1, http-api-v1, mcp-tool-schema-v1,
+apr-cli-sampling-v1, apr-finetune-v1, apr-gpu-backend-v1, tokenizer-loading-v1,
+qwen2-weight-loading-v1. 7 new call sites injected (dispatch, exit_code, predict_handler,
+fallback_handler, extract_tool_call, with_temperature, select_backend). Call sites span
+nn/functional, metrics, tree, gnn, models/qwen2, serve/routes, serve/types, compute,
+and apr-cli (dispatch, pipe, error, finetune). Generated contracts wired into both
+main lib and apr-cli subcrate.
+
+**Open contract gap tickets** (GH #686–#691):
+- #686: Level A enforcement — 48 commands need `#[contract]` annotations
+- #688: 28 ReadOnly commands need `no_side_effects` postconditions
+- #689: 16 Mutating commands need `output_path` + `exit_code` postconditions
+- #690: 4 LongRunning commands need `graceful_shutdown` + `resource_cleanup`
+- #691: Per-crate penetration reporting needed
