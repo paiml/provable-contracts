@@ -465,7 +465,7 @@ kani_harnesses:
   strategy: exhaustive
   harness: verify_kv_isolation
 - id: KANI-SRV-005
-  obligation: Error sanitization strips framework internals
+  obligation: Error responses never leak framework internals
   property: response body never contains serde/axum strings
   bound: 8
   strategy: bounded_int
@@ -477,7 +477,7 @@ kani_harnesses:
   strategy: exhaustive
   harness: verify_cors_preflight
 - id: KANI-SRV-007
-  obligation: Unknown routes return JSON 404
+  obligation: Unknown routes return JSON 404 (not empty body)
   property: unknown path -> 404 with non-empty JSON body
   bound: 8
   strategy: bounded_int
@@ -489,11 +489,29 @@ kani_harnesses:
   strategy: bounded_int
   harness: verify_max_tokens_bound
 - id: KANI-SRV-009
-  obligation: GPU batched decode produces valid tokens
+  obligation: GPU batched decode produces non-zero tokens
   property: token_id < vocab_size and not all zeros
   bound: 8
   strategy: bounded_int
   harness: verify_gpu_token_integrity
+- id: KANI-SRV-010
+  obligation: Qwen3 uses NoThinkTemplate via architecture dispatch
+  property: qwen3 architecture selects NoThinkTemplate
+  bound: 4
+  strategy: exhaustive
+  harness: verify_qwen3_nothink
+- id: KANI-SRV-011
+  obligation: AppState caches architecture from GGUF at construction
+  property: model_architecture().is_some() after construction
+  bound: 4
+  strategy: exhaustive
+  harness: verify_appstate_architecture_cache
+- id: KANI-SRV-012
+  obligation: Format detection uses magic bytes not extension
+  property: magic bytes determine format regardless of extension
+  bound: 8
+  strategy: exhaustive
+  harness: verify_format_detection_magic
 
 qa_gate:
   id: F-SRV-GATE
