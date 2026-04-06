@@ -1,4 +1,4 @@
-# pv — Provable Contracts Specification v2.8.1
+# pv — Provable Contracts Specification v2.9.0
 
 **Papers to Math to Contracts in Code.**
 
@@ -51,6 +51,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 | 34 | [Systems Contract Patterns](#34-systems-contract-patterns) | [sub/systems-contract-patterns.md](sub/systems-contract-patterns.md) |
 | 35 | [Commit-Level Entity Enforcement](#35-commit-level-entity-enforcement) | [sub/commit-level-entity-enforcement.md](sub/commit-level-entity-enforcement.md) |
 | 36 | [Model Layout Provability — P0](#36-model-layout-provability--p0-defect) | [sub/model-layout-provability.md](sub/model-layout-provability.md) |
+| 37 | [Aprender Contract Suite](#37-aprender-contract-suite) | inline |
 
 ---
 
@@ -475,3 +476,57 @@ structural verification, `pv certify` for whole-model proof certificates.
 8-step P0 implementation plan with falsification checks. Grounded in
 Scalify (verified Llama-405B graph), TensorGuard (527 checker bugs in
 TF/PyTorch), ScenicProver (compositional A/G with Lean 4).
+
+**Status (PMAT-487):** Implemented. `ShapeContract` type with `assumes`/
+`guarantees` fields on `Equation`. COMPOSITION-001 lint gate blocking
+(13 edges, 0 broken). Guarantees on softmax, attention, rmsnorm, silu,
+swiglu, layernorm, gelu, rope kernel contracts.
+
+---
+
+## 37. Aprender Contract Suite
+
+24 contracts governing the aprender ML library and CLI, covering:
+
+**CLI Layer** (6 contracts):
+- `apr-cli-v1`: command parsing, contract gate, training plan/apply, stdin pipe
+- `apr-cli-operations-v1`: side effects, resource management, inference ops
+- `apr-cli-sampling-v1`: temperature, top-k/p, seed determinism, repeat penalty
+- `cli-dispatch-v1`: exit codes, command routing, error mapping
+- `apr-chat-session-v1`: multi-turn chat, context management
+- `apr-data-pipeline-v1`: data loading, splitting, audit
+
+**HTTP/Serve Layer** (2 contracts):
+- `apr-serve-v1`: server lifecycle, request routing, CORS, error sanitization,
+  GPU token integrity, max_tokens bound, concurrent isolation
+- `http-api-v1`: OpenAI-compatible request/response schemas, error envelope
+
+**Model Format Layer** (3 contracts):
+- `apr-format-safety-v1`: magic bytes, header integrity, truncation, dtype coercion,
+  validate exit codes, flag integrity, metadata completeness
+- `model-format-conversion-v1`: roundtrip correctness, quantization bounds
+- `apr-model-lifecycle-v1`: load/save/validate lifecycle
+
+**Architecture/Inference Layer** (5 contracts):
+- `apr-architecture-schema-v1`: config invariants, attention/FFN/norm/embedding shapes,
+  RoPE, tensor count, oracle detection, layer count, tensor name recognition
+- `apr-gpu-backend-v1`: backend selection, GPU detection, temperature-zero,
+  GPU/CPU parity, JSON output consistency
+- `apr-finetune-v1`: LoRA rank bounds, VRAM safety, merge shape, checkpoint roundtrip
+- `kernel-fusion-v1`: fused kernel correctness
+- `layer-parity-v1`: CPU/GPU layer output equivalence
+
+**MCP/Tool Layer** (1 contract):
+- `mcp-tool-schema-v1`: tool registration, schema fidelity, session lifecycle
+
+**Training Layer** (4 contracts):
+- `training-loop-v1`, `batch-training-v1`, `tokenizer-loading-v1`,
+  `qwen2-weight-loading-v1`
+
+**Other** (3 contracts):
+- `apr-model-qa-v1`, `quantized-dot-product-v1`, `tensor-layout-v1`
+
+**Fleet enforcement (aprender):** 43 call sites, 58.9% penetration, Grade C.
+Call sites span nn/functional, metrics (regression, classification, ranking,
+calibration), tree, gnn, models/qwen2, and apr-cli (dispatch, pipe, serve plan,
+inspect). Generated contracts wired into both main lib and apr-cli subcrate.
