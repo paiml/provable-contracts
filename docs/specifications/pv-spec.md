@@ -398,9 +398,10 @@ E0/E1/E2 enforcement quality metric. 9 core kernel contracts prioritized.
 
 Continuous improvement across 40-repo fleet. Five phases: measure, codegen,
 inject, validate, report. Tiered grading: kernel tier (E2 quality) vs tool
-tier (penetration). v2.9.6: 725 bindings, 803 call sites, 20,110 assertions,
-Grade B fleet (0.521), **Kernel Grade B** (103.8% pen, 16% E2),
+tier (penetration). v2.9.7: 725 bindings, 801 call sites, 20,110 assertions,
+Grade B fleet (0.519), **Kernel Grade B** (103.1% pen, 16% E2),
 Tool Grade A (116.3%). 293 contracts, 1025 Lean theorems.
+Entrenar: **Grade A** (62 sites, 124% pen). All 22,564 tests pass.
 
 **PMAT-495 sweep results** (2026-04-06):
 - Kernel-tier: **entrenar C→B** (20→58 sites), **realizar D→B** (16→93 sites),
