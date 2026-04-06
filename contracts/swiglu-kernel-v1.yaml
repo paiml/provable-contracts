@@ -25,6 +25,17 @@ equations:
     postconditions:
     - result.len() == x.len()
     - result.iter().all(|v| v.is_finite())
+    assumes:
+      constraints:
+      - "SiLU gate values are finite"
+      from_contract: silu-kernel-v1
+      from_equation: silu
+    guarantees:
+      shapes:
+        output: { dims: ["x.len()"] }
+      constraints:
+      - "output is finite"
+      - "output.len() == x.len()"
   silu:
     formula: SiLU(x) = x * sigmoid(x) = x / (1 + exp(-x))
     domain: x in R

@@ -22,6 +22,12 @@ equations:
     postconditions:
     - result.len() == x.len()
     - result.iter().all(|v| v.is_finite())
+    guarantees:
+      shapes:
+        output: { dims: ["x.len()"] }
+      constraints:
+      - "output.len() == x.len()"
+      - "output is finite"
 proof_obligations:
 - type: precondition
   property: Input and weight vectors finite, same length, epsilon positive

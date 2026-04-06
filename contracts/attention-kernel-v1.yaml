@@ -23,6 +23,18 @@ equations:
     lean_theorem: Theorems.Attention
     postconditions:
     - result.iter().all(|v| v.is_finite())
+    assumes:
+      constraints:
+      - "softmax output is valid probability distribution"
+      - "attention weights sum to 1.0 per row"
+      from_contract: softmax-kernel-v1
+      from_equation: softmax
+    guarantees:
+      shapes:
+        output: { dims: ["n", "d_v"] }
+      constraints:
+      - "output is finite"
+      - "output rows are convex combinations of V rows"
 proof_obligations:
 - type: invariant
   property: Attention weights normalize

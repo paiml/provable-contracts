@@ -23,6 +23,12 @@ equations:
     - result.len() == x.len()
     - result.iter().all(|v| *v > 0.0)
     - (result.iter().sum::<f32>() - 1.0).abs() < 1e-5
+    guarantees:
+      shapes:
+        output: { dims: ["x.len()"] }
+      constraints:
+      - "output.iter().all(|v| v > 0.0 && v < 1.0)"
+      - "output.iter().sum::<f32>() ≈ 1.0"
 proof_obligations:
 - type: precondition
   property: Input vector is finite and non-empty

@@ -20,6 +20,15 @@ equations:
     - x.iter().all(|v| v.is_finite())
     - x.len() > 0
     lean_theorem: Theorems.Silu
+    postconditions:
+    - result.len() == x.len()
+    - result.iter().all(|v| v.is_finite())
+    guarantees:
+      shapes:
+        output: { dims: ["x.len()"] }
+      constraints:
+      - "output is finite"
+      - "output.len() == x.len()"
   sigmoid:
     formula: sigmoid(x) = 1 / (1 + exp(-x))
     domain: x in R
