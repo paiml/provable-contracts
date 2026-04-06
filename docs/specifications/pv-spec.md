@@ -62,7 +62,7 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 Make the paper→code derivation chain explicit, auditable, and provable.
 299 scored YAML contracts (305 total by kind: 269 kernel, 31 registry, 5 pattern),
 1408 proof obligations, 1562 falsification tests, 1501 Kani harnesses, 35 Lean
-proofs, 1061 bindings, 516 call sites (76.7% penetration) across 40 repos
+proofs, 1061 bindings, 520 call sites (77.3% penetration) across 40 repos
 governing ~6.4M Rust LoC. Fleet enforcement: Grade B (0.44).
 Composition gate: 13 edges, 0 broken (blocking since PMAT-487).
 
