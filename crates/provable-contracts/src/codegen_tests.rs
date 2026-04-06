@@ -27,11 +27,11 @@ fn make_equation(
         preconditions: pres.into_iter().map(ToString::to_string).collect(),
         postconditions: posts.into_iter().map(ToString::to_string).collect(),
         lean_theorem: lean_theorem.map(ToString::to_string),
+        float_tolerance: None,
         assumes: None,
         guarantees: None,
     }
 }
-
 fn make_contract(equations: BTreeMap<String, Equation>) -> Contract {
     Contract {
         metadata: make_metadata(),

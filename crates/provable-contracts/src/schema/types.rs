@@ -154,6 +154,9 @@ pub struct Equation {
     /// Example: "ProvableContracts.Theorems.Softmax.PartitionOfUnity"
     #[serde(default)]
     pub lean_theorem: Option<String>,
+    /// IEEE 754 tolerance: codegen emits `>=` instead of `>` for boundaries (GH-67).
+    #[serde(default)]
+    pub float_tolerance: Option<f64>,
     /// Compositional verification: what this equation requires from upstream.
     /// References a guarantees block from another contract/equation.
     #[serde(default)]

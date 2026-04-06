@@ -52,11 +52,11 @@ fn make_equation(
         preconditions: preconditions.into_iter().map(String::from).collect(),
         postconditions: postconditions.into_iter().map(String::from).collect(),
         lean_theorem: lean.map(String::from),
+        float_tolerance: None,
         assumes: None,
         guarantees: None,
     }
 }
-
 // ---------------------------------------------------------------------------
 // collect_test_fns
 // ---------------------------------------------------------------------------

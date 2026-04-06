@@ -19,9 +19,10 @@ equations:
     - x.len() > 0
     - x.iter().all(|v| v.is_finite())
     lean_theorem: Theorems.Softmax
+    float_tolerance: 1.0e-7
     postconditions:
     - result.len() == x.len()
-    - "result.iter().all(|v| *v >= 0.0)  # IEEE 754: f32 underflow to 0.0 is valid; strict positivity holds only over reals"
+    - result.iter().all(|v| *v >= 0.0)
     - (result.iter().sum::<f32>() - 1.0).abs() < 1e-5
     guarantees:
       shapes:

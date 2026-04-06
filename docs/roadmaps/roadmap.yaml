@@ -2401,11 +2401,27 @@ roadmap:
   github_issue: null
   item_type: task
   title: 'Spec v2.9.0: document GPU backend, CLI sampling, work-dbc contracts + fleet metrics'
-  status: inprogress
+  status: completed
   priority: high
   assigned_to: null
   created: 2026-04-06T09:20:45Z
-  updated: 2026-04-06T09:20:49.133324631+00:00
+  updated: 2026-04-06T09:22:31Z
+  spec: null
+  acceptance_criteria: []
+  phases: []
+  subtasks: []
+  estimated_effort: null
+  labels: []
+  notes: null
+- id: PMAT-492
+  github_issue: null
+  item_type: task
+  title: 'GH-67: IEEE 754 float_tolerance schema + binding coverage + schema migration'
+  status: inprogress
+  priority: critical
+  assigned_to: null
+  created: 2026-04-06T09:25:02Z
+  updated: 2026-04-06T09:25:06.888397465+00:00
   spec: null
   acceptance_criteria: []
   phases: []
