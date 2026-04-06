@@ -186,7 +186,7 @@ bindings:
   notes: Weighted Gini impurity for binary split
 - contract: decision-tree-v1.yaml
   equation: mse_split
-  module_path: aprender::tree::helpers_part_02
+  module_path: aprender::tree::regression_helpers
   function: compute_mse
   signature: 'fn compute_mse(y_left: &[f32], y_right: &[f32]) -> f32'
   status: implemented
@@ -221,36 +221,36 @@ bindings:
   notes: "Normalized DCG: DCG/IDCG \u2208 [0,1]"
 - contract: gnn-v1.yaml
   equation: global_mean_pool
-  module_path: aprender::gnn
+  module_path: aprender::gnn::accumulate
   function: global_mean_pool
   signature: 'fn global_mean_pool(node_features: &[Vec<f32>], batch: &[usize]) -> Vec<Vec<f32>>'
   status: implemented
   notes: Mean aggregation of node features per graph
 - contract: gnn-v1.yaml
   equation: global_max_pool
-  module_path: aprender::gnn
+  module_path: aprender::gnn::accumulate
   function: global_max_pool
   signature: 'fn global_max_pool(node_features: &[Vec<f32>], batch: &[usize]) -> Vec<Vec<f32>>'
   status: implemented
   notes: Max aggregation of node features per graph
 - contract: ../gguf-format-safety-v1.yaml
   equation: magic_validation
-  module_path: aprender::gguf::reader
+  module_path: aprender::bundle::format
   function: validate_magic
   status: implemented
   notes: Magic byte check before any allocation
 - contract: ../gguf-format-safety-v1.yaml
   equation: metadata_kv_safety
-  module_path: aprender::gguf::reader
-  function: parse_metadata
+  module_path: aprender::format::gguf::reader
+  function: read_metadata_value
   status: implemented
   notes: String length checked before alloc (CVE-2024-25664 mitigation)
 - contract: ../safetensors-format-safety-v1.yaml
   equation: header_size_validation
-  module_path: aprender::safetensors::reader
-  function: validate_header
+  module_path: aprender::format::core_io
+  function: parse_and_validate_header
   status: implemented
-  notes: Header size bounded before JSON parsing
+  notes: Header validation with model type check before loading
 - contract: model-format-conversion-v1.yaml
   equation: format_conversion_roundtrip
   module_path: aprender::convert
