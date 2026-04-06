@@ -398,10 +398,33 @@ E0/E1/E2 enforcement quality metric. 9 core kernel contracts prioritized.
 
 Continuous improvement across 40-repo fleet. Five phases: measure, codegen,
 inject, validate, report. Tiered grading: kernel tier (E2 quality) vs tool
-tier (penetration). v2.9.3: 719 bindings, 600 call sites, 20,110 assertions,
-Grade B fleet (0.423), Kernel Grade D (39.9% pen, 32% E2), Tool Grade A (117%).
-293 contracts, 1025 Lean theorems. Tool-tier sweep: rurl F→D (22 sites),
-duende F→F (20 sites, E0-only), probar F→D (13 sites).
+tier (penetration). v2.9.4: 725 bindings, 600 call sites, 20,110 assertions,
+Grade B fleet (0.419), Kernel Grade D (39.2% pen, 32% E2), Tool Grade A (117%).
+293 contracts, 1025 Lean theorems.
+
+**PMAT-495 sweep results** (2026-04-06):
+- Tool-tier: rurl F→D (22 sites), duende 0→20 sites, probar F→D (13 sites)
+- Kernel-tier: aprender 73→125 bindings, 55→68 call sites
+- Fleet: +71 call sites, +52 bindings, penetration 78.6%→82.8%
+
+**Remaining work to reach Grade A fleet**:
+
+*Kernel tier (Grade D → A requires E2 ≥ 60%, pen ≥ 60%):*
+- aprender: 68/125 sites (54.4% pen). Need ~45 more call sites, upgrade
+  E0→E1 (add domain preconditions), E1→E2 (add postconditions for
+  softmax/matmul/rmsnorm/cross_entropy/attention/layernorm/swiglu/rope)
+- realizar: 16/100 sites (16% pen). Largest gap — needs generated_contracts.rs
+  wired into workspace subcrates + ~60 call site injections
+- entrenar: 20/50 sites (40% pen). Need ~15 more call sites + E1→E2 upgrades
+- trueno: 21/44 sites (47.7% pen). Need ~10 more call sites
+
+*Tool tier (Grade A, 117% pen — maintenance mode):*
+- Remaining F-grades: apr-model-qa-playbook (9 bindings, 0 sites),
+  batuta (31 bindings, 25 sites but all E0), pmat (12/11, all E0),
+  pmcp (23/12, all E0), faro (3/2), rclean (3/2), zenith (3/1),
+  copia (3 bindings, blocked by file-size hook — needs file splitting)
+- E0→E1 upgrades: rurl (22 E0), duende (20 E0), probar (13 E0),
+  batuta (25 E0), renacer (23 E0) — add domain-specific preconditions
 
 ---
 
@@ -489,7 +512,7 @@ swiglu, layernorm, gelu, rope kernel contracts.
 
 ## 37. Aprender Contract Suite
 
-24 contracts governing the aprender ML library and CLI, covering:
+27 contracts governing the aprender ML library and CLI, covering:
 
 **CLI Layer** (9 contracts):
 - `apr-cli-v1`: command parsing, contract gate, training plan/apply, stdin pipe
@@ -510,13 +533,16 @@ swiglu, layernorm, gelu, rope kernel contracts.
   GPU token integrity, max_tokens bound, concurrent isolation
 - `http-api-v1`: OpenAI-compatible request/response schemas, error envelope
 
-**Model Format Layer** (3 contracts):
+**Model Format Layer** (5 contracts):
 - `apr-format-safety-v1`: magic bytes, header integrity, truncation, dtype coercion,
   validate exit codes, flag integrity, metadata completeness
 - `model-format-conversion-v1`: roundtrip correctness, quantization bounds
 - `apr-model-lifecycle-v1`: load/save/validate lifecycle
+- `format-parity-v1`: GGUF/APR/SafeTensors transpose involution, element count,
+  tensor name bijection
+- `encoder-forward-v1`: BERT encoder layer, CLS pooling (GH-326)
 
-**Architecture/Inference Layer** (5 contracts):
+**Architecture/Inference Layer** (6 contracts):
 - `apr-architecture-schema-v1`: config invariants, attention/FFN/norm/embedding shapes,
   RoPE, tensor count, oracle detection, layer count, tensor name recognition
 - `apr-gpu-backend-v1`: backend selection, GPU detection, temperature-zero,
@@ -524,6 +550,7 @@ swiglu, layernorm, gelu, rope kernel contracts.
 - `apr-finetune-v1`: LoRA rank bounds, VRAM safety, merge shape, checkpoint roundtrip
 - `kernel-fusion-v1`: fused kernel correctness
 - `layer-parity-v1`: CPU/GPU layer output equivalence
+- `bidirectional-attention-v1`: full attention matrix for BERT-class models
 
 **MCP/Tool Layer** (1 contract):
 - `mcp-tool-schema-v1`: tool registration, schema fidelity, session lifecycle
@@ -535,23 +562,32 @@ swiglu, layernorm, gelu, rope kernel contracts.
 **Other** (3 contracts):
 - `apr-model-qa-v1`, `quantized-dot-product-v1`, `tensor-layout-v1`
 
-**Fleet enforcement (aprender):** 119 bindings, 68 call sites, 57.1% penetration,
-Grade D. v2.9.2 added 46 bindings total: cli-dispatch-v1, http-api-v1,
-mcp-tool-schema-v1, apr-cli-sampling-v1, apr-finetune-v1, apr-gpu-backend-v1,
-tokenizer-loading-v1, qwen2-weight-loading-v1, apr-cli-mutating-v1,
-apr-cli-readonly-v1, apr-cli-longrunning-v1. 13 new call sites injected
-(dispatch_core_command, exit_code, predict_handler, fallback_handler,
-extract_tool_call, with_temperature, select_backend, dispatch_model_commands,
-dispatch_inspection_commands, export::run, serve::run×3). Call sites span
-nn/functional, metrics, tree, gnn, models/qwen2, serve/routes, serve/types,
-compute, and apr-cli (dispatch, pipe, error, finetune, export, serve).
+**Fleet enforcement (aprender):** 125 bindings, 68 call sites, 54.4% penetration,
+Grade D. v2.9.4 added 52 bindings total across 36 contracts. 13 new call sites
+injected across dispatch, error, serve/routes, serve/types, compute,
+nn/generation, export, serve/mod. Codegen: 293 contracts, 1025 Lean theorems.
 
-**Addressed contract gap tickets**:
-- GH-688: apr-cli-readonly-v1 created (3 equations, 3 bindings, 1 call site)
-- GH-689: apr-cli-mutating-v1 created (4 equations, 4 bindings, 2 call sites)
-- GH-690: apr-cli-longrunning-v1 created (3 equations, 3 bindings, 3 call sites)
+**Addressed contract gap tickets** (PMAT-495):
+- GH-688: apr-cli-readonly-v1 — no-side-effects, idempotent output (28 commands)
+- GH-689: apr-cli-mutating-v1 — output-path, exit-code, atomic write (16 commands)
+- GH-690: apr-cli-longrunning-v1 — graceful shutdown, resource cleanup (4 commands)
+- GH-326: encoder-forward-v1, bidirectional-attention-v1 — BERT inference
+- Model format: format-parity-v1 — GGUF/APR/SafeTensors tensor parity
+- CLI: cli-dispatch-v1, http-api-v1, mcp-tool-schema-v1 bound and injected
+- Sampling: apr-cli-sampling-v1 — temperature, top-k/p, seed determinism
+- GPU: apr-gpu-backend-v1 — backend selection, GPU/CPU parity
+- Finetune: apr-finetune-v1 — LoRA rank bounds, VRAM feasibility
+- Tokenizer: tokenizer-loading-v1 — roundtrip encoding, byte encoder
+- Architecture: qwen2-weight-loading-v1 — Q/KV projection, SwiGLU expansion
 
-**Remaining gaps**:
-- #686: Per-function `#[contract]` proc macro annotations (Level A)
-- #687: L5 Lean proofs for 4 work contracts
-- #691: Per-crate penetration reporting
+**Remaining work** (aprender → Grade B/A):
+- 57 more call sites needed (125 bindings − 68 sites = 57 uninjected)
+- E0→E1 upgrades: 34 E0 sites need domain-specific preconditions
+- E1→E2 upgrades: 24 E1 sites need postconditions for numeric kernels
+  (only 9 postcondition macros: softmax, matmul, rmsnorm, cross_entropy,
+  attention, layernorm, swiglu, rope, embedding_lookup)
+- GH-686: Per-function `#[contract]` proc macro annotations (Level A)
+- GH-687: L5 Lean proofs for 4 work contracts
+- GH-691: Per-crate penetration reporting (apr-cli vs aprender lib)
+- GH-367: InternLM2.5 architecture — fused QKV tensor naming
+- GH-326: BERT encoder — call sites for encoder_layer, cls_pooling
