@@ -49,10 +49,60 @@ falsification_tests:
 equations:
   dequant:
     formula: "value = d * scale * q4_nibble - dmin * min"
+    domain: Q4K block with f16 scale/min, 4-bit nibbles
+    codomain: f32 dequantized value
+    invariants:
+    - q4_nibble in [0, 15]
+    - AVX-512 path matches AVX2 within f32 epsilon
     preconditions:
-    - "d, dmin from f16 header"
+    - "d, dmin from f16 header (finite, non-NaN)"
     - "scale, min from 6-bit packed scales"
     - "q4_nibble in [0, 15]"
+    postconditions:
+    - result is finite
+    - "|avx512_result - avx2_result| < f32::EPSILON"
+    tolerance: 1.0e-5
+    lean_theorem: Theorems.Q4kDequant
+  throughput:
+    formula: "avx512_gflops > avx2_gflops * 1.3"
+    domain: Q4K GEMV on 4096x4096 matrix
+    codomain: GFLOPS measurement
+    preconditions:
+    - "avx512f feature detected"
+    postconditions:
+    - "throughput >= 100 GFLOPS on Zen 4"
+    lean_theorem: Theorems.Q4kThroughput
+
+proof_obligations:
+- type: equivalence
+  property: AVX-512 Q4K matches AVX2
+  formal: '|avx512 - avx2| < f32::EPSILON'
+  tolerance: 1.0e-5
+  applies_to: dequant
+  lean:
+    theorem: Theorems.Q4kDequant
+    status: sorry
+- type: bound
+  property: AVX-512 throughput > 1.3x AVX2
+  formal: 'avx512_gflops > avx2_gflops * 1.3'
+  applies_to: throughput
+  lean:
+    theorem: Theorems.Q4kThroughput
+    status: sorry
+
+kani_harnesses:
+- id: KANI-Q4K-001
+  obligation: AVX-512 Q4K matches AVX2
+  property: '|avx512 - avx2| < epsilon'
+  bound: 16
+  strategy: bounded_int
+  harness: verify_q4k_avx512_parity
+- id: KANI-Q4K-002
+  obligation: AVX-512 throughput > 1.3x AVX2
+  property: 'throughput ratio > 1.3'
+  bound: 4
+  strategy: bounded_int
+  harness: verify_q4k_throughput
 
 qa_gate:
   id: F-AVX512-Q4K-001

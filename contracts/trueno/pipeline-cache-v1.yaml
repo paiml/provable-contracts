@@ -125,11 +125,28 @@ falsification_tests:
   test: Execute 5 heterogeneous ops, count queue.submit() calls
   if_fails: Encoder batching logic not aggregating
 equations:
-  identity:
-    formula: f(x) = x
+  cache_hit_no_recompile:
+    formula: "cache.contains(hash(shader)) => get_or_create(shader) returns cached (no compile)"
+    domain: Shader source string, pipeline cache
+    codomain: CachedPipeline reference
+    invariants:
+    - Cache hit is O(1) hash lookup
+    - No GPU compilation on cache hit
     preconditions:
     - capacity > 0
-    lean_theorem: Theorems.Identity
+    postconditions:
+    - returned pipeline is identical to cached pipeline
+    lean_theorem: Theorems.CacheHitNoRecompile
+  single_encoder_batch:
+    formula: "forall N ops: execute(ops) creates exactly 1 CommandEncoder + 1 submit"
+    domain: Batch of N compute operations
+    codomain: Single GPU command submission
+    preconditions:
+    - N >= 1
+    postconditions:
+    - encoder_count == 1
+    - submit_count == 1
+    lean_theorem: Theorems.SingleEncoderBatch
 qa_gate:
   id: F-PCV-001
   name: pipeline-cache-v1 Contract

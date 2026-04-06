@@ -2,6 +2,7 @@ metadata:
   version: 1.0.0
   created: '2026-04-06'
   author: PAIML Engineering
+  registry: true
   description: >
     Cross-backend SIMD/scalar parity contract — every SIMD-accelerated
     function must produce results equivalent to its scalar reference

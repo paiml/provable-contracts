@@ -61,13 +61,65 @@ falsification_tests:
 equations:
   amdahl_speedup:
     formula: "speedup = 1 / ((1-p) + p/n)"
+    domain: Parallel fraction p, thread count n
+    codomain: Speedup factor
     preconditions:
-    - "p = parallel fraction, n = thread count"
-
+    - "0 < p <= 1, n >= 1"
+    postconditions:
+    - "speedup >= 1"
+    - "speedup <= n"
+    lean_theorem: Theorems.AmdahlSpeedup
   working_set:
     formula: "ws = 3 × M × K × 4 bytes (A + B + C)"
+    domain: Matrix dimensions M, K
+    codomain: Working set size in bytes
     preconditions:
     - "f32 GEMM, row-major layout"
+    postconditions:
+    - "ws > 0"
+    lean_theorem: Theorems.WorkingSet
+  thread_cap_policy:
+    formula: |
+      cap(flops) = match flops {
+        <8M => 1, <64M => 2, <512M => 4, <4B => cores/2, _ => cores
+      }
+    domain: FLOPs count (M*N*K*2)
+    codomain: Thread cap
+    preconditions:
+    - "flops > 0"
+    postconditions:
+    - "cap >= 1 && cap <= physical_cores"
+    lean_theorem: Theorems.ThreadCapPolicy
+
+proof_obligations:
+- type: invariant
+  property: Thread cap within [1, physical_cores]
+  formal: '1 <= cap <= phys_cores'
+  applies_to: thread_cap_policy
+  lean:
+    theorem: Theorems.ThreadCapPolicy
+    status: sorry
+- type: bound
+  property: Amdahl speedup bounded by n
+  formal: 'speedup(p, n) <= n'
+  applies_to: amdahl_speedup
+  lean:
+    theorem: Theorems.AmdahlSpeedup
+    status: sorry
+
+kani_harnesses:
+- id: KANI-TC-001
+  obligation: Thread cap within [1, physical_cores]
+  property: '1 <= cap <= cores'
+  bound: 16
+  strategy: bounded_int
+  harness: verify_thread_cap_bounds
+- id: KANI-TC-002
+  obligation: Amdahl speedup bounded by n
+  property: 'speedup <= n'
+  bound: 8
+  strategy: bounded_int
+  harness: verify_amdahl_bound
 
 qa_gate:
   id: F-THREADCAP-001

@@ -141,12 +141,29 @@ falsification_tests:
   test: Run tiled matmul with 1x1x1, verify exact equality
   if_fails: Edge case handling in tile dispatch
 equations:
-  identity:
-    formula: f(x) = x
+  tiled_naive_equivalence:
+    formula: "|tiled_matmul(A, B) - naive_matmul(A, B)| < n * f32::EPSILON"
+    domain: Matrices A(M×K), B(K×N)
+    codomain: Matrix C(M×N)
+    invariants:
+    - Tiled result matches naive within f32 epsilon
+    - Boundary zero-padding is equivalent to explicit zero-fill
     preconditions:
     - a.len() > 0
     - b.len() > 0
-    lean_theorem: Theorems.Identity
+    postconditions:
+    - "max |tiled - naive| < 1e-4"
+    tolerance: 1.0e-4
+    lean_theorem: Theorems.TiledNaiveEquivalence
+  barrier_correctness:
+    formula: "Two barriers per tile: load-barrier + compute-barrier prevent data races"
+    domain: Workgroup of 256 threads
+    codomain: Race-free shared memory access
+    preconditions:
+    - "TILE_SIZE == 16"
+    postconditions:
+    - "no data race on tile_a / tile_b"
+    lean_theorem: Theorems.BarrierCorrectness
 qa_gate:
   id: F-TMSV-001
   name: tiled-matmul-shader-v1 Contract

@@ -2,6 +2,7 @@ metadata:
   version: 1.0.0
   created: '2026-04-03'
   author: PAIML Engineering
+  registry: true
   description: >
     NF4 backward tensor core GEMM — WMMA 16×16×16 backward kernel with inline
     NF4 dequantization in shared memory.
@@ -128,26 +129,41 @@ proof_obligations:
     formal: '|tc_backward_grad - cublas_backward_grad|_inf < 1e-3 for all projections'
     applies_to: all 7 backward projection GEMMs
     tolerance: 1.0e-3
+    lean:
+      theorem: Theorems.NumericalParity
+      status: sorry
 
   - type: invariant
     property: No NaN propagation from valid inputs
     formal: 'forall m,k: is_finite(grad_out[m,:]) AND is_finite(B_nf4_dequant[:,:]) => is_finite(grad_A[m,k])'
     applies_to: all backward GEMMs
+    lean:
+      theorem: Theorems.NoNanPropagation
+      status: sorry
 
   - type: bound
     property: Kernel launch reduction
     formal: 'tc_backward_launches <= cublas_backward_launches * 0.5'
     applies_to: full backward pass (28 layers)
+    lean:
+      theorem: Theorems.LaunchReduction
+      status: sorry
 
   - type: bound
     property: DRAM traffic reduction vs separate dequant+GEMM
     formal: 'tc_backward_dram < (dequant_dram + cublas_dram) * 0.70'
     applies_to: per-layer backward
+    lean:
+      theorem: Theorems.DramReduction
+      status: sorry
 
   - type: equivalence
     property: Loss convergence parity
     formal: '|tc_loss[t] - cublas_loss[t]| < 0.05 for t in [0, 100]'
     applies_to: 100-step training comparison
+    lean:
+      theorem: Theorems.LossConvergence
+      status: sorry
 
 falsification_tests:
   - id: F-NBTC-001

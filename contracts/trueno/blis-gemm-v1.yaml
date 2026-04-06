@@ -13,6 +13,7 @@ metadata:
   - 'trueno/src/blis/softmax.rs — softmax_avx2()'
   - 'trueno/src/blis/gemv.rs — gemv_avx2(), gemv_tiled_avx2()'
   - 'Van Zee & Van de Geijn (2015). BLIS: A Framework for Rapidly Instantiating BLAS Functionality'
+  registry: true
   depends_on:
   - avx512-blis-v1
 
@@ -42,9 +43,16 @@ equations:
       For each op in {add, sub, mul, silu, gelu}:
         op_avx2(a, b) == op_scalar(a, b) within f32 epsilon
         op_avx512(a, b) == op_scalar(a, b) within f32 epsilon
+    domain: Two f32 vectors, elementwise operation
+    codomain: f32 result vector
     invariants:
     - All SIMD paths match scalar reference
     - Non-aligned lengths handled correctly (remainder elements)
+    preconditions:
+    - a.len() == b.len()
+    postconditions:
+    - "|simd - scalar| < f32::EPSILON per element for add/sub/mul"
+    lean_theorem: Theorems.ElementwiseParity
 
   norm_correctness:
     formula: |
@@ -99,11 +107,19 @@ proof_obligations:
 - type: invariant
   property: GEMM numerical correctness
   formal: '∀ A,B,C: |gemm_blis(A,B) - gemm_ref(A,B)| < 1e-4'
+  tolerance: 1.0e-4
   applies_to: gemm_correctness
+  lean:
+    theorem: Theorems.GemmCorrectness
+    status: sorry
 - type: invariant
   property: Elementwise parity
   formal: '∀ x: |silu_avx2(x) - silu_scalar(x)| < 1e-5'
+  tolerance: 1.0e-5
   applies_to: elementwise_parity
+  lean:
+    theorem: Theorems.ElementwiseParity
+    status: sorry
 kani_harnesses:
 - id: KANI-BLIS-001
   obligation: GEMM numerical correctness
