@@ -1,4 +1,4 @@
-# pv — Provable Contracts Specification v2.9.0
+# pv — Provable Contracts Specification v2.9.9
 
 **Papers to Math to Contracts in Code.**
 
@@ -398,13 +398,24 @@ E0/E1/E2 enforcement quality metric. 9 core kernel contracts prioritized.
 
 Continuous improvement across 40-repo fleet. Five phases: measure, codegen,
 inject, validate, report. Tiered grading: kernel tier (E2 quality) vs tool
-tier (penetration). v2.9.8: 725 bindings, **918 call sites**, 20,110 assertions,
-**Grade A fleet (0.629)**, **Kernel Grade A** (139.8% pen, 33% E2),
-Tool Grade A (116.3%). 293 contracts, 1025 Lean theorems.
-Entrenar: **Grade A** (84 sites, 28 E2). Realizar: **Grade A** (131 sites, 86 E2).
-Sovereign stack kernel tier upgraded **D→A** in a single session (+389 sites).
+tier (penetration). v2.9.9: 725 bindings, **1107 call sites**, 20,110 assertions,
+**Grade A fleet**, **Kernel Grade A** (174 postconditions, 315 preconditions),
+Tool Grade A (116.3%). 294 contracts, 1025 Lean theorems.
+Entrenar: **Grade A** (83 sites, 28 post). Realizar: **Grade A** (128 sites, 40 post).
+Trueno: **Grade A** (62 sites, 27 post). Aprender: **Grade A** (216 sites, 79 post).
 
-**PMAT-495 sweep results** (2026-04-06):
+**PMAT-495 postcondition sweep** (2026-04-06, session 2):
+- Realizar: +42 postconditions (39 new + softmax per-row fix + fused_q4k_dot guard)
+- Trueno: +21 postconditions (dequant, elementwise, amdahl, attention, matmul)
+- Entrenar: +5 postconditions (layernorm, rope, swiglu, rmsnorm batched)
+- Aprender: +127 call sites (E0→E1 bulk upgrade + softmax per-row fix)
+- Fleet: **489 total call sites** across 4 kernel crates (315 pre + 174 post)
+- 31 compilable postcondition macros with `debug_assert!` bodies (up from 20)
+- 10 trueno contract YAMLs enriched with domain/codomain/postconditions
+- Bug fixes: softmax per-row postcondition (realizar + aprender),
+  fused_q4k_dot finite-scale guard, NF4 scalar postcondition
+
+**PMAT-495 sweep results** (2026-04-06, session 1):
 - Kernel-tier: **entrenar C→B** (20→58 sites), **realizar D→B** (16→93 sites),
   **aprender D→C** (55→136 sites), **trueno C→B** (21→44 sites, 100% pen)
 - Tool-tier: rurl F→D (22 sites), duende 0→20 sites, probar F→D (13 sites)
@@ -412,20 +423,6 @@ Sovereign stack kernel tier upgraded **D→A** in a single session (+389 sites).
 - Kernel tier upgraded **D→B** in a single session
 - Falsification: FALSIFY-GPU-008/009 (run/serve GPU parity, rosetta exit code)
 - 3 new contracts: apr-cli-mutating-v1, apr-cli-readonly-v1, apr-cli-longrunning-v1
-
-**Remaining work to reach Grade A kernel tier** (B→A needs E2 ≥ 60%):
-
-*E0→E1 quality upgrades (replace generic with domain preconditions):*
-- aprender: 93 E0 sites — add `input.len() > 0`, `x.is_finite()` guards
-- realizar: 14 E0 sites — mostly in quantize/inference modules
-- entrenar: 16 E0 sites — training loop/optimizer modules
-- trueno: 14 E0 sites — SIMD/backend dispatch modules
-
-*E1→E2 postcondition upgrades (add numeric postconditions):*
-- Only 9 postcondition macros: softmax, matmul, rmsnorm, cross_entropy,
-  attention, layernorm, swiglu, rope, embedding_lookup
-- Need `contract_post_*!(&result)` before return in numeric kernel functions
-- Aprender needs 14→40+ E2, entrenar needs 14→25+, realizar needs 11→40+
 
 *Tool tier (Grade A, 116% pen — maintenance mode):*
 - Remaining F-grades: apr-model-qa-playbook, batuta, pmat, pmcp, faro,
@@ -567,10 +564,10 @@ swiglu, layernorm, gelu, rope kernel contracts.
 **Other** (3 contracts):
 - `apr-model-qa-v1`, `quantized-dot-product-v1`, `tensor-layout-v1`
 
-**Fleet enforcement (aprender):** 125 bindings, 68 call sites, 54.4% penetration,
-Grade D. v2.9.4 added 52 bindings total across 36 contracts. 13 new call sites
-injected across dispatch, error, serve/routes, serve/types, compute,
-nn/generation, export, serve/mod. Codegen: 293 contracts, 1025 Lean theorems.
+**Fleet enforcement (aprender):** 125 bindings, **216 call sites**, 172.8% penetration,
+**Grade A**. v2.9.9 added 127 call sites (E0→E1 bulk upgrade + postcondition fixes).
+79 postcondition call sites, 137 precondition call sites.
+Codegen: 294 contracts, 1025 Lean theorems, 31 compilable postcondition macros.
 
 **Addressed contract gap tickets** (PMAT-495):
 - GH-688: apr-cli-readonly-v1 — no-side-effects, idempotent output (28 commands)
@@ -585,14 +582,8 @@ nn/generation, export, serve/mod. Codegen: 293 contracts, 1025 Lean theorems.
 - Tokenizer: tokenizer-loading-v1 — roundtrip encoding, byte encoder
 - Architecture: qwen2-weight-loading-v1 — Q/KV projection, SwiGLU expansion
 
-**Remaining work** (aprender → Grade B/A):
-- 57 more call sites needed (125 bindings − 68 sites = 57 uninjected)
-- E0→E1 upgrades: 34 E0 sites need domain-specific preconditions
-- E1→E2 upgrades: 24 E1 sites need postconditions for numeric kernels
-  (only 9 postcondition macros: softmax, matmul, rmsnorm, cross_entropy,
-  attention, layernorm, swiglu, rope, embedding_lookup)
+**Remaining work** (maintenance mode):
 - GH-686: Per-function `#[contract]` proc macro annotations (Level A)
 - GH-687: L5 Lean proofs for 4 work contracts
 - GH-691: Per-crate penetration reporting (apr-cli vs aprender lib)
 - GH-367: InternLM2.5 architecture — fused QKV tensor naming
-- GH-326: BERT encoder — call sites for encoder_layer, cls_pooling
