@@ -129,10 +129,9 @@ pub(crate) fn run_composition_gate(
         }
     }
 
-    // Composition gate is advisory during rollout — broken edges are warnings,
-    // not blocking errors. Once all contracts have assumes/guarantees, this
-    // becomes a hard gate (edges_broken == 0).
-    let passed = true; // TODO(PMAT-487): make blocking once all contracts annotated
+    // PMAT-487: Composition gate is now blocking — broken edges fail the gate.
+    // Contracts with assumes must reference upstream equations that have guarantees.
+    let passed = edges_broken == 0;
     let duration_ms = u64::try_from(start.elapsed().as_millis()).unwrap_or(0);
 
     let result = GateResult {
@@ -306,8 +305,8 @@ mod tests {
             ("downstream-v1".to_string(), downstream),
         ];
         let (result, findings) = run_composition_gate(&contracts);
-        // Gate is advisory during rollout — always passes, but emits warnings
-        assert!(result.passed);
+        // PMAT-487: Gate is now blocking — broken edges fail
+        assert!(!result.passed);
         assert!(findings.iter().any(|f| f.severity == RuleSeverity::Warning));
     }
 }

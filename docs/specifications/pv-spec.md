@@ -59,10 +59,11 @@ Sub-specs live in `docs/specifications/sub/` and are linked from this TOC.
 **Sub-spec**: [sub/vision.md](sub/vision.md)
 
 Make the paper→code derivation chain explicit, auditable, and provable.
-296 scored YAML contracts (302 total by kind: 267 kernel, 31 registry, 4 pattern),
-1398 proof obligations, 1551 falsification tests, 1488 Kani harnesses, 35 Lean
-proofs, 1051 bindings, 482 call sites (71.6% penetration) across 40 repos
-governing ~6.4M Rust LoC. Fleet enforcement: Grade B (0.41).
+298 scored YAML contracts (304 total by kind: 269 kernel, 31 registry, 4 pattern),
+1403 proof obligations, 1557 falsification tests, 1493 Kani harnesses, 35 Lean
+proofs, 1056 bindings, 487 call sites (72.4% penetration) across 40 repos
+governing ~6.4M Rust LoC. Fleet enforcement: Grade B (0.42).
+Composition gate: 13 edges, 0 broken (blocking since PMAT-487).
 
 Architecture: `crates/provable-contracts/` (library), `crates/provable-contracts-cli/`
 (CLI binary `pv`), `contracts/` (YAML registry), `crates/provable-contracts-macros/`
