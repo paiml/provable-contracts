@@ -398,33 +398,31 @@ E0/E1/E2 enforcement quality metric. 9 core kernel contracts prioritized.
 
 Continuous improvement across 40-repo fleet. Five phases: measure, codegen,
 inject, validate, report. Tiered grading: kernel tier (E2 quality) vs tool
-tier (penetration). v2.9.4: 725 bindings, 600 call sites, 20,110 assertions,
-Grade B fleet (0.419), Kernel Grade D (39.2% pen, 32% E2), Tool Grade A (117%).
+tier (penetration). v2.9.5: 725 bindings, 645 call sites, 20,110 assertions,
+Grade B fleet (0.447), Kernel Grade C (53.3% pen, 25% E2), Tool Grade A (117%).
 293 contracts, 1025 Lean theorems.
 
 **PMAT-495 sweep results** (2026-04-06):
+- Kernel-tier: entrenar C→B (20→42 sites), realizar D→D (16→39 sites),
+  aprender 73→125 bindings (55→68 sites), trueno 21 sites (stable)
 - Tool-tier: rurl F→D (22 sites), duende 0→20 sites, probar F→D (13 sites)
-- Kernel-tier: aprender 73→125 bindings, 55→68 call sites
-- Fleet: +71 call sites, +52 bindings, penetration 78.6%→82.8%
+- Fleet: +116 call sites, +52 bindings, penetration 78.6%→89.0%
+- Falsification: FALSIFY-GPU-008/009 (run/serve GPU parity, rosetta exit code)
 
 **Remaining work to reach Grade A fleet**:
 
-*Kernel tier (Grade D → A requires E2 ≥ 60%, pen ≥ 60%):*
-- aprender: 68/125 sites (54.4% pen). Need ~45 more call sites, upgrade
-  E0→E1 (add domain preconditions), E1→E2 (add postconditions for
-  softmax/matmul/rmsnorm/cross_entropy/attention/layernorm/swiglu/rope)
-- realizar: 16/100 sites (16% pen). Largest gap — needs generated_contracts.rs
-  wired into workspace subcrates + ~60 call site injections
-- entrenar: 20/50 sites (40% pen). Need ~15 more call sites + E1→E2 upgrades
+*Kernel tier (Grade C → A requires E2 ≥ 60%, pen ≥ 60%):*
+- aprender: 68/125 sites (54.4% pen). Need ~45 more injections + E1→E2
+  postcondition upgrades for numeric kernels
+- realizar: 39/100 sites (39% pen). Need ~40 more injections
 - trueno: 21/44 sites (47.7% pen). Need ~10 more call sites
+- entrenar: 42/50 sites (84% pen, Grade B). Near target — need E1→E2 upgrades
 
 *Tool tier (Grade A, 117% pen — maintenance mode):*
-- Remaining F-grades: apr-model-qa-playbook (9 bindings, 0 sites),
-  batuta (31 bindings, 25 sites but all E0), pmat (12/11, all E0),
-  pmcp (23/12, all E0), faro (3/2), rclean (3/2), zenith (3/1),
-  copia (3 bindings, blocked by file-size hook — needs file splitting)
-- E0→E1 upgrades: rurl (22 E0), duende (20 E0), probar (13 E0),
-  batuta (25 E0), renacer (23 E0) — add domain-specific preconditions
+- Remaining F-grades: apr-model-qa-playbook, batuta, pmat, pmcp, faro,
+  rclean, zenith, copia
+- E0→E1 upgrades: rurl (22), duende (20), probar (13), batuta (25),
+  renacer (23)
 
 ---
 
