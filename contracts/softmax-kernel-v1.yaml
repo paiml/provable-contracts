@@ -21,7 +21,7 @@ equations:
     lean_theorem: Theorems.Softmax
     postconditions:
     - result.len() == x.len()
-    - result.iter().all(|v| *v > 0.0)
+    - "result.iter().all(|v| *v >= 0.0)  # IEEE 754: f32 underflow to 0.0 is valid; strict positivity holds only over reals"
     - (result.iter().sum::<f32>() - 1.0).abs() < 1e-5
     guarantees:
       shapes:
