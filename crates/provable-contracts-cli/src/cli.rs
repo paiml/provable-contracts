@@ -262,106 +262,7 @@ pub enum Commands {
         pvscore: bool,
     },
     /// Search contracts by intent, regex, or literal match
-    Query {
-        /// Search query string
-        query: String,
-        /// Directory containing contract YAML files
-        #[arg(long, default_value = "contracts")]
-        contract_dir: PathBuf,
-        /// Use regex matching instead of semantic search
-        #[arg(long)]
-        regex: bool,
-        /// Use literal substring matching
-        #[arg(long)]
-        literal: bool,
-        /// Force case-sensitive matching
-        #[arg(long)]
-        case_sensitive: bool,
-        /// Maximum number of results
-        #[arg(short, long, default_value = "10")]
-        limit: usize,
-        /// Filter by obligation type (invariant, equivalence, bound, etc.)
-        #[arg(long)]
-        obligation: Option<String>,
-        /// Filter to contracts depending on this stem
-        #[arg(long)]
-        depends_on: Option<String>,
-        /// Filter to contracts depended on by this stem
-        #[arg(long)]
-        depended_by: Option<String>,
-        /// Show only contracts with unproven obligations
-        #[arg(long)]
-        unproven: bool,
-        /// Minimum score threshold (filter results below this)
-        #[arg(long)]
-        min_score: Option<f64>,
-        /// Minimum proof level (L1-L5) to include
-        #[arg(long)]
-        min_level: Option<String>,
-        /// Include contract scores in output
-        #[arg(long)]
-        score: bool,
-        /// Include dependency graph info
-        #[arg(long)]
-        graph: bool,
-        /// Include paper references
-        #[arg(long)]
-        paper: bool,
-        /// Include proof level (L1-L5) in output
-        #[arg(long)]
-        proof_status: bool,
-        /// Include binding status per equation
-        #[arg(long)]
-        binding_info: bool,
-        /// Show only contracts with unimplemented bindings
-        #[arg(long)]
-        binding_gaps: bool,
-        /// Show last git modification date
-        #[arg(long)]
-        diff: bool,
-        /// Show dependency pagerank score
-        #[arg(long)]
-        pagerank: bool,
-        /// Show cross-project call sites
-        #[arg(long)]
-        call_sites: bool,
-        /// Show contract violations in consumer projects
-        #[arg(long)]
-        violations: bool,
-        /// Show cross-project coverage matrix
-        #[arg(long)]
-        coverage_map: bool,
-        /// Filter cross-project results to a named project
-        #[arg(long)]
-        project: Option<String>,
-        /// Add an explicit project path to the cross-project scan
-        #[arg(long)]
-        include_project: Option<PathBuf>,
-        /// Force full cross-project scan
-        #[arg(long)]
-        all_projects: bool,
-        /// Filter by contract tier (1-7)
-        #[arg(long)]
-        tier: Option<u8>,
-        /// Filter by kernel equivalence class (A-E)
-        #[arg(long, value_name = "CLASS")]
-        class: Option<char>,
-        /// Filter: kernel|registry|model-family|pattern|schema
-        #[arg(long)]
-        kind: Option<String>,
-        /// Force rebuild of the contract index (ignore cache)
-        #[arg(long)]
-        rebuild_index: bool,
-        /// Path to binding registry YAML (for --binding-info)
-        #[arg(long)]
-        binding: Option<PathBuf>,
-        /// Output format: text, json, or markdown
-        #[arg(short, long, default_value = "text")]
-        format: String,
-        /// Exit with status 1 if no results match (for CI quality gates)
-        #[arg(long)]
-        exit_code: bool,
-    },
+    Query(crate::query_args::QueryArgs),
     /// Generate type invariant trait + Kani preservation harnesses
     Invariants { contract: PathBuf },
     /// Generate Coq theorem stubs from a contract
@@ -496,5 +397,12 @@ pub enum Commands {
         /// Crate name for test label
         #[arg(long)]
         crate_name: Option<String>,
+    },
+    /// Migrate old-format contract YAMLs to current schema (GH-67)
+    Migrate {
+        #[arg(default_value = "contracts")]
+        contract_dir: PathBuf,
+        #[arg(long)]
+        dry_run: bool,
     },
 }
