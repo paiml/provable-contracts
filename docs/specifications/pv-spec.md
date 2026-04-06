@@ -398,9 +398,10 @@ E0/E1/E2 enforcement quality metric. 9 core kernel contracts prioritized.
 
 Continuous improvement across 40-repo fleet. Five phases: measure, codegen,
 inject, validate, report. Tiered grading: kernel tier (E2 quality) vs tool
-tier (penetration). v2.9.2: 719 bindings, 542 call sites, 20,063 assertions,
-Grade B fleet (0.415), Kernel Grade D (39.9% pen, 32% E2), Tool Grade A (102.7%).
-293 contracts, 1025 Lean theorems.
+tier (penetration). v2.9.3: 719 bindings, 600 call sites, 20,110 assertions,
+Grade B fleet (0.423), Kernel Grade D (39.9% pen, 32% E2), Tool Grade A (117%).
+293 contracts, 1025 Lean theorems. Tool-tier sweep: rurl F→D (22 sites),
+duende F→F (20 sites, E0-only), probar F→D (13 sites).
 
 ---
 
