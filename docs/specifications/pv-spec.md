@@ -398,8 +398,9 @@ E0/E1/E2 enforcement quality metric. 9 core kernel contracts prioritized.
 
 Continuous improvement across 40-repo fleet. Five phases: measure, codegen,
 inject, validate, report. Tiered grading: kernel tier (E2 quality) vs tool
-tier (penetration). v2.9.1: 709 bindings, 536 call sites, 20,063 assertions,
-Grade B fleet (0.420), Kernel Grade D (39.3% pen, 34% E2), Tool Grade A (102.7%).
+tier (penetration). v2.9.2: 719 bindings, 542 call sites, 20,063 assertions,
+Grade B fleet (0.415), Kernel Grade D (39.9% pen, 32% E2), Tool Grade A (102.7%).
+293 contracts, 1025 Lean theorems.
 
 ---
 
@@ -489,13 +490,19 @@ swiglu, layernorm, gelu, rope kernel contracts.
 
 24 contracts governing the aprender ML library and CLI, covering:
 
-**CLI Layer** (6 contracts):
+**CLI Layer** (9 contracts):
 - `apr-cli-v1`: command parsing, contract gate, training plan/apply, stdin pipe
 - `apr-cli-operations-v1`: side effects, resource management, inference ops
 - `apr-cli-sampling-v1`: temperature, top-k/p, seed determinism, repeat penalty
 - `cli-dispatch-v1`: exit codes, command routing, error mapping
 - `apr-chat-session-v1`: multi-turn chat, context management
 - `apr-data-pipeline-v1`: data loading, splitting, audit
+- `apr-cli-mutating-v1`: output-path validation, exit-code postconditions,
+  atomic write safety, rm confirmation gate (GH-689, 16 commands)
+- `apr-cli-readonly-v1`: no-side-effects, idempotent output, exit-code
+  postconditions (GH-688, 28 commands)
+- `apr-cli-longrunning-v1`: graceful shutdown, resource cleanup, concurrent
+  isolation (GH-690, run/serve/chat/tui)
 
 **HTTP/Serve Layer** (2 contracts):
 - `apr-serve-v1`: server lifecycle, request routing, CORS, error sanitization,
@@ -527,18 +534,23 @@ swiglu, layernorm, gelu, rope kernel contracts.
 **Other** (3 contracts):
 - `apr-model-qa-v1`, `quantized-dot-product-v1`, `tensor-layout-v1`
 
-**Fleet enforcement (aprender):** 109 bindings, 62 call sites, 56.9% penetration,
-Grade D. v2.9.1 added 36 bindings for cli-dispatch-v1, http-api-v1, mcp-tool-schema-v1,
-apr-cli-sampling-v1, apr-finetune-v1, apr-gpu-backend-v1, tokenizer-loading-v1,
-qwen2-weight-loading-v1. 7 new call sites injected (dispatch, exit_code, predict_handler,
-fallback_handler, extract_tool_call, with_temperature, select_backend). Call sites span
-nn/functional, metrics, tree, gnn, models/qwen2, serve/routes, serve/types, compute,
-and apr-cli (dispatch, pipe, error, finetune). Generated contracts wired into both
-main lib and apr-cli subcrate.
+**Fleet enforcement (aprender):** 119 bindings, 68 call sites, 57.1% penetration,
+Grade D. v2.9.2 added 46 bindings total: cli-dispatch-v1, http-api-v1,
+mcp-tool-schema-v1, apr-cli-sampling-v1, apr-finetune-v1, apr-gpu-backend-v1,
+tokenizer-loading-v1, qwen2-weight-loading-v1, apr-cli-mutating-v1,
+apr-cli-readonly-v1, apr-cli-longrunning-v1. 13 new call sites injected
+(dispatch_core_command, exit_code, predict_handler, fallback_handler,
+extract_tool_call, with_temperature, select_backend, dispatch_model_commands,
+dispatch_inspection_commands, export::run, serve::run×3). Call sites span
+nn/functional, metrics, tree, gnn, models/qwen2, serve/routes, serve/types,
+compute, and apr-cli (dispatch, pipe, error, finetune, export, serve).
 
-**Open contract gap tickets** (GH #686–#691):
-- #686: Level A enforcement — 48 commands need `#[contract]` annotations
-- #688: 28 ReadOnly commands need `no_side_effects` postconditions
-- #689: 16 Mutating commands need `output_path` + `exit_code` postconditions
-- #690: 4 LongRunning commands need `graceful_shutdown` + `resource_cleanup`
-- #691: Per-crate penetration reporting needed
+**Addressed contract gap tickets**:
+- GH-688: apr-cli-readonly-v1 created (3 equations, 3 bindings, 1 call site)
+- GH-689: apr-cli-mutating-v1 created (4 equations, 4 bindings, 2 call sites)
+- GH-690: apr-cli-longrunning-v1 created (3 equations, 3 bindings, 3 call sites)
+
+**Remaining gaps**:
+- #686: Per-function `#[contract]` proc macro annotations (Level A)
+- #687: L5 Lean proofs for 4 work contracts
+- #691: Per-crate penetration reporting

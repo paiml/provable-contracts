@@ -733,6 +733,79 @@ bindings:
   signature: 'fn weight_names() -> Vec<String>'
   status: implemented
   notes: Total params matches HuggingFace config.json num_parameters
+# --- apr-cli-mutating-v1 bindings (GH-689) ---
+- contract: apr-cli-mutating-v1.yaml
+  equation: output_path_validation
+  module_path: apr_cli::dispatch
+  function: dispatch_model_commands
+  signature: 'fn dispatch_model_commands(cli: &Cli) -> Option<Result<(), CliError>>'
+  status: implemented
+  notes: Validates output path before dispatching export/convert/quantize/merge
+- contract: apr-cli-mutating-v1.yaml
+  equation: exit_code_on_error
+  module_path: apr_cli::error
+  function: exit_code
+  signature: 'fn exit_code(&self) -> i32'
+  status: implemented
+  notes: All mutating command errors produce non-zero exit codes (GH-608, GH-632)
+- contract: apr-cli-mutating-v1.yaml
+  equation: atomic_write_safety
+  module_path: apr_cli::commands::export
+  function: run
+  signature: 'pub(crate) fn run(file: &Path, output: &Path, ...) -> Result<(), CliError>'
+  status: implemented
+  notes: Temp file + rename pattern for atomic writes
+- contract: apr-cli-mutating-v1.yaml
+  equation: rm_confirmation_gate
+  module_path: apr_cli::dispatch
+  function: dispatch_model_commands
+  signature: 'fn dispatch_model_commands(cli: &Cli) -> Option<Result<(), CliError>>'
+  status: implemented
+  notes: rm on non-existent path returns FileNotFound (exit 3)
+# --- apr-cli-readonly-v1 bindings (GH-688) ---
+- contract: apr-cli-readonly-v1.yaml
+  equation: no_side_effects
+  module_path: apr_cli::dispatch
+  function: dispatch_inspection_commands
+  signature: 'fn dispatch_inspection_commands(cli: &Cli) -> Option<Result<(), CliError>>'
+  status: implemented
+  notes: 28 readonly commands never modify filesystem or model state
+- contract: apr-cli-readonly-v1.yaml
+  equation: idempotent_output
+  module_path: apr_cli::dispatch
+  function: dispatch_inspection_commands
+  signature: 'fn dispatch_inspection_commands(cli: &Cli) -> Option<Result<(), CliError>>'
+  status: implemented
+  notes: Same input produces identical output on repeated runs
+- contract: apr-cli-readonly-v1.yaml
+  equation: exit_code_on_error
+  module_path: apr_cli::error
+  function: exit_code
+  signature: 'fn exit_code(&self) -> i32'
+  status: implemented
+  notes: FileNotFound=3, InvalidFormat=4, ValidationFailed=5
+# --- apr-cli-longrunning-v1 bindings (GH-690) ---
+- contract: apr-cli-longrunning-v1.yaml
+  equation: graceful_shutdown
+  module_path: apr_cli::commands::serve
+  function: run
+  signature: 'pub(crate) fn run(file: &Path, port: u16, ...) -> Result<(), CliError>'
+  status: implemented
+  notes: SIGTERM triggers drain with 30s timeout
+- contract: apr-cli-longrunning-v1.yaml
+  equation: resource_cleanup
+  module_path: apr_cli::commands::serve
+  function: run
+  signature: 'pub(crate) fn run(file: &Path, port: u16, ...) -> Result<(), CliError>'
+  status: implemented
+  notes: GPU context, TCP sockets, temp files, threads released via RAII
+- contract: apr-cli-longrunning-v1.yaml
+  equation: concurrent_isolation
+  module_path: apr_cli::commands::serve
+  function: run
+  signature: 'pub(crate) fn run(file: &Path, port: u16, ...) -> Result<(), CliError>'
+  status: implemented
+  notes: Per-request KV cache, immutable model weights (Arc)
 critical_path:
 - softmax
 - rmsnorm
