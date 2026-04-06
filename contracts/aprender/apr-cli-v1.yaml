@@ -666,6 +666,13 @@ falsification_tests:
         let _ = std::fs::remove_file(&corpus);
     }
   if_fails: BPE trainer produces fewer tokens than requested vocab_size
+- id: FALSIFY-ACLI-014
+  rule: No silent no-op flags
+  prediction: --verbose on debug produces more output than without
+  test: |
+    Run apr debug model --verbose and apr debug model.
+    Assert verbose output has more lines.
+  if_fails: --verbose flag accepted but produces identical output (GH-685)
 
 kani_harnesses:
 - id: KANI-ACLI-001
@@ -757,8 +764,8 @@ qa_gate:
   - tokenizer_training_correctness
   - pipe_stdin_support
   - model_path_resolution
-  pass_criteria: All 13 falsification tests pass
-  falsification: FALSIFY-ACLI-001 through FALSIFY-ACLI-013
+  pass_criteria: All 14 falsification tests pass
+  falsification: FALSIFY-ACLI-001 through FALSIFY-ACLI-014
 
 toyota_way_principles:
   jidoka: >
