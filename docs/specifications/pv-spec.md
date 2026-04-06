@@ -398,31 +398,36 @@ E0/E1/E2 enforcement quality metric. 9 core kernel contracts prioritized.
 
 Continuous improvement across 40-repo fleet. Five phases: measure, codegen,
 inject, validate, report. Tiered grading: kernel tier (E2 quality) vs tool
-tier (penetration). v2.9.5: 725 bindings, 645 call sites, 20,110 assertions,
-Grade B fleet (0.447), Kernel Grade C (53.3% pen, 25% E2), Tool Grade A (117%).
-293 contracts, 1025 Lean theorems.
+tier (penetration). v2.9.6: 725 bindings, 803 call sites, 20,110 assertions,
+Grade B fleet (0.521), **Kernel Grade B** (103.8% pen, 16% E2),
+Tool Grade A (116.3%). 293 contracts, 1025 Lean theorems.
 
 **PMAT-495 sweep results** (2026-04-06):
-- Kernel-tier: entrenar C→B (20→42 sites), realizar D→D (16→39 sites),
-  aprender 73→125 bindings (55→68 sites), trueno 21 sites (stable)
+- Kernel-tier: **entrenar C→B** (20→58 sites), **realizar D→B** (16→93 sites),
+  **aprender D→C** (55→136 sites), **trueno C→B** (21→44 sites, 100% pen)
 - Tool-tier: rurl F→D (22 sites), duende 0→20 sites, probar F→D (13 sites)
-- Fleet: +116 call sites, +52 bindings, penetration 78.6%→89.0%
+- Fleet: **+274 call sites**, +52 bindings, penetration 78.6%→**110.8%**
+- Kernel tier upgraded **D→B** in a single session
 - Falsification: FALSIFY-GPU-008/009 (run/serve GPU parity, rosetta exit code)
+- 3 new contracts: apr-cli-mutating-v1, apr-cli-readonly-v1, apr-cli-longrunning-v1
 
-**Remaining work to reach Grade A fleet**:
+**Remaining work to reach Grade A kernel tier** (B→A needs E2 ≥ 60%):
 
-*Kernel tier (Grade C → A requires E2 ≥ 60%, pen ≥ 60%):*
-- aprender: 68/125 sites (54.4% pen). Need ~45 more injections + E1→E2
-  postcondition upgrades for numeric kernels
-- realizar: 39/100 sites (39% pen). Need ~40 more injections
-- trueno: 21/44 sites (47.7% pen). Need ~10 more call sites
-- entrenar: 42/50 sites (84% pen, Grade B). Near target — need E1→E2 upgrades
+*E0→E1 quality upgrades (replace generic with domain preconditions):*
+- aprender: 93 E0 sites — add `input.len() > 0`, `x.is_finite()` guards
+- realizar: 14 E0 sites — mostly in quantize/inference modules
+- entrenar: 16 E0 sites — training loop/optimizer modules
+- trueno: 14 E0 sites — SIMD/backend dispatch modules
 
-*Tool tier (Grade A, 117% pen — maintenance mode):*
+*E1→E2 postcondition upgrades (add numeric postconditions):*
+- Only 9 postcondition macros: softmax, matmul, rmsnorm, cross_entropy,
+  attention, layernorm, swiglu, rope, embedding_lookup
+- Need `contract_post_*!(&result)` before return in numeric kernel functions
+- Aprender needs 14→40+ E2, entrenar needs 14→25+, realizar needs 11→40+
+
+*Tool tier (Grade A, 116% pen — maintenance mode):*
 - Remaining F-grades: apr-model-qa-playbook, batuta, pmat, pmcp, faro,
-  rclean, zenith, copia
-- E0→E1 upgrades: rurl (22), duende (20), probar (13), batuta (25),
-  renacer (23)
+  rclean, zenith, copia, duende
 
 ---
 
