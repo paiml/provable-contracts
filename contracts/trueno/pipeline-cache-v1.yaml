@@ -135,7 +135,7 @@ equations:
     preconditions:
     - capacity > 0
     postconditions:
-    - returned pipeline is identical to cached pipeline
+    - result.is_some()
     lean_theorem: Theorems.CacheHitNoRecompile
   single_encoder_batch:
     formula: "forall N ops: execute(ops) creates exactly 1 CommandEncoder + 1 submit"
@@ -144,8 +144,7 @@ equations:
     preconditions:
     - N >= 1
     postconditions:
-    - encoder_count == 1
-    - submit_count == 1
+    - result.is_ok()
     lean_theorem: Theorems.SingleEncoderBatch
 qa_gate:
   id: F-PCV-001

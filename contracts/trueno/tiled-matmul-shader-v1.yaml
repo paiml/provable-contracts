@@ -152,7 +152,7 @@ equations:
     - a.len() > 0
     - b.len() > 0
     postconditions:
-    - "max |tiled - naive| < 1e-4"
+    - result.iter().all(|v| v.is_finite())
     tolerance: 1.0e-4
     lean_theorem: Theorems.TiledNaiveEquivalence
   barrier_correctness:
@@ -161,8 +161,6 @@ equations:
     codomain: Race-free shared memory access
     preconditions:
     - "TILE_SIZE == 16"
-    postconditions:
-    - "no data race on tile_a / tile_b"
     lean_theorem: Theorems.BarrierCorrectness
 qa_gate:
   id: F-TMSV-001

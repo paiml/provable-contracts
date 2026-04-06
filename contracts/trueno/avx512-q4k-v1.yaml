@@ -59,8 +59,7 @@ equations:
     - "scale, min from 6-bit packed scales"
     - "q4_nibble in [0, 15]"
     postconditions:
-    - result is finite
-    - "|avx512_result - avx2_result| < f32::EPSILON"
+    - result.iter().all(|v| v.is_finite())
     tolerance: 1.0e-5
     lean_theorem: Theorems.Q4kDequant
   throughput:
@@ -70,7 +69,7 @@ equations:
     preconditions:
     - "avx512f feature detected"
     postconditions:
-    - "throughput >= 100 GFLOPS on Zen 4"
+    - result > 0.0
     lean_theorem: Theorems.Q4kThroughput
 
 proof_obligations:

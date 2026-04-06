@@ -61,8 +61,8 @@ equations:
       - 'B_nf4 packed as uint8 with 2 values per byte (row-major)'
       - 'scales array has ceil(K*N / block_size) entries'
     postconditions:
-      - 'grad_A has shape [M, K]'
-      - 'All values finite when inputs finite'
+      - result.len() == m * k
+      - result.iter().all(|v| v.is_finite())
 
   wmma_backward_tile:
     formula: |

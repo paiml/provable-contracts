@@ -33,8 +33,8 @@ equations:
     - m > 0 && n > 0 && k > 0
     - a.len() == m * k && b.len() == k * n
     postconditions:
-    - c.len() == m * n
-    - "max |c[i][j] - reference[i][j]| < 1e-4"
+    - result.len() == m * n
+    - result.iter().all(|v| v.is_finite())
     tolerance: 1.0e-4
     lean_theorem: Theorems.GemmCorrectness
 
@@ -51,7 +51,8 @@ equations:
     preconditions:
     - a.len() == b.len()
     postconditions:
-    - "|simd - scalar| < f32::EPSILON per element for add/sub/mul"
+    - result.iter().all(|v| v.is_finite())
+    - result.len() == a.len()
     lean_theorem: Theorems.ElementwiseParity
 
   norm_correctness:

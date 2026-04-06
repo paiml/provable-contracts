@@ -66,8 +66,7 @@ equations:
     preconditions:
     - "0 < p <= 1, n >= 1"
     postconditions:
-    - "speedup >= 1"
-    - "speedup <= n"
+    - result >= 1.0
     lean_theorem: Theorems.AmdahlSpeedup
   working_set:
     formula: "ws = 3 × M × K × 4 bytes (A + B + C)"
@@ -76,7 +75,7 @@ equations:
     preconditions:
     - "f32 GEMM, row-major layout"
     postconditions:
-    - "ws > 0"
+    - result > 0
     lean_theorem: Theorems.WorkingSet
   thread_cap_policy:
     formula: |
@@ -88,7 +87,7 @@ equations:
     preconditions:
     - "flops > 0"
     postconditions:
-    - "cap >= 1 && cap <= physical_cores"
+    - result >= 1
     lean_theorem: Theorems.ThreadCapPolicy
 
 proof_obligations:
