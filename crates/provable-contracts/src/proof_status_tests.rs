@@ -462,3 +462,35 @@ fn obligation_matrix_multiple_contracts() {
     assert_eq!(matrices[1].stem, "beta-v1");
     assert_eq!(matrices[1].obligations.len(), 1);
 }
+
+#[test]
+fn is_fully_bound_edge_cases() {
+    let c1 = minimal_contract(1, 1, 1);
+    assert_eq!(compute_proof_level(&c1, None), ProofLevel::L3);
+    let c2 = contract_with_lean(1, 1);
+    assert_eq!(compute_proof_level(&c2, Some((0, 0))), ProofLevel::L4);
+    assert_eq!(compute_proof_level(&c2, Some((1, 2))), ProofLevel::L4);
+}
+
+#[test]
+fn report_multiple_contracts_totals() {
+    let c1 = minimal_contract(3, 3, 2);
+    let c2 = minimal_contract(5, 5, 1);
+    let report = proof_status_report(&[("a-v1".into(), &c1), ("b-v1".into(), &c2)], None, false);
+    assert_eq!(report.totals.contracts, 2);
+    assert_eq!(report.totals.obligations, 8);
+    assert_eq!(report.totals.falsification_tests, 8);
+    assert_eq!(report.totals.kani_harnesses, 3);
+}
+
+#[test]
+fn kernel_class_all_bound_false_when_partial() {
+    let c = minimal_contract(3, 3, 2);
+    let report = proof_status_report(&[("softmax-kernel-v1".into(), &c)], None, true);
+    let class_a = report
+        .kernel_classes
+        .iter()
+        .find(|kc| kc.label == "A")
+        .unwrap();
+    assert!(!class_a.all_bound);
+}

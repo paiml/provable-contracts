@@ -130,7 +130,14 @@ pub fn format_status_report(reports: &[LeanStatusReport]) -> String {
 
     for r in reports {
         let name = if r.contract_description.len() > 30 {
-            &r.contract_description[..30]
+            // Truncate at char boundary to avoid UTF-8 panic
+            let end = r
+                .contract_description
+                .char_indices()
+                .take_while(|(i, _)| *i < 30)
+                .last()
+                .map_or(0, |(i, c)| i + c.len_utf8());
+            &r.contract_description[..end]
         } else {
             &r.contract_description
         };

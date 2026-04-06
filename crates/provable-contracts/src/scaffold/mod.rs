@@ -337,4 +337,147 @@ falsification_tests:
         assert!(code.contains("sum(output) ≈ 1.0"));
         assert!(code.contains("missing max subtraction"));
     }
+
+    #[test]
+    fn generate_trait_includes_paper_refs() {
+        let contract = sample_contract();
+        let code = generate_trait(&contract);
+        assert!(code.contains("Paper: Paper (2024)"));
+    }
+
+    #[test]
+    fn generate_trait_includes_domain_codomain() {
+        let contract = sample_contract();
+        let code = generate_trait(&contract);
+        assert!(code.contains("Domain:"));
+        assert!(code.contains("Codomain:"));
+    }
+
+    #[test]
+    fn generate_trait_includes_proof_obligation() {
+        let contract = sample_contract();
+        let code = generate_trait(&contract);
+        assert!(code.contains("INVARIANT"));
+        assert!(code.contains("normalization"));
+    }
+
+    #[test]
+    fn stem_to_trait_name_basic() {
+        assert_eq!(stem_to_trait_name("softmax-kernel-v1"), "SoftmaxKernelV1");
+        assert_eq!(stem_to_trait_name("gelu-kernel-v1"), "GeluKernelV1");
+        assert_eq!(stem_to_trait_name("a"), "A");
+        assert_eq!(stem_to_trait_name(""), "");
+    }
+
+    #[test]
+    fn generate_standalone_trait_header() {
+        let contract = sample_contract();
+        let code = generate_standalone_trait(&contract, "softmax-kernel-v1");
+        assert!(code.contains("pub trait SoftmaxKernelV1"));
+        assert!(code.contains("Auto-generated contract trait"));
+        assert!(code.contains("DO NOT EDIT"));
+        assert!(code.contains("#![allow(clippy::doc_markdown)]"));
+    }
+
+    #[test]
+    fn generate_standalone_trait_methods() {
+        let contract = sample_contract();
+        let code = generate_standalone_trait(&contract, "softmax-kernel-v1");
+        assert!(code.contains("fn softmax("));
+        assert!(code.contains("-> Vec<f32>"));
+    }
+
+    #[test]
+    fn generate_standalone_trait_invariants() {
+        let contract = sample_contract();
+        let code = generate_standalone_trait(&contract, "softmax-kernel-v1");
+        assert!(code.contains("Invariant: sum(output) = 1.0"));
+    }
+
+    #[test]
+    fn generate_standalone_trait_references() {
+        let contract = sample_contract();
+        let code = generate_standalone_trait(&contract, "softmax-kernel-v1");
+        assert!(code.contains("Reference: Paper (2024)"));
+    }
+
+    #[test]
+    fn generate_standalone_trait_implementor_note() {
+        let contract = sample_contract();
+        let code = generate_standalone_trait(&contract, "test-v1");
+        assert!(code.contains("Implementors must provide all 1 equation(s)"));
+        assert!(code.contains("Missing method = compile error"));
+    }
+
+    #[test]
+    fn generate_contract_tests_all_ids() {
+        let contract = sample_contract();
+        let code = generate_contract_tests(&contract);
+        assert!(code.contains("#[cfg(test)]"));
+        assert!(code.contains("mod contract_tests"));
+        assert!(code.contains("use super::*;"));
+        assert!(code.contains("fn falsify_sm_001()"));
+        assert!(code.contains("fn falsify_sm_002()"));
+    }
+
+    fn multi_equation_contract() -> Contract {
+        parse_contract_str(
+            r#"
+metadata:
+  version: "2.0.0"
+  description: "Multi-equation kernel"
+  references:
+    - "Ref A"
+    - "Ref B"
+equations:
+  alpha:
+    formula: "alpha(x) = x^2"
+    domain: "x ∈ ℝ^n"
+    codomain: "ℝ^n"
+    invariants:
+      - "output >= 0"
+  beta:
+    formula: "beta(x) = 2x"
+    domain: "x ∈ ℝ^n"
+    invariants:
+      - "output proportional to input"
+proof_obligations:
+  - type: bound
+    property: "non-negativity"
+    formal: "∀x: alpha(x) ≥ 0"
+falsification_tests:
+  - id: FALSIFY-MQ-001
+    rule: "non-neg"
+    prediction: "alpha >= 0"
+    if_fails: "squared value is negative"
+"#,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn generate_trait_multiple_equations() {
+        let contract = multi_equation_contract();
+        let code = generate_trait(&contract);
+        assert!(code.contains("fn alpha("));
+        assert!(code.contains("fn beta("));
+        assert!(code.contains("BOUND"));
+    }
+
+    #[test]
+    fn generate_standalone_multiple_equations() {
+        let contract = multi_equation_contract();
+        let code = generate_standalone_trait(&contract, "multi-eq-v1");
+        assert!(code.contains("pub trait MultiEqV1"));
+        assert!(code.contains("fn alpha("));
+        assert!(code.contains("fn beta("));
+        assert!(code.contains("2 equation(s)"));
+    }
+
+    #[test]
+    fn generate_trait_version_in_header() {
+        let contract = sample_contract();
+        let code = generate_trait(&contract);
+        assert!(code.contains("v1.0.0"));
+    }
 }

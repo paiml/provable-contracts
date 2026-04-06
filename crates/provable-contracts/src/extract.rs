@@ -370,3 +370,7 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "extract_tests.rs"]
+mod extract_tests;

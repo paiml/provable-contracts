@@ -273,3 +273,7 @@ pub(super) fn filter_coverage(
     let Some(p) = project else { return map };
     map.into_iter().filter(|c| c.project == p).collect()
 }
+
+#[cfg(test)]
+#[path = "query_enrich_tests.rs"]
+mod tests;

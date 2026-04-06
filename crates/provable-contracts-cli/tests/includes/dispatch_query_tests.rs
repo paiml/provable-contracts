@@ -11,7 +11,7 @@ fn contracts_dir() -> PathBuf {
 
 #[test]
 fn dispatch_query_semantic() {
-    let result = run_command(Commands::Query {
+    let result = run_command(Commands::Query(query_args::QueryArgs {
         query: "softmax".to_string(),
         contract_dir: contracts_dir(),
         regex: false,
@@ -45,13 +45,13 @@ fn dispatch_query_semantic() {
         binding: None,
         format: "text".to_string(),
         exit_code: false,
-    });
+    }));
     assert!(result.is_ok());
 }
 
 #[test]
 fn dispatch_query_literal() {
-    let result = run_command(Commands::Query {
+    let result = run_command(Commands::Query(query_args::QueryArgs {
         query: "RMSNorm".to_string(),
         contract_dir: contracts_dir(),
         regex: false,
@@ -85,13 +85,13 @@ fn dispatch_query_literal() {
         binding: None,
         format: "json".to_string(),
         exit_code: false,
-    });
+    }));
     assert!(result.is_ok());
 }
 
 #[test]
 fn dispatch_query_with_score() {
-    let result = run_command(Commands::Query {
+    let result = run_command(Commands::Query(query_args::QueryArgs {
         query: "attention".to_string(),
         contract_dir: contracts_dir(),
         regex: false,
@@ -125,13 +125,13 @@ fn dispatch_query_with_score() {
         binding: None,
         format: "text".to_string(),
         exit_code: false,
-    });
+    }));
     assert!(result.is_ok());
 }
 
 #[test]
 fn dispatch_query_with_proof_status() {
-    let result = run_command(Commands::Query {
+    let result = run_command(Commands::Query(query_args::QueryArgs {
         query: "softmax".to_string(),
         contract_dir: contracts_dir(),
         regex: false,
@@ -165,7 +165,7 @@ fn dispatch_query_with_proof_status() {
         binding: None,
         format: "text".to_string(),
         exit_code: false,
-    });
+    }));
     assert!(result.is_ok());
 }
 
@@ -173,7 +173,7 @@ fn dispatch_query_with_proof_status() {
 fn dispatch_query_with_binding() {
     let binding =
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../contracts/aprender/binding.yaml");
-    let result = run_command(Commands::Query {
+    let result = run_command(Commands::Query(query_args::QueryArgs {
         query: "softmax".to_string(),
         contract_dir: contracts_dir(),
         regex: false,
@@ -207,13 +207,13 @@ fn dispatch_query_with_binding() {
         binding: Some(binding),
         format: "text".to_string(),
         exit_code: false,
-    });
+    }));
     assert!(result.is_ok());
 }
 
 #[test]
 fn dispatch_query_markdown_format() {
-    let result = run_command(Commands::Query {
+    let result = run_command(Commands::Query(query_args::QueryArgs {
         query: "rmsnorm".to_string(),
         contract_dir: contracts_dir(),
         regex: false,
@@ -247,13 +247,13 @@ fn dispatch_query_markdown_format() {
         binding: None,
         format: "markdown".to_string(),
         exit_code: false,
-    });
+    }));
     assert!(result.is_ok());
 }
 
 #[test]
 fn dispatch_query_exit_code_success() {
-    let result = run_command(Commands::Query {
+    let result = run_command(Commands::Query(query_args::QueryArgs {
         query: "softmax".to_string(),
         contract_dir: contracts_dir(),
         regex: false,
@@ -287,13 +287,13 @@ fn dispatch_query_exit_code_success() {
         binding: None,
         format: "text".to_string(),
         exit_code: true,
-    });
+    }));
     assert!(result.is_ok());
 }
 
 #[test]
 fn dispatch_query_exit_code_no_match() {
-    let result = run_command(Commands::Query {
+    let result = run_command(Commands::Query(query_args::QueryArgs {
         query: "zzz_nonexistent_query_zzz".to_string(),
         contract_dir: contracts_dir(),
         regex: false,
@@ -327,13 +327,13 @@ fn dispatch_query_exit_code_no_match() {
         binding: None,
         format: "text".to_string(),
         exit_code: true,
-    });
+    }));
     assert!(result.is_err());
 }
 
 #[test]
 fn dispatch_query_min_level() {
-    let result = run_command(Commands::Query {
+    let result = run_command(Commands::Query(query_args::QueryArgs {
         query: "softmax".to_string(),
         contract_dir: contracts_dir(),
         regex: false,
@@ -367,13 +367,13 @@ fn dispatch_query_min_level() {
         binding: None,
         format: "text".to_string(),
         exit_code: false,
-    });
+    }));
     assert!(result.is_ok());
 }
 
 #[test]
 fn dispatch_query_tier_filter() {
-    let result = run_command(Commands::Query {
+    let result = run_command(Commands::Query(query_args::QueryArgs {
         query: "kernel".to_string(),
         contract_dir: contracts_dir(),
         regex: false,
@@ -407,13 +407,13 @@ fn dispatch_query_tier_filter() {
         binding: None,
         format: "text".to_string(),
         exit_code: false,
-    });
+    }));
     assert!(result.is_ok());
 }
 
 #[test]
 fn dispatch_query_class_filter() {
-    let result = run_command(Commands::Query {
+    let result = run_command(Commands::Query(query_args::QueryArgs {
         query: "attention".to_string(),
         contract_dir: contracts_dir(),
         regex: false,
@@ -447,6 +447,6 @@ fn dispatch_query_class_filter() {
         binding: None,
         format: "json".to_string(),
         exit_code: false,
-    });
+    }));
     assert!(result.is_ok());
 }

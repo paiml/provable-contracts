@@ -185,4 +185,77 @@ mod tests {
         let result = find_repo_root(tmp.path());
         assert!(result.is_err());
     }
+
+    #[test]
+    fn expand_dependents_transitive() {
+        // Build contracts where B depends on A
+        let a_yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "A"
+  references: ["Paper"]
+equations:
+  f:
+    formula: "f(x) = x"
+"#;
+        let b_yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "B"
+  references: ["Paper"]
+  depends_on:
+    - "contract-a"
+equations:
+  g:
+    formula: "g(x) = 2x"
+"#;
+        let c_yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "C"
+  references: ["Paper"]
+equations:
+  h:
+    formula: "h(x) = 3x"
+"#;
+        let a: crate::schema::Contract = crate::schema::parse_contract_str(a_yaml).unwrap();
+        let b: crate::schema::Contract = crate::schema::parse_contract_str(b_yaml).unwrap();
+        let c: crate::schema::Contract = crate::schema::parse_contract_str(c_yaml).unwrap();
+
+        let all = vec![
+            ("contract-a".to_string(), a),
+            ("contract-b".to_string(), b),
+            ("contract-c".to_string(), c),
+        ];
+
+        // Only A changed — B should be pulled in because it depends on A
+        let changed = vec!["contract-a".to_string()];
+        let expanded = expand_dependents(&changed, &all);
+        assert!(expanded.contains(&"contract-a".to_string()));
+        assert!(expanded.contains(&"contract-b".to_string()));
+        // C has no dependency on A, should not be included
+        assert!(!expanded.contains(&"contract-c".to_string()));
+    }
+
+    #[test]
+    fn expand_dependents_already_in_changed() {
+        // If B is already in changed and depends on A, it shouldn't be duplicated
+        let yaml = r#"
+metadata:
+  version: "1.0.0"
+  description: "X"
+  references: ["Paper"]
+  depends_on:
+    - "other"
+equations:
+  f:
+    formula: "f(x) = x"
+"#;
+        let contract: crate::schema::Contract = crate::schema::parse_contract_str(yaml).unwrap();
+        let all = vec![("dep-contract".to_string(), contract)];
+        let changed = vec!["dep-contract".to_string(), "other".to_string()];
+        let expanded = expand_dependents(&changed, &all);
+        // dep-contract is already in changed, so it should appear exactly once
+        assert_eq!(expanded.iter().filter(|s| *s == "dep-contract").count(), 1);
+    }
 }
